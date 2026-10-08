@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "BilimAI — учиться с пониманием",
-  description: "Математика на русском и узбекском: короткие объяснения, практика и разбор ошибок. Ранний MVP для совершеннолетних студентов.",
+  description: "Математика на русском, казахском и узбекском: короткие объяснения, практика и разбор ошибок. Ранний MVP для совершеннолетних студентов.",
   other: {
     "codex-preview": "development",
   },
@@ -24,3 +24,4 @@ export default function RootLayout({
     </html>
   );
 }
+

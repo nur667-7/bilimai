@@ -38,10 +38,11 @@ test('global daily and lifetime pilot limits work across users and days',()=>{
  for(let d=1;d<10;d++)for(let i=0;i<50;i++)assert.equal(reserve(database,'user'+i,'day'+d,d*60+i),1);
  assert.equal(reserve(database,'fresh','day11',999),0);assert.equal(database.prepare('SELECT COUNT(*) AS n FROM reservations').get().n,500);database.close();
 });
-test('both languages cover the same topics and answer keys; arithmetic matches examples',()=>{
+test('all three languages cover the same topics and answer keys; arithmetic matches examples',()=>{
  assert.deepEqual(lessons.ru.map(l=>l.id),lessons.uz.map(l=>l.id));
  for(const language of ['ru','uz','kk'])for(const lesson of lessons[language]){assert.equal(lesson.questions.length,3);for(const q of lesson.questions)assert.ok(q.correct>=0 && q.correct<q.options.length);}
  for(let i=0;i<3;i++)assert.deepEqual(lessons.ru[i].questions.map(q=>q.correct),lessons.uz[i].questions.map(q=>q.correct));
  assert.equal(3*5+6,21);assert.equal((14-4)/2,5);assert.equal((15+10)/5,5);assert.equal(150*.2,30);assert.equal(100000*.9,90000);assert.equal((100-80)/80*100,25);assert.equal(3/6,.5);assert.equal(2/5,.4);
 });
+
 
