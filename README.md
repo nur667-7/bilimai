@@ -1,5 +1,7 @@
 # BilimAI — Trilingual Diagnostic Math & UNT (ҰБТ / ЕНТ) Platform
 
+**Live Platform:** [https://bilimai.dpdns.org](https://bilimai.dpdns.org) · **Error Lab:** [https://bilimai.dpdns.org/lab](https://bilimai.dpdns.org/lab) · **Architecture (EN):** [https://bilimai.dpdns.org/about](https://bilimai.dpdns.org/about)
+
 **BilimAI** is a diagnostic mathematics learning platform built in Almaty, Kazakhstan for adult learners and university applicants preparing for the National Unified Testing (**UNT / ҰБТ / ЕНТ**) in **Kazakh (`kk`), Russian (`ru`), and Uzbek (`uz`)**.
 
 Instead of functioning as a generic chat wrapper that gives away final answers, BilimAI pairs deterministic mathematical verification with **three structured Anthropic Claude API workflows**.

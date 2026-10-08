@@ -18,12 +18,16 @@ const localBindingConfig = {
   name: "bilimai",
   main: "./build/sites-worker.ts",
   compatibility_flags: ["nodejs_compat"],
+  routes: [
+    { pattern: "bilimai.dpdns.org", custom_domain: true },
+    { pattern: "www.bilimai.dpdns.org", custom_domain: true },
+  ],
   d1_databases: d1
     ? [
         {
           binding: d1,
-          database_name: "site-creator-d1",
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+          database_name: "bilimai-db",
+          database_id: "99d60bcf-593b-48ba-9184-89d2e00e65aa",
         },
       ]
     : [],

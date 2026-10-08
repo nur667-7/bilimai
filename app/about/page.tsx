@@ -63,8 +63,13 @@ export default function About() {
         <h2>2. Founder &amp; Repository</h2>
         <ul className="list-disc pl-5 space-y-1">
           <li>
-            <strong>Founder &amp; Lead Engineer:</strong> Nurbek Saidualiev (Almaty, Kazakhstan · Software Engineering &amp; AI
-            Systems)
+            <strong>Founder &amp; Lead Engineer:</strong> Nurbek Saidualiev (Almaty, Kazakhstan ·{" "}
+            <a href="mailto:nurbek@bilimai.dpdns.org">nurbek@bilimai.dpdns.org</a>)
+          </li>
+          <li>
+            <strong>Live Production URL:</strong>{" "}
+            <a href="https://bilimai.dpdns.org">https://bilimai.dpdns.org</a> (Error Lab:{" "}
+            <a href="https://bilimai.dpdns.org/lab">/lab</a>)
           </li>
           <li>
             <strong>Source Code &amp; Verification Suite:</strong>{" "}
