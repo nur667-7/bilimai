@@ -108,34 +108,39 @@ test('Claude generateRoadmap validates input and parses structured UNT roadmap r
   assert.equal(roadmap.priorityModules[0].topic, 'quadratic');
 });
 
-test('Claude diagnoseLabError validates Error-Lab step context and returns structured step diagnosis', async () => {
+test('Claude diagnoseLabError validates Error-Lab step context with seed and stepFound', async () => {
   const labInput = {
     topic: 'quadratic',
+    seed: 0,
     language: 'ru',
     task: 'x² − 7x + 10 = 0. Найдите больший корень уравнения.',
     steps: ['x₁ × x₂ = 10', 'x₁ + x₂ = −7', 'Корни: −2 и −5 → −2'],
     wrongStep: 1,
     selectedStep: 2,
+    stepFound: false,
     learnerAttempt: '-2',
     consent: true,
     adult: true
   };
   assert.equal(labDiagnoseInputSchema.safeParse(labInput).success, true);
   assert.equal(labDiagnoseInputSchema.safeParse({ ...labInput, wrongStep: 5 }).success, false);
+  assert.equal(labDiagnoseInputSchema.safeParse({ ...labInput, seed: 24 }).success, false);
+  assert.equal(labDiagnoseInputSchema.safeParse({ ...labInput, seed: -1 }).success, false);
 
   const diag = await diagnoseLabError(labInput, 'Vieta rule ref', config, async (url, options) => {
     assert.equal(url, 'https://api.anthropic.com/v1/messages');
     const body = JSON.parse(options.body);
     assert.equal(body.max_tokens, 750);
     assert.match(body.system, /Vieta rule ref/);
+    assert.match(body.system, /Do NOT reveal which step index is broken/);
     return Response.json({
       stop_reason: 'end_turn',
       content: [
         {
           type: 'text',
           text: JSON.stringify({
-            diagnosis: 'Ошибка допущена во 2-м шаге: по теореме Виета сумма корней равна +7, а не −7.',
-            stepCheck: 'Вы выбрали 3-й шаг, но он уже опирался на неверный знак суммы из 2-го шага.',
+            diagnosis: 'Проверьте знак коэффициента b при записи суммы корней по теореме Виета.',
+            stepCheck: 'Сверьте знак суммы и произведения корней по очереди в шагах 1 и 2.',
             nextStepHint: 'Найдите два положительных числа с суммой 7 и произведением 10.'
           })
         }
@@ -161,8 +166,20 @@ test('Claude diagnoseLabError validates Error-Lab step context and returns struc
     titles
   );
   assert.equal(previewRm.priorityModules.length, 2);
-  const previewLab = buildLabDiagnosePreview(labInput, 'По теореме Виета сумма +7.', 'x₁ + x₂ = 7', 'Проверь знак суммы.');
-  assert.ok(previewLab.diagnosis.length > 15);
+
+  const mockChallenge = {
+    task: labInput.task,
+    steps: labInput.steps,
+    wrongStep: labInput.wrongStep,
+    explanation: 'По теореме Виета сумма +7.',
+    repair: 'x₁ + x₂ = 7, x₁ × x₂ = 10 → x = 5',
+    hints: ['Проверь знак суммы.']
+  };
+  const previewPre = buildLabDiagnosePreview(labInput, mockChallenge);
+  assert.equal(previewPre.diagnosis.includes('x₁ + x₂ = 7, x₁ × x₂ = 10 → x = 5'), false);
+
+  const previewPost = buildLabDiagnosePreview({ ...labInput, stepFound: true }, mockChallenge);
+  assert.ok(previewPost.stepCheck.includes('x₁ + x₂ = 7, x₁ × x₂ = 10 → x = 5'));
 });
 
 test('provider errors never expose upstream details or secrets', async () => {

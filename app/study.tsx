@@ -1,204 +1,245 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { z } from "zod";
-import { BookOpen, CheckCircle2, Compass, FlaskConical, Lightbulb, RotateCcw, Sparkles } from "lucide-react";
+import { BookOpen, CheckCircle2, Compass, FlaskConical, RotateCcw, Sparkles } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { lessons, untTopicIds, type Language, type TopicId } from "@/lib/lessons";
-import { buildBaselineRoadmap, progressSchema, topicName, type Progress } from "@/lib/error-lab";
+import {
+  buildBaselineRoadmap,
+  checkAnswer,
+  makeChallenge,
+  parseNumericAnswer,
+  progressSchema,
+  topicName,
+  type Progress
+} from "@/lib/error-lab";
 
-const copyBase = {
+const copy = {
   ru: {
-    eyebrow: "Математика ЕНТ (ҰБТ) • Диагностическая платформа 18+",
-    title: "Не заучивай. Разберись в логике каждого шага.",
-    sub: "10 разделов спецификации ЕНТ (Математическая грамотность и Профильная математика), интерактивная лаборатория ошибок и персональный роадмап на базе Claude.",
-    note: "Вместо выдачи готового ответа система учит находить место поломки в решении и переносить правило на новую задачу.",
-    topics: "Программа ЕНТ (10 тем)",
+    eyebrow: "Математика ЕНТ (ҰБТ) · 10 тем · 18+",
+    title: "Понимай каждый шаг решения, а не заучивай ответы.",
+    sub: "Разбери правило и пример, проверь себя в практике или найди ошибку в готовом решении в Лаборатории.",
+    openLab: "Лаборатория ошибок →",
+    topics: "Темы ЕНТ (10)",
+    mobileTopicLabel: "Тема урока",
     lesson: "Объяснение",
     practice: "Практика (3)",
-    ai: "Спросить Claude",
-    roadmapTab: "Роадмап ЕНТ (AI)",
-    rule: "Инвариант и ключевое правило",
-    example: "Эталонный разбор задачи ЕНТ",
-    hint: "Сначала объясни каждый переход своими словами, затем проверь себя в практике или лаборатории ошибок.",
+    ai: "Разобрать вопрос",
+    roadmapTab: "Мой план",
+    rule: "Ключевое правило и инвариант",
+    example: "Пошаговый разбор примера",
+    hint: "Проверь каждый шаг своим устным объяснением, затем переходи к практике или в Лабораторию ошибок.",
     check: "Проверить ответы",
-    reset: "Пройти заново",
+    retryWrong: "Исправить ошибки",
+    showSolutions: "Показать разбор всех вопросов",
+    reset: "Сбросить тест",
     correct: "Верно",
-    wrong: "Разберём ошибку",
-    result: "Ваш результат",
-    choose: "Ответьте на все три контрольных вопроса.",
-    session: "Ответы хранятся только в памяти текущей вкладки.",
-    aiTitle: "Сократический разбор темы с Claude",
-    aiSub: "Claude объясняет выбранный раздел ЕНТ с опорой на эталонное правило урока и даёт наводящую подсказку без спойлера ответов теста.",
-    question: "Ваш вопрос по теме урока",
+    wrong: "Пока неверно — проверь условие и знак перехода",
+    result: "Результат",
+    choose: "Ответьте на все три вопроса, чтобы проверить себя.",
+    session: "Ответы хранятся только в открытой вкладке.",
+    transferTitle: "Дополнительная задача с новыми числами",
+    transferSub: "Реши задачу по правилу темы (генерируются 24 варианта с разными числами).",
+    transferCheck: "Проверить число",
+    transferNext: "Новые числа →",
+    transferRight: "Верно! Правило применено точно.",
+    transferWrong: "Ответ пока не совпал. Проверь вычисления по правилу урока.",
+    transferInvalid: "Введите целое число, десятичную дробь или дробь вида 3/7.",
+    aiTitle: "Сократический разбор вопроса по теме",
+    aiSub: "Помощник объясняет выбранную тему с опорой на правило урока и задаёт наводящий вопрос без подсказки готового ответа.",
+    question: "Ваш вопрос по теме",
     placeholder: "Например: почему в теореме Виета сумма корней берётся с противоположным знаком?",
-    quickLabel: "Быстрый пример для проверки:",
+    quickLabel: "Подставить пример вопроса:",
     quickQuestions: [
       "Почему при переносе слагаемого через знак равенства меняется знак?",
-      "Как быстро проверить, не перепутаны ли формулы в этом разделе ЕНТ?",
-      "На каком шаге чаще всего теряют баллы в этой теме на ЕНТ?"
+      "Как быстро проверить, не перепутаны ли формулы в этой теме?",
+      "На каком шаге чаще всего теряют баллы в подобных задачах?"
     ],
     adult: "Мне исполнилось 18 лет.",
-    consent: "Согласен передать текст учебного запроса для генерации ответа. Не ввожу личные данные.",
+    consent: "Согласен отправить текст учебного вопроса для получения разбора. Не ввожу личные данные.",
     ask: "Получить разбор",
     loading: "Формируем разбор…",
-    pilot: "Режим проверки (Reviewer Demo): при активном ключе ANTHROPIC_API_KEY запрос идёт в живой Claude API (с лимитами D1), а до активации гранта возвращается детерминированный превью-ответ по схеме.",
-    read: "О проекте / Architecture (EN)",
-    privacy: "Данные и приватность",
-    foot: "BilimAI · 10 модулей ЕНТ · 720 сценариев в Лаборатории ошибок · Kazakh / Russian / Uzbek",
-    static: "Верифицированный учебный модуль · без галлюцинаций AI",
-    next: "Повтори шаги, где возникла ошибка, и попробуй снова.",
-    done: "Отлично! Переходи к следующей теме или открой Лабораторию ошибок.",
-    rmTitle: "Персональный роадмап подготовки к ЕНТ",
-    rmSub: "Базовый диагностический маршрут рассчитывается мгновенно по 10 темам ЕНТ, а Claude строит пошаговый недельный план под целевой балл.",
+    pilot: "Прозрачный статус ответа: при подключённом ключе сервера отображается живой ответ Claude API, в демо-режиме — структурный превью-разбор по правилу урока.",
+    read: "О проекте",
+    privacy: "Приватность",
+    foot: "BilimAI · 10 тем ЕНТ · 240 упражнений на каждом языке (RU / KK / UZ)",
+    static: "Выверенные правила и примеры по 10 темам",
+    next: "Можно исправить неверные ответы или открыть полный разбор.",
+    done: "Все ответы верны! Попробуй задачу с новыми числами ниже или переходи в Лабораторию ошибок.",
+    rmTitle: "Учебный план подготовки к ЕНТ",
+    rmSub: "Приоритет тем рассчитывается по вашим самостоятельным решениям в Лаборатории ошибок и выбранной цели.",
     rmTarget: "Целевой балл ЕНТ (из 50)",
     rmWeeks: "Недель до экзамена",
-    rmWeak: "Приоритетные темы для проработки",
-    rmGoal: "Ваша цель и основные трудности",
+    rmWeak: "Темы, вызывающие трудности",
+    rmConsolidation: "Базово закреплено (≥2 самостоятельных задач в /lab)",
+    rmConsolidationEmpty: "Пока нет закреплённых тем — решите по 2 задачи без подсказок в Лаборатории ошибок.",
+    rmGoal: "Цель и главная трудность",
     rmGoalPlaceholder: "Например: путаю знаки в тригонометрии и формулы объёмов пирамиды, нужно набрать 42+ за 6 недель",
     rmPresets: [
-      "Цель 45/50 за 6 недель (ИТ): путаю знаки в теореме Виета, логарифмах и тригонометрии",
+      "Цель 45/50 за 6 недель: путаю знаки в теореме Виета, логарифмах и тригонометрии",
       "Цель 38/50 за 4 недели: нужно подтянуть производную, площади и объёмы фигур"
     ],
-    rmGenerate: "Сформировать персональный роадмап",
-    rmBaseTitle: "Базовый диагностический маршрут (детерминированный расчёт)",
-    rmPhase1: "Фаза 1 (недели 1–2): закрытие критических пробелов",
-    rmPhase2: "Фаза 2 (недели 3+): закрепление и перенос навыка",
-    rmClaudeTitle: "Персональный учебный план",
-    rmMilestones: "План по неделям",
-    rmHabit: "Ежедневный ритуал подготовки",
+    rmGenerate: "Составить персональный план",
+    rmBaseTitle: "Рекомендуемая очерёдность тем",
+    rmPhase1: "Этап 1 (недели 1–2): закрытие пробелов",
+    rmPhase2: "Этап 2 (недели 3+): закрепление и перенос навыка",
+    rmClaudeTitle: "Персональный план по неделям",
+    rmMilestones: "Шаги по неделям",
+    rmHabit: "Режим занятий",
     badgeLive: "Claude API · Живой ответ",
-    badgePreview: "Structured Preview · Демо-режим (до активации ключей гранта)"
+    badgePreview: "Демо-режим · Структурный превью-ответ"
+  },
+  kk: {
+    eyebrow: "ҰБТ Математика · 10 тақырып · 18+",
+    title: "Дайын жауапты жаттамай, әр қадамның логикасын түсін.",
+    sub: "Ереже мен мысалды талдап, жаттығуда өзіңді тексер немесе Қателер зертханасында дайын шешімдегі қатені тап.",
+    openLab: "Қателер зертханасы →",
+    topics: "ҰБТ тақырыптары (10)",
+    mobileTopicLabel: "Сабақ тақырыбы",
+    lesson: "Түсіндіру",
+    practice: "Жаттығу (3)",
+    ai: "Сұрақты талдау",
+    roadmapTab: "Менің жоспарым",
+    rule: "Негізгі ереже мен инвариант",
+    example: "Мысалды қадамдап талдау",
+    hint: "Әр қадамды өз сөзіңізбен түсіндіріп көріңіз, содан кейін жаттығуға немесе Қателер зертханасына өтіңіз.",
+    check: "Жауаптарды тексеру",
+    retryWrong: "Қателерді түзету",
+    showSolutions: "Барлық сұрақтың талдауын көрсету",
+    reset: "Тестті қайта бастау",
+    correct: "Дұрыс",
+    wrong: "Әзірше қате — шарт пен таңбаны тексеріңіз",
+    result: "Нәтиже",
+    choose: "Өзіңізді тексеру үшін үш сұраққа да жауап беріңіз.",
+    session: "Жауаптар тек ашық бетте сақталады.",
+    transferTitle: "Жаңа сандармен қосымша есеп",
+    transferSub: "Тақырып ережесі бойынша есепті шығарыңыз (24 түрлі нұсқа).",
+    transferCheck: "Санды тексеру",
+    transferNext: "Жаңа сандар →",
+    transferRight: "Дұрыс! Ереже дәл қолданылды.",
+    transferWrong: "Жауап сәйкес келмеді. Сабақ ережесі бойынша есептеуді тексеріңіз.",
+    transferInvalid: "Бүтін сан, ондық бөлшек немесе 3/7 түріндегі бөлшек енгізіңіз.",
+    aiTitle: "Тақырып бойынша сұрақты сократтық талдау",
+    aiSub: "Көмекші таңдалған тақырыпты сабақ ережесіне сүйеніп түсіндіреді және дайын жауапты айтпай бағыттаушы сұрақ қояды.",
+    question: "Тақырып бойынша сұрағыңыз",
+    placeholder: "Мысалы: Виет теоремасында түбірлер қосындысы неге қарама-қарсы таңбамен алынады?",
+    quickLabel: "Сұрақ үлгісін қою:",
+    quickQuestions: [
+      "Теңдеудің бір жағынан екінші жағына шығарғанда таңба неге өзгереді?",
+      "Осы бөлімдегі формулаларды шатастырмау үшін нені есте сақтау керек?",
+      "Осындай есептерде көбіне қай қадамда қателеседі?"
+    ],
+    adult: "Мен 18 жасқа толдым.",
+    consent: "Талдау алу үшін оқу сұрағымды жіберуге келісемін. Жеке деректерді енгізбеймін.",
+    ask: "Талдауды алу",
+    loading: "Талдау дайындалып жатыр…",
+    pilot: "Жауап мәртебесі ашық көрсетіледі: сервер кілті қосылғанда тікелей Claude API жауабы, ал демо-режимде сабақ ережесіне негізделген құрылымдық превью беріледі.",
+    read: "Жоба туралы",
+    privacy: "Құпиялық",
+    foot: "BilimAI · 10 ҰБТ тақырыбы · Әр тілде 240 жаттығу (RU / KK / UZ)",
+    static: "10 тақырып бойынша тексерілген ережелер мен мысалдар",
+    next: "Қате жауаптарды түзетуге немесе толық талдауды ашуға болады.",
+    done: "Барлық жауап дұрыс! Төмендегі жаңа сандармен есепті шығарып көріңіз немесе Қателер зертханасына өтіңіз.",
+    rmTitle: "ҰБТ-ға дайындықтың оқу жоспары",
+    rmSub: "Тақырыптар басымдығы Қателер зертханасындағы өздік шешімдеріңіз бен мақсатты балға қарай есептеледі.",
+    rmTarget: "Мақсатты ҰБТ балы (50-ден)",
+    rmWeeks: "Емтиханға дейінгі апта саны",
+    rmWeak: "Қиындық тудыратын тақырыптар",
+    rmConsolidation: "Базалық деңгейде бекітілді (/lab ішінде ≥2 өздік есеп)",
+    rmConsolidationEmpty: "Әзірше бекітілген тақырып жоқ — Қателер зертханасында көмексіз 2 есептен шығарыңыз.",
+    rmGoal: "Мақсатыңыз және негізгі қиындық",
+    rmGoalPlaceholder: "Мысалы: тригонометрия мен пирамида көлемінде қателесемін, 6 аптада 42+ балл жинау керек",
+    rmPresets: [
+      "6 аптада 45/50 балл: Виет теоремасы, логарифм және тригонометрияда таңба қателері",
+      "4 аптада 38/50 балл: туынды, планиметрия аудандары және пирамида көлемі"
+    ],
+    rmGenerate: "Жеке жоспар құру",
+    rmBaseTitle: "Ұсынылатын тақырыптар реті",
+    rmPhase1: "1-кезең (1–2 апта): негізгі олқылықтарды жою",
+    rmPhase2: "2-кезең (3+ апта): бекіту және дағдыны тексеру",
+    rmClaudeTitle: "Апталық жеке жоспар",
+    rmMilestones: "Апталық қадамдар",
+    rmHabit: "Дайындық тәртібі",
+    badgeLive: "Claude API · Тікелей жауап",
+    badgePreview: "Демо-режим · Құрылымдық превью"
   },
   uz: {
-    eyebrow: "Matematika (UBT / Milliy sertifikat) • 18+ diagnostik platforma",
-    title: "Yodlama. Har bir qadam mantiqini tushunib ol.",
-    sub: "Imtihon dasturidagi 10 ta asosiy bo‘lim, interaktiv xatolar laboratoriyasi va Claude asosidagi shaxsiy o‘quv rejasi.",
-    note: "Tayyor javobni berish o‘rniga tizim yechimdagi xato qadamni topishga va qoidani yangi masalada qo‘llashga o‘rgatadi.",
-    topics: "Dastur bo‘limlari (10 mavzu)",
+    eyebrow: "Matematika · 10 ta mavzu · 18+",
+    title: "Javobni yodlama, har bir qadam mantiqini tushunib ol.",
+    sub: "Qoida va namunani tahlil qiling, mashqda o‘zingizni sinang yoki Xatolar laboratoriyasida yechimdagi xatoni toping.",
+    openLab: "Xatolar laboratoriyasi →",
+    topics: "Dastur mavzulari (10)",
+    mobileTopicLabel: "Dars mavzusi",
     lesson: "Tushuntirish",
     practice: "Mashq (3)",
-    ai: "Claude’dan so‘rash",
-    roadmapTab: "O‘quv rejasi (AI)",
+    ai: "Savolni tahlil qilish",
+    roadmapTab: "Mening rejam",
     rule: "Asosiy qoida va invariant",
-    example: "Namuna asosida qadam-baqadam tahlil",
-    hint: "Har bir qadamni o‘z so‘zlaringiz bilan tushuntiring, keyin mashq yoki xatolar laboratoriyasida sinab ko‘ring.",
+    example: "Namunani qadam-baqadam tahlil qilish",
+    hint: "Har bir qadamni o‘z so‘zlaringiz bilan tushuntiring, keyin mashq yoki Xatolar laboratoriyasiga o‘ting.",
     check: "Javoblarni tekshirish",
-    reset: "Qayta boshlash",
+    retryWrong: "Xatolarni tuzatish",
+    showSolutions: "Barcha savollar tahlilini ko‘rsatish",
+    reset: "Testni qayta boshlash",
     correct: "To‘g‘ri",
-    wrong: "Xatoni tahlil qilamiz",
-    result: "Natijangiz",
-    choose: "Uchala nazorat savoliga javob bering.",
-    session: "Javoblar faqat joriy sahifa yopilguncha saqlanadi.",
-    aiTitle: "Claude bilan Sokratik tahlil",
-    aiSub: "Claude tanlangan mavzuni dars qoidasiga tayangan holda tushuntiradi va tayyor test javobini aytmasdan yo‘naltiruvchi maslahat beradi.",
+    wrong: "Hozircha noto‘g‘ri — shart va ishorani tekshiring",
+    result: "Natija",
+    choose: "O‘zingizni tekshirish uchun uchala savolga javob bering.",
+    session: "Javoblar faqat ochiq sahifada saqlanadi.",
+    transferTitle: "Yangi sonlar bilan qo‘shimcha masala",
+    transferSub: "Mavzu qoidasi asosida masalani yeching (24 хил variant).",
+    transferCheck: "Sonni tekshirish",
+    transferNext: "Yangi sonlar →",
+    transferRight: "To‘g‘ri! Qoida aniq qo‘llanildi.",
+    transferWrong: "Javob mos kelmadi. Dars qoidasi bo‘yicha hisobni tekshiring.",
+    transferInvalid: "Butun son, o‘nli kasr yoki 3/7 shaklidagi kasr kiriting.",
+    aiTitle: "Mavzu bo‘yicha savolning Sokratik tahlili",
+    aiSub: "Yordamchi tanlangan mavzuni dars qoidasiga tayangan holda tushuntiradi va tayyor javobni aytmasdan yo‘naltiruvchi savol beradi.",
     question: "Mavzu bo‘yicha savolingiz",
     placeholder: "Masalan: nega Viyet teoremasida ildizlar yig‘indisi qarama-qarshi ishora bilan olinadi?",
-    quickLabel: "Tekshirish uchun tezkor savol:",
+    quickLabel: "Savol namunasini qo‘yish:",
     quickQuestions: [
       "Nega hadni tenglikning boshqa tomoniga o‘tkazganda ishora o‘zgaradi?",
       "Shu bo‘limdagi formulalarni adashtirmaslik uchun nimaga e’tibor berish kerak?",
-      "Imtihonda bu mavzuda ko‘пинча qaysi qadamda xato qilinadi?"
+      "Bunday masalalarda ko‘pincha qaysi qadamda xato qilinadi?"
     ],
     adult: "Men 18 yoshga to‘lganman.",
-    consent: "Javob olish uchun o‘quv so‘rovimni yuborishga roziman. Shaxsiy ma’lumot kiritmayman.",
+    consent: "Tahlil olish uchun o‘quv savolimni yuborishga roziman. Shaxsiy ma’lumot kiritmayman.",
     ask: "Tushuntirish olish",
     loading: "Javob tayyorlanmoqda…",
-    pilot: "Ko‘rib chiqish rejimi (Reviewer Demo): ANTHROPIC_API_KEY yoqilganda so‘rov jonli Claude API’ga boradi, grant aktivatsiyasigacha esa sxema bo‘yicha deterministik prevyu qaytariladi.",
-    read: "Loyiha haqida / EN",
-    privacy: "Ma’lumotlar va maxfiylik",
-    foot: "BilimAI · 10 ta bo‘lim · 720 ta xato tahlili ssenariysi · KK / RU / UZ",
-    static: "Tekshirilgan o‘quv moduli · AI gallyutsinatsiyasisiz",
-    next: "Xato qadamlarni takrorlang va testni yana bajaring.",
-    done: "Ajoyib! Keyingi mavzuga o‘ting yoki Xatolar laboratoriyasini oching.",
-    rmTitle: "Imtihonga tayyorgarlik shaxsiy роадмапи",
-    rmSub: "10 ta bo‘lim bo‘yicha bazaviy diagnostika darhol ishlaydi, Claude esa maqsadingizga mos haftalik reja tuzib beradi.",
+    pilot: "Javob holati ochiq ko‘rsatiladi: server kaliti yoqilganda jonli Claude API javobi, demo rejimda esa dars qoidasi asosida tuzilgan prevyu qaytariladi.",
+    read: "Loyiha haqida",
+    privacy: "Maxfiylik",
+    foot: "BilimAI · 10 ta mavzu · Har bir tilda 240 ta mashq (RU / KK / UZ)",
+    static: "10 ta mavzu bo‘yicha tekshirilgan qoida va namunalar",
+    next: "Noto‘g‘ri javoblarni tuzatish yoki to‘liq tahlilni ochish mumkin.",
+    done: "Barcha javoblar to‘g‘ri! Quyidagi yangi sonlar bilan masalani yechib ko‘ring yoki Xatolar laboratoriyasiga o‘ting.",
+    rmTitle: "Imtihonga tayyorgarlik o‘quv rejasi",
+    rmSub: "Mavzular ustuvorligi Xatolar laboratoriyasidagi mustaqil yechimlaringiz va maqsadli ball asosida hisoblanadi.",
     rmTarget: "Maqsadli ball (50 dan)",
     rmWeeks: "Imtihongacha haftalar soni",
-    rmWeak: "Kuchaytirish kerak bo‘lgan mavzular",
+    rmWeak: "Qiyinchilik tug‘diradigan mavzular",
+    rmConsolidation: "Bazaviy mustahkamlangan (/lab ichida ≥2 mustaqil masala)",
+    rmConsolidationEmpty: "Hozircha mustahkamlangan mavzu yo‘q — Xatolar laboratoriyasida yordamsiz 2 tadan masala yeching.",
     rmGoal: "Maqsadingiz va asosiy qiyinchilik",
     rmGoalPlaceholder: "Masalan: logarifm va hosilada xato qilaman, 6 haftada 42+ ball yig‘ishim kerak",
     rmPresets: [
       "6 haftada 45/50 ball: Viyet teoremasi, logarifm va trigonometriyada ishora xatolari",
       "4 haftada 38/50 ball: hosila hamda geometrik yuzalar va hajmlar"
     ],
-    rmGenerate: "Shaxsiy o‘quv rejasini tuzish",
-    rmBaseTitle: "Bazaviy diagnostik yo‘nalish (deterministik hisob)",
+    rmGenerate: "Shaxsiy rejani tuzish",
+    rmBaseTitle: "Tavsiya etilgan mavzular tartibi",
     rmPhase1: "1-bosqich (1–2 hafta): asosiy bo‘shliqlarni yopish",
     rmPhase2: "2-bosqich (3+ hafta): mustahkamlash va ko‘nikmani tekshirish",
-    rmClaudeTitle: "Shaxsiy o‘quv rejasi",
-    rmMilestones: "Haftalik bosqichlar",
-    rmHabit: "Kunlik tayyorgarlik odati",
+    rmClaudeTitle: "Haftalik shaxsiy o‘quv rejasi",
+    rmMilestones: "Haftalik qadamlar",
+    rmHabit: "Kunlik tayyorgarlik tartibi",
     badgeLive: "Claude API · Jonli javob",
-    badgePreview: "Structured Preview · Demo rejim (grant API kaliti ulangunga qadar)"
-  }
-};
-
-const copy = {
-  ...copyBase,
-  kk: {
-    eyebrow: "ҰБТ Математика • 18+ диагностикалық платформа",
-    title: "Жаттама. Әр қадамның логикасын түсініп ал.",
-    sub: "ҰБТ спецификациясының 10 негізгі бөлімі (Мат. сауаттылық және Бейіндік математика), интерактивті қателер зертханасы және Claude негізіндегі жеке роадмап.",
-    note: "Дайын жауапты бере салудың орнына жүйе шешімдегі қате қадамды табуға және ережені жаңа есепте қолдануға үйретеді.",
-    topics: "ҰБТ бағдарламасы (10 тақырып)",
-    lesson: "Түсіндіру",
-    practice: "Жаттығу (3)",
-    ai: "Claude-тан сұрау",
-    roadmapTab: "ҰБТ Роадмап (AI)",
-    rule: "Негізгі ереже мен инвариант",
-    example: "ҰБТ есебін қадамдап талдау",
-    hint: "Әр қадамды өз сөзіңізбен түсіндіріңіз, содан кейін жаттығуда немесе қателер зертханасында өзіңізді тексеріңіз.",
-    check: "Жауаптарды тексеру",
-    reset: "Қайта бастау",
-    correct: "Дұрыс",
-    wrong: "Қатені талдайық",
-    result: "Нәтижеңіз",
-    choose: "Үш бақылау сұрағының бәріне жауап беріңіз.",
-    session: "Жауаптар тек осы бет жабылғанға дейін сақталады.",
-    aiTitle: "Claude-пен сократтық талдау",
-    aiSub: "Claude таңдалған ҰБТ тақырыбын сабақ ережесіне сүйеніп, дайын тест жауабын айтпай қадамдап түсіндіреді.",
-    question: "Тақырып бойынша сұрағыңыз",
-    placeholder: "Мысалы: Виет теоремасында түбірлер қосындысы неге қарама-қарсы таңбамен алынады?",
-    quickLabel: "Тексеруге арналған дайын сұрақтар:",
-    quickQuestions: [
-      "Теңдеудің бір жағынан екінші жағына шығарғанда таңба неге өзгереді?",
-      "Осы бөлімдегі формулаларды шатастырмау үшін нені есте сақтау керек?",
-      "ҰБТ-да осы тақырыпта көбіне қай қадамда ұпай жоғалтады?"
-    ],
-    adult: "Мен 18 жасқа толдым.",
-    consent: "Жауап алу үшін оқу сұранысымды жіберуге келісемін. Жеке деректерді енгізбеймін.",
-    ask: "Талдауды алу",
-    loading: "Талдау дайындалып жатыр…",
-    pilot: "Тексеру режимі (Reviewer Demo): ANTHROPIC_API_KEY қосылғанда сұраныс тікелей Claude API-ға жіберіледі, ал грант белсендірілгенге дейін схема бойынша детерминирленген превью қайтарылады.",
-    read: "Жоба туралы / Architecture (EN)",
-    privacy: "Деректер және құпиялық",
-    foot: "BilimAI · ҰБТ 10 бөлімі · 720 қате талдау сценарийі · KK / RU / UZ",
-    static: "Тексерілген оқу модулі · AI галлюцинациясыз",
-    next: "Қате кеткен қадамдарды қайталап, тестті қайта өтіңіз.",
-    done: "Керемет! Келесі тақырыпқа өтіңіз немесе Қателер зертханасын ашыңыз.",
-    rmTitle: "ҰБТ-ға дайындықтың жеке роадмапы",
-    rmSub: "10 тақырып бойынша базалық диагностикалық бағыт бірден құрылады, ал Claude мақсатты балға сай апталық жоспар жасайды.",
-    rmTarget: "Мақсатты ҰБТ балы (50-ден)",
-    rmWeeks: "Емтиханға дейінгі апта саны",
-    rmWeak: "Күшейтуді қажет ететін тақырыптар",
-    rmGoal: "Мақсатыңыз және қиындық тудыратын есептер",
-    rmGoalPlaceholder: "Мысалы: тригонометрия мен пирамида көлемінде қателесемін, 6 аптада 42+ балл жинау керек",
-    rmPresets: [
-      "6 аптада 45/50 балл (АТ): Виет теоремасы, логарифм және тригонометрияда таңба қателері",
-      "4 аптада 38/50 балл: туынды, планиметрия аудандары және пирамида көлемі"
-    ],
-    rmGenerate: "Жеке роадмап құру",
-    rmBaseTitle: "Базалық диагностикалық бағыт (детерминирленген есеп)",
-    rmPhase1: "1-кезең (1–2 апта): негізгі олқылықтарды жою",
-    rmPhase2: "2-кезең (3+ апта): бекіту және дағдыны тексеру",
-    rmClaudeTitle: "Жеке оқу жоспары",
-    rmMilestones: "Апталық қадамдар",
-    rmHabit: "Күнделікті дайындық әдеті",
-    badgeLive: "Claude API · Тікелей жауап",
-    badgePreview: "Structured Preview · Демо-режим (грант кілті қосылғанға дейін)"
+    badgePreview: "Demo rejim · Tuzilgan prevyu"
   }
 };
 
@@ -225,10 +266,15 @@ export default function Study() {
   const [tab, setTab] = useState("lesson");
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
+  const [showExplanations, setShowExplanations] = useState(false);
+
+  const [practiceSeed, setPracticeSeed] = useState(0);
+  const [transferInput, setTransferInput] = useState("");
+  const [transferStatus, setTransferStatus] = useState<"" | "right" | "wrong" | "invalid">("");
 
   const [question, setQuestion] = useState("");
-  const [adult, setAdult] = useState(true);
-  const [consent, setConsent] = useState(true);
+  const [adult, setAdult] = useState(false);
+  const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [answer, setAnswer] = useState<{ explanation: string; hint: string; source?: string } | null>(null);
@@ -244,31 +290,36 @@ export default function Study() {
 
   const controller = useRef<AbortController | null>(null);
   const generation = useRef(0);
+  const current = useRef({ topic, language: lang });
 
   const lesson = lessons[lang].find((l) => l.id === topic)!;
   const t = copy[lang];
   const score = lesson.questions.filter((q, i) => answers[i] === String(q.correct)).length;
   const baseline = buildBaselineRoadmap(labProgress, targetScore, weeksLeft, lang);
+  const transferChallenge = makeChallenge(topic, practiceSeed, lang);
 
-  const current = useRef({ topic, language: lang });
-  current.current = { topic, language: lang };
+  useEffect(() => {
+    current.current = { topic, language: lang };
+  }, [topic, lang]);
 
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("bilimai-lab-v1");
-      if (raw) {
-        const parsed = progressSchema.safeParse(JSON.parse(raw));
-        if (parsed.success) {
-          setLabProgress(parsed.data);
-          const autoBase = buildBaselineRoadmap(parsed.data, 42, 6, "ru");
-          setWeakTopics(autoBase.weakTopics);
+    queueMicrotask(() => {
+      try {
+        const raw = localStorage.getItem("bilimai-lab-v1");
+        if (raw) {
+          const parsed = progressSchema.safeParse(JSON.parse(raw));
+          if (parsed.success) {
+            setLabProgress(parsed.data);
+            const autoBase = buildBaselineRoadmap(parsed.data, 42, 6, "ru");
+            setWeakTopics(autoBase.weakTopics);
+          }
         }
-      }
-    } catch {}
+      } catch {}
+    });
   }, []);
 
   useEffect(() => {
@@ -306,18 +357,18 @@ export default function Study() {
         ? {
             quota: "Лимит запросов пилота исчерпан. Продолжите с готовыми материалами.",
             origin: "Неверный источник запроса.",
-            input: "Проверьте корректность заполнения полей и галочек согласия."
+            input: "Проверьте заполнение вопроса и отметьте оба пункта согласия."
           }
         : lang === "kk"
           ? {
               quota: "Сынақ лимиті аяқталды. Дайын сабақтарды жалғастырыңыз.",
               origin: "Сұраныс көзі қате.",
-              input: "Өрістердің дұрыс толтырылғанын тексеріңіз."
+              input: "Сұрақтың толтырылуын және келісім белгілерін тексеріңіз."
             }
           : {
               quota: "Sinov limiti tugadi. Tayyor darslarni davom ettiring.",
               origin: "So‘rov manbasi noto‘g‘ri.",
-              input: "Maydonlar to‘g‘ri to‘ldirilganini tekshiring."
+              input: "Savol maydoni va rozilik belgilari qo‘yilganini tekshiring."
             };
     return (
       codes[code ?? ""] ??
@@ -334,6 +385,9 @@ export default function Study() {
     controller.current?.abort();
     setAnswers({});
     setChecked(false);
+    setShowExplanations(false);
+    setTransferInput("");
+    setTransferStatus("");
     setAnswer(null);
     setError("");
     setBusy(false);
@@ -350,6 +404,30 @@ export default function Study() {
     reset();
     setRmError("");
     setLang(value);
+  }
+
+  function retryWrongAnswers() {
+    const nextAnswers: Record<number, string> = {};
+    lesson.questions.forEach((q, idx) => {
+      if (answers[idx] === String(q.correct)) {
+        nextAnswers[idx] = answers[idx];
+      }
+    });
+    setAnswers(nextAnswers);
+    setChecked(false);
+    setShowExplanations(false);
+  }
+
+  function checkTransfer() {
+    if (parseNumericAnswer(transferInput) === null) {
+      setTransferStatus("invalid");
+      return;
+    }
+    if (checkAnswer(transferInput, transferChallenge.answer)) {
+      setTransferStatus("right");
+    } else {
+      setTransferStatus("wrong");
+    }
   }
 
   function toggleWeakTopic(id: TopicId) {
@@ -438,81 +516,60 @@ export default function Study() {
   return (
     <>
       <header className="wrap top">
-        <a className="brand" href="/">
-          <img src="/favicon.svg" alt="" />
-          BilimAI <span className="beta">UNT · ҰБТ · 10 ТЕМ</span>
-        </a>
+        <Link className="brand" href="/">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="#175cd3" />
+            <path d="M9 10h8.5a4.5 4.5 0 0 1 0 9H9V10zm0 9h9.5a4.5 4.5 0 0 1 0 9H9v-9z" fill="#fff" fillOpacity="0.92" />
+          </svg>
+          BilimAI <span className="beta">ЕНТ · ҰБТ</span>
+        </Link>
         <nav className="topnav" aria-label="Навигация">
-          <a href={`/lab?lang=${lang}`}>
-            {lang === "ru" ? "Лаборатория ошибок (/lab)" : lang === "kk" ? "Қателер зертханасы (/lab)" : "Xatolar laboratoriyasi (/lab)"}
-          </a>
-          <a href="/about">{t.read}</a>
+          <Link href={`/lab?lang=${lang}`}>{t.openLab}</Link>
+          <Link href="/about">{t.read}</Link>
           <div className="flex gap-1" aria-label="Язык">
             <Button variant={lang === "ru" ? "default" : "ghost"} size="sm" aria-pressed={lang === "ru"} onClick={() => selectLanguage("ru")}>
-              Русский
+              RU
             </Button>
             <Button variant={lang === "kk" ? "default" : "ghost"} size="sm" aria-pressed={lang === "kk"} onClick={() => selectLanguage("kk")}>
-              Қазақша
+              KK
             </Button>
             <Button variant={lang === "uz" ? "default" : "ghost"} size="sm" aria-pressed={lang === "uz"} onClick={() => selectLanguage("uz")}>
-              O‘zbekcha
+              UZ
             </Button>
           </div>
         </nav>
       </header>
+
       <main className="wrap">
-        <section className="hero">
-          <div>
+        <section className="compact-hero">
+          <div className="compact-hero-text">
             <span className="eyebrow">{t.eyebrow}</span>
             <h1>{t.title}</h1>
             <p>{t.sub}</p>
           </div>
-          <div className="hero-note">
-            <Lightbulb size={22} className="mb-2 text-primary" />
-            {t.note}
-          </div>
+          <Link className="cta-pill" href={`/lab?lang=${lang}`}>
+            <FlaskConical size={16} />
+            {t.openLab}
+          </Link>
         </section>
 
-        <section className="stats-strip" aria-label="Показатели платформы">
-          <div className="stat-card">
-            <strong>10 модулей</strong>
-            <span>{lang === "ru" ? "Спецификация ЕНТ (Мат. грамотность + Профиль)" : lang === "kk" ? "ҰБТ спецификациясы (Мат. сауаттылық + Бейін)" : "Imtihon dasturining 10 ta asosiy bo‘limi"}</span>
-          </div>
-          <div className="stat-card">
-            <strong>720 сценариев</strong>
-            <span>{lang === "ru" ? "Поиск первого неверного шага и перенос навыка" : lang === "kk" ? "Алғашқы қате қадамды табу және жаңа есеп" : "Birinchi xato qadamni topish va yangi masala"}</span>
-          </div>
-          <div className="stat-card">
-            <strong>KK · RU · UZ</strong>
-            <span>{lang === "ru" ? "Полная синхронизация формул на 3 языках" : lang === "kk" ? "Үш тілдегі синхрондалған математикалық база" : "Uch tilda sinxronlashtirilgan matematik baza"}</span>
-          </div>
-          <div className="stat-card">
-            <strong>3 AI-контура</strong>
-            <span>{lang === "ru" ? "Сократический разбор, Роадмап ЕНТ и Диагностика в /lab" : lang === "kk" ? "Сократтық түсіндіру, ҰБТ Роадмап және /lab диагностикасы" : "Sokratik tahlil, O‘quv rejasi va /lab diagnostikasi"}</span>
-          </div>
-        </section>
-
-        <section className="lab-launch">
-          <div>
-            <strong>
-              {lang === "ru"
-                ? "Лаборатория ошибок ЕНТ (/lab): найди сломанный шаг в решении и получи AI-диагностику"
-                : lang === "kk"
-                  ? "ҰБТ қателер зертханасы (/lab): шешімдегі қате қадамды тап және AI-талдау ал"
-                  : "Xatolar laboratoriyasi (/lab): yechimdagi xato qadamni top va AI-diagnostika ol"}
-            </strong>
-            <span className="small">
-              {lang === "ru"
-                ? "240 задач на каждом языке + встроенный разбор ошибки от Claude AI и интервальное повторение 2/7 дней."
-                : lang === "kk"
-                  ? "Әр тілде 240 есеп + Claude AI қате талдауы және 2/7 күндік қайталау кестесі."
-                  : "Har bir tilda 240 masala + Claude AI xato tahlili va 2/7 kunlik takrorlash rejasi."}
-            </span>
-          </div>
-          <a href={`/lab?lang=${lang}`}>
-            {lang === "ru" ? "Открыть Лабораторию →" : lang === "kk" ? "Зертхананы ашу →" : "Laboratoriyani ochish →"}
-          </a>
-        </section>
+        <div className="mobile-topic-bar">
+          <label htmlFor="mobile-lesson-select" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {t.mobileTopicLabel}
+          </label>
+          <select
+            id="mobile-lesson-select"
+            className="mobile-topic-select"
+            value={topic}
+            onChange={(e) => selectTopic(e.target.value as TopicId)}
+          >
+            {lessons[lang].map((l, idx) => (
+              <option key={l.id} value={l.id}>
+                {String(idx + 1).padStart(2, "0")}. {l.title} ({l.section})
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="workspace">
           <aside className="topics">
@@ -532,7 +589,7 @@ export default function Study() {
               </button>
             ))}
             <div className="aside-note">
-              <BookOpen size={20} className="mb-2" />
+              <BookOpen size={18} className="mb-1.5" />
               {t.static}
             </div>
           </aside>
@@ -565,7 +622,7 @@ export default function Study() {
                   <strong>{t.rule}</strong>
                   {lesson.rule}
                 </div>
-                <h3 className="text-lg mt-6 font-bold">{t.example}</h3>
+                <h3 className="text-base mt-5 font-bold">{t.example}</h3>
                 <div className="equation">{lesson.example}</div>
                 <ol className="steps">
                   {lesson.steps.map((step, i) => (
@@ -582,56 +639,66 @@ export default function Study() {
                     <Sparkles size={15} />
                     {t.ai}
                   </Button>
-                  <Button variant="outline" onClick={() => setTab("roadmap")}>
-                    <Compass size={15} />
-                    {t.roadmapTab}
-                  </Button>
-                  <a className="small font-semibold ml-auto" href={`/lab?lang=${lang}`}>
+                  <Link className="small font-semibold ml-auto" href={`/lab?lang=${lang}`}>
                     <FlaskConical size={14} className="inline mr-1" />
-                    {lang === "ru" ? "Тренировать в /lab →" : lang === "kk" ? "Зертханада шыңдау →" : "Laboratoriyada ishlash →"}
-                  </a>
+                    {t.openLab}
+                  </Link>
                 </div>
               </TabsContent>
 
               <TabsContent value="practice">
                 <p className="small mb-2">{t.session}</p>
-                {lesson.questions.map((q, i) => (
-                  <div className="question" key={q.text}>
-                    <h3 id={`q${i}`}>
-                      {i + 1}. {q.text}
-                    </h3>
-                    <RadioGroup
-                      aria-labelledby={`q${i}`}
-                      value={answers[i] ?? ""}
-                      disabled={checked}
-                      onValueChange={(v) => setAnswers((prev) => ({ ...prev, [i]: v }))}
-                    >
-                      {q.options.map((option, j) => (
-                        <label className="option" key={option} data-selected={answers[i] === String(j)}>
-                          <RadioGroupItem value={String(j)} id={`q${i}a${j}`} />
-                          <span>{option}</span>
-                        </label>
-                      ))}
-                    </RadioGroup>
-                    {checked && (
-                      <div className={`feedback ${answers[i] !== String(q.correct) ? "wrong" : ""}`}>
-                        <strong>{answers[i] === String(q.correct) ? t.correct : t.wrong}. </strong>
-                        {q.why}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {lesson.questions.map((q, i) => {
+                  const isCorrect = answers[i] === String(q.correct);
+                  return (
+                    <div className="question" key={q.text}>
+                      <h3 id={`q${i}`}>
+                        {i + 1}. {q.text}
+                      </h3>
+                      <RadioGroup
+                        aria-labelledby={`q${i}`}
+                        value={answers[i] ?? ""}
+                        disabled={checked}
+                        onValueChange={(v) => setAnswers((prev) => ({ ...prev, [i]: v }))}
+                      >
+                        {q.options.map((option, j) => (
+                          <label className="option" key={option} data-selected={answers[i] === String(j)}>
+                            <RadioGroupItem value={String(j)} id={`q${i}a${j}`} />
+                            <span>{option}</span>
+                          </label>
+                        ))}
+                      </RadioGroup>
+                      {checked && (
+                        <div className={`feedback ${!isCorrect ? "wrong" : ""}`}>
+                          <strong>{isCorrect ? t.correct : t.wrong}. </strong>
+                          {(isCorrect || showExplanations) && <span>{q.why}</span>}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
                 <div className="actions">
                   {checked ? (
                     <>
                       <span role="status" className="score">
                         {t.result}: {score}/3
                       </span>
+                      {score < 3 && (
+                        <Button variant="default" onClick={retryWrongAnswers}>
+                          {t.retryWrong}
+                        </Button>
+                      )}
+                      {score < 3 && !showExplanations && (
+                        <Button variant="outline" onClick={() => setShowExplanations(true)}>
+                          {t.showSolutions}
+                        </Button>
+                      )}
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => {
                           setAnswers({});
                           setChecked(false);
+                          setShowExplanations(false);
                         }}
                       >
                         <RotateCcw size={16} />
@@ -645,13 +712,59 @@ export default function Study() {
                     </Button>
                   )}
                 </div>
-                <p className="small mt-3">{checked ? (score === 3 ? t.done : t.next) : t.choose}</p>
+                <p className="small mt-2">{checked ? (score === 3 ? t.done : t.next) : t.choose}</p>
+
+                <div className="callout mt-6">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <strong>{t.transferTitle}</strong>
+                    <span className="section-pill">#{practiceSeed + 1}/24</span>
+                  </div>
+                  <p className="small mt-1 mb-2">{t.transferSub}</p>
+                  <p className="lab-task my-2">{transferChallenge.transfer}</p>
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <input
+                      type="text"
+                      className="lab-input"
+                      value={transferInput}
+                      maxLength={40}
+                      placeholder={transferChallenge.unit || "0"}
+                      aria-label={t.transferTitle}
+                      onChange={(e) => {
+                        setTransferInput(e.target.value);
+                        setTransferStatus("");
+                      }}
+                    />
+                    <Button type="button" size="sm" disabled={!transferInput.trim()} onClick={checkTransfer}>
+                      {t.transferCheck}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setPracticeSeed((s) => (s + 1) % 24);
+                        setTransferInput("");
+                        setTransferStatus("");
+                      }}
+                    >
+                      {t.transferNext}
+                    </Button>
+                  </div>
+                  {transferStatus && (
+                    <p role="status" className={`feedback mt-2 ${transferStatus !== "right" ? "wrong" : ""}`}>
+                      {transferStatus === "right"
+                        ? `${t.transferRight} (${transferChallenge.solution})`
+                        : transferStatus === "invalid"
+                          ? t.transferInvalid
+                          : t.transferWrong}
+                    </p>
+                  )}
+                </div>
               </TabsContent>
 
               <TabsContent value="ai">
-                <h3 className="text-xl font-bold">{t.aiTitle}</h3>
-                <p className="small mb-4">{t.aiSub}</p>
-                <div className="callout mb-5">{t.pilot}</div>
+                <h3 className="text-lg font-bold">{t.aiTitle}</h3>
+                <p className="small mb-3">{t.aiSub}</p>
 
                 <div className="mb-3">
                   <span className="small font-semibold block mb-1">{t.quickLabel}</span>
@@ -663,8 +776,6 @@ export default function Study() {
                         className="quick-pill"
                         onClick={() => {
                           setQuestion(qq);
-                          setAdult(true);
-                          setConsent(true);
                         }}
                       >
                         {qq}
@@ -700,7 +811,7 @@ export default function Study() {
                   <label className="checkline">
                     <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
                     <span>
-                      {t.consent} <a href="/privacy">{t.privacy}</a>
+                      {t.consent} <Link href="/privacy">{t.privacy}</Link>
                     </span>
                   </label>
                   <div>
@@ -710,6 +821,7 @@ export default function Study() {
                     </Button>
                   </div>
                 </form>
+                <p className="small mt-3">{t.pilot}</p>
                 {error && (
                   <p role="alert" className="error">
                     {error}
@@ -721,17 +833,17 @@ export default function Study() {
                       {answer.source === "claude" ? t.badgeLive : t.badgePreview}
                     </div>
                     <p className="mt-1 mb-3">{answer.explanation}</p>
-                    <strong>{lang === "ru" ? "Наводящий вопрос (Сократическая подсказка):" : lang === "kk" ? "Бағыттаушы сұрақ:" : "Yo‘naltiruvchi savol:"}</strong>
+                    <strong>{lang === "ru" ? "Наводящий вопрос:" : lang === "kk" ? "Бағыттаушы сұрақ:" : "Yo‘naltiruvchi savol:"}</strong>
                     <p className="mt-1 mb-0">{answer.hint}</p>
                   </section>
                 )}
               </TabsContent>
 
               <TabsContent value="roadmap">
-                <h3 className="text-xl font-bold">{t.rmTitle}</h3>
-                <p className="small mb-4">{t.rmSub}</p>
+                <h3 className="text-lg font-bold">{t.rmTitle}</h3>
+                <p className="small mb-3">{t.rmSub}</p>
 
-                <div className="callout mb-5">
+                <div className="callout mb-4">
                   <strong>{t.rmBaseTitle}</strong>
                   <p className="small mt-1">
                     {lang === "ru"
@@ -740,6 +852,12 @@ export default function Study() {
                         ? `Мақсат: ${targetScore}/50 балл · Мерзімі: ${weeksLeft} апта · Аптасына: ~${baseline.topicsPerWeek} тақырып`
                         : `Maqsad: ${targetScore}/50 ball · Muddat: ${weeksLeft} hafta · Haftasiga: ~${baseline.topicsPerWeek} mavzu`}
                   </p>
+                  <p className="small font-semibold mt-2">{t.rmConsolidation}:</p>
+                  {baseline.masteredTopics.length === 0 ? (
+                    <p className="small m-0">{t.rmConsolidationEmpty}</p>
+                  ) : (
+                    <p className="small m-0">{baseline.masteredTopics.map((id) => topicName(id, lang)).join(", ")}</p>
+                  )}
                   <p className="small font-semibold mt-2">{t.rmPhase1}:</p>
                   <ul className="small list-disc pl-5">
                     {baseline.priorityModules
@@ -749,7 +867,7 @@ export default function Study() {
                           <button type="button" className="underline font-medium" onClick={() => selectTopic(m.topic)}>
                             {m.title}
                           </button>{" "}
-                          ({m.soloCount} solo)
+                          ({m.soloCount}/2)
                         </li>
                       ))}
                   </ul>
@@ -762,7 +880,7 @@ export default function Study() {
                           <button type="button" className="underline font-medium" onClick={() => selectTopic(m.topic)}>
                             {m.title}
                           </button>{" "}
-                          ({m.soloCount} solo)
+                          ({m.soloCount}/2)
                         </li>
                       ))}
                   </ul>
@@ -828,8 +946,6 @@ export default function Study() {
                           className="quick-pill"
                           onClick={() => {
                             setGoalNote(preset);
-                            setAdult(true);
-                            setConsent(true);
                           }}
                         >
                           {preset}
@@ -859,7 +975,7 @@ export default function Study() {
                   <label className="checkline">
                     <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
                     <span>
-                      {t.consent} <a href="/privacy">{t.privacy}</a>
+                      {t.consent} <Link href="/privacy">{t.privacy}</Link>
                     </span>
                   </label>
 
@@ -909,9 +1025,9 @@ export default function Study() {
       <footer className="wrap foot">
         <span>{t.foot}</span>
         <div>
-          <a href={`/lab?lang=${lang}`}>/lab</a>
-          <a href="/about">{t.read}</a>
-          <a href="/privacy">{t.privacy}</a>
+          <Link href={`/lab?lang=${lang}`}>{t.openLab}</Link>
+          <Link href="/about">{t.read}</Link>
+          <Link href="/privacy">{t.privacy}</Link>
         </div>
       </footer>
     </>

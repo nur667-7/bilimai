@@ -22,39 +22,39 @@ export type Challenge = {
 const topicTitles: Record<Language, Record<LabTopic, string>> = {
   ru: {
     linear: 'Линейные уравнения',
-    percent: 'Проценты и пропорции',
-    probability: 'Вероятность и комбинаторика',
+    percent: 'Проценты и скидки',
+    probability: 'Классическая вероятность',
     quadratic: 'Квадратные уравнения (Виет)',
-    progressions: 'Прогрессии (aₙ и Sₙ)',
-    functions: 'Степени и логарифмы',
-    trigonometry: 'Тригонометрия',
-    derivative: 'Производная и экстремумы',
-    planimetry: 'Планиметрия (площади)',
-    stereometry: 'Стереометрия (объёмы)'
+    progressions: 'Арифметическая прогрессия (aₙ)',
+    functions: 'Логарифмические уравнения',
+    trigonometry: 'Тригонометрические тождества',
+    derivative: 'Производная степенной функции',
+    planimetry: 'Площадь прямоугольного треугольника',
+    stereometry: 'Объём правильной пирамиды'
   },
   kk: {
     linear: 'Сызықтық теңдеулер',
-    percent: 'Пайыздар мен пропорциялар',
-    probability: 'Ықтималдық және комбинаторика',
+    percent: 'Пайыздар және жеңілдіктер',
+    probability: 'Классикалық ықтималдық',
     quadratic: 'Квадрат теңдеулер (Виет)',
-    progressions: 'Прогрессиялар (aₙ және Sₙ)',
-    functions: 'Дәрежелер мен логарифмдер',
-    trigonometry: 'Тригонометрия',
-    derivative: 'Туынды және экстремумдар',
-    planimetry: 'Планиметрия (аудандар)',
-    stereometry: 'Стереометрия (көлемдер)'
+    progressions: 'Арифметикалық прогрессия (aₙ)',
+    functions: 'Логарифмдік теңдеулер',
+    trigonometry: 'Тригонометриялық тепе-теңдіктер',
+    derivative: 'Дәрежелік функция туындысы',
+    planimetry: 'Тікбұрышты үшбұрыш ауданы',
+    stereometry: 'Дұрыс пирамида көлемі'
   },
   uz: {
     linear: 'Chiziqli tenglamalar',
-    percent: 'Foizlar va proporsiyalar',
-    probability: 'Ehtimollik va kombinatorika',
+    percent: 'Foizlar va chegirmalar',
+    probability: 'Klassik ehtimollik',
     quadratic: 'Kvadrat tenglamalar (Viyet)',
-    progressions: 'Progressiyalar (aₙ va Sₙ)',
-    functions: 'Darajalar va logarifmlar',
-    trigonometry: 'Trigonometriya',
-    derivative: 'Hosila va ekstremumlar',
-    planimetry: 'Planimetriya (yuzalar)',
-    stereometry: 'Stereometriya (hajmlar)'
+    progressions: 'Arifmetik progressiya (aₙ)',
+    functions: 'Logarifmik tenglamalar',
+    trigonometry: 'Trigonometrik ayniyatlar',
+    derivative: 'Darajali funksiya hosilasi',
+    planimetry: 'To‘g‘ri burchakli uchburchak yuzasi',
+    stereometry: 'Muntazam piramida hajmi'
   }
 };
 
@@ -277,6 +277,19 @@ export function makeChallenge(topic: LabTopic, seed: number, language: Language)
   if (topic === 'linear') {
     const a = 2 + (n % 4), b = 3 + Math.floor(n / 4), x = 3 + (n % 5), c = a * x + b;
     const aa = a + 1, xx = x + 2, cc = aa * xx + b;
+    const form = n % 3;
+    const transferEq =
+      form === 0
+        ? `${aa + 1}x + ${b} = x + ${cc}. ${t.solve}.`
+        : form === 1
+          ? `${aa}(x − 1) + ${b} = ${cc - aa}. ${t.solve}.`
+          : `${aa}x − ${b} = ${aa * xx - b}. ${t.solve}.`;
+    const transferHints =
+      form === 0
+        ? [t.eqHint, `${aa}x + ${b} = ${cc}`, `x = (${cc} − ${b}) / ${aa}`]
+        : form === 1
+          ? [t.eqHint, `${aa}(x − 1) = ${cc - aa - b}`, `x − 1 = ${xx - 1} → x = ${xx}`]
+          : [t.eqHint, `${aa}x = ${aa * xx - b} + ${b}`, `x = ${aa * xx} / ${aa}`];
     return vary(
       {
         id, topic,
@@ -285,10 +298,10 @@ export function makeChallenge(topic: LabTopic, seed: number, language: Language)
         wrongStep: 1,
         explanation: t.eqWhy,
         repair: `${a}x = ${c} − ${b} = ${a * x}; x = ${x}.`,
-        transfer: `${aa}x + ${b} = ${cc}. ${t.solve}.`,
+        transfer: transferEq,
         answer: xx, unit: '',
-        hints: [t.eqHint, `${aa}x = ${cc} − ${b}`, `x = (${cc} − ${b}) / ${aa}`],
-        solution: `(${cc} − ${b}) / ${aa} = ${xx}`
+        hints: transferHints,
+        solution: `x = ${xx}`
       },
       n, language,
       [`${a}x = ${c} − ${b}`, `${a}x = ${a * x}`, `x = ${x}`],
@@ -604,3 +617,24 @@ export function exportProgress(progress: Progress) {
     2
   );
 }
+
+export function resolveVerifiedChallenge(input: {
+  topic: LabTopic;
+  seed: number;
+  language: Language;
+  task: string;
+  steps: string[];
+  wrongStep: number;
+}): Challenge {
+  const challenge = makeChallenge(input.topic, input.seed, input.language);
+  if (
+    challenge.wrongStep !== input.wrongStep ||
+    challenge.task !== input.task ||
+    challenge.steps.length !== input.steps.length ||
+    challenge.steps.some((step, idx) => step !== input.steps[idx])
+  ) {
+    throw new Error('Challenge context mismatch');
+  }
+  return challenge;
+}
+

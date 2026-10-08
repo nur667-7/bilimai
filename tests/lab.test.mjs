@@ -12,11 +12,15 @@ import {
   buildBaselineRoadmap,
   labTopics
 } from '../lib/error-lab.ts';
+import { buildLabDiagnosePreview } from '../lib/claude.ts';
+import { lessons } from '../lib/lessons.ts';
 
-test('all 720 localized lab variants across 10 UNT topics have valid transfer answers and varied error positions', () => {
+test('all 720 localized lab variants across 10 UNT topics have valid transfer answers, varied error positions, and exact seed-bound preview diagnosis', () => {
   assert.equal(labTopics.length, 10);
   for (const lang of ['ru', 'kk', 'uz']) {
     for (const topic of labTopics) {
+      const lesson = lessons[lang].find((l) => l.id === topic);
+      assert.ok(lesson);
       const positions = new Set();
       const ids = new Set();
       const transfers = new Set();
@@ -31,6 +35,48 @@ test('all 720 localized lab variants across 10 UNT topics have valid transfer an
         assert.ok(Number.isFinite(c.answer));
         assert.ok(checkAnswer(String(c.answer), c.answer));
         assert.equal(checkAnswer(String(c.answer + 1), c.answer), false);
+
+        // Verify pre-discovery preview never spoils repair
+        const prePreview = buildLabDiagnosePreview(
+          {
+            topic,
+            seed,
+            language: lang,
+            task: c.task,
+            steps: c.steps,
+            wrongStep: c.wrongStep,
+            selectedStep: (c.wrongStep + 1) % 3,
+            stepFound: false,
+            consent: true,
+            adult: true
+          },
+          c
+        );
+        assert.equal(prePreview.stepCheck.includes(c.repair), false);
+        assert.equal(prePreview.diagnosis.includes(c.repair), false);
+
+        // Verify post-discovery preview contains THIS exact challenge's repair (and not seed=1 when seed=4)
+        const postPreview = buildLabDiagnosePreview(
+          {
+            topic,
+            seed,
+            language: lang,
+            task: c.task,
+            steps: c.steps,
+            wrongStep: c.wrongStep,
+            selectedStep: c.wrongStep,
+            stepFound: true,
+            consent: true,
+            adult: true
+          },
+          c
+        );
+        assert.ok(postPreview.stepCheck.includes(c.repair));
+        if (seed === 4) {
+          const seed1 = makeChallenge(topic, 1, lang);
+          assert.notEqual(c.repair, seed1.repair);
+          assert.equal(postPreview.stepCheck.includes(seed1.repair), false);
+        }
       }
       assert.equal(ids.size, 24);
       assert.equal(transfers.size, 24);
