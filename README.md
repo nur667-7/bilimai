@@ -41,3 +41,7 @@ No educational effectiveness or product demand has been measured. The Kazakh and
 ## Verification
 Seven core checks passed: inputs/consent, bounded Claude request, provider error hygiene, malformed/truncated output, minute/day quotas, global/lifetime quotas, language alignment/arithmetic. Type checking and production build passed. Browser verified 3/3 and 0/3 scores, retry, Kazakh language switch and 390px mobile width. See the delivery report for final API smoke test and deployment status.
 
+
+## Лаборатория ошибок (/lab)
+
+Детерминированный тренажёр первого неверного шага и новой задачи на перенос: 24 варианта × 3 темы × 3 языка. Числовой ввод поддерживает дроби и десятичную запятую. Результаты с подсказками или повторным ответом не считаются самостоятельным решением с первой попытки. По желанию локально сохраняются последние 60 результатов; без имени, текста ответов и синхронизации. Счётчик учитывает разные задачи, а не повторные прохождения. Это тренировочная рекомендация, не полноценная диагностика знаний.
