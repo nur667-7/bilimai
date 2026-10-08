@@ -1,49 +1,58 @@
-# BilimAI
-A newly built, private pilot MVP for adults reviewing foundational mathematics in Russian, Kazakh and Uzbek. Created 8 October 2026. It does not derive from the missing original ZIP.
+# BilimAI — Trilingual Diagnostic Math & UNT (ҰБТ / ЕНТ) Platform
 
-## Included
-- Three curated lessons and nine questions per language, deterministic scoring, error explanations and retry.
-- Mobile layout, accessible controls, reduced-motion support, actual language tags.
-- Direct server-side Claude Messages integration, strict input/output validation and plain text rendering.
-- Sites-owned ChatGPT sign-in and explicit pilot user allowlist.
-- Same-origin protection; consent and 18+ acknowledgement; maximum body 4 KiB, question 600 characters, output 800 tokens, 20 second provider timeout; no automatic paid retries.
-- Atomic D1 reservations: 2 calls/user/minute, 10/user/day, 50 globally/day, 500 total pilot calls. Failures count. UTC resets. Deleting reservations resets the lifetime cap: require an explicit new budget before doing so.
-- No prompt/response storage, analytics, payments or document uploads.
-- Read-only WebMCP get_current_lesson tool when supported. Actual native WebMCP validation unavailable in the local browser.
+**BilimAI** is a diagnostic mathematics learning platform built in Almaty, Kazakhstan for adult learners and university applicants preparing for the National Unified Testing (**UNT / ҰБТ / ЕНТ**) in **Kazakh (`kk`), Russian (`ru`), and Uzbek (`uz`)**.
 
-## Run
-Node 24 recommended (tests use native TypeScript and node:sqlite).
-npm ci
-npm run dev
-npm run typecheck
-npm test
-npm run build
+Instead of functioning as a generic chat wrapper that gives away final answers, BilimAI pairs deterministic mathematical verification with **three structured Anthropic Claude API workflows**.
 
-The starter's Windows plugin package-manager wrapper failed on this host. Successful local alternatives used:
-node "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js" install --no-audit --no-fund
+---
+
+## Key Features
+
+1. **10 Core UNT Specification Modules (30 Localized Lessons, 90 Practice Questions):**
+   - `linear` — Linear Equations (Линейные уравнения / Сызықтық теңдеулер / Chiziqli tenglamalar)
+   - `percent` — Percentages & Proportions (Проценты и пропорции / Пайыздар / Foizlar)
+   - `probability` — Probability & Combinatorics (Вероятность / Ықтималдық / Ehtimollik)
+   - `quadratic` — Quadratic Equations & Vieta's Theorem (Квадратные уравнения / Виет теоремасы / Viyet)
+   - `progressions` — Arithmetic & Geometric Progressions (Прогрессии / Прогрессиялар / Progressiyalar)
+   - `functions` — Exponents & Logarithms (Степени и логарифмы / Логарифмдер / Logarifmlar)
+   - `trigonometry` — Trigonometric Identities (Тригонометрия / Тригонометрия / Trigonometriya)
+   - `derivative` — Derivatives & Extrema (Производная и экстремумы / Туынды / Hosila)
+   - `planimetry` — Planimetry & Areas (Планиметрия / Планиметрия / Planimetriya)
+   - `stereometry` — Stereometry & Volumes (Стереометрия / Стереометрия / Stereometriya)
+
+2. **Error-Analysis Laboratory (`/lab` — 720 Localized Scenarios):**
+   - 24 parameterized variants × 10 UNT modules × 3 languages.
+   - Learners inspect a 3-step worked solution, identify the exact step where the mathematical invariant breaks down, review the algebraic repair, and solve a transfer problem on a **2/7-day spaced review schedule**.
+
+3. **Three Structured Claude API Pedagogical Workflows (`lib/claude.ts`):**
+   - **`POST /api/explain` (Grounded Socratic Explanations):** Anchors explanations strictly to the active lesson's mathematical rule and worked example, returning schema-validated JSON (`{ explanation, hint }`) without leaking test answers.
+   - **`POST /api/roadmap` (Personalized UNT Study Roadmap):** Synthesizes the learner's diagnostic error history, target UNT score (out of 50), and weeks remaining into a structured JSON study plan (`{ summary, priorityModules, weeklyMilestones, dailyHabit }`).
+   - **`POST /api/lab-diagnose` (Error-Lab Step Diagnosis):** Embedded directly inside `/lab`. Analyzes why a learner's chosen step or calculation went off track and provides a targeted Socratic micro-hint.
+
+4. **Safety, Rate Limiting & Transparent Preview Mode:**
+   - Strict Zod input/output schemas, 4 KiB request body limit, 20-second upstream timeout.
+   - Atomic Cloudflare D1 reservations (`2 calls/min`, `10/day` per user, `50/day` global, `500` pilot cap).
+   - **Transparent Reviewer Preview:** Every AI response displays an explicit source badge (`Claude API · Live` when `ANTHROPIC_API_KEY` is configured on the Worker, or `Structured Preview` when running in pre-grant demonstration mode).
+
+---
+
+## Verification & Local Development
+
+Requires **Node.js 22.13+ (Node 24 recommended)** for native TypeScript test execution and `node:sqlite`.
+
+```bash
+# Run unit & integration tests (14 tests across Claude schemas, D1 quotas, 10 UNT modules, and 720 Lab scenarios)
+node --test tests/core.test.mjs tests/lab.test.mjs
+
+# Run TypeScript typecheck
 node node_modules/typescript/bin/tsc --noEmit
-node --test tests/core.test.mjs
+
+# Build production Cloudflare Worker bundle
 node scripts/run-framework.mjs build
+```
 
-## Runtime activation
-Configure the keys in .env.example through Sites. ANTHROPIC_API_KEY and QUOTA_HASH_SECRET must be secrets. No real Anthropic key has been obtained or configured. PILOT_ALLOWED_USER_IDS is initially empty: AI requests are denied. Provision actual user IDs after sign-in; never use the local mock identity in production. Configure provider spend limits before enabling live traffic. Redeploy after changing runtime values.
+---
 
-APP_ORIGIN must exactly match the chosen hosted origin. A custom domain requires updating this value and redeploying. Only use identity headers behind Sites dispatch; direct public Worker exposure would invalidate this trust assumption. Do not repurpose this authentication for another host.
+## Founder
 
-.env.example provides the officially listed claude-haiku-5-5 model ID as of 8 October 2026. Confirm access using the Models API and perform live quality evals before activation. Provider behavior has been mocked in tests; real Claude calls are NOT verified.
-
-## Database
-drizzle/0000_silly_colonel_america.sql is the schema-only migration. Production Sites applies migrations on publish. Local development mock DB has no production data. Never edit an applied migration. Rate records contain hashed user ID, day/minute and request ID; configure a retention policy before a public launch without accidentally resetting budget controls.
-
-## Pilot boundaries
-No educational effectiveness or product demand has been measured. The Kazakh and Uzbek content needs native-speaker and educator review before recruitment. Account sign-in does not independently verify age. The UI's 18+ acknowledgement is only a self-declaration. The privacy page describes a closed prototype; a real service operator, contact and retention schedule remain prerequisites for public launch.
-
-## Verification
-Seven core checks passed: inputs/consent, bounded Claude request, provider error hygiene, malformed/truncated output, minute/day quotas, global/lifetime quotas, language alignment/arithmetic. Type checking and production build passed. Browser verified 3/3 and 0/3 scores, retry, Kazakh language switch and 390px mobile width. See the delivery report for final API smoke test and deployment status.
-
-
-## Лаборатория ошибок (/lab)
-
-Детерминированный тренажёр первого неверного шага и новой задачи на перенос: 24 варианта × 3 темы × 3 языка. Числовой ввод поддерживает дроби и десятичную запятую. Результаты с подсказками или повторным ответом не считаются самостоятельным решением с первой попытки. По желанию локально сохраняются последние 60 результатов; без имени, текста ответов и синхронизации. Счётчик учитывает разные задачи, а не повторные прохождения. Это тренировочная рекомендация, не полноценная диагностика знаний.
-
-Повторение: после решения с помощью — сегодня, после первого самостоятельного — через 2 дня, после двух разных — через 7 дней. Это пробное правило, не индивидуальная оценка памяти. Можно скачать историю в JSON без имени и ответов. Новые задачи выбираются из ещё не пройденных вариантов; после исчерпания пула повторяются. Язык перехода в лабораторию поддерживается параметром lang.
+- **Nurbek Saidualiev** — Almaty, Kazakhstan

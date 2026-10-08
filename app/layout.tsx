@@ -2,19 +2,17 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BilimAI — учиться с пониманием",
-  description: "Математика на русском, казахском и узбекском: короткие объяснения, практика и разбор ошибок. Ранний MVP для совершеннолетних студентов.",
-  other: {
-    "codex-preview": "development",
-  },
+  title: "BilimAI — Диагностическая подготовка к ЕНТ (ҰБТ) по математике",
+  description:
+    "Математика ЕНТ (ҰБТ) на казахском, русском и узбекском: 10 модулей спецификации, лаборатория разбора ошибок (720 сценариев) и персональный AI-роадмап на базе Claude.",
   icons: {
     icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-  },
+    shortcut: "/favicon.svg"
+  }
 };
 
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
@@ -24,4 +22,3 @@ export default function RootLayout({
     </html>
   );
 }
-
