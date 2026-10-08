@@ -48,3 +48,23 @@ export function recommendTopic(progress:Progress):LabTopic{
   return count(topic)<count(best)?topic:best;
  },topics[0]);
 }
+
+export function nextSeed(progress:Progress,topic:LabTopic):number{
+ const seen=new Set(progress.records.filter(r=>r.topic===topic).map(r=>r.challenge));
+ for(let seed=0;seed<24;seed++)if(!seen.has(`${topic}-${seed}`))return seed;
+ return progress.records.filter(r=>r.topic===topic).length%24;
+}
+export function reviewSchedule(progress:Progress,now:number){
+ if(!Number.isFinite(now))throw new Error('Invalid time');
+ return (['linear','percent','probability'] as LabTopic[]).map(topic=>{
+  const records=progress.records.filter(r=>r.topic===topic).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
+  const latest=records.at(-1);
+  const independent=new Set(records.filter(r=>r.independent).map(r=>r.challenge)).size;
+  const days=latest?.independent?(independent>=2?7:2):0;
+  const dueAt=latest?Date.parse(latest.date)+days*86400000:null;
+  return {topic,days,dueAt,due:dueAt!==null&&dueAt<=now,practiced:!!latest};
+ });
+}
+export function exportProgress(progress:Progress){
+ return JSON.stringify({product:'BilimAI',notice:'Practice history only; not a mastery assessment. No names or answer text.',...progress},null,2);
+}

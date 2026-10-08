@@ -24,3 +24,18 @@ test('recommendation considers distinct independent challenges, not assisted rep
  assert.equal(recommendTopic(p),'probability');assert.equal(recommendTopic({version:1,records:[]}),'linear');
  assert.equal(progressSchema.safeParse(p).success,true);assert.equal(progressSchema.safeParse({...p,records:Array(61).fill(p.records[0])}).success,false);assert.equal(progressSchema.safeParse({version:2,records:[]}).success,false);
 });
+import { nextSeed, reviewSchedule, exportProgress } from '../lib/error-lab.ts';
+test('new practice picks an unseen task and safely cycles after finite pool',()=>{
+ const records=Array.from({length:24},(_,i)=>({topic:'linear',challenge:`linear-${i}`,independent:true,date:'2026-10-08T12:00:00.000Z'}));
+ assert.equal(nextSeed({version:1,records:records.slice(0,3)},'linear'),3);assert.equal(nextSeed({version:1,records},'linear'),0);assert.equal(nextSeed({version:1,records},'percent'),0);
+});
+test('review schedule handles 2/7-day boundaries and assisted work without inventing mastery',()=>{
+ const start=Date.parse('2026-10-08T12:00:00.000Z'),day=86400000;
+ const record=(challenge,date,independent=true)=>({topic:'linear',challenge,independent,date:new Date(date).toISOString()});
+ const p={version:1,records:[record('linear-0',start)]};
+ assert.equal(reviewSchedule(p,start+day)[0].due,false);assert.equal(reviewSchedule(p,start+2*day)[0].due,true);assert.equal(reviewSchedule(p,start)[1].dueAt,null);
+ const p2={version:1,records:[record('linear-0',start),record('linear-1',start+2*day)]};
+ assert.equal(reviewSchedule(p2,start+8*day)[0].due,false);assert.equal(reviewSchedule(p2,start+9*day)[0].due,true);
+ p2.records.push(record('linear-2',start+3*day,false));assert.equal(reviewSchedule(p2,start+3*day)[0].due,true);
+ assert.throws(()=>reviewSchedule(p,NaN));assert.equal(JSON.parse(exportProgress(p)).records.length,1);assert.equal(JSON.parse(exportProgress(p)).product,'BilimAI');
+});
