@@ -9,38 +9,41 @@ type SiteFooterProps = {
 
 const FOOTER_COPY = {
   ru: {
-    summary: "BilimAI — интерактивный учебник и тренажёр по математике ЕНТ (ҰБТ) на русском, казахском и узбекском языках.",
+    summary:
+      "BilimAI — интерактивный тренажёр и диагностическая платформа подготовки к ЕНТ (ҰБТ) по математике (все 16 разделов НЦТ РК) на русском, казахском и узбекском языках.",
     navLesson: "Учебник и практика",
-    navGraph: "Карта тем",
+    navGraph: "Карта 16 тем",
     navExam: "Пробное ЕНТ",
     navPlan: "Мой план",
     navLab: "Тренировка ошибок",
-    navAbout: "О проекте",
-    navPrivacy: "Приватность (18+)",
+    navAbout: "О стартапе и архитектуре",
+    navPrivacy: "Приватность",
     contactLabel: "Обратная связь:",
     location: "Алматы, Казахстан"
   },
   kk: {
-    summary: "BilimAI — орыс, қазақ және өзбек тілдеріндегі ҰБТ математикасы бойынша интерактивті оқулық пен жаттықтырғыш.",
+    summary:
+      "BilimAI — орыс, қазақ және өзбек тілдеріндегі ҰБТ математикасына (ҰТО 16 бөлімі) дайындыққа арналған диагностикалық тренажер.",
     navLesson: "Оқулық пен жаттығу",
-    navGraph: "Тақырыптар картасы",
+    navGraph: "16 тақырып картасы",
     navExam: "Байқау ҰБТ",
     navPlan: "Менің жоспарым",
     navLab: "Қатемен жұмыс",
-    navAbout: "Жоба туралы",
-    navPrivacy: "Құпиялық (18+)",
+    navAbout: "Жоба және архитектура",
+    navPrivacy: "Құпиялық",
     contactLabel: "Байланыс:",
     location: "Алматы, Қазақстан"
   },
   uz: {
-    summary: "BilimAI — rus, qozoq va o‘zbek tillarida matematika bo‘yicha interaktiv darslik va mashq platformasi.",
+    summary:
+      "BilimAI — rus, qozoq va o‘zbek tillarida matematika bo‘yicha (16 ta bo‘lim) diagnostik darslik va mashq platformasi.",
     navLesson: "Darslik va mashq",
-    navGraph: "Mavzular xaritasi",
+    navGraph: "16 mavzu xaritasi",
     navExam: "Sinov imtihoni",
     navPlan: "Mening rejam",
     navLab: "Xatolar ustida ishlash",
-    navAbout: "Loyiha haqida",
-    navPrivacy: "Maxfiylik (18+)",
+    navAbout: "Loyiha va arxitektura",
+    navPrivacy: "Maxfiylik",
     contactLabel: "Aloqa:",
     location: "Olmaota, Qozog‘iston"
   }

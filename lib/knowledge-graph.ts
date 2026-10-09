@@ -80,7 +80,7 @@ export const UNT_GRAPH_NODES: GraphNodeMeta[] = [
     orderNumber: "01",
     cluster: "algebra",
     tier: 0,
-    baseX: 115,
+    baseX: 95,
     baseY: 165,
     prerequisites: [],
     untQuestionsWeight: 4,
@@ -105,41 +105,70 @@ export const UNT_GRAPH_NODES: GraphNodeMeta[] = [
     }
   },
   {
-    id: "planimetry",
-    orderNumber: "09",
-    cluster: "geometry",
-    tier: 0,
-    baseX: 115,
-    baseY: 365,
-    prerequisites: [],
-    untQuestionsWeight: 5,
+    id: "inequalities",
+    orderNumber: "02",
+    cluster: "algebra",
+    tier: 1,
+    baseX: 280,
+    baseY: 120,
+    prerequisites: ["linear"],
+    untQuestionsWeight: 4,
     untWeightLabel: {
-      ru: "Геометрия · 4–5 заданий ЕНТ",
-      kk: "Геометрия · 4–5 ҰБТ тапсырмасы",
-      uz: "Geometriya · 4–5 ta topshiriq"
+      ru: "Алгебра · 3–4 задания ЕНТ",
+      kk: "Алгебра · 3–4 ҰБТ тапсырмасы",
+      uz: "Algebra · 3–4 ta topshiriq"
     },
     commonTraps: {
       ru: [
-        "Забывают коэффициент 1/2 в площади треугольника и трапеции",
-        "Подставляют боковую сторону трапеции вместо её высоты"
+        "Забывают поменять знак неравенства при делении на отрицательное число",
+        "Включают выколотые точки знаменателя в ответ метода интервалов"
       ],
       kk: [
-        "Үшбұрыш пен трапеция ауданында 2-ге бөлуді ұмыту",
-        "Трапеция биіктігінің орнына бүйір қабырғасын қою"
+        "Теріс санға бөлгенде теңсіздік таңбасын ауыстыруды ұмыту",
+        "Бөлімнің нөлдерін жауап аралығына қосып жіберу"
       ],
       uz: [
-        "Uchburchak va trapetsiya yuzasida 2 ga bo‘lishni unutish",
-        "Trapetsiya balandligi o‘rniga yon tomonini qo‘yish"
+        "Manfiy songa bo‘lganda tengsizlik ishorasini o‘zgartirmaslik",
+        "Maxraj nollarini javob kesmasiga qo‘shib yuborish"
+      ]
+    }
+  },
+  {
+    id: "systems",
+    orderNumber: "03",
+    cluster: "algebra",
+    tier: 1,
+    baseX: 280,
+    baseY: 195,
+    prerequisites: ["linear"],
+    untQuestionsWeight: 4,
+    untWeightLabel: {
+      ru: "Алгебра · 3–4 задания ЕНТ",
+      kk: "Алгебра · 3–4 ҰБТ тапсырмасы",
+      uz: "Algebra · 3–4 ta topshiriq"
+    },
+    commonTraps: {
+      ru: [
+        "При сложении уравнений складывают только левые части, забывая правые",
+        "Находят только x₀, когда в условии ЕНТ просят сумму x₀ + y₀"
+      ],
+      kk: [
+        "Теңдеулерді қосқанда оң жақтарын қосуды ұмыту",
+        "x₀ + y₀ қосындысының орнына тек x₀ мәнін белгілеу"
+      ],
+      uz: [
+        "Tenglamalarni qo‘shishda o‘ng tomonlarni qo‘shishni unutish",
+        "x₀ + y₀ yig‘indi o‘rniga faqat x₀ ni javob sifatida olish"
       ]
     }
   },
   {
     id: "percent",
-    orderNumber: "02",
+    orderNumber: "04",
     cluster: "literacy",
     tier: 1,
-    baseX: 315,
-    baseY: 85,
+    baseX: 280,
+    baseY: 50,
     prerequisites: ["linear"],
     untQuestionsWeight: 4,
     untWeightLabel: {
@@ -163,41 +192,99 @@ export const UNT_GRAPH_NODES: GraphNodeMeta[] = [
     }
   },
   {
-    id: "progressions",
+    id: "probability",
     orderNumber: "05",
-    cluster: "algebra",
-    tier: 1,
-    baseX: 315,
-    baseY: 205,
-    prerequisites: ["linear"],
+    cluster: "literacy",
+    tier: 2,
+    baseX: 525,
+    baseY: 55,
+    prerequisites: ["percent", "combinatorics"],
     untQuestionsWeight: 3,
     untWeightLabel: {
-      ru: "Контекст + Профиль · 3 задания",
-      kk: "Контекст + Бейін · 3 тапсырма",
-      uz: "Kontekst + Profil · 3 ta topshiriq"
+      ru: "Мат. грамотность · 2–3 задания",
+      kk: "Мат. сауаттылық · 2–3 тапсырма",
+      uz: "Mat. savodxonlik · 2–3 ta topshiriq"
     },
     commonTraps: {
       ru: [
-        "Умножают разность d на n вместо (n − 1) шагов",
-        "Путают формулу n-го члена aₙ и суммы первых n членов Sₙ"
+        "Делят на число неблагоприятных исходов вместо общего числа исходов n",
+        "Не учитывают выбор без возвращения при подсчёте пар C(n,2)"
       ],
       kk: [
-        "d айырымын (n − 1) орнына n-ге көбейту",
-        "n-ші мүше aₙ мен Sₙ қосынды формуласын шатастыру"
+        "Барлық нәтижелер саны n орнына тек қолайсыз нәтижелерге бөлу",
+        "Қайтарусыз таңдауда жұптар санын C(n,2) бойынша есептемеу"
       ],
       uz: [
-        "d ayirmani (n − 1) o‘rniga n ga ko‘paytirish",
-        "n-had aₙ va Sₙ yig‘indi formulasini adashtirish"
+        "Barcha natijalar soni n o‘rniga faqat noqulay natijalarga bo‘lish",
+        "Qaytarishsiz tanlashda juftliklar sonini C(n,2) bilan hisoblamaslik"
+      ]
+    }
+  },
+  {
+    id: "combinatorics",
+    orderNumber: "06",
+    cluster: "literacy",
+    tier: 1,
+    baseX: 405,
+    baseY: 95,
+    prerequisites: ["linear"],
+    untQuestionsWeight: 3,
+    untWeightLabel: {
+      ru: "Мат. грамотность · 2–3 задания",
+      kk: "Мат. сауаттылық · 2–3 тапсырма",
+      uz: "Mat. savodxonlik · 2–3 ta topshiriq"
+    },
+    commonTraps: {
+      ru: [
+        "Забывают разделить n(n − 1) на 2! при выборе пар без учёта порядка",
+        "Ищут медиану ряда чисел без предварительной сортировки по возрастанию"
+      ],
+      kk: [
+        "Реттілік маңызды емес жұптарда n(n − 1) көбейтіндісін 2-ге бөлмеу",
+        "Сандар қатарын реттемей тұрып медиананы іздеу"
+      ],
+      uz: [
+        "Tartib muhim bo‘lmagan juftliklarda n(n − 1) ni 2 ga bo‘lmaslik",
+        "Sonlar qatorini tartiblamasdan medianani topish"
+      ]
+    }
+  },
+  {
+    id: "radicals",
+    orderNumber: "07",
+    cluster: "algebra",
+    tier: 1,
+    baseX: 405,
+    baseY: 225,
+    prerequisites: ["linear"],
+    untQuestionsWeight: 4,
+    untWeightLabel: {
+      ru: "Корни и степени · 3–4 задания",
+      kk: "Түбірлер мен дәрежелер · 3–4 тапсырма",
+      uz: "Ildizlar va darajalar · 3–4 ta topshiriq"
+    },
+    commonTraps: {
+      ru: [
+        "Умножают правую часть на 2 вместо возведения в квадрат при решении √A = r",
+        "Складывают показатели степеней при сложении степеней, а не при умножении"
+      ],
+      kk: [
+        "√A = r теңдеуінде оң жақты квадраттау орнына 2-ге көбейту",
+        "Дәрежелерді көбейту мен дәрежеге шығару ережелерін шатастыру"
+      ],
+      uz: [
+        "√A = r tenglamada o‘ng tomonni kvadratga oshirish o‘rniga 2 ga ko‘paytirish",
+        "Darajalarni ko‘paytirish va darajaga ko‘tarish qoidalarini adashtirish"
       ]
     }
   },
   {
     id: "quadratic",
-    orderNumber: "04",
+    orderNumber: "08",
     cluster: "algebra",
     tier: 1,
-    baseX: 315,
-    baseY: 325,
+    baseX: 280,
+    baseY: 315,
     prerequisites: ["linear"],
     untQuestionsWeight: 6,
     untWeightLabel: {
@@ -221,47 +308,47 @@ export const UNT_GRAPH_NODES: GraphNodeMeta[] = [
     }
   },
   {
-    id: "probability",
-    orderNumber: "03",
-    cluster: "literacy",
-    tier: 2,
-    baseX: 540,
-    baseY: 95,
-    prerequisites: ["percent", "progressions"],
+    id: "progressions",
+    orderNumber: "09",
+    cluster: "algebra",
+    tier: 1,
+    baseX: 405,
+    baseY: 160,
+    prerequisites: ["linear"],
     untQuestionsWeight: 3,
     untWeightLabel: {
-      ru: "Мат. грамотность · 2–3 задания",
-      kk: "Мат. сауаттылық · 2–3 тапсырма",
-      uz: "Mat. savodxonlik · 2–3 ta topshiriq"
+      ru: "Контекст + Профиль · 3 задания",
+      kk: "Контекст + Бейін · 3 тапсырма",
+      uz: "Kontekst + Profil · 3 ta topshiriq"
     },
     commonTraps: {
       ru: [
-        "Делят на число неблагоприятных исходов вместо общего числа исходов n",
-        "Не учитывают выбор без возвращения при подсчёте пар C(n,2)"
+        "Умножают разность d на n вместо (n − 1) шагов",
+        "Путают формулу n-го члена aₙ и суммы первых n членов Sₙ"
       ],
       kk: [
-        "Барлық нәтижелер саны n орнына тек қолайсыз нәтижелерге бөлу",
-        "Қайтарусыз таңдауда жұптар санын C(n,2) бойынша есептемеу"
+        "d айырымын (n − 1) орнына n-ге көбейту",
+        "n-ші мүше aₙ мен Sₙ қосынды формуласын шатастыру"
       ],
       uz: [
-        "Barcha natijalar soni n o‘rniga faqat noqulay natijalarga bo‘lish",
-        "Qaytarishsiz tanlashda juftliklar sonini C(n,2) bilan hisoblamaslik"
+        "d ayirmani (n − 1) o‘rniga n ga ko‘paytirish",
+        "n-had aₙ va Sₙ yig‘indi formulasini adashtirish"
       ]
     }
   },
   {
     id: "functions",
-    orderNumber: "06",
+    orderNumber: "10",
     cluster: "algebra",
     tier: 2,
-    baseX: 540,
-    baseY: 230,
-    prerequisites: ["quadratic", "progressions"],
+    baseX: 545,
+    baseY: 195,
+    prerequisites: ["quadratic", "progressions", "radicals"],
     untQuestionsWeight: 6,
     untWeightLabel: {
-      ru: "Степени и логарифмы · 5–6 заданий",
-      kk: "Дәреже және логарифм · 5–6 тапсырма",
-      uz: "Daraja va logarifm · 5–6 ta topshiriq"
+      ru: "Логарифмы и функции · 5–6 заданий",
+      kk: "Логарифм және функция · 5–6 тапсырма",
+      uz: "Logarifm va funksiya · 5–6 ta topshiriq"
     },
     commonTraps: {
       ru: [
@@ -280,11 +367,11 @@ export const UNT_GRAPH_NODES: GraphNodeMeta[] = [
   },
   {
     id: "trigonometry",
-    orderNumber: "07",
+    orderNumber: "11",
     cluster: "geometry",
     tier: 2,
-    baseX: 540,
-    baseY: 370,
+    baseX: 545,
+    baseY: 325,
     prerequisites: ["planimetry", "quadratic"],
     untQuestionsWeight: 5,
     untWeightLabel: {
@@ -309,17 +396,17 @@ export const UNT_GRAPH_NODES: GraphNodeMeta[] = [
   },
   {
     id: "derivative",
-    orderNumber: "08",
+    orderNumber: "12",
     cluster: "algebra",
     tier: 3,
-    baseX: 755,
-    baseY: 185,
+    baseX: 735,
+    baseY: 140,
     prerequisites: ["functions", "quadratic", "trigonometry"],
     untQuestionsWeight: 5,
     untWeightLabel: {
-      ru: "Производная и анализ · 4–5 заданий",
-      kk: "Туынды және талдау · 4–5 тапсырма",
-      uz: "Hosila va tahlil · 4–5 ta topshiriq"
+      ru: "Производная и касательная · 4–5 заданий",
+      kk: "Туынды және жанама · 4–5 тапсырма",
+      uz: "Hosila va urinma · 4–5 ta topshiriq"
     },
     commonTraps: {
       ru: [
@@ -337,13 +424,100 @@ export const UNT_GRAPH_NODES: GraphNodeMeta[] = [
     }
   },
   {
+    id: "integrals",
+    orderNumber: "13",
+    cluster: "algebra",
+    tier: 3,
+    baseX: 775,
+    baseY: 235,
+    prerequisites: ["derivative", "functions"],
+    untQuestionsWeight: 3,
+    untWeightLabel: {
+      ru: "Первообразная и интеграл · 3 задания",
+      kk: "Алғашқы функция және интеграл · 3 тапсырма",
+      uz: "Boshlang‘ich funksiya va integral · 3 ta topshiriq"
+    },
+    commonTraps: {
+      ru: [
+        "Забывают разделить на новый показатель n + 1 при интегрировании x^n",
+        "Путают порядок подстановки пределов F(b) − F(a)"
+      ],
+      kk: [
+        "x^n интегралдағанда жаңа дәреже көрсеткіші (n + 1)-ге бөлуді ұмыту",
+        "Ньютон — Лейбниц формуласында шектердің орнын ауыстырып алу"
+      ],
+      uz: [
+        "x^n ni integrallashda yangi daraja ko‘rsatkichi (n + 1) ga bo‘lishni unutish",
+        "Nyuton — Leybnits formulasida chegaralar tartibini adashtirish"
+      ]
+    }
+  },
+  {
+    id: "planimetry",
+    orderNumber: "14",
+    cluster: "geometry",
+    tier: 0,
+    baseX: 95,
+    baseY: 365,
+    prerequisites: [],
+    untQuestionsWeight: 5,
+    untWeightLabel: {
+      ru: "Геометрия · 4–5 заданий ЕНТ",
+      kk: "Геометрия · 4–5 ҰБТ тапсырмасы",
+      uz: "Geometriya · 4–5 ta topshiriq"
+    },
+    commonTraps: {
+      ru: [
+        "Забывают коэффициент 1/2 в площади треугольника и трапеции",
+        "Подставляют боковую сторону трапеции вместо её высоты"
+      ],
+      kk: [
+        "Үшбұрыш пен трапеция ауданында 2-ге бөлуді ұмыту",
+        "Трапеция биіктігінің орнына бүйір қабырғасын қою"
+      ],
+      uz: [
+        "Uchburchak va trapetsiya yuzasida 2 ga bo‘lishni unutish",
+        "Trapetsiya balandligi o‘rniga yon tomonini qo‘yish"
+      ]
+    }
+  },
+  {
+    id: "vectors",
+    orderNumber: "15",
+    cluster: "geometry",
+    tier: 2,
+    baseX: 545,
+    baseY: 420,
+    prerequisites: ["planimetry", "quadratic"],
+    untQuestionsWeight: 3,
+    untWeightLabel: {
+      ru: "Векторы и координаты · 3 задания ЕНТ",
+      kk: "Векторлар және координаталар · 3 тапсырма",
+      uz: "Vektorlar va koordinatalar · 3 ta topshiriq"
+    },
+    commonTraps: {
+      ru: [
+        "Складывают координаты вместо суммы произведений x₁x₂ + y₁y₂",
+        "Забывают возвести отрицательную координату в квадрат при поиске длины вектора"
+      ],
+      kk: [
+        "Скаляр көбейтіндіде x₁x₂ + y₁y₂ орнына координаталарды жай қосу",
+        "Вектор ұзындығын тапқанда теріс координатаның квадратын теріс етіп алу"
+      ],
+      uz: [
+        "Skalyar ko‘paytmada x₁x₂ + y₁y₂ o‘rniga koordinatalarni oddiy qo‘shish",
+        "Vektor uzunligini topishda manfiy koordinata kvadratini manfiy olish"
+      ]
+    }
+  },
+  {
     id: "stereometry",
-    orderNumber: "10",
+    orderNumber: "16",
     cluster: "geometry",
     tier: 3,
-    baseX: 755,
-    baseY: 350,
-    prerequisites: ["planimetry", "trigonometry"],
+    baseX: 760,
+    baseY: 365,
+    prerequisites: ["planimetry", "trigonometry", "vectors"],
     untQuestionsWeight: 4,
     untWeightLabel: {
       ru: "Стереометрия · 3–4 задания (2 балла)",
@@ -368,10 +542,30 @@ export const UNT_GRAPH_NODES: GraphNodeMeta[] = [
 ];
 
 export const EDGE_REASONS: Record<string, Record<Language, string>> = {
+  "linear->inequalities": {
+    ru: "Перенос слагаемых и контроль знака при делении на коэффициент перед x.",
+    kk: "Мүшелерді көшіру және x алдындағы коэффициентке бөлгенде таңбаны бақылау.",
+    uz: "Hadlarni ko‘chirish va x oldidagi koeffitsiyentga bo‘lganda ishorani tekshirish."
+  },
+  "linear->systems": {
+    ru: "Метод подстановки и алгебраического сложения опирается на линейные уравнения.",
+    kk: "Алмастыру және алгебралық қосу тәсілдері сызықтық теңдеулерге сүйенеді.",
+    uz: "O‘rniga qo‘yish va algebraik qo‘shish usullari chiziqli tenglamalarga tayanadi."
+  },
   "linear->percent": {
     ru: "Задачи на сплавы и проценты сводятся к линейным уравнениям баланса.",
     kk: "Қорытпа мен пайыз есептері сызықтық теңдеуге келтіріледі.",
     uz: "Qotishma va foiz masalalari chiziqli tenglamaga keltiriladi."
+  },
+  "linear->combinatorics": {
+    ru: "Арифметические преобразования и среднее арифметическое числового ряда.",
+    kk: "Сандар қатарының арифметикалық ортасы мен теңдеу құру.",
+    uz: "Sonlar qatorining o‘rta arifmetigi va chiziqli bog‘lanishlar."
+  },
+  "linear->radicals": {
+    ru: "После возведения иррационального уравнения в квадрат получается линейное уравнение.",
+    kk: "Иррационал теңдеуді квадраттағаннан кейін сызықтық теңдеу шығады.",
+    uz: "Irratsional tenglamani kvadratga oshirgandan so‘ng chiziqli tenglama hosil bo‘ladi."
   },
   "linear->progressions": {
     ru: "Формула n-го члена aₙ = a₁ + (n−1)d линейна относительно шага n.",
@@ -388,10 +582,10 @@ export const EDGE_REASONS: Record<string, Record<Language, string>> = {
     kk: "Үлес пен пайызды m/n ықтималдығына ауыстыру.",
     uz: "Ulush va foizni m/n ehtimollikka o‘tkazish."
   },
-  "progressions->probability": {
-    ru: "Подсчёт числа комбинаций и суммирование рядов исходов.",
-    kk: "Нұсқалар санын және қатар қосындысын есептеу.",
-    uz: "Variantlar soni va qator yig‘indisini hisoblash."
+  "combinatorics->probability": {
+    ru: "Подсчёт числа благоприятных и всех исходов через сочетания C(n, k).",
+    kk: "Қолайлы және барлық нәтижелер санын C(n, k) терулері арқылы есептеу.",
+    uz: "Qulay va barcha natijalar sonini C(n, k) kombinatsiyalar orqali hisoblash."
   },
   "quadratic->functions": {
     ru: "Логарифмические и показательные уравнения сводятся к квадратным с проверкой ОДЗ.",
@@ -403,6 +597,11 @@ export const EDGE_REASONS: Record<string, Record<Language, string>> = {
     kk: "Геометриялық прогрессия көрсеткіштік функциямен байланысты.",
     uz: "Geometrik progressiya ko‘rsatkichli funksiya bilan bog‘liq."
   },
+  "radicals->functions": {
+    ru: "Свойства дробных степеней и корней лежат в основе показательных и логарифмических тождеств.",
+    kk: "Түбірлер мен бөлшек дәрежелердің қасиеттері логарифм мен көрсеткіштік функцияның негізі.",
+    uz: "Ildiz va kasr darajalar xossalari ko‘rsatkichli hamda logarifmik funksiyalar asosidir."
+  },
   "planimetry->trigonometry": {
     ru: "Тождество sin²α + cos²α = 1 следует из теоремы Пифагора в прямоугольном треугольнике.",
     kk: "Негізгі тригонометриялық тепе-теңдік Пифагор теоремасынан шығады.",
@@ -412,6 +611,16 @@ export const EDGE_REASONS: Record<string, Record<Language, string>> = {
     ru: "Тригонометрические уравнения решаются заменой t = cos(x) через квадратный трёхчлен.",
     kk: "Тригонометриялық теңдеулер квадрат үшмүшеге алмастыру арқылы шешіледі.",
     uz: "Trigonometrik tenglamalar kvadrat uchhadga almashtirish bilan yechiladi."
+  },
+  "planimetry->vectors": {
+    ru: "Длина вектора |a⃗| = √(x² + y²) и угол между векторами следуют из теоремы Пифагора и косинусов.",
+    kk: "Вектор ұзындығы мен векторлар арасындағы бұрыш Пифагор және косинустар теоремасына сүйенеді.",
+    uz: "Vektor uzunligi va burchagi Pifagor hamda kosinuslar teoremasidan kelib chiqadi."
+  },
+  "quadratic->vectors": {
+    ru: "Условие коллинеарности и перпендикулярности векторов часто приводит к квадратным уравнениям.",
+    kk: "Векторлардың перпендикулярлық және коллинеарлық шарттары квадрат теңдеуге әкеледі.",
+    uz: "Vektorlarning perpendikulyarlik va kollinearlik shartlari kvadrat tenglamaga keladi."
   },
   "functions->derivative": {
     ru: "Дифференцирование степенных, показательных и логарифмических функций.",
@@ -428,6 +637,16 @@ export const EDGE_REASONS: Record<string, Record<Language, string>> = {
     kk: "Тригонометриялық функциялар туындысы және жанаманың бұрыштық коэффициенті.",
     uz: "Trigonometrik funksiyalar hosilasi va urinma burchak koeffitsiyenti."
   },
+  "derivative->integrals": {
+    ru: "Интегрирование — обратная операция к дифференцированию: F′(x) = f(x).",
+    kk: "Интегралдау — туынды табуға кері амал: F′(x) = f(x).",
+    uz: "Integrallash — hosila olishga teskari amal: F′(x) = f(x)."
+  },
+  "functions->integrals": {
+    ru: "Первообразные степенных, показательных и дробно-рациональных функций.",
+    kk: "Дәрежелік және көрсеткіштік функциялардың алғашқы функцияларын табу.",
+    uz: "Darajali va ko‘rsatkichli funksiyalarning boshlang‘ich funksiyalarini topish."
+  },
   "planimetry->stereometry": {
     ru: "В формулу объёма V = (1/3)S_осн·h входит площадь плоского многоугольника или круга.",
     kk: "Көлем формуласына табанындағы жазық фигураның ауданы S_таб кіреді.",
@@ -437,6 +656,11 @@ export const EDGE_REASONS: Record<string, Record<Language, string>> = {
     ru: "Высота пирамиды и конуса находится через угол наклона ребра или образующей.",
     kk: "Пирамида биіктігі бүйір қырының көлбеу бұрышы арқылы табылады.",
     uz: "Piramida balandligi yon qirra og‘ish burchagi orqali topiladi."
+  },
+  "vectors->stereometry": {
+    ru: "Координатно-векторный метод в пространстве для расчёта углов и расстояний в многогранниках.",
+    kk: "Кеңістіктегі бұрыштар мен арақашықтықты есептеуге арналған координаталық-векторлық әдіс.",
+    uz: "Fazoda burchaklar va masofalarni hisoblash uchun koordinata-vektor usuli."
   }
 };
 

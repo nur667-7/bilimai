@@ -22,38 +22,56 @@ export type Challenge = {
 const topicTitles: Record<Language, Record<LabTopic, string>> = {
   ru: {
     linear: 'Линейные уравнения',
-    percent: 'Проценты и скидки',
+    inequalities: 'Линейные и метод интервалов',
+    systems: 'Системы уравнений',
+    percent: 'Проценты, сплавы и смеси',
     probability: 'Классическая вероятность',
+    combinatorics: 'Комбинаторика и статистика',
+    radicals: 'Корни и иррациональные выражения',
     quadratic: 'Квадратные уравнения (Виет)',
     progressions: 'Арифметическая прогрессия (aₙ)',
     functions: 'Логарифмические уравнения',
     trigonometry: 'Тригонометрические тождества',
     derivative: 'Производная степенной функции',
+    integrals: 'Первообразная и интеграл',
     planimetry: 'Площадь прямоугольного треугольника',
+    vectors: 'Векторы и скалярное произведение',
     stereometry: 'Объём правильной пирамиды'
   },
   kk: {
     linear: 'Сызықтық теңдеулер',
-    percent: 'Пайыздар және жеңілдіктер',
+    inequalities: 'Теңсіздіктер және интервалдар',
+    systems: 'Теңдеулер жүйесі',
+    percent: 'Пайыздар және қорытпалар',
     probability: 'Классикалық ықтималдық',
+    combinatorics: 'Комбинаторика және статистика',
+    radicals: 'Түбірлер және дәрежелер',
     quadratic: 'Квадрат теңдеулер (Виет)',
     progressions: 'Арифметикалық прогрессия (aₙ)',
     functions: 'Логарифмдік теңдеулер',
     trigonometry: 'Тригонометриялық тепе-теңдіктер',
     derivative: 'Дәрежелік функция туындысы',
+    integrals: 'Алғашқы функция және интеграл',
     planimetry: 'Тікбұрышты үшбұрыш ауданы',
+    vectors: 'Векторлар және скаляр көбейтінді',
     stereometry: 'Дұрыс пирамида көлемі'
   },
   uz: {
     linear: 'Chiziqli tenglamalar',
-    percent: 'Foizlar va chegirmalar',
+    inequalities: 'Tengsizliklar va intervallar',
+    systems: 'Tenglamalar sistemasi',
+    percent: 'Foizlar va qotishmalar',
     probability: 'Klassik ehtimollik',
+    combinatorics: 'Kombinatorika va statistika',
+    radicals: 'Ildizlar va darajalar',
     quadratic: 'Kvadrat tenglamalar (Viyet)',
     progressions: 'Arifmetik progressiya (aₙ)',
     functions: 'Logarifmik tenglamalar',
     trigonometry: 'Trigonometrik ayniyatlar',
     derivative: 'Darajali funksiya hosilasi',
+    integrals: 'Boshlang‘ich funksiya va integral',
     planimetry: 'To‘g‘ri burchakli uchburchak yuzasi',
+    vectors: 'Vektorlar va skalyar ko‘paytma',
     stereometry: 'Muntazam piramida hajmi'
   }
 };
@@ -63,6 +81,11 @@ const text = {
     solve: 'Найдите x',
     subtract: 'Вычитаем',
     both: 'с обеих сторон',
+    ineqFind: 'Найдите наименьшее целое решение x',
+    ineqWhy: 'При делении обеих частей неравенства на отрицательное число знак неравенства обязательно меняется на противоположный.',
+    ineqHint: 'Раздели на отрицательный коэффициент и поменяй знак < на >.',
+    sysWhy: 'При почленном сложении уравнений (x + y) и (x − y) коэффициенты при x складываются: получается 2x, а не 1x.',
+    sysHint: 'Сложи левые и правые части: 2x = сумма правых частей.',
     discount: 'Цена',
     off: 'скидка',
     pay: 'Сколько заплатить?',
@@ -75,6 +98,11 @@ const text = {
     fav: 'Подходящих исходов',
     total: 'Всего исходов',
     prob: 'Вероятность',
+    combTask: 'Вычислите число сочетаний',
+    combWhy: 'В сочетаниях порядок не важен, поэтому произведение n(n − 1) обязательно делится на 2! = 2.',
+    combHint: 'Используй формулу C(n, 2) = n(n − 1) / 2.',
+    radWhy: 'Чтобы избавиться от квадратного корня √A = r, правую часть нужно возвести в квадрат r², а не умножить на 2.',
+    radHint: 'Возведи правую часть в квадрат и прибавь вычитаемое.',
     eqWhy: 'При вычитании числа справа нужно вычесть то же число слева. Иначе равенство изменится.',
     pctWhy: 'Процент скидки нужно умножить на исходную цену. Цена в тенге и число процентов — разные величины.',
     probWhy: 'В знаменателе нужны все шары, а не только красные. Каждый шар одинаково вероятен.',
@@ -100,10 +128,16 @@ const text = {
     derivTask: 'Найдите значение производной f\'(2) для функции',
     derivWhy: 'По правилу (x³)\' = 3x² показатель степени уменьшается на единицу, а не остаётся равным 3.',
     derivHint: 'Сначала найди f\'(x) = 3ax² + b, затем подставь x = 2.',
+    intTask: 'Вычислите определённый интеграл',
+    intWhy: 'При интегрировании 3ax² показатель степени делится на 3: первообразная равна ax³, а не 3ax³.',
+    intHint: 'Найди первообразную F(x) = ax³ + bx и вычисли F(2) − F(0).',
     planTask: 'Катеты прямоугольного треугольника равны',
     planFind: 'Найдите площадь треугольника.',
     planWhy: 'Площадь прямоугольного треугольника равна половине произведения катетов S = (a × b) / 2, а не полному произведению.',
     planHint: 'Умножь катеты и раздели произведение на 2.',
+    vecTask: 'Найдите скалярное произведение векторов',
+    vecWhy: 'Скалярное произведение равно сумме произведений одноимённых координат x₁x₂ + y₁y₂, а не сумме всех координат.',
+    vecHint: 'Перемножь абсциссы x₁x₂, перемножь ординаты y₁y₂ и сложи результаты.',
     stereoTask: 'Сторона квадратного основания правильной пирамиды равна',
     stereoHeight: 'высота равна',
     stereoFind: 'Найдите объём пирамиды.',
@@ -114,6 +148,11 @@ const text = {
     solve: 'x-ті табыңыз',
     subtract: 'Азайтамыз',
     both: 'екі жақтан',
+    ineqFind: 'Ең кіші бүтін шешімін табыңыз',
+    ineqWhy: 'Теңсіздіктің екі жағын теріс санға бөлгенде теңсіздік таңбасы қарама-қарсыға өзгереді.',
+    ineqHint: 'Теріс коэффициентке бөліп, < таңбасын > таңбасына ауыстырыңыз.',
+    sysWhy: '(x + y) және (x − y) теңдеулерін мүшелеп қосқанда x коэффициенттері қосылып, 2x шығады.',
+    sysHint: 'Екі теңдеуді қосыңыз: 2x = оң жақтардың қосындысы.',
     discount: 'Баға',
     off: 'жеңілдік',
     pay: 'Қанша төлейсіз?',
@@ -126,6 +165,11 @@ const text = {
     fav: 'Қолайлы нәтижелер',
     total: 'Барлық нәтижелер',
     prob: 'Ықтималдық',
+    combTask: 'Терулер санын есептеңіз',
+    combWhy: 'Терулерде реттілік маңызды емес, сондықтан n(n − 1) көбейтіндісі 2! = 2 санына бөлінеді.',
+    combHint: 'C(n, 2) = n(n − 1) / 2 формуласын қолданыңыз.',
+    radWhy: '√A = r теңдеуінде түбірден құтылу үшін оң жақты 2-ге көбейтпей, квадраттаймыз (r²).',
+    radHint: 'Оң жақты квадраттап, бос мүшені қосыңыз.',
     eqWhy: 'Оң жақтан санды азайтсақ, сол жақтан да сол санды азайтамыз. Әйтпесе теңдік өзгереді.',
     pctWhy: 'Жеңілдік пайызын бастапқы бағаға көбейту керек. Теңгемен баға мен пайыз саны — әртүрлі шамалар.',
     probWhy: 'Бөлімге тек қызыл емес, барлық шар кіреді. Әр шардың алыну мүмкіндігі бірдей.',
@@ -151,10 +195,16 @@ const text = {
     derivTask: 'Функция үшін f\'(2) туынды мәнін табыңыз',
     derivWhy: '(x³)\' = 3x² ережесі бойынша дәреже көрсеткіші бірге кемиді, 3 күйінде қалмайды.',
     derivHint: 'Алдымен f\'(x) = 3ax² + b табыңыз, сосын x = 2 қойыңыз.',
+    intTask: 'Анықталған интегралды есептеңіз',
+    intWhy: '3ax² өрнегін интегралдағанда коэффициент 3-ке бөлінеді: алғашқы функция 3ax³ емес, ax³ болады.',
+    intHint: 'F(x) = ax³ + bx алғашқы функциясын тауып, F(2) − F(0) есептеңіз.',
     planTask: 'Тікбұрышты үшбұрыштың катеттері',
     planFind: 'Үшбұрыштың ауданын табыңыз.',
     planWhy: 'Тікбұрышты үшбұрыш ауданы катеттер көбейтіндісінің жартысына тең: S = (a × b) / 2.',
     planHint: 'Катеттерді көбейтіп, нәтижені 2-ге бөліңіз.',
+    vecTask: 'Векторлардың скаляр көбейтіндісін табыңыз',
+    vecWhy: 'Скаляр көбейтінді сәйкес координаталар көбейтіндісінің қосындысына тең: x₁x₂ + y₁y₂.',
+    vecHint: 'x₁x₂ және y₁y₂ көбейтінділерін тауып, оларды қосыңыз.',
     stereoTask: 'Дұрыс пирамиданың шаршы табанының қабырғасы',
     stereoHeight: 'биіктігі',
     stereoFind: 'Пирамиданың көлемін табыңыз.',
@@ -165,6 +215,11 @@ const text = {
     solve: 'x ni toping',
     subtract: 'Ayiramiz',
     both: 'ikkala tomondan',
+    ineqFind: 'Eng kichik butun yechimni toping',
+    ineqWhy: 'Tengsizlikning ikkala tomonini manfiy songa bo‘lganda tengsizlik ishorasi qarama-qarshiga o‘zgaradi.',
+    ineqHint: 'Manfiy koeffitsiyentga bo‘lib, < ishorasini > ga almashtiring.',
+    sysWhy: '(x + y) va (x − y) tenglamalarni qo‘shganda x oldidagi koeffitsiyentlar qo‘shilib, 2x hosil bo‘ladi.',
+    sysHint: 'Ikkala tenglamani qo‘shing: 2x = o‘ng tomonlar yig‘indisi.',
     discount: 'Narx',
     off: 'chegirma',
     pay: 'Qancha to‘lanadi?',
@@ -177,6 +232,11 @@ const text = {
     fav: 'Mos natijalar',
     total: 'Jami natijalar',
     prob: 'Ehtimollik',
+    combTask: 'Kombinatsiyalar sonini hisoblang',
+    combWhy: 'Kombinatsiyalarda tartib muhim emas, shuning uchun n(n − 1) ko‘paytma 2! = 2 ga bo‘linadi.',
+    combHint: 'C(n, 2) = n(n − 1) / 2 formulasidan foydalaning.',
+    radWhy: '√A = r tenglamada ildizdan qutulish uchun o‘ng tomonni 2 ga ko‘paytirmay, kvadratga oshiramiz (r²).',
+    radHint: 'O‘ng tomonni kvadratga oshirib, ozod hadni qo‘shing.',
     eqWhy: 'O‘ng tomondan sonni ayirsak, chap tomondan ham shu sonni ayiramiz. Aks holda tenglik o‘zgaradi.',
     pctWhy: 'Chegirma foizini boshlang‘ich narxga ko‘paytirish kerak. Tengedagi narx va foiz soni turli kattaliklar.',
     probWhy: 'Maxrajga faqat qizil emas, barcha sharlar kiradi. Har bir shar teng ehtimolli.',
@@ -202,10 +262,16 @@ const text = {
     derivTask: 'Funksiya uchun f\'(2) hosila qiymatini toping',
     derivWhy: '(x³)\' = 3x² qoidaga ko‘ra daraja ko‘rsatkichi bittaga kamayadi, 3 bo‘lib qolmaydi.',
     derivHint: 'Avval f\'(x) = 3ax² + b ni toping, so‘ng x = 2 qo‘ying.',
+    intTask: 'Aniq integralni hisoblang',
+    intWhy: '3ax² ni integrallashda koeffitsiyent 3 ga bo‘linadi: boshlang‘ich funksiya 3ax³ emas, ax³ bo‘ladi.',
+    intHint: 'F(x) = ax³ + bx boshlang‘ich funksiyani topib, F(2) − F(0) ni hisoblang.',
     planTask: 'To‘g‘ri burchakli uchburchak katetlari',
     planFind: 'Uchburchak yuzasini toping.',
     planWhy: 'To‘g‘ri burchakli uchburchak yuzasi katetlar ko‘paytmasining yarmiga teng: S = (a × b) / 2.',
     planHint: 'Katetlarni ko‘paytirib, natijani 2 ga bo‘ling.',
+    vecTask: 'Vektorlarning skalyar ko‘paytmasini toping',
+    vecWhy: 'Skalyar ko‘paytma mos koordinatalar ko‘paytmasining yig‘indisiga teng: x₁x₂ + y₁y₂.',
+    vecHint: 'x₁x₂ va y₁y₂ ko‘paytmalarni topib, ularni qo‘shing.',
     stereoTask: 'Muntazam piramidaning kvadrat asosi tomoni',
     stereoHeight: 'balandligi',
     stereoFind: 'Piramida hajmini toping.',
@@ -221,38 +287,56 @@ export function topicName(topic: LabTopic, language: Language) {
 const edgeReasons: Record<Language, Record<LabTopic, [string, string]>> = {
   ru: {
     linear: ['Число вычли только справа. Одинаковое действие нужно применять к обеим сторонам.', 'В последнем шаге нужно делить на коэффициент перед x.'],
+    inequalities: ['При переносе слагаемого в правую часть забыли поменять знак.', 'В строгом неравенстве x > k наименьшее целое решение равно k + 1, а не k.'],
+    systems: ['При сложении уравнений вычли правые части вместо их сложения.', 'В последнем шаге забыли разделить сумму на коэффициент 2.'],
     percent: ['Процент — сотая доля. Нужно делить на 100, не на 10.', 'Скидка уменьшает цену: её вычитают, а не прибавляют.'],
     probability: ['Спрашивают о синем шаре. Нужно считать синие, а не красные шары.', 'В числителе — подходящие исходы, в знаменателе — все. Дробь перевёрнута.'],
+    combinatorics: ['В числителе для C(n, 2) берут n(n − 1), а не n(n + 1).', 'При делении произведения на 2 разделили на 4 вместо 2! = 2.'],
+    radicals: ['Подкоренное выражение не может равняться сумме без возведения в квадрат.', 'При переносе вычитаемого в правую часть нужно прибавить число, а не вычесть.'],
     quadratic: ['Произведение и сумма корней перепутаны местами.', 'В ответе нужно выбрать больший из двух корней, а не меньший.'],
     progressions: ['Вместо первого члена a₁ подставили разность d.', 'В последнем шаге перемножили числа вместо сложения a₁ и прироста.'],
     functions: ['Основание логарифма перепутали с показателем степени.', 'При переносе вычитаемого в правую часть нужно прибавить число, а не вычесть.'],
     trigonometry: ['При вынесении общего множителя потеряли второе слагаемое.', 'К результату тождества забыли прибавить свободное слагаемое.'],
     derivative: ['При дифференцировании ax³ забыли умножить коэффициент на 3.', 'Производная линейного члена bx равна b, а не нулю.'],
+    integrals: ['Первообразная константы b равна bx, а не нулю.', 'При подстановке верхнего предела x = 2 возвели 2 в квадрат вместо куба 2³ = 8.'],
     planimetry: ['Вместо умножения катетов нашли их сумму.', 'При делении произведения катетов на 2 допустили ошибку: разделили на 4.'],
+    vectors: ['Перепутали координаты: умножили x₁ на y₂ вместо x₁ на x₂.', 'В последнем шаге вычли произведения координат вместо их сложения.'],
     stereometry: ['Площадь квадрата со стороной a равна a², а не периметру 4a.', 'В последнем шаге разделили на 2 вместо деления на 3 по формуле пирамиды.']
   },
   kk: {
     linear: ['Сан тек оң жақтан азайтылды. Бірдей амалды екі жаққа қолдану керек.', 'Соңғы қадамда x алдындағы коэффициентке бөлу керек.'],
+    inequalities: ['Бос мүшені оң жаққа шығарғанда таңбасын ауыстыру ұмытылған.', 'x > k қатаң теңсіздігінде ең кіші бүтін шешім k емес, k + 1 болады.'],
+    systems: ['Теңдеулерді қосқанда оң жақтарын қосудың орнына азайтқан.', 'Соңғы қадамда қосындыны 2-ге бөлу ұмытылған.'],
     percent: ['Пайыз — жүзден бір үлес. 10-ға емес, 100-ге бөлеміз.', 'Жеңілдік бағаны азайтады: оны қоспай, азайтамыз.'],
     probability: ['Көк шар сұралған. Қызыл емес, көк шарларды санау керек.', 'Алымда қолайлы, бөлімде барлық нәтижелер болады. Бөлшек кері жазылған.'],
+    combinatorics: ['C(n, 2) алымында n(n + 1) емес, n(n − 1) көбейтіндісі алынады.', 'Соңғы қадамда 2! = 2 орнына 4-ке бөлген.'],
+    radicals: ['Түбірден құтылу үшін оң жақты квадраттау қажет.', 'Бос мүшені оң жаққа шығарғанда азайту емес, қосу керек.'],
     quadratic: ['Түбірлердің қосындысы мен көбейтіндісі ауысып кеткен.', 'Жауапта кіші түбірді емес, үлкен түбірді таңдау керек.'],
     progressions: ['Бірінші мүше a₁ орнына d айырымы жазылған.', 'Соңғы қадамда қосудың орнына көбейту орындалған.'],
     functions: ['Логарифм негізі мен дәреже көрсеткіші ауысып кеткен.', 'Бос мүшені оң жаққа шығарғанда азайту емес, қосу керек.'],
     trigonometry: ['Ортақ көбейткішті шығарғанда екінші қосылғыш қалып қойған.', 'Соңғы қадамда бос мүшені қосу ұмытылған.'],
     derivative: ['ax³ туындысын тапқанда коэффициентті 3-ке көбейту ұмытылған.', 'bx сызықтық мүшесінің туындысы 0 емес, b болады.'],
+    integrals: ['b тұрақтысының алғашқы функциясы 0 емес, bx болады.', 'x = 2 мәнін қойғанда 2³ = 8 орнына 2² = 4 алған.'],
     planimetry: ['Катеттерді көбейтудің орнына оларды қосқан.', 'Соңғы қадамда 2-ге емес, 4-ке бөлген.'],
+    vectors: ['Координаталарды шатастырып, x₁-ді x₂ орнына y₂-ге көбейткен.', 'Соңғы қадамда көбейтінділерді қосудың орнына азайтқан.'],
     stereometry: ['Шаршы ауданы 4a емес, a² болады.', 'Пирамида формуласы бойынша 2-ге емес, 3-ке бөлу керек.']
   },
   uz: {
     linear: ['Son faqat o‘ng tomondan ayirildi. Ikkala tomonga bir xil amal qo‘llash kerak.', 'Oxirgi qadamda x oldidagi koeffitsiyentga bo‘lish kerak.'],
+    inequalities: ['Ozod hadni o‘ng tomonga o‘tkazishda ishora o‘zgartirilmagan.', 'x > k qat’iy tengsizlikda eng kichik butun yechim k emas, k + 1 ga teng.'],
+    systems: ['Tenglamalarni qo‘shishda o‘ng tomonlar ayirib yuborilgan.', 'Oxirgi qadamda yig‘indini 2 ga bo‘lish unutilgan.'],
     percent: ['Foiz — yuzdan bir ulush. 10 ga emas, 100 ga bo‘lamiz.', 'Chegirma narxni kamaytiradi: uni qo‘shmaymiz, ayiramiz.'],
     probability: ['Ko‘k shar so‘ralgan. Qizil emas, ko‘k sharlarni sanash kerak.', 'Suratda mos natijalar, maxrajda barcha natijalar. Kasr teskari yozilgan.'],
+    combinatorics: ['C(n, 2) suratida n(n + 1) emas, n(n − 1) olinadi.', 'Oxirgi qadamda 2! = 2 o‘rniga 4 ga bo‘lingan.'],
+    radicals: ['Ildizdan qutulish uchun o‘ng tomonni kvadratga oshirish shart.', 'Ozod hadni o‘ng tomonga o‘tkazishda ayirish emas, qo‘shish kerak.'],
     quadratic: ['Ildizlar yig‘indisi va ko‘paytmasi o‘rni almashib qolgan.', 'Javobda kichik ildiz emas, katta ildiz tanlanishi kerak.'],
     progressions: ['Birinchi had a₁ o‘rniga d ayirma qo‘yilgan.', 'Oxirgi qadamda qo‘shish o‘rniga ko‘paytirish bajarilgan.'],
     functions: ['Logarifm asosi va daraja ko‘rsatkichi almashib qolgan.', 'Ozod hadni o‘ng tomonga o‘tkazishda ayirish emas, qo‘shish kerak.'],
     trigonometry: ['Umumiy ko‘paytuvchini chiqarishda ikkinchi had tushib qolgan.', 'Oxirgi qadamda ozod hadni qo‘shish unutilgan.'],
     derivative: ['ax³ hosilasini topishda koeffitsiyentni 3 ga ko‘paytirish unutilgan.', 'bx chiziqli hadning hosilasi 0 emas, b ga teng.'],
+    integrals: ['b o‘zgarmasning boshlang‘ich funksiyasi 0 emas, bx ga teng.', 'x = 2 ni qo‘yganda 2³ = 8 o‘rniga 2² = 4 olingan.'],
     planimetry: ['Katetlarni ko‘paytirish o‘rniga ularni qo‘shib qo‘ygan.', 'Oxirgi qadamda 2 ga emas, 4 ga bo‘lingan.'],
+    vectors: ['Koordinatalar adashtirilib, x₁ ni x₂ o‘rniga y₂ ga ko‘paytirilgan.', 'Oxirgi qadamda ko‘paytmalarni qo‘shish o‘rniga ayirilgan.'],
     stereometry: ['Kvadrat yuzasi 4a emas, a² ga teng.', 'Piramida formulasiga ko‘ra 2 ga emas, 3 ga bo‘lish kerak.']
   }
 };
@@ -310,6 +394,52 @@ export function makeChallenge(topic: LabTopic, seed: number, language: Language)
     );
   }
 
+  if (topic === 'inequalities') {
+    const a = 2 + (n % 4), x = 2 + Math.floor(n / 4), b = 3 + n, prod = a * x, rhs = b - prod;
+    const aa = a + 1, xx = x + 2, bb = b + 2, prod2 = aa * xx, rhs2 = bb - prod2;
+    return vary(
+      {
+        id, topic,
+        task: `−${a}x + ${b} < ${rhs}. ${t.ineqFind}.`,
+        steps: [`−${a}x < ${rhs} − ${b} = −${prod}`, `x < (−${prod}) / (−${a}) = ${x}`, `x_min = ${x - 1}`],
+        wrongStep: 1,
+        explanation: t.ineqWhy,
+        repair: `−${a}x < −${prod} ⇒ x > ${x}; x_min = ${x + 1}.`,
+        transfer: `−${aa}x + ${bb} < ${rhs2}. ${t.ineqFind}.`,
+        answer: xx + 1, unit: '',
+        hints: [t.ineqHint, `−${aa}x < −${prod2} ⇒ x > ${xx}`, `x_min = ${xx + 1}`],
+        solution: `x > ${xx} → x_min = ${xx + 1}`
+      },
+      n, language,
+      [`−${a}x < −${prod}`, `x > ${x}`, `x_min = ${x + 1}`],
+      [`−${a}x < ${rhs} + ${b}`, `x > −(${rhs + b})/${a}`, `x_min = 0`],
+      ['', '', `x_min = ${x}`]
+    );
+  }
+
+  if (topic === 'systems') {
+    const x = 4 + n, y = 1 + (n % 5), sum = x + y, diff = x - y;
+    const xx = x + 3, yy = y + 1, sum2 = xx + yy, diff2 = xx - yy;
+    return vary(
+      {
+        id, topic,
+        task: `{ x + y = ${sum}; x − y = ${diff} }. ${t.solve}.`,
+        steps: [`(x + y) + (x − y) = ${sum} + ${diff}`, `x = ${sum + diff}`, `x = ${sum + diff}`],
+        wrongStep: 1,
+        explanation: t.sysWhy,
+        repair: `2x = ${sum} + ${diff} = ${2 * x} ⇒ x = ${x}.`,
+        transfer: `{ x + y = ${sum2}; x − y = ${diff2} }. ${t.solve}.`,
+        answer: xx, unit: '',
+        hints: [t.sysHint, `2x = ${sum2} + ${diff2} = ${2 * xx}`, `x = ${2 * xx} / 2 = ${xx}`],
+        solution: `2x = ${2 * xx} → x = ${xx}`
+      },
+      n, language,
+      [`(x + y) + (x − y) = ${sum} + ${diff}`, `2x = ${2 * x}`, `x = ${x}`],
+      [`2x = ${sum} − ${diff} = ${2 * y}`, `x = ${y}`, `x = ${y}`],
+      ['', '', `x = ${2 * x}`]
+    );
+  }
+
   if (topic === 'percent') {
     const price = 10000 + n * 1000, p = 10 + (n % 3) * 5, other = price + 5000, answer = (other * (100 - p)) / 100;
     return vary(
@@ -351,6 +481,52 @@ export function makeChallenge(topic: LabTopic, seed: number, language: Language)
       [`${t.fav}: ${b}`, `${t.total}: ${total}`, ''],
       [`${t.fav}: ${r}`, `${t.total}: ${total}`, `${t.prob}: ${r}/${total}`],
       ['', '', `${t.prob}: ${total}/${b}`]
+    );
+  }
+
+  if (topic === 'combinatorics') {
+    const m = 5 + n, prod = m * (m - 1), val = prod / 2;
+    const mm = m + 2, prod2 = mm * (mm - 1), ans = prod2 / 2;
+    return vary(
+      {
+        id, topic,
+        task: `${t.combTask}: C(${m}, 2).`,
+        steps: [`C(${m}, 2) = ${m}! / (2! · ${m - 2}!)`, `C(${m}, 2) = ${m} × ${m - 1}`, `= ${prod}`],
+        wrongStep: 1,
+        explanation: t.combWhy,
+        repair: `C(${m}, 2) = (${m} × ${m - 1}) / 2 = ${prod} / 2 = ${val}.`,
+        transfer: `${t.combTask}: C(${mm}, 2).`,
+        answer: ans, unit: '',
+        hints: [t.combHint, `(${mm} × ${mm - 1}) / 2`, `${prod2} / 2 = ${ans}`],
+        solution: `(${mm} × ${mm - 1}) / 2 = ${ans}`
+      },
+      n, language,
+      [`${m} × ${m - 1} = ${prod}`, `C(${m}, 2) = ${prod} / 2`, `= ${val}`],
+      [`${m} × ${m + 1} = ${m * (m + 1)}`, `C(${m}, 2) = ${(m * (m + 1)) / 2}`, `= ${(m * (m + 1)) / 2}`],
+      ['', '', `= ${prod} / 4 = ${prod / 4}`]
+    );
+  }
+
+  if (topic === 'radicals') {
+    const r = 3 + (n % 6), shift = 2 + n, val = r * r + shift;
+    const r2 = r + 1, s2 = shift + 4, ans = r2 * r2 + s2;
+    return vary(
+      {
+        id, topic,
+        task: `√(x − ${shift}) = ${r}. ${t.solve}.`,
+        steps: [`x − ${shift} ≥ 0`, `x − ${shift} = ${r} × 2 = ${r * 2}`, `x = ${r * 2 + shift}`],
+        wrongStep: 1,
+        explanation: t.radWhy,
+        repair: `x − ${shift} = ${r}² = ${r * r}; x = ${r * r} + ${shift} = ${val}.`,
+        transfer: `√(x − ${s2}) = ${r2}. ${t.solve}.`,
+        answer: ans, unit: '',
+        hints: [t.radHint, `x − ${s2} = ${r2}² = ${r2 * r2}`, `x = ${r2 * r2} + ${s2}`],
+        solution: `x = ${r2}² + ${s2} = ${ans}`
+      },
+      n, language,
+      [`x − ${shift} ≥ 0`, `x − ${shift} = ${r}² = ${r * r}`, `x = ${val}`],
+      [`x − ${shift} = ${r}`, `x = ${r} + ${shift}`, `x = ${r + shift}`],
+      ['', '', `x = ${r * r} − ${shift} = ${r * r - shift}`]
     );
   }
 
@@ -469,6 +645,29 @@ export function makeChallenge(topic: LabTopic, seed: number, language: Language)
     );
   }
 
+  if (topic === 'integrals') {
+    const a = 1 + (n % 4), b = 2 + n, right = 8 * a + 2 * b;
+    const aa = a + 1, bb = b + 3, ans = 8 * aa + 2 * bb;
+    return vary(
+      {
+        id, topic,
+        task: `${t.intTask}: ∫₀² (${3 * a}x² + ${b}) dx.`,
+        steps: [`(x³)' = 3x²`, `F(x) = ${3 * a}x³ + ${b}x`, `F(2) − F(0) = ${24 * a + 2 * b}`],
+        wrongStep: 1,
+        explanation: t.intWhy,
+        repair: `F(x) = ${a}x³ + ${b}x; F(2) − F(0) = ${8 * a} + ${2 * b} = ${right}.`,
+        transfer: `${t.intTask}: ∫₀² (${3 * aa}x² + ${bb}) dx.`,
+        answer: ans, unit: '',
+        hints: [t.intHint, `F(x) = ${aa}x³ + ${bb}x`, `F(2) = ${8 * aa} + ${2 * bb} = ${ans}`],
+        solution: `${8 * aa} + ${2 * bb} = ${ans}`
+      },
+      n, language,
+      [`F(x) = ${a}x³ + ${b}x`, `F(2) = ${8 * a} + ${2 * b}`, `= ${right}`],
+      [`F(x) = ${a}x³`, `F(2) = ${8 * a}`, `= ${8 * a}`],
+      ['', '', `F(2) = ${4 * a} + ${2 * b} = ${4 * a + 2 * b}`]
+    );
+  }
+
   if (topic === 'planimetry') {
     const a = 4 + 2 * (n % 4), b = 3 + Math.floor(n / 4), s = (a * b) / 2;
     const aa = a + 2, bb = b + 1, ans = (aa * bb) / 2;
@@ -492,6 +691,31 @@ export function makeChallenge(topic: LabTopic, seed: number, language: Language)
     );
   }
 
+  if (topic === 'vectors') {
+    const ax = 2 + (n % 5), ay = 3 + Math.floor(n / 5), bx = 4 + n, by = 2;
+    const dot = ax * bx + ay * by;
+    const ax2 = ax + 1, ay2 = ay + 1, bx2 = bx + 2, by2 = by + 1;
+    const ans = ax2 * bx2 + ay2 * by2;
+    return vary(
+      {
+        id, topic,
+        task: `${t.vecTask}: a⃗(${ax}; ${ay}), b⃗(${bx}; ${by}).`,
+        steps: [`a⃗ · b⃗ = x₁x₂ + y₁y₂`, `a⃗ · b⃗ = (${ax} + ${bx}) + (${ay} + ${by})`, `= ${ax + bx + ay + by}`],
+        wrongStep: 1,
+        explanation: t.vecWhy,
+        repair: `a⃗ · b⃗ = ${ax} × ${bx} + ${ay} × ${by} = ${ax * bx} + ${ay * by} = ${dot}.`,
+        transfer: `${t.vecTask}: a⃗(${ax2}; ${ay2}), b⃗(${bx2}; ${by2}).`,
+        answer: ans, unit: '',
+        hints: [t.vecHint, `${ax2} × ${bx2} + ${ay2} × ${by2}`, `${ax2 * bx2} + ${ay2 * by2} = ${ans}`],
+        solution: `${ax2 * bx2} + ${ay2 * by2} = ${ans}`
+      },
+      n, language,
+      [`x₁x₂ = ${ax * bx}, y₁y₂ = ${ay * by}`, `a⃗ · b⃗ = ${ax * bx} + ${ay * by}`, `= ${dot}`],
+      [`x₁y₂ = ${ax * by}, y₁x₂ = ${ay * bx}`, `a⃗ · b⃗ = ${ax * by} + ${ay * bx}`, `= ${ax * by + ay * bx}`],
+      ['', '', `= ${ax * bx} − ${ay * by} = ${ax * bx - ay * by}`]
+    );
+  }
+
   const a = 5 + (n % 4), h = 3 * (1 + Math.floor(n / 4)), v = (a * a * h) / 3;
   const aa = a + 1, hh = h + 3, ans = (aa * aa * hh) / 3;
   return vary(
@@ -512,6 +736,13 @@ export function makeChallenge(topic: LabTopic, seed: number, language: Language)
     [`S = 4a = ${4 * a}`, `S × h = ${4 * a * h}`, `V = ${(4 * a * h) / 3}`],
     ['', '', `V = ${a * a * h} / 2 = ${(a * a * h) / 2}`]
   );
+}
+
+export function formatLabTask(task: string): string {
+  return task
+    .replace(/\.\s*(Найдите x|x-ті табыңыз|x ni toping)\.?$/i, '')
+    .replace(/^(Вычислите значение выражения|Өрнектің мәнін есептеңіз|Ifodaning qiymatini hisoblang):\s*/i, '')
+    .replace(/\.$/, '');
 }
 
 export function parseNumericAnswer(raw: string): number | null {

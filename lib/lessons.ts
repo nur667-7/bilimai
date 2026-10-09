@@ -195,6 +195,114 @@ export const lessons: Record<Language, Lesson[]> = {
         { text: "Қабырғасы 3-ке тең кубтың көлемі нешеге тең?", options: ["9", "27", "18"], correct: 1, why: "V = a³ = 3³ = 27." },
         { text: "Бірдей табан мен биіктікте пирамида көлемі призма көлемінен неше есе кіші?", options: ["2 есе", "3 есе", "4 есе"], correct: 1, why: "Пирамида формуласында 1/3 коэффициенті бар." }
       ]
+    },
+    {
+      id: "inequalities",
+      section: "Алгебра · ҰБТ",
+      title: "Теңсіздіктер және интервалдар әдісі",
+      intro: "Теріс санға бөлгенде теңсіздік таңбасын өзгертуді және аралықтар таңбасын тексереміз.",
+      rule: "Теңсіздіктің екі жағын теріс санға көбейткенде немесе бөлгенде теңсіздік таңбасы қарама-қарсыға өзгереді (< таңбасы > болады).",
+      example: "−2x + 6 > 14  ⇒  x < −4",
+      steps: [
+        "Екі жақтан 6-ны азайтамыз: −2x > 8.",
+        "Екі жақты −2-ге бөліп, таңбаны өзгертеміз: x < −4.",
+        "Жауабы: x ∈ (−∞; −4)."
+      ],
+      questions: [
+        { text: "−3x > 12 теңсіздігін шешіңіз.", options: ["x > −4", "x < −4", "x < 4"], correct: 1, why: "−3 теріс санына бөлгенде таңба өзгереді: x < −4." },
+        { text: "Қай амалда теңсіздік таңбасы қарама-қарсыға өзгереді?", options: ["Теріс санды қосқанда", "Теріс санға көбейткенде немесе бөлгенде", "Қосылғышты оң жаққа шығарғанда"], correct: 1, why: "Тек теріс санға көбейту немесе бөлу теңсіздік бағытын өзгертеді." },
+        { text: "(x − 1)(x − 4) < 0 теңсіздігінің бүтін шешімдерін табыңыз.", options: ["2 және 3", "1, 2, 3, 4", "0 және 5"], correct: 0, why: "(1; 4) аралығында өрнек теріс, бүтін мәндері: 2 және 3." }
+      ]
+    },
+    {
+      id: "systems",
+      section: "Алгебра · ҰБТ",
+      title: "Теңдеулер жүйесі және мәтіндік есептер",
+      intro: "Алгебралық қосу және алмастыру әдістерімен екі айнымалылы жүйені шешеміз.",
+      rule: "Жүйенің екі теңдеуін мүшелеп қосқанда қарама-қарсы коэффициентті айнымалылар (+y пен −y) жойылып, бір айнымалылы теңдеу шығады.",
+      example: "{ x + y = 9;  x − y = 3 }  ⇒  2x = 12",
+      steps: [
+        "Теңдеулерді мүшелеп қосамыз: (x + x) + (y − y) = 9 + 3 → 2x = 12.",
+        "Екіге бөліп бірінші айнымалыны табамыз: x = 6.",
+        "Бірінші теңдеуге қоямыз: 6 + y = 9 → y = 3."
+      ],
+      questions: [
+        { text: "x + y = 10 және x − y = 4 жүйесінен x-ті табыңыз.", options: ["3", "7", "6"], correct: 1, why: "Екі теңдеуді қоссақ: 2x = 14, демек x = 7." },
+        { text: "x + y = 10 және x = 7 болса, y неге тең?", options: ["3", "17", "7"], correct: 0, why: "7 + y = 10 теңдеуінен y = 10 − 7 = 3." },
+        { text: "Қайықтың ағыспен жылдамдығы v + u, ағысқа қарсы v − u. Олардың қосындысы неге тең?", options: ["2u", "2v", "v − u"], correct: 1, why: "(v + u) + (v − u) = 2v (+u мен −u жойылады)." }
+      ]
+    },
+    {
+      id: "combinatorics",
+      section: "Мат. сауаттылық · ҰБТ",
+      title: "Комбинаторика және Ньютон биномы",
+      intro: "Реттілік маңызды не маңызды емес екенін ажыратып, терулер мен орналастыруларды санаймыз.",
+      rule: "Егер таңдау реті маңызды болмаса, n элементтен k элемент алу тәсілдер саны — теру формуласы: Cₙᵏ = n! / (k! × (n − k)!).",
+      example: "C₆² = (6 × 5) / (2 × 1) = 15",
+      steps: [
+        "Алымында екі үлкен көбейткішті аламыз: 6 × 5 = 30.",
+        "Жұп ішіндегі реттілік маңызды болмағандықтан 2! = 2-ге бөлеміз: 30 / 2 = 15.",
+        "Жауабы: 15 тәсіл."
+      ],
+      questions: [
+        { text: "5 оқушыдан 2 кезекшіні неше тәсілмен таңдауға болады?", options: ["20", "10", "7"], correct: 1, why: "Реті маңызды емес: C₅² = (5 × 4) / 2 = 10." },
+        { text: "4! факториалы нешеге тең?", options: ["24", "16", "10"], correct: 0, why: "4! = 1 × 2 × 3 × 4 = 24." },
+        { text: "Терулер Cₙᵏ орналастырулардан Aₙᵏ несімен ерекшеленеді?", options: ["Терулерде элементтер реті маңызды емес (k!-ға бөлінеді)", "Терулерде элементтер қайталанады", "Формулалары бірдей"], correct: 0, why: "Реттілікті есепке алмау үшін Aₙᵏ мәні k! санына бөлінеді." }
+      ]
+    },
+    {
+      id: "radicals",
+      section: "Алгебра · ҰБТ",
+      title: "Дәрежелер, түбірлер және алгебралық бөлшектер",
+      intro: "Дәреже көрсеткіштерінің қасиеттері мен арифметикалық түбірді қатесіз түрлендіреміз.",
+      rule: "Негіздері бірдей дәрежелерді көбейткенде көрсеткіштер қосылады (aᵐ × aⁿ = aᵐ⁺ⁿ), ал дәрежені дәрежеге шығарғанда көбейтіледі ((aᵐ)ⁿ = aᵐⁿ).",
+      example: "(2³)² × 2⁻¹ = 2⁶⁻¹ = 2⁵ = 32",
+      steps: [
+        "Дәрежені дәрежеге шығарамыз: (2³)² = 2³ˣ² = 2⁶.",
+        "Көбейту кезінде көрсеткіштерді қосамыз: 2⁶ × 2⁻¹ = 2⁵.",
+        "Есептейміз: 2⁵ = 32."
+      ],
+      questions: [
+        { text: "a⁴ × a³ өрнегін ықшамдаңыз.", options: ["a¹²", "a⁷", "a¹"], correct: 1, why: "Көбейткенде көрсеткіштер қосылады: 4 + 3 = 7 → a⁷." },
+        { text: "(3²)³ / 3⁴ өрнегінің мәнін есептеңіз.", options: ["9", "3", "27"], correct: 0, why: "3⁶ / 3⁴ = 3⁶⁻⁴ = 3² = 9." },
+        { text: "√((−5)²) өрнегі неге тең?", options: ["−5", "5", "25"], correct: 1, why: "Арифметикалық квадрат түбір теріс болмайды: √25 = |−5| = 5." }
+      ]
+    },
+    {
+      id: "integrals",
+      section: "Мат. талдау · ҰБТ",
+      title: "Алғашқы функция және анықталған интеграл",
+      intro: "Ньютон–Лейбниц формуласы бойынша интеграл мен қисықсызықты трапеция ауданын табамыз.",
+      rule: "xⁿ дәрежелік функциясының алғашқы функциясы xⁿ⁺¹ / (n + 1) + C. Анықталған интеграл: ∫ₐᵇ f(x)dx = F(b) − F(a).",
+      example: "∫₀² (3x² + 2) dx = [x³ + 2x]₀² = 12",
+      steps: [
+        "Алғашқы функцияны табамыз: F(x) = x³ + 2x.",
+        "Жоғарғы шекті қоямыз: F(2) = 2³ + 2 × 2 = 12.",
+        "Төменгі шекті азайтамыз: F(2) − F(0) = 12 − 0 = 12."
+      ],
+      questions: [
+        { text: "f(x) = 3x² функциясының алғашқы функциясы F(x)?", options: ["6x + C", "x³ + C", "3x³ + C"], correct: 1, why: "3 × (x³ / 3) + C = x³ + C." },
+        { text: "∫₀³ 2x dx интегралын есептеңіз.", options: ["9", "6", "3"], correct: 0, why: "F(x) = x². Сонда F(3) − F(0) = 3² − 0 = 9." },
+        { text: "Ньютон–Лейбниц формуласында шектер қалай қойылады?", options: ["F(b) − F(a) (жоғарғы шек минус төменгі шек)", "F(a) − F(b)", "F(b) + F(a)"], correct: 0, why: "Алдымен жоғарғы b шегі қойылып, одан төменгі a шегі азайтылады." }
+      ]
+    },
+    {
+      id: "vectors",
+      section: "Геометрия · ҰБТ",
+      title: "Векторлар және координаталар әдісі",
+      intro: "Вектордың ұзындығын, скаляр көбейтіндісін және перпендикулярлық шартын есептейміз.",
+      rule: "a⃗(x₁; y₁) және b⃗(x₂; y₂) векторларының скаляр көбейтіндісі: a⃗ · b⃗ = x₁x₂ + y₁y₂. Векторлар перпендикуляр болуы үшін a⃗ · b⃗ = 0 болуы шарт.",
+      example: "a⃗(3; 4) · b⃗(2; −1) = 3 × 2 + 4 × (−1) = 2",
+      steps: [
+        "Бірінші координаталарды көбейтеміз: 3 × 2 = 6.",
+        "Екінші координаталарды көбейтеміз: 4 × (−1) = −4.",
+        "Қосамыз: 6 + (−4) = 2."
+      ],
+      questions: [
+        { text: "a⃗(2; 3) және b⃗(4; −1) векторларының скаляр көбейтіндісін табыңыз.", options: ["11", "5", "8"], correct: 1, why: "2 × 4 + 3 × (−1) = 8 − 3 = 5." },
+        { text: "a⃗(3; 4) векторының ұзындығы (модулі) неге тең?", options: ["7", "5", "25"], correct: 1, why: "|a⃗| = √(3² + 4²) = √25 = 5." },
+        { text: "Нөлдік емес екі вектор қашан перпендикуляр болады?", options: ["Скаляр көбейтіндісі 0-ге тең болғанда", "Скаляр көбейтіндісі 1-ге тең болғанда", "Теріс болғанда"], correct: 0, why: "cos 90° = 0 болғандықтан, перпендикуляр векторлардың скаляр көбейтіндісі 0-ге тең." }
+      ]
     }
   ],
   ru: [
@@ -376,6 +484,114 @@ export const lessons: Record<Language, Lesson[]> = {
         { text: "Площадь основания пирамиды 12, высота 5. Найдите объём.", options: ["60", "20", "30"], correct: 1, why: "V = (12 × 5) / 3 = 20." },
         { text: "Чему равен объём куба с ребром 3?", options: ["9", "27", "18"], correct: 1, why: "V = a³ = 3³ = 27." },
         { text: "Во сколько раз объём пирамиды меньше объёма призмы с тем же основанием и высотой?", options: ["В 2 раза", "В 3 раза", "В 4 раза"], correct: 1, why: "В формуле объёма пирамиды и конуса стоит множитель 1/3." }
+      ]
+    },
+    {
+      id: "inequalities",
+      section: "Алгебра · ЕНТ",
+      title: "Неравенства и метод интервалов",
+      intro: "Решаем линейные, квадратные и дробно-рациональные неравенства без ошибок в знаке.",
+      rule: "При умножении или делении обеих частей неравенства на отрицательное число знак неравенства меняется на противоположный (< на >, ≤ на ≥).",
+      example: "−2x + 6 > 14  ⇒  x < −4",
+      steps: [
+        "Вычитаем 6 из обеих частей: −2x > 8.",
+        "Делим обе части на −2 и меняем знак неравенства: x < −4.",
+        "Записываем промежуток: x ∈ (−∞; −4)."
+      ],
+      questions: [
+        { text: "Решите неравенство −3x > 12.", options: ["x > −4", "x < −4", "x < 4"], correct: 1, why: "Делим на отрицательное число −3 и меняем знак: x < −4." },
+        { text: "При каком действии знак неравенства меняется на противоположный?", options: ["Прибавление отрицательного числа", "Умножение или деление на отрицательное число", "Перенос слагаемого в другую часть"], correct: 1, why: "Только умножение или деление на отрицательное число меняет направление неравенства." },
+        { text: "Найдите целые решения неравенства (x − 1)(x − 4) < 0.", options: ["2 и 3", "1, 2, 3, 4", "0 и 5"], correct: 0, why: "На интервале (1; 4) произведение строго отрицательно, целые корни внутри него: 2 и 3." }
+      ]
+    },
+    {
+      id: "systems",
+      section: "Алгебра · ЕНТ",
+      title: "Системы уравнений и текстовые задачи",
+      intro: "Решаем системы двух уравнений методом алгебраического сложения и подстановки.",
+      rule: "При почленном сложении двух уравнений системы слагаемые с противоположными коэффициентами (+y и −y) взаимно уничтожаются.",
+      example: "{ x + y = 9;  x − y = 3 }  ⇒  2x = 12",
+      steps: [
+        "Складываем уравнения почленно: (x + x) + (y − y) = 9 + 3 → 2x = 12.",
+        "Делим на 2 и находим первую переменную: x = 6.",
+        "Подставляем x = 6 в первое уравнение: 6 + y = 9 → y = 3."
+      ],
+      questions: [
+        { text: "Из системы x + y = 10 и x − y = 4 найдите x.", options: ["3", "7", "6"], correct: 1, why: "Складываем уравнения: 2x = 14, откуда x = 7." },
+        { text: "Если x + y = 10 и x = 7, чему равен y?", options: ["3", "17", "7"], correct: 0, why: "Подставляем 7 + y = 10, получаем y = 10 − 7 = 3." },
+        { text: "Скорость катера по течению равна v + u, против течения v − u. Чему равна их сумма?", options: ["2u", "2v", "v − u"], correct: 1, why: "(v + u) + (v − u) = 2v (скорость течения u сокращается)." }
+      ]
+    },
+    {
+      id: "combinatorics",
+      section: "Мат. грамотность · ЕНТ",
+      title: "Комбинаторика и бином Ньютона",
+      intro: "Различаем выбор с учётом порядка (размещения) и без учёта порядка (сочетания).",
+      rule: "Если порядок выбранных элементов не важен, число сочетаний из n по k равно Cₙᵏ = n! / (k! × (n − k)!).",
+      example: "C₆² = (6 × 5) / (2 × 1) = 15",
+      steps: [
+        "Берём произведение двух старших множителей: 6 × 5 = 30.",
+        "Делим на 2! = 2, так как порядок внутри пары не важен: 30 / 2 = 15.",
+        "Ответ: 15 способов."
+      ],
+      questions: [
+        { text: "Сколькими способами можно выбрать 2 дежурных из 5 человек?", options: ["20", "10", "7"], correct: 1, why: "Порядок не важен: C₅² = (5 × 4) / 2 = 10." },
+        { text: "Чему равен факториал 4!?", options: ["24", "16", "10"], correct: 0, why: "4! = 1 × 2 × 3 × 4 = 24." },
+        { text: "Чем сочетания Cₙᵏ отличаются от размещений Aₙᵏ?", options: ["В сочетаниях порядок не важен (делим на k!)", "В сочетаниях элементы всегда повторяются", "Формулы одинаковы"], correct: 0, why: "Чтобы не учитывать перестановки выбранных k элементов, Aₙᵏ делят на k!." }
+      ]
+    },
+    {
+      id: "radicals",
+      section: "Алгебра · ЕНТ",
+      title: "Степени, корни и алгебраические дроби",
+      intro: "Применяем свойства показателей степени и арифметического корня без потери знака.",
+      rule: "При умножении степеней с одинаковым основанием показатели складываются (aᵐ × aⁿ = aᵐ⁺ⁿ), при возведении степени в степень — перемножаются ((aᵐ)ⁿ = aᵐⁿ).",
+      example: "(2³)² × 2⁻¹ = 2⁶⁻¹ = 2⁵ = 32",
+      steps: [
+        "Возводим степень в степень: (2³)² = 2³ˣ² = 2⁶.",
+        "При умножении складываем показатели: 2⁶ × 2⁻¹ = 2⁵.",
+        "Вычисляем степень: 2⁵ = 32."
+      ],
+      questions: [
+        { text: "Упростите выражение a⁴ × a³.", options: ["a¹²", "a⁷", "a¹"], correct: 1, why: "При умножении показатели складываются: 4 + 3 = 7 → a⁷." },
+        { text: "Вычислите значение выражения (3²)³ / 3⁴.", options: ["9", "3", "27"], correct: 0, why: "3⁶ / 3⁴ = 3⁶⁻⁴ = 3² = 9." },
+        { text: "Чему равно выражение √((−5)²)?", options: ["−5", "5", "25"], correct: 1, why: "Арифметический квадратный корень неотрицателен: √25 = |−5| = 5." }
+      ]
+    },
+    {
+      id: "integrals",
+      section: "Матанализ · ЕНТ",
+      title: "Первообразная и определённый интеграл",
+      intro: "Находим первообразную функции и вычисляем площадь криволинейной трапеции по формуле Ньютона–Лейбница.",
+      rule: "Первообразная степенной функции xⁿ равна xⁿ⁺¹ / (n + 1) + C. По формуле Ньютона–Лейбница ∫ₐᵇ f(x)dx = F(b) − F(a).",
+      example: "∫₀² (3x² + 2) dx = [x³ + 2x]₀² = 12",
+      steps: [
+        "Находим первообразную: F(x) = x³ + 2x.",
+        "Подставляем верхний предел x = 2: F(2) = 2³ + 2 × 2 = 12.",
+        "Вычитаем значение на нижнем пределе F(0) = 0: 12 − 0 = 12."
+      ],
+      questions: [
+        { text: "Найдите общий вид первообразной F(x) для функции f(x) = 3x².", options: ["6x + C", "x³ + C", "3x³ + C"], correct: 1, why: "3 × (x³ / 3) + C = x³ + C." },
+        { text: "Вычислите определённый интеграл ∫₀³ 2x dx.", options: ["9", "6", "3"], correct: 0, why: "Первообразная F(x) = x². Тогда F(3) − F(0) = 3² − 0 = 9." },
+        { text: "В каком порядке подставляются пределы по формуле Ньютона–Лейбница?", options: ["F(b) − F(a) (верхний минус нижний)", "F(a) − F(b)", "F(b) + F(a)"], correct: 0, why: "Из значения первообразной на верхнем пределе b вычитается значение на нижнем пределе a." }
+      ]
+    },
+    {
+      id: "vectors",
+      section: "Геометрия · ЕНТ",
+      title: "Векторы и метод координат",
+      intro: "Вычисляем длину вектора, скалярное произведение и проверяем условие перпендикулярности.",
+      rule: "Скалярное произведение векторов a⃗(x₁; y₁) и b⃗(x₂; y₂) равно x₁x₂ + y₁y₂. Ненулевые векторы перпендикулярны тогда и только тогда, когда a⃗ · b⃗ = 0.",
+      example: "a⃗(3; 4) · b⃗(2; −1) = 3 × 2 + 4 × (−1) = 2",
+      steps: [
+        "Перемножаем абсциссы: 3 × 2 = 6.",
+        "Перемножаем ординаты: 4 × (−1) = −4.",
+        "Складываем произведения: 6 + (−4) = 2."
+      ],
+      questions: [
+        { text: "Найдите скалярное произведение векторов a⃗(2; 3) и b⃗(4; −1).", options: ["11", "5", "8"], correct: 1, why: "2 × 4 + 3 × (−1) = 8 − 3 = 5." },
+        { text: "Чему равна длина (модуль) вектора a⃗(3; 4)?", options: ["7", "5", "25"], correct: 1, why: "|a⃗| = √(3² + 4²) = √25 = 5." },
+        { text: "При каком условии два ненулевых вектора перпендикулярны?", options: ["Их скалярное произведение равно 0", "Их скалярное произведение равно 1", "Их скалярное произведение отрицательно"], correct: 0, why: "Так как cos 90° = 0, скалярное произведение перпендикулярных векторов равно нулю." }
       ]
     }
   ],
@@ -559,9 +775,121 @@ export const lessons: Record<Language, Lesson[]> = {
         { text: "Qirrasi 3 ga teng kubning hajmi nechaga teng?", options: ["9", "27", "18"], correct: 1, why: "V = a³ = 3³ = 27." },
         { text: "Bir xil asos va balandlikka ega piramida hajmi prizma hajmidan necha marta kichik?", options: ["2 marta", "3 marta", "4 marta"], correct: 1, why: "Piramida hajmi formulasida 1/3 koeffitsiyenti bor." }
       ]
+    },
+    {
+      id: "inequalities",
+      section: "Algebra",
+      title: "Tengsizliklar va intervallar usuli",
+      intro: "Manfiy songa bo‘lganda tengsizlik ishorasini o‘zgartirish va oraliqlarni tekshiramiz.",
+      rule: "Tengsizlikning ikkala tomonini manfiy songa ko‘paytirganda yoki bo‘lganda tengsizlik ishorasi qarama-qarshisiga o‘zgaradi (< ishorasi > bo‘ladi).",
+      example: "−2x + 6 > 14  ⇒  x < −4",
+      steps: [
+        "Ikkala tomondan 6 ni ayiramiz: −2x > 8.",
+        "Ikkala tomonni −2 ga bo‘lib, ishorani o‘zgartiramiz: x < −4.",
+        "Javob: x ∈ (−∞; −4)."
+      ],
+      questions: [
+        { text: "−3x > 12 tengsizlikni yeching.", options: ["x > −4", "x < −4", "x < 4"], correct: 1, why: "Manfiy −3 soniga bo‘lganda ishora o‘zgaradi: x < −4." },
+        { text: "Qaysi amalda tengsizlik ishorasi qarama-qarshisiga o‘zgaradi?", options: ["Manfiy son qo‘shganda", "Manfiy songa ko‘paytirganda yoki bo‘lganda", "Hadni boshqa tomonga o‘tkazganda"], correct: 1, why: "Faqat manfiy songa ko‘paytirish yoki bo‘lish tengsizlik yo‘nalishini o‘zgartiradi." },
+        { text: "(x − 1)(x − 4) < 0 tengsizlikning butun yechimlarini toping.", options: ["2 va 3", "1, 2, 3, 4", "0 va 5"], correct: 0, why: "(1; 4) oraliqda ko‘paytma manfiy, uning ichidagi butun sonlar: 2 va 3." }
+      ]
+    },
+    {
+      id: "systems",
+      section: "Algebra",
+      title: "Tenglamalar sistemasi va matnli masalalar",
+      intro: "Algebraik qo‘shish va o‘rniga qo‘yish usullari bilan ikki noma’lumli sistemani yechamiz.",
+      rule: "Sistemaning ikki tenglamasini hadlab qo‘shganda qarama-qarshi koeffitsiyentli hadlar (+y va −y) qisqarib ketadi.",
+      example: "{ x + y = 9;  x − y = 3 }  ⇒  2x = 12",
+      steps: [
+        "Tenglamalarni hadlab qo‘shamiz: (x + x) + (y − y) = 9 + 3 → 2x = 12.",
+        "Ikkiga bo‘lib birinchi noma’lumni topamiz: x = 6.",
+        "Birinchi tenglamaga qo‘yamiz: 6 + y = 9 → y = 3."
+      ],
+      questions: [
+        { text: "x + y = 10 va x − y = 4 sistemadan x ni toping.", options: ["3", "7", "6"], correct: 1, why: "Tenglamalarni qo‘shsak: 2x = 14, demak x = 7." },
+        { text: "x + y = 10 va x = 7 bo‘lsa, y nechaga teng?", options: ["3", "17", "7"], correct: 0, why: "7 + y = 10 tenglamadan y = 10 − 7 = 3." },
+        { text: "Katerning oqim bo‘ylab tezligi v + u, oqimga qarshi v − u. Ularning yig‘indisi nechaga teng?", options: ["2u", "2v", "v − u"], correct: 1, why: "(v + u) + (v − u) = 2v (+u va −u qisqaradi)." }
+      ]
+    },
+    {
+      id: "combinatorics",
+      section: "Mat. savodxonlik",
+      title: "Kombinatorika va Nyuton binomi",
+      intro: "Tartib muhim yoki muhim emasligini farqlab, kombinatsiyalar va o‘rinlashtirishlarni hisoblaymiz.",
+      rule: "Agar tanlash tartibi muhim bo‘lmasa, n elementdan k ta tanlash usullari soni Cₙᵏ = n! / (k! × (n − k)!) ga teng.",
+      example: "C₆² = (6 × 5) / (2 × 1) = 15",
+      steps: [
+        "Suratda ikkita katta ko‘paytuvchini olamiz: 6 × 5 = 30.",
+        "Juftlik ichida tartib muhim bo‘lmagani uchun 2! = 2 ga bo‘lamiz: 30 / 2 = 15.",
+        "Javob: 15 xil usul."
+      ],
+      questions: [
+        { text: "5 kishidan 2 navbatchini necha xil usulda tanlash mumkin?", options: ["20", "10", "7"], correct: 1, why: "Tartib muhim emas: C₅² = (5 × 4) / 2 = 10." },
+        { text: "4! faktorial nechaga teng?", options: ["24", "16", "10"], correct: 0, why: "4! = 1 × 2 × 3 × 4 = 24." },
+        { text: "Cₙᵏ kombinatsiyalar Aₙᵏ o‘rinlashtirishlardan nimasi bilan farq qiladi?", options: ["Kombinatsiyada tartib muhim emas (k! ga bo‘linadi)", "Kombinatsiyada elementlar takrorlanadi", "Formulalari bir xil"], correct: 0, why: "Tartibni hisobga olmaslik uchun Aₙᵏ qiymati k! ga bo‘linadi." }
+      ]
+    },
+    {
+      id: "radicals",
+      section: "Algebra",
+      title: "Darajalar, ildizlar va algebraik kasrlar",
+      intro: "Daraja ko‘rsatkichlari xossalari va arifmetik ildizni ishora xatosisiz soddalashtiramiz.",
+      rule: "Asoslari bir xil darajalarni ko‘paytirganda ko‘rsatkichlar qo‘shiladi (aᵐ × aⁿ = aᵐ⁺ⁿ), darajani darajaga oshirganda esa ko‘paytiriladi ((aᵐ)ⁿ = aᵐⁿ).",
+      example: "(2³)² × 2⁻¹ = 2⁶⁻¹ = 2⁵ = 32",
+      steps: [
+        "Darajani darajaga oshiramiz: (2³)² = 2³ˣ² = 2⁶.",
+        "Ko‘paytirishda ko‘rsatkichlarni qo‘shamiz: 2⁶ × 2⁻¹ = 2⁵.",
+        "Hisoblaymiz: 2⁵ = 32."
+      ],
+      questions: [
+        { text: "a⁴ × a³ ifodani soddalashtiring.", options: ["a¹²", "a⁷", "a¹"], correct: 1, why: "Ko‘paytirganda ko‘rsatkichlar qo‘shiladi: 4 + 3 = 7 → a⁷." },
+        { text: "(3²)³ / 3⁴ ifodaning qiymatini toping.", options: ["9", "3", "27"], correct: 0, why: "3⁶ / 3⁴ = 3⁶⁻⁴ = 3² = 9." },
+        { text: "√((−5)²) ifoda nechaga teng?", options: ["−5", "5", "25"], correct: 1, why: "Arifmetik kvadrat ildiz manfiy bo‘lmaydi: √25 = |−5| = 5." }
+      ]
+    },
+    {
+      id: "integrals",
+      section: "Mat. analiz",
+      title: "Boshlang‘ich funksiya va aniq integral",
+      intro: "Nyuton–Leybnits formulasi bo‘yicha aniq integral va egri chiziqli trapetsiya yuzasini topamiz.",
+      rule: "xⁿ darajali funksiyaning boshlang‘ich funksiyasi xⁿ⁺¹ / (n + 1) + C. Aniq integral: ∫ₐᵇ f(x)dx = F(b) − F(a).",
+      example: "∫₀² (3x² + 2) dx = [x³ + 2x]₀² = 12",
+      steps: [
+        "Boshlang‘ich funksiyani topamiz: F(x) = x³ + 2x.",
+        "Yuqori chegarani qo‘yamiz: F(2) = 2³ + 2 × 2 = 12.",
+        "Quyi chegarani ayiramiz: F(2) − F(0) = 12 − 0 = 12."
+      ],
+      questions: [
+        { text: "f(x) = 3x² funksiya uchun boshlang‘ich funksiya F(x)?", options: ["6x + C", "x³ + C", "3x³ + C"], correct: 1, why: "3 × (x³ / 3) + C = x³ + C." },
+        { text: "∫₀³ 2x dx integralni hisoblang.", options: ["9", "6", "3"], correct: 0, why: "F(x) = x². Unda F(3) − F(0) = 3² − 0 = 9." },
+        { text: "Nyuton–Leybnits formulasida chegaralar qanday tartibda qo‘yiladi?", options: ["F(b) − F(a) (yuqori minus quyi)", "F(a) − F(b)", "F(b) + F(a)"], correct: 0, why: "Avval yuqori b chegara qo‘yilib, undan quyi a chegara ayiriladi." }
+      ]
+    },
+    {
+      id: "vectors",
+      section: "Geometriya",
+      title: "Vektorlar va koordinatalar usuli",
+      intro: "Vektor uzunligini, skalyar ko‘paytmani va perpendikulyarlik shartini hisoblaymiz.",
+      rule: "a⃗(x₁; y₁) va b⃗(x₂; y₂) vektorlarning skalyar ko‘paytmasi: a⃗ · b⃗ = x₁x₂ + y₁y₂. Vektorlar perpendikulyar bo‘lishi uchun a⃗ · b⃗ = 0 bo‘lishi shart.",
+      example: "a⃗(3; 4) · b⃗(2; −1) = 3 × 2 + 4 × (−1) = 2",
+      steps: [
+        "Birinchi koordinatalarni ko‘paytiramiz: 3 × 2 = 6.",
+        "Ikkinchi koordinatalarni ko‘paytiramiz: 4 × (−1) = −4.",
+        "Qo‘shamiz: 6 + (−4) = 2."
+      ],
+      questions: [
+        { text: "a⃗(2; 3) va b⃗(4; −1) vektorlarning skalyar ko‘paytmasini toping.", options: ["11", "5", "8"], correct: 1, why: "2 × 4 + 3 × (−1) = 8 − 3 = 5." },
+        { text: "a⃗(3; 4) vektorning uzunligi (moduli) nechaga teng?", options: ["7", "5", "25"], correct: 1, why: "|a⃗| = √(3² + 4²) = √25 = 5." },
+        { text: "Noldan farqli ikki vektor qachon perpendikulyar bo‘ladi?", options: ["Skalyar ko‘paytmasi 0 ga teng bo‘lganda", "Skalyar ko‘paytmasi 1 ga teng bo‘lganda", "Manfiy bo‘lganda"], correct: 0, why: "cos 90° = 0 bo‘lgani uchun perpendikulyar vektorlar skalyar ko‘paytmasi 0 ga teng." }
+      ]
     }
   ]
 };
+
+for (const lang of ["ru", "kk", "uz"] as const) {
+  lessons[lang].sort((a, b) => topicIds.indexOf(a.id) - topicIds.indexOf(b.id));
+}
 
 const wrongOptionDiagnostics: Record<Language, Record<TopicId, Record<number, Record<number, string>>>> = {
   ru: {
@@ -702,6 +1030,90 @@ const wrongOptionDiagnostics: Record<Language, Record<TopicId, Record<number, Re
       2: {
         0: "Множитель 1/2 относится к площади треугольника на плоскости, а в трёхмерном пространстве объём пирамиды составляет 1/3 от объёма призмы.",
         2: "В формуле пирамиды V = (1/3) × S_осн × h стоит коэффициент 1/3, поэтому объём меньше ровно в 3 раза."
+      }
+    },
+    inequalities: {
+      0: {
+        0: "При делении на отрицательное число −3 знак неравенства «>» обязательно меняется на противоположный «<»: x < −4. Попробуй ещё раз.",
+        2: "При делении 12 на −3 получается отрицательное число −4, а не +4: x < −4. Попробуй ещё раз."
+      },
+      1: {
+        0: "Прибавление или вычитание любого числа сохраняет направление знака неравенства. Знак меняется только при умножении или делении на отрицательное число.",
+        2: "Перенос слагаемого меняет знак самого слагаемого, но не меняет знак неравенства. Попробуй ещё раз."
+      },
+      2: {
+        1: "При x = 1 и x = 4 скобки обращаются в 0, а неравенство строгое (< 0), поэтому концы интервала не входят. Попробуй ещё раз.",
+        2: "При x = 0 и x = 5 обе скобки одного знака, и их произведение положительно (> 0). Выбери целые числа внутри интервала (1; 4)."
+      }
+    },
+    systems: {
+      0: {
+        0: "3 — это значение второй переменной y (7 + 3 = 10), а при сложении уравнений 2x = 14 получаем x = 7. Попробуй ещё раз.",
+        2: "Если сложить правые части 10 + 4, получится 14, и после деления на 2 имеем x = 7, а не 6. Попробуй ещё раз."
+      },
+      1: {
+        1: "При переносе 7 в правую часть уравнения 7 + y = 10 нужно вычитать (10 − 7 = 3), а не складывать. Попробуй ещё раз.",
+        2: "7 — это значение x, а для y из уравнения 7 + y = 10 получаем y = 3. Попробуй ещё раз."
+      },
+      2: {
+        0: "При сложении (v + u) и (v − u) скорость течения +u и −u сокращается, а складываются две собственные скорости: 2v. Попробуй ещё раз.",
+        2: "v − u — это только скорость против течения, а сумма двух скоростей равна (v + u) + (v − u) = 2v. Попробуй ещё раз."
+      }
+    },
+    combinatorics: {
+      0: {
+        0: "20 = 5 × 4 — это число упорядоченных пар (размещений A₅²). Так как оба выбранных ученика просто дежурные, раздели 20 на 2! = 2.",
+        2: "Ты сложил 5 + 2 = 7 вместо применения формулы сочетаний C₅² = (5 × 4) / 2. Попробуй ещё раз."
+      },
+      1: {
+        1: "4! — это произведение 1 × 2 × 3 × 4 = 24, а не 4 × 4 = 16. Попробуй ещё раз.",
+        2: "10 — это сумма 1 + 2 + 3 + 4, а факториал 4! означает перемножение чисел от 1 до 4. Попробуй ещё раз."
+      },
+      2: {
+        1: "В классических сочетаниях Cₙᵏ элементы выбираются без повторений и без учёта порядка.",
+        2: "Формула сочетаний отличается от размещений делением на k! в знаменателе. Попробуй ещё раз."
+      }
+    },
+    radicals: {
+      0: {
+        0: "При умножении степеней с одинаковым основанием показатели складываются (4 + 3 = 7), а перемножаются они только при возведении степени в степень.",
+        2: "Вычитание показателей (4 − 3 = 1) выполняется при делении степеней, а при умножении показатели складываются: 4 + 3 = 7."
+      },
+      1: {
+        1: "В числителе (3²)³ = 3⁶, при делении на 3⁴ получаем 3⁶⁻⁴ = 3² = 9, а не 3¹. Попробуй ещё раз.",
+        2: "Показатель после деления 3⁶ / 3⁴ равен 6 − 4 = 2 (то есть 3² = 9), а не 3³ = 27. Попробуй ещё раз."
+      },
+      2: {
+        0: "Арифметический квадратный корень всегда неотрицателен: √((−5)²) = |−5| = 5, а не −5. Попробуй ещё раз.",
+        2: "25 — это подкоренное выражение (−5)² = 25, из которого ещё нужно извлечь квадратный корень: √25 = 5."
+      }
+    },
+    integrals: {
+      0: {
+        0: "6x — это производная функции 3x², а для первообразной степень увеличивается на единицу: 3 × x³ / 3 = x³ + C. Попробуй ещё раз.",
+        2: "При интегрировании 3x² нужно разделить на новый показатель степени 3: 3x³ / 3 = x³ + C. Попробуй ещё раз."
+      },
+      1: {
+        1: "Ты подставил 3 в подынтегральную функцию 2x (получив 6), а нужно сначала найти первообразную F(x) = x² и вычислить 3² = 9.",
+        2: "Первообразная от 2x равна x², поэтому на верхнем пределе x = 3 получаем 3² = 9. Попробуй ещё раз."
+      },
+      2: {
+        1: "В формуле Ньютона–Лейбница из значения на верхнем пределе F(b) вычитают значение на нижнем пределе F(a). Попробуй ещё раз.",
+        2: "Значения первообразной на концах отрезка вычитаются: F(b) − F(a), а не складываются."
+      }
+    },
+    vectors: {
+      0: {
+        0: "Вторая координата вектора b⃗ отрицательна (−1), поэтому 3 × (−1) = −3, и сумма равна 8 − 3 = 5, а не 8 + 3 = 11. Попробуй ещё раз.",
+        2: "8 — это только произведение первых координат (2 × 4); к нему нужно прибавить произведение вторых координат 3 × (−1) = −3."
+      },
+      1: {
+        0: "Длина вектора вычисляется по теореме Пифагора √(3² + 4²) = 5, а не простым сложением координат 3 + 4 = 7. Попробуй ещё раз.",
+        2: "25 — это сумма квадратов координат (3² + 4² = 25); чтобы получить длину вектора, извлеки квадратный корень: √25 = 5."
+      },
+      2: {
+        1: "При угле 90° косинус равен нулю (cos 90° = 0), поэтому скалярное произведение перпендикулярных векторов равно 0, а не 1.",
+        2: "Отрицательное скалярное произведение означает тупой угол между векторами, а при прямом угле (90°) оно равно 0."
       }
     }
   },
@@ -844,6 +1256,90 @@ const wrongOptionDiagnostics: Record<Language, Record<TopicId, Record<number, Re
         0: "Пирамида көлемі формуласында 1/3 коэффициенті тұрады, сондықтан призмадан 3 есе кіші.",
         2: "V = (1/3) × S_табан × h болғандықтан, пирамида көлемі дәл 3 есе кіші."
       }
+    },
+    inequalities: {
+      0: {
+        0: "Теріс −3 санына бөлгенде «>» теңсіздік таңбасы міндетті түрде «<» болып өзгереді: x < −4. Қайта көріңіз.",
+        2: "12-ні −3-ке бөлгенде +4 емес, −4 шығады: x < −4. Қайта көріңіз."
+      },
+      1: {
+        0: "Санды қосу немесе азайту теңсіздік таңбасын өзгертпейді. Тек теріс санға көбейту не бөлу таңбаны өзгертеді.",
+        2: "Қосылғышты екінші жаққа шығару оның өз таңбасын ғана өзгертеді, теңсіздік бағытын өзгертпейді."
+      },
+      2: {
+        1: "x = 1 және x = 4 нүктелерінде көбейтінді 0-ге тең, ал теңсіздік қатаң (< 0), сондықтан шеткі нүктелер кірмейді.",
+        2: "x = 0 және x = 5 мәндерінде көбейтінді оң (> 0). (1; 4) аралығындағы бүтін сандарды таңдаңыз."
+      }
+    },
+    systems: {
+      0: {
+        0: "3 — екінші айнымалы y-тің мәні (7 + 3 = 10), ал теңдеулерді қосқанда 2x = 14 → x = 7 шығады. Қайта көріңіз.",
+        2: "10 мен 4-ті қоссақ 14 болады, оны 2-ге бөлгенде x = 7 шығады (6 емес). Қайта көріңіз."
+      },
+      1: {
+        1: "7 + y = 10 теңдеуінде 7-ні оң жаққа минус таңбасымен шығарамыз: y = 10 − 7 = 3. Қайта көріңіз.",
+        2: "7 — бұл x мәні, ал y = 10 − 7 = 3 болады. Қайта көріңіз."
+      },
+      2: {
+        0: "(v + u) мен (v − u) қосқанда ағыс жылдамдығы +u мен −u жойылып, 2v қалады. Қайта көріңіз.",
+        2: "v − u — тек ағысқа қарсы жылдамдық, ал қосындысы (v + u) + (v − u) = 2v. Қайта көріңіз."
+      }
+    },
+    combinatorics: {
+      0: {
+        0: "20 = 5 × 4 — реті маңызды болғандағы орналастырулар саны. Кезекшілер жұбында рет маңызды емес, сондықтан 20-ны 2!-ға бөлеміз: 10.",
+        2: "5 пен 2-ні қосудың орнына C₅² = (5 × 4) / 2 формуласын қолданыңыз. Қайта көріңіз."
+      },
+      1: {
+        1: "4! дегеніміз 1 × 2 × 3 × 4 = 24, ал 4 × 4 = 16 емес. Қайта көріңіз.",
+        2: "10 — бұл 1 + 2 + 3 + 4 қосындысы, ал факториал көбейтуді білдіреді: 24. Қайта көріңіз."
+      },
+      2: {
+        1: "Классикалық терулерде элементтер қайталанбайды және реті ескерілмейді.",
+        2: "Терулер формуласында бөлімінде қосымша k! көбейткіші болады. Қайта көріңіз."
+      }
+    },
+    radicals: {
+      0: {
+        0: "Негіздері бірдей дәрежелерді көбейткенде көрсеткіштер қосылады (4 + 3 = 7), көбейтілмейді. Қайта көріңіз.",
+        2: "Көрсеткіштерді азайту (4 − 3 = 1) бөлу кезінде орындалады, ал көбейтуде қосылады: a⁷."
+      },
+      1: {
+        1: "(3²)³ = 3⁶, оны 3⁴-ке бөлгенде 3⁶⁻⁴ = 3² = 9 шығады. Қайта көріңіз.",
+        2: "6 − 4 = 2 болғандықтан, нәтиже 3² = 9 болады (3³ = 27 емес). Қайта көріңіз."
+      },
+      2: {
+        0: "Арифметикалық квадрат түбір әрқашан теріс емес: √((−5)²) = |−5| = 5. Қайта көріңіз.",
+        2: "25 — түбір астындағы сан, одан квадрат түбір шығарсақ 5 болады. Қайта көріңіз."
+      }
+    },
+    integrals: {
+      0: {
+        0: "6x — бұл 3x² функциясының туындысы, ал алғашқы функцияда дәреже 1-ге артады: x³ + C. Қайта көріңіз.",
+        2: "Интегралдағанда жаңа дәреже көрсеткіші 3-ке бөлу керек: 3x³ / 3 = x³ + C. Қайта көріңіз."
+      },
+      1: {
+        1: "Алдымен 2x үшін алғашқы функция F(x) = x² тауып, сосын x = 3 қоямыз: 3² = 9. Қайта көріңіз.",
+        2: "F(x) = x² болғандықтан, жоғарғы шекте 3² = 9 шығады. Қайта көріңіз."
+      },
+      2: {
+        1: "Ньютон–Лейбниц формуласында жоғарғы шектегі F(b) мәнінен төменгі шектегі F(a) мәні азайтылады.",
+        2: "Шектердегі мәндер қосылмайды, F(b) − F(a) түрінде азайтылады."
+      }
+    },
+    vectors: {
+      0: {
+        0: "Екінші координата теріс (−1), сондықтан 3 × (−1) = −3, ал қосындысы 8 − 3 = 5 (11 емес). Қайта көріңіз.",
+        2: "8 — тек бірінші координаталар көбейтіндісі (2 × 4); оған 3 × (−1) = −3 мәнін қосу керек."
+      },
+      1: {
+        0: "Вектор ұзындығы Пифагор теоремасымен есептеледі: √(3² + 4²) = 5 (3 + 4 = 7 емес). Қайта көріңіз.",
+        2: "25 — квадраттар қосындысы (3² + 4²), ал ұзындықты табу үшін түбір шығарамыз: √25 = 5."
+      },
+      2: {
+        1: "90° бұрышта cos 90° = 0 болғандықтан, перпендикуляр векторлардың скаляр көбейтіндісі 0-ге тең.",
+        2: "Скаляр көбейтінді теріс болса, бұрыш доғал болады; тік бұрышта ол дәл 0-ге тең."
+      }
     }
   },
   uz: {
@@ -984,6 +1480,90 @@ const wrongOptionDiagnostics: Record<Language, Record<TopicId, Record<number, Re
       2: {
         0: "Piramida hajmi formulasida 1/3 koeffitsiyenti bor, shuning uchun prizmadan 3 marta kichik.",
         2: "V = (1/3) × S_asos × h bo‘lgani uchun piramida hajmi roppa-rosa 3 marta kichik."
+      }
+    },
+    inequalities: {
+      0: {
+        0: "Manfiy −3 soniga bo‘lganda «>» tengsizlik ishorasi «<» ga o‘zgaradi: x < −4. Qayta urinib ko‘ring.",
+        2: "12 ni −3 ga bo‘lganda +4 emas, −4 hosil bo‘ladi: x < −4. Qayta urinib ko‘ring."
+      },
+      1: {
+        0: "Sonni qo‘shish yoki ayirish tengsizlik ishorasini o‘zgartirmaydi. Faqat manfiy songa ko‘paytirish yoki bo‘lish o‘zgartiradi.",
+        2: "Hadni boshqa tomonga o‘tkazish faqat shu hadning ishorasini o‘zgartiradi, tengsizlik yo‘nalishini emas."
+      },
+      2: {
+        1: "x = 1 va x = 4 da ko‘paytma 0 ga teng, tengsizlik esa qat’iy (< 0), shuning uchun chegara nuqtalari kirmaydi.",
+        2: "x = 0 va x = 5 da ko‘paytma musbat (> 0). (1; 4) oraliq ichidagi butun sonlarni tanlang."
+      }
+    },
+    systems: {
+      0: {
+        0: "3 — ikkinchi noma’lum y ning qiymati (7 + 3 = 10), tenglamalarni qo‘shganda esa 2x = 14 → x = 7 chiqadi. Qayta urinib ko‘ring.",
+        2: "10 va 4 ni qo‘shsak 14 bo‘ladi, 2 ga bo‘lganda x = 7 chiqadi (6 emas). Qayta urinib ko‘ring."
+      },
+      1: {
+        1: "7 + y = 10 tenglamada 7 ni o‘ng tomonga minus bilan o‘tkazamiz: y = 10 − 7 = 3. Qayta urinib ko‘ring.",
+        2: "7 — bu x ning qiymati, y esa 10 − 7 = 3 ga teng. Qayta urinib ko‘ring."
+      },
+      2: {
+        0: "(v + u) va (v − u) ni qo‘shganda oqim tezligi +u va −u qisqarib, 2v qoladi. Qayta urinib ko‘ring.",
+        2: "v − u — faqat oqimga qarshi tezlik, ularning yig‘indisi (v + u) + (v − u) = 2v ga teng."
+      }
+    },
+    combinatorics: {
+      0: {
+        0: "20 = 5 × 4 — tartib muhim bo‘lgandagi o‘rinlashtirishlar soni. Navbatchilar juftligida tartib muhim emas, shuning uchun 20 ni 2! ga bo‘lamiz: 10.",
+        2: "5 va 2 ni qo‘shish o‘rniga C₅² = (5 × 4) / 2 formulasini qo‘llang. Qayta urinib ko‘ring."
+      },
+      1: {
+        1: "4! degani 1 × 2 × 3 × 4 = 24, 4 × 4 = 16 emas. Qayta urinib ko‘ring.",
+        2: "10 — bu 1 + 2 + 3 + 4 yig‘indisi, faktorial esa ko‘paytirishni bildiradi: 24. Qayta urinib ko‘ring."
+      },
+      2: {
+        1: "Klassik kombinatsiyalarda elementlar takrorlanmaydi va tartib hisobga olinmaydi.",
+        2: "Kombinatsiyalar formulasida maxrajda qo‘shimcha k! ko‘paytuvchi bo‘ladi. Qayta urinib ko‘ring."
+      }
+    },
+    radicals: {
+      0: {
+        0: "Asoslari bir xil darajalarni ko‘paytirganda ko‘rsatkichlar qo‘shiladi (4 + 3 = 7), ko‘paytirilmaydi. Qayta urinib ko‘ring.",
+        2: "Ko‘rsatkichlarni ayirish (4 − 3 = 1) bo‘lishda bajariladi, ko‘paytirishda esa qo‘shiladi: a⁷."
+      },
+      1: {
+        1: "(3²)³ = 3⁶, uni 3⁴ ga bo‘lganda 3⁶⁻⁴ = 3² = 9 chiqadi. Qayta urinib ko‘ring.",
+        2: "6 − 4 = 2 bo‘lgani uchun natija 3² = 9 bo‘ladi (3³ = 27 emas). Qayta urinib ko‘ring."
+      },
+      2: {
+        0: "Arifmetik kvadrat ildiz doimo manfiy emas: √((−5)²) = |−5| = 5. Qayta urinib ko‘ring.",
+        2: "25 — ildiz ostidagi son, undan kvadrat ildiz chiqarsak 5 bo‘ladi. Qayta urinib ko‘ring."
+      }
+    },
+    integrals: {
+      0: {
+        0: "6x — bu 3x² funksiyaning hosilasi, boshlang‘ich funksiyada esa daraja 1 ga ortadi: x³ + C. Qayta urinib ko‘ring.",
+        2: "Integrallashda yangi daraja ko‘rsatkichi 3 ga bo‘lish kerak: 3x³ / 3 = x³ + C. Qayta urinib ko‘ring."
+      },
+      1: {
+        1: "Avval 2x uchun boshlang‘ich funksiya F(x) = x² ni topib, so‘ng x = 3 qo‘yamiz: 3² = 9. Qayta urinib ko‘ring.",
+        2: "F(x) = x² bo‘lgani uchun yuqori chegarada 3² = 9 chiqadi. Qayta urinib ko‘ring."
+      },
+      2: {
+        1: "Nyuton–Leybnits formulasida yuqori chegaradagi F(b) qiymatdan quyi chegaradagi F(a) qiymat ayiriladi.",
+        2: "Chegaralardagi qiymatlar qo‘shilmaydi, F(b) − F(a) ko‘rinishida ayiriladi."
+      }
+    },
+    vectors: {
+      0: {
+        0: "Ikkinchi koordinata manfiy (−1), shuning uchun 3 × (−1) = −3 va yig‘indi 8 − 3 = 5 (11 emas). Qayta urinib ko‘ring.",
+        2: "8 — faqat birinchi koordinatalar ko‘paytmasi (2 × 4); unga 3 × (−1) = −3 ni qo‘shish kerak."
+      },
+      1: {
+        0: "Vektor uzunligi Pifagor teoremasi bilan topiladi: √(3² + 4²) = 5 (3 + 4 = 7 emas). Qayta urinib ko‘ring.",
+        2: "25 — kvadratlar yig‘indisi (3² + 4²), uzunlikni topish uchun ildiz chiqaramiz: √25 = 5."
+      },
+      2: {
+        1: "90° burchakda cos 90° = 0 bo‘lgani uchun perpendikulyar vektorlarning skalyar ko‘paytmasi 0 ga teng.",
+        2: "Skalyar ko‘paytma manfiy bo‘lsa, burchak o‘tmas bo‘ladi; to‘g‘ri burchakda u 0 ga teng."
       }
     }
   }

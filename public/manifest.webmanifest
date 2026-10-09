@@ -1,0 +1,17 @@
+{
+  "name": "BilimAI — Математика ЕНТ (ҰБТ)",
+  "short_name": "BilimAI",
+  "description": "Диагностическая подготовка к ЕНТ (ҰБТ) по математике: 16 разделов НЦТ РК, тренировка поиска ошибки (1 152 сценария) и сократический ИИ-тьютор на базе Claude API.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#1b3b6f",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

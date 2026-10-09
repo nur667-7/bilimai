@@ -30,7 +30,7 @@ const GRAPH_UI_COPY = {
   ru: {
     headerTitle: "Карта тем и связей курса",
     headerSub: "Показывает, какие базовые темы нужно освоить в первую очередь и какие разделы ЕНТ они открывают.",
-    filterAll: "Все темы (10)",
+    filterAll: "Все темы (16)",
     filterGaps: "Нужно подтянуть",
     filterLit: "Мат. грамотность",
     filterAlg: "Алгебра и анализ",
@@ -72,7 +72,7 @@ const GRAPH_UI_COPY = {
   kk: {
     headerTitle: "Тақырыптар мен байланыстар картасы",
     headerSub: "Алдымен қай базалық тақырыптарды меңгеру керектігін және олардың қай бөлімдерге жол ашатынын көрсетеді.",
-    filterAll: "Барлығы (10)",
+    filterAll: "Барлығы (16)",
     filterGaps: "Қайталау керек",
     filterLit: "Мат. сауаттылық",
     filterAlg: "Алгебра мен талдау",
@@ -114,7 +114,7 @@ const GRAPH_UI_COPY = {
   uz: {
     headerTitle: "Mavzular va bog‘lanishlar xaritasi",
     headerSub: "Avval qaysi tayanch mavzularni o‘zlashtirish kerakligini va ular qaysi bo‘limlarga yo‘l ochishini ko‘rsatadi.",
-    filterAll: "Barchasi (10)",
+    filterAll: "Barchasi (16)",
     filterGaps: "Takrorlash kerak",
     filterLit: "Mat. savodxonlik",
     filterAlg: "Algebra va tahlil",
@@ -373,7 +373,7 @@ export function KnowledgeGraphView({
         <div className="kg-metric">
           <span className="small">{t.summaryMastered}</span>
           <strong className="tabular-nums text-emerald-700">
-            {graphState.summary.masteredCount} / 10
+            {graphState.summary.masteredCount} / 16
           </strong>
         </div>
         <div className="kg-metric">
@@ -506,7 +506,7 @@ export function KnowledgeGraphView({
               </div>
 
               <svg
-                viewBox="0 0 880 460"
+                viewBox="0 0 880 510"
                 className="kg-svg"
                 role="img"
                 aria-label={t.headerTitle}

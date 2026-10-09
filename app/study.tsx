@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { ArrowRight, CheckCircle2, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, RotateCcw, Sparkles } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,6 +11,7 @@ import { getOptionFeedback, lessons, untTopicIds, type Language, type TopicId } 
 import {
   buildBaselineRoadmap,
   checkAnswer,
+  formatLabTask,
   makeChallenge,
   parseNumericAnswer,
   progressSchema,
@@ -35,14 +36,23 @@ const copy = {
     navPlan: "Мой план",
     navLab: "Тренировка ошибок",
     navAbout: "О проекте",
-    topics: "Темы курса",
-    mobileTopicLabel: "Тема занятия",
+    welcomeBadge: "Подготовка к ЕНТ по математике · 16 разделов НЦТ",
+    welcomeTitle: "Математический тренажёр с пошаговой диагностикой и ИИ-тьютором",
+    welcomeDesc:
+      "Разбирай главное правило темы, находи первый неверный переход в решениях и закрывай пробелы с сократическим ИИ-тьютором на базе Claude API без готовых шпаргалок.",
+    welcomeCtaExam: "Пройти диагностику ЕНТ",
+    welcomeCtaGraph: "Открыть карту 16 тем",
+    welcomeCtaLab: "Тренировка ошибок",
+    welcomeHide: "Скрыть подсказку",
+    welcomeShow: "Как устроен тренажёр",
+    topics: "16 тем ЕНТ",
+    mobileTopicLabel: "Тема",
     lesson: "Разбор",
     practice: "Практика",
-    ai: "Задать вопрос",
-    rule: "Главное правило",
-    exampleLabel: "Пример",
-    exampleSteps: "Пошаговый разбор",
+    ai: "ИИ-тьютор",
+    rule: "§ Главное правило (инвариант)",
+    exampleLabel: "Разбор образца",
+    exampleSteps: "Пошаговый ход решения",
     note: "Проговори каждый переход своими словами — почему равенство или свойство сохраняется на этом шаге.",
     solveSelf: "Решить самостоятельно",
     askAboutRule: "Задать вопрос по правилу",
@@ -51,9 +61,11 @@ const copy = {
     extraTaskTab: "Свои числа",
     checkOne: "Проверить ответ",
     chooseOptionPrompt: "Выберите один из вариантов ответа выше, чтобы проверить решение.",
+    selectedIndicator: "Выбрано",
     correctTitle: "Верно",
     wrongTitle: "Обрати внимание на переход",
-    analyzeErrorBtn: "Разобрать ошибку",
+    analyzeErrorBtn: "Показать правило",
+    askAiWhyBtn: "Разобрать с ИИ-тьютором (Claude)",
     tryAgainBtn: "Попробовать ещё раз",
     nextTaskBtn: "Следующая задача",
     ruleBreakdownTitle: "Разбор по правилу темы:",
@@ -67,44 +79,46 @@ const copy = {
     transferRight: "Верно! Правило применено точно.",
     transferWrong: "Ответ пока не совпал. Сверь вычисления с главным правилом темы.",
     transferInvalid: "Введите целое число, десятичную дробь или обыкновенную дробь вида 3/7.",
-    aiTitle: "Задать вопрос по теме",
-    aiSub: "Помощник объясняет выбранную тему с опорой на главное правило урока и задаёт наводящий вопрос без подсказки готового ответа.",
-    question: "Ваш вопрос",
+    aiTitle: "Сократический ИИ-тьютор (Claude API)",
+    aiSub:
+      "В отличие от статического учебника, Claude API анализирует твой вопрос или конкретную ошибку в вычислениях, объясняет правило простыми словами на выбранном языке и задаёт проверочный вопрос без спойлера ответа.",
+    question: "Ваш вопрос или шаг, который вызвал трудность",
     placeholder: "Например: почему в теореме Виета сумма корней берётся с противоположным знаком?",
     quickLabel: "Частые вопросы по теме:",
     quickQuestions: [
       "Почему при переносе слагаемого через знак равенства меняется знак?",
       "Как быстро проверить, не перепутаны ли формулы в этой теме?",
-      "На каком шаге чаще всего теряют баллы в подобных задачах?"
+      "На каком шаге чаще всего теряют баллы на ЕНТ в этой теме?"
     ],
-    adult: "Мне исполнилось 18 лет.",
-    consent: "Согласен отправить текст учебного вопроса для получения разбора. Не ввожу личные данные.",
-    ask: "Получить объяснение",
-    loading: "Формируем объяснение…",
-    pilot: "При подключённом ключе сервера отображается живой ответ модели, в демо-режиме — структурный разбор по правилу урока.",
+    schoolPrivacyNote:
+      "Анонимный режим для школьников: регистрация не нужна. Не вводите ФИО, номер телефона или школу.",
+    consent: "Отправить только учебный вопрос по математике для получения разбора (без личных данных).",
+    ask: "Получить разбор ИИ-тьютора",
+    loading: "ИИ-тьютор формирует разбор…",
+    pilot: "Генеративный разбор выполняется через защищённый серверный маршрут /api/explain (Claude API с детерминированным резервным контуром).",
     privacy: "Приватность",
-    rmTitle: "План подготовки к ЕНТ",
-    rmSub: "Очерёдность тем строится по результатам решения задач и выбранной цели.",
+    rmTitle: "Персональный план подготовки к ЕНТ",
+    rmSub: "Очерёдность 16 тем строится по результатам пробного ЕНТ, тренировки ошибок и выбранной цели.",
     rmTarget: "Целевой балл ЕНТ (из 50)",
     rmWeeks: "Недель до экзамена",
-    rmWeak: "Темы, которые нужно подтянуть",
+    rmWeak: "Темы, которые нужно подтянуть (из 16 разделов ЕНТ)",
     rmConsolidation: "Закреплено (≥2 самостоятельных решения)",
     rmConsolidationEmpty: "Пока нет закреплённых тем — решите по 2 задачи без подсказок в разделе «Тренировка ошибок».",
-    rmGoal: "Цель и главная трудность",
+    rmGoal: "Цель и главная трудность для ИИ-планировщика (Claude API)",
     rmGoalPlaceholder: "Например: путаю знаки в тригонометрии и формулы объёмов пирамиды, нужно набрать 42+ за 6 недель",
     rmPresets: [
-      "Цель 45/50 за 6 недель: путаю знаки в теореме Виета, логарифмах и тригонометрии",
-      "Цель 38/50 за 4 недели: нужно подтянуть производную, площади и объёмы фигур"
+      "Цель 45/50 за 6 недель: путаю знаки в теореме Виета, неравенствах и тригонометрии",
+      "Цель 38/50 за 4 недели: нужно подтянуть производную, первообразную и стереометрию"
     ],
-    rmGenerate: "Составить учебный план",
+    rmGenerate: "Составить план с Claude API",
     rmBaseTitle: "Рекомендуемая очерёдность тем",
     rmPhase1: "Этап 1 (недели 1–2): базовые темы и закрытие пробелов",
     rmPhase2: "Этап 2 (недели 3+): закрепление и перенос навыка",
     rmClaudeTitle: "Персональный план по неделям",
     rmMilestones: "Шаги по неделям",
     rmHabit: "Режим занятий",
-    badgeLive: "Живой разбор",
-    badgePreview: "Разбор по правилу урока"
+    badgeLive: "Claude API · Живой разбор",
+    badgePreview: "Инвариант урока · Резервный контур"
   },
   kk: {
     navStudy: "Сабақ",
@@ -113,14 +127,23 @@ const copy = {
     navPlan: "Менің жоспарым",
     navLab: "Қатемен жұмыс",
     navAbout: "Жоба туралы",
-    topics: "Курс тақырыптары",
-    mobileTopicLabel: "Сабақ тақырыбы",
+    welcomeBadge: "ҰБТ математикасына дайындық · ҰТО 16 бөлімі",
+    welcomeTitle: "Қадамдық диагностика және ЖИ-тьюторы бар математикалық тренажер",
+    welcomeDesc:
+      "Тақырыптың негізгі ережесін меңгеріп, шешімдегі алғашқы қате қадамды табыңыз және дайын жауапсыз Claude API негізіндегі сократикалық ЖИ-тьютормен олқылықтарды жойыңыз.",
+    welcomeCtaExam: "Байқау ҰБТ тапсыру",
+    welcomeCtaGraph: "16 тақырып картасы",
+    welcomeCtaLab: "Қатемен жұмыс",
+    welcomeHide: "Жасыру",
+    welcomeShow: "Тренажер қалай жұмыс істейді",
+    topics: "ҰБТ 16 тақырыбы",
+    mobileTopicLabel: "Тақырып",
     lesson: "Талдау",
     practice: "Жаттығу",
-    ai: "Сұрақ қою",
-    rule: "Негізгі ереже",
-    exampleLabel: "Мысал",
-    exampleSteps: "Қадамдық талдау",
+    ai: "ЖИ-тьютор",
+    rule: "§ Негізгі ереже (инвариант)",
+    exampleLabel: "Үлгі талдауы",
+    exampleSteps: "Қадамдық шешу жолы",
     note: "Әр қадамды өз сөзіңізбен түсіндіріп көріңіз — теңдік немесе қасиет неліктен сақталады.",
     solveSelf: "Өз бетінше шығару",
     askAboutRule: "Ереже бойынша сұрақ қою",
@@ -129,9 +152,11 @@ const copy = {
     extraTaskTab: "Жаңа сандар",
     checkOne: "Жауапты тексеру",
     chooseOptionPrompt: "Шешімді тексеру үшін жоғарыдағы жауап нұсқаларының бірін таңдаңыз.",
+    selectedIndicator: "Таңдалды",
     correctTitle: "Дұрыс",
     wrongTitle: "Амал мен таңбаға назар аударыңыз",
-    analyzeErrorBtn: "Қатені талдау",
+    analyzeErrorBtn: "Ережені көрсету",
+    askAiWhyBtn: "ЖИ-тьютормен талдау (Claude)",
     tryAgainBtn: "Қайта көру",
     nextTaskBtn: "Келесі есеп",
     ruleBreakdownTitle: "Тақырып ережесі бойынша талдау:",
@@ -145,44 +170,46 @@ const copy = {
     transferRight: "Дұрыс! Ереже дәл қолданылды.",
     transferWrong: "Жауап сәйкес келмеді. Есептеуді негізгі ережемен салыстырыңыз.",
     transferInvalid: "Бүтін сан, ондық бөлшек немесе 3/7 түріндегі бөлшек енгізіңіз.",
-    aiTitle: "Тақырып бойынша сұрақ қою",
-    aiSub: "Көмекші таңдалған тақырыпты негізгі ережеге сүйеніп түсіндіреді және дайын жауапты айтпай бағыттаушы сұрақ қояды.",
-    question: "Сұрағыңыз",
+    aiTitle: "Сократикалық ЖИ-тьютор (Claude API)",
+    aiSub:
+      "Кәдімгі оқулықтан айырмашылығы — Claude API сіздің нақты сұрағыңызды немесе жіберген қатеңізді талдап, ережені түсінікті тілде түсіндіреді және дайын жауапты айтпай бағыттаушы сұрақ қояды.",
+    question: "Сұрағыңыз немесе қиындық тудырған қадам",
     placeholder: "Мысалы: Виет теоремасында түбірлер қосындысы неге қарама-қарсы таңбамен алынады?",
     quickLabel: "Жиі қойылатын сұрақтар:",
     quickQuestions: [
       "Теңдеудің бір жағынан екінші жағына шығарғанда таңба неге өзгереді?",
       "Осы бөлімдегі формулаларды шатастырмау үшін нені есте сақтау керек?",
-      "Осындай есептерде көбіне қай қадамда қателеседі?"
+      "ҰБТ-да осы тақырыпта көбіне қай қадамда ұпай жоғалтады?"
     ],
-    adult: "Мен 18 жасқа толдым.",
-    consent: "Талдау алу үшін оқу сұрағымды жіберуге келісемін. Жеке деректерді енгізбеймін.",
-    ask: "Түсіндірме алу",
+    schoolPrivacyNote:
+      "Оқушыларға арналған анонимді режим: тіркелу қажет емес. Аты-жөніңізді, телефон немесе мектеп нөмірін жазбаңыз.",
+    consent: "Талдау алу үшін тек математикалық оқу сұрағын жіберуге келісемін (жеке деректерсіз).",
+    ask: "ЖИ-тьютор талдауын алу",
     loading: "Талдау дайындалып жатыр…",
-    pilot: "Сервер кілті қосылғанда тікелей жауап, ал демо-режимде сабақ ережесіне негізделген талдау беріледі.",
+    pilot: "Генеративті талдау қорғалған /api/explain серверлік маршруты арқылы (Claude API + резервтік контур) орындалады.",
     privacy: "Құпиялық",
-    rmTitle: "ҰБТ-ға дайындық жоспары",
-    rmSub: "Тақырыптар реті шығарылған есептер нәтижесі мен мақсатты балға қарай құрылады.",
+    rmTitle: "ҰБТ-ға жеке дайындық жоспары",
+    rmSub: "16 тақырыптың реті байқау ҰБТ, қатемен жұмыс және мақсатты балға қарай құрылады.",
     rmTarget: "Мақсатты ҰБТ балы (50-ден)",
     rmWeeks: "Емтиханға дейінгі апта саны",
-    rmWeak: "Қайталауды қажет ететін тақырыптар",
+    rmWeak: "Қайталауды қажет ететін тақырыптар (16 бөлімнен)",
     rmConsolidation: "Бекітілді (≥2 өздік шешім)",
     rmConsolidationEmpty: "Әзірше бекітілген тақырып жоқ — «Қатемен жұмыс» бөлімінде көмексіз 2 есептен шығарыңыз.",
-    rmGoal: "Мақсатыңыз және негізгі қиындық",
+    rmGoal: "ЖИ-жоспарлаушыға (Claude API) арналған мақсат пен қиындық",
     rmGoalPlaceholder: "Мысалы: тригонометрия мен пирамида көлемінде қателесемін, 6 аптада 42+ балл жинау керек",
     rmPresets: [
-      "6 аптада 45/50 балл: Виет теоремасы, логарифм және тригонометрияда таңба қателері",
-      "4 аптада 38/50 балл: туынды, планиметрия аудандары және пирамида көлемі"
+      "6 аптада 45/50 балл: Виет теоремасы, теңсіздіктер және тригонометрияда таңба қателері",
+      "4 аптада 38/50 балл: туынды, интеграл және стереометрия"
     ],
-    rmGenerate: "Оқу жоспарын құру",
+    rmGenerate: "Claude API арқылы жоспар құру",
     rmBaseTitle: "Ұсынылатын тақырыптар реті",
     rmPhase1: "1-кезең (1–2 апта): базалық тақырыптар және олқылықтарды жою",
     rmPhase2: "2-кезең (3+ апта): бекіту және дағдыны тексеру",
     rmClaudeTitle: "Апталық жеке жоспар",
     rmMilestones: "Апталық қадамдар",
     rmHabit: "Дайындық тәртібі",
-    badgeLive: "Тікелей талдау",
-    badgePreview: "Сабақ ережесі бойынша талдау"
+    badgeLive: "Claude API · Тікелей талдау",
+    badgePreview: "Сабақ инварианты · Резервтік контур"
   },
   uz: {
     navStudy: "Dars",
@@ -191,13 +218,22 @@ const copy = {
     navPlan: "Mening rejam",
     navLab: "Xatolar ustida ishlash",
     navAbout: "Loyiha haqida",
-    topics: "Kurs mavzulari",
-    mobileTopicLabel: "Dars mavzusi",
+    welcomeBadge: "Matematikadan imtihonga tayyorgarlik · 16 ta bo‘lim",
+    welcomeTitle: "Qadam-baqadam diagnostika va SI-tyutorli matematik trenajyor",
+    welcomeDesc:
+      "Mavzuning asosiy qoidasini o‘rganing, yechimdagi birinchi xato o‘tishni toping va tayyor javobsiz Claude API asosidagi sokratik SI-tyutor yordamida bo‘shliqlarni yoping.",
+    welcomeCtaExam: "Sinov UBT topshirish",
+    welcomeCtaGraph: "16 mavzu xaritasi",
+    welcomeCtaLab: "Xatolar ustida ishlash",
+    welcomeHide: "Yashirish",
+    welcomeShow: "Trenajyor qanday ishlaydi",
+    topics: "16 ta kurs mavzusi",
+    mobileTopicLabel: "Mavzu",
     lesson: "Tahlil",
     practice: "Mashq",
-    ai: "Savol berish",
-    rule: "Asosiy qoida",
-    exampleLabel: "Namuna",
+    ai: "SI-tyutor",
+    rule: "§ Asosiy qoida (invariant)",
+    exampleLabel: "Namuna tahlili",
     exampleSteps: "Qadam-baqadam yechim",
     note: "Har bir qadamni o‘z so‘zlaringiz bilan tushuntiring — tenglik yoki xossa nega saqlanib qoladi.",
     solveSelf: "Mustaqil yechish",
@@ -207,9 +243,11 @@ const copy = {
     extraTaskTab: "Yangi sonlar",
     checkOne: "Javobni tekshirish",
     chooseOptionPrompt: "Yechimni tekshirish uchun yuqoridagi javob variantlaridan birini tanlang.",
+    selectedIndicator: "Tanlandi",
     correctTitle: "To‘g‘ri",
     wrongTitle: "Amal va ishoraga e’tibor bering",
-    analyzeErrorBtn: "Xatoni tahlil qilish",
+    analyzeErrorBtn: "Qoidani ko‘rsatish",
+    askAiWhyBtn: "SI-tyutor bilan tahlil (Claude)",
     tryAgainBtn: "Qayta urinib ko‘rish",
     nextTaskBtn: "Keyingi masala",
     ruleBreakdownTitle: "Mavzu qoidasi bo‘yicha tahlil:",
@@ -223,44 +261,46 @@ const copy = {
     transferRight: "To‘g‘ri! Qoida aniq qo‘llanildi.",
     transferWrong: "Javob mos kelmadi. Hisobni asosiy qoida bilan solishtiring.",
     transferInvalid: "Butun son, o‘nli kasr yoki 3/7 shaklidagi kasr kiriting.",
-    aiTitle: "Mavzu bo‘yicha savol berish",
-    aiSub: "Yordamchi tanlangan mavzuni asosiy qoidaga tayangan holda tushuntiradi va tayyor javobni aytmasdan yo‘naltiruvchi savol beradi.",
-    question: "Savolingiz",
+    aiTitle: "Sokratik SI-tyutor (Claude API)",
+    aiSub:
+      "Oddiy darslikdan farqli o‘laroq, Claude API sizning savolingiz yoki aniq xatongizni tahlil qiladi, qoidani sodda tilda tushuntiradi va tayyor javobni aytmasdan yo‘naltiruvchi savol beradi.",
+    question: "Savolingiz yoki qiyinchilik tug‘dirgan qadam",
     placeholder: "Masalan: nega Viyet teoremasida ildizlar yig‘indisi qarama-qarshi ishora bilan olinadi?",
     quickLabel: "Ko‘p beriladigan savollar:",
     quickQuestions: [
       "Nega hadni tenglikning boshqa tomoniga o‘tkazganda ishora o‘zgaradi?",
       "Shu bo‘limdagi formulalarni adashtirmaslik uchun nimaga e’tibor berish kerak?",
-      "Bunday masalalarda ko‘pincha qaysi qadamda xato qilinadi?"
+      "Imtihonda bu mavzuda ko‘pincha qaysi qadamda ball yo‘qotiladi?"
     ],
-    adult: "Men 18 yoshga to‘lganman.",
-    consent: "Tahlil olish uchun o‘quv savolimni yuborishga roziman. Shaxsiy ma’lumot kiritmayman.",
-    ask: "Tushuntirish olish",
+    schoolPrivacyNote:
+      "Maktab o‘quvchilari uchun anonim rejim: ro‘yxatdan o‘tish shart emas. Ism-sharif, telefon yoki maktab raqamini kiritmang.",
+    consent: "Tahlil olish uchun faqat matematik o‘quv savolini yuborishga roziman (shaxsiy ma’lumotlarsiz).",
+    ask: "SI-tyutor tahlilini olish",
     loading: "Javob tayyorlanmoqda…",
-    pilot: "Server kaliti yoqilganda jonli javob, demo rejimda esa dars qoidasi asosida tahlil qaytariladi.",
+    pilot: "Generativ tahlil himoyalangan /api/explain server yo‘nalishi orqali (Claude API + zaxira konturi) bajariladi.",
     privacy: "Maxfiylik",
-    rmTitle: "Imtihonga tayyorgarlik rejasi",
-    rmSub: "Mavzular tartibi yechilgan masalalar natijasi va maqsadli ball asosida tuziladi.",
+    rmTitle: "Imtihonga shaxsiy tayyorgarlik rejasi",
+    rmSub: "16 ta mavzu tartibi sinov testi, xatolar ustida ishlash natijalari va maqsadli ball asosida tuziladi.",
     rmTarget: "Maqsadli ball (50 dan)",
     rmWeeks: "Imtihongacha haftalar soni",
-    rmWeak: "Mustahkamlash kerak bo‘lgan mavzular",
+    rmWeak: "Mustahkamlash kerak bo‘lgan mavzular (16 bo‘limdan)",
     rmConsolidation: "Mustahkamlangan (≥2 mustaqil masala)",
     rmConsolidationEmpty: "Hozircha mustahkamlangan mavzu yo‘q — «Xatolar ustida ishlash» bo‘limida yordamsiz 2 tadan masala yeching.",
-    rmGoal: "Maqsadingiz va asosiy qiyinchilik",
+    rmGoal: "SI-rejalashtiruvchi (Claude API) uchun maqsad va qiyinchilik",
     rmGoalPlaceholder: "Masalan: logarifm va hosilada xato qilaman, 6 haftada 42+ ball yig‘ishim kerak",
     rmPresets: [
-      "6 haftada 45/50 ball: Viyet teoremasi, logarifm va trigonometriyada ishora xatolari",
-      "4 haftada 38/50 ball: hosila hamda geometrik yuzalar va hajmlar"
+      "6 haftada 45/50 ball: Viyet teoremasi, tengsizliklar va trigonometriyada ishora xatolari",
+      "4 haftada 38/50 ball: hosila, integral va stereometriya"
     ],
-    rmGenerate: "O‘quv rejasini tuzish",
+    rmGenerate: "Claude API bilan reja tuzish",
     rmBaseTitle: "Tavsiya etilgan mavzular tartibi",
     rmPhase1: "1-bosqich (1–2 hafta): tayanch mavzular va bo‘shliqlarni yopish",
     rmPhase2: "2-bosqich (3+ hafta): mustahkamlash va ko‘nikmani tekshirish",
     rmClaudeTitle: "Haftalik shaxsiy o‘quv rejasi",
     rmMilestones: "Haftalik qadamlar",
     rmHabit: "Kunlik tayyorgarlik tartibi",
-    badgeLive: "Jonli tahlil",
-    badgePreview: "Dars qoidasi bo‘yicha tahlil"
+    badgeLive: "Claude API · Jonli tahlil",
+    badgePreview: "Dars invarianti · Zaxira konturi"
   }
 };
 
@@ -280,11 +320,13 @@ type ClaudeRoadmap = {
 };
 
 const emptyProgress: Progress = { version: 1, records: [] };
+const optionLetters = ["A", "B", "C", "D"];
 
 export default function Study() {
   const [lang, setLang] = useState<Language>("ru");
   const [topic, setTopic] = useState<TopicId>("linear");
   const [tab, setTab] = useState("lesson");
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // Focused step-by-step practice state (questions 0, 1, 2 + transfer task index 3)
   const [activeQ, setActiveQ] = useState<number>(0);
@@ -299,8 +341,7 @@ export default function Study() {
   const [showTransferRule, setShowTransferRule] = useState(false);
 
   const [question, setQuestion] = useState("");
-  const [adult, setAdult] = useState(false);
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [answer, setAnswer] = useState<{ explanation: string; hint: string; source?: string } | null>(null);
@@ -328,7 +369,6 @@ export default function Study() {
   const baseline = buildBaselineRoadmap(labProgress, targetScore, weeksLeft, lang);
   const transferChallenge = makeChallenge(topic, practiceSeed, lang);
 
-  // Whether we are inside the active study lesson view vs a top-level section (Topic Map, UNT Exam, Study Plan)
   const isStudySection = tab === "lesson" || tab === "practice" || tab === "ai";
 
   useEffect(() => {
@@ -419,18 +459,18 @@ export default function Study() {
         ? {
             quota: "Лимит запросов пилота исчерпан. Продолжите с готовыми материалами.",
             origin: "Неверный источник запроса.",
-            input: "Заполните текст вопроса и отметьте оба пункта согласия."
+            input: "Введите учебный вопрос (от 3 символов) и оставьте отметку согласия."
           }
         : lang === "kk"
           ? {
               quota: "Сынақ лимиті аяқталды. Дайын сабақтарды жалғастырыңыз.",
               origin: "Сұраныс көзі қате.",
-              input: "Сұрақтың толтырылуын және келісім белгілерін тексеріңіз."
+              input: "Оқу сұрағын енгізіп, келісім белгісін тексеріңіз."
             }
           : {
               quota: "Sinov limiti tugadi. Tayyor darslarni davom ettiring.",
               origin: "So‘rov manbasi noto‘g‘ri.",
-              input: "Savol maydoni va rozilik belgilari qo‘yilganini tekshiring."
+              input: "O‘quv savolini kiriting va rozilik belgisini tekshiring."
             };
     return (
       codes[code ?? ""] ??
@@ -539,9 +579,9 @@ export default function Study() {
     });
   }
 
-  async function ask() {
+  async function runExplainQuery(rawQuestion: string) {
     if (busy) return;
-    if (!adult || !consent || question.trim().length < 3) {
+    if (!consent || rawQuestion.trim().length < 3) {
       setError(errorText("input"));
       return;
     }
@@ -555,7 +595,13 @@ export default function Study() {
         method: "POST",
         headers: { "content-type": "application/json" },
         signal: controller.current.signal,
-        body: JSON.stringify({ topic, language: lang, question, adult, consent })
+        body: JSON.stringify({
+          topic,
+          language: lang,
+          question: rawQuestion.trim(),
+          adult: true,
+          consent: true
+        })
       });
       const data = z
         .object({
@@ -577,9 +623,16 @@ export default function Study() {
     }
   }
 
+  function askWithPrefill(prefilled: string) {
+    setConsent(true);
+    setQuestion(prefilled);
+    setTab("ai");
+    void runExplainQuery(prefilled);
+  }
+
   async function askRoadmap() {
     if (rmBusy) return;
-    if (!adult || !consent || goalNote.trim().length < 3) {
+    if (!consent || goalNote.trim().length < 3) {
       setRmError(errorText("input"));
       return;
     }
@@ -597,8 +650,8 @@ export default function Study() {
           weakTopics,
           masteredTopics: baseline.masteredTopics.filter((item) => !weakTopics.includes(item)),
           goalNote: goalNote.trim(),
-          adult,
-          consent
+          adult: true,
+          consent: true
         })
       });
       const raw = await res.json();
@@ -634,7 +687,7 @@ export default function Study() {
 
   return (
     <div className="textbook-shell">
-      {/* 1. Header: Primary Product Sections + Language Switcher */}
+      {/* 1. Header: Recognizable Brand + Primary Product Sections + Language Switcher */}
       <header className="site-header">
         <div className="wrap header-inner">
           <div className="header-top-row">
@@ -647,13 +700,36 @@ export default function Study() {
               }}
             >
               <span className="brand-mark" aria-hidden="true">
-                ∑
+                <svg viewBox="0 0 28 28" width="24" height="24" fill="none">
+                  <rect width="28" height="28" rx="6" fill="#1B3B6F" />
+                  <path
+                    d="M7.5 8.5H15.5L11.2 14L15.5 19.5H7.5"
+                    stroke="#F7F5F0"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M17.5 14H21.5M19.5 11.8L21.8 14L19.5 16.2"
+                    stroke="#93C5FD"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </span>
               <span className="brand-name">BilimAI</span>
               <span className="brand-sub">ЕНТ · ҰБТ</span>
             </a>
 
             <div className="header-right">
+              <button
+                type="button"
+                className="header-quiet-link"
+                onClick={() => setShowWelcome((v) => !v)}
+              >
+                {showWelcome ? t.welcomeHide : t.welcomeShow}
+              </button>
               <a className="header-quiet-link" href="/about">
                 {t.navAbout}
               </a>
@@ -727,9 +803,32 @@ export default function Study() {
       </header>
 
       <main className="wrap main-container">
+        {/* Optional Welcome / Overview Banner */}
+        {showWelcome && (
+          <section className="welcome-strip" aria-label={t.welcomeTitle}>
+            <div className="welcome-strip-main">
+              <span className="topic-index-label">{t.welcomeBadge}</span>
+              <h2 className="welcome-strip-title">{t.welcomeTitle}</h2>
+              <p className="welcome-strip-desc">{t.welcomeDesc}</p>
+              <div className="welcome-strip-actions">
+                <Button size="sm" onClick={() => setTab("exam")}>
+                  {t.welcomeCtaExam}
+                  <ArrowRight size={15} />
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setTab("graph")}>
+                  {t.welcomeCtaGraph}
+                </Button>
+                <a className="quiet-text-action" href={`/lab?lang=${lang}&topic=${topic}`}>
+                  {t.welcomeCtaLab} →
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
         {isStudySection ? (
           <>
-            {/* Mobile Topic Selector (Clean single dropdown above the study page) */}
+            {/* Mobile Topic Selector (Single compact line above the study page) */}
             <div className="mobile-topic-bar">
               <label htmlFor="mobile-lesson-select">{t.mobileTopicLabel}</label>
               <select
@@ -748,7 +847,7 @@ export default function Study() {
             </div>
 
             <div className="workspace">
-              {/* 2. Topic List: Unboxed Textbook Table of Contents */}
+              {/* 2. Topic List: Unboxed Textbook Table of Contents (All 16 UNT Sections) */}
               <aside className="topics" aria-label={t.topics}>
                 <h2 className="topics-heading">{t.topics}</h2>
                 <div className="topics-list">
@@ -770,7 +869,7 @@ export default function Study() {
                 </div>
               </aside>
 
-              {/* 3. Single Main Study Surface (No nested card boxes inside) */}
+              {/* 3. Single Main Study Surface (Strict Left-Aligned Header Composition) */}
               <article className="surface" aria-label={lesson.title}>
                 <header className="lesson-head">
                   <div className="lesson-meta-line">
@@ -782,7 +881,7 @@ export default function Study() {
                   <p className="lesson-intro">{lesson.intro}</p>
                 </header>
 
-                {/* Inside the lesson: only 3 calm actions for the current topic */}
+                {/* Inside the lesson: 3 calm modes for the current topic */}
                 <Tabs value={tab} onValueChange={setTab}>
                   <TabsList className="tabsbar">
                     <TabsTrigger value="lesson">{t.lesson}</TabsTrigger>
@@ -809,7 +908,7 @@ export default function Study() {
                       <ol className="steps">
                         {lesson.steps.map((step, i) => (
                           <li key={step}>
-                            <span className="step-number">{i + 1}.</span>
+                            <span className="step-number">{String(i + 1).padStart(2, "0")} →</span>
                             <span className="step-text">{step}</span>
                           </li>
                         ))}
@@ -838,7 +937,7 @@ export default function Study() {
                     </div>
                   </TabsContent>
 
-                  {/* TAB 2: ПРАКТИКА (Step-by-step solving -> Contextual Feedback right next to answer) */}
+                  {/* TAB 2: ПРАКТИКА (Step-by-step solving -> Contextual Feedback + 1-click Claude Tutor) */}
                   <TabsContent value="practice">
                     <div className="practice-header-bar">
                       <span className="practice-counter">
@@ -888,6 +987,7 @@ export default function Study() {
                         </div>
 
                         <RadioGroup
+                          className="options-stack"
                           aria-labelledby={`q${activeQ}`}
                           value={selectedVal ?? ""}
                           disabled={isCurrentChecked}
@@ -918,8 +1018,24 @@ export default function Study() {
                                   }
                                 }}
                               >
-                                <RadioGroupItem value={String(j)} id={`q${activeQ}a${j}`} />
+                                <RadioGroupItem
+                                  value={String(j)}
+                                  id={`q${activeQ}a${j}`}
+                                  className="sr-only"
+                                />
+                                <span className="option-badge">{optionLetters[j] ?? j + 1}</span>
                                 <span className="option-math-text">{option}</span>
+                                <span className="option-status-indicator" aria-hidden="true">
+                                  {isCurrentChecked
+                                    ? isOptionCorrect
+                                      ? "✓"
+                                      : isSelected
+                                        ? "✕"
+                                        : ""
+                                    : isSelected
+                                      ? t.selectedIndicator
+                                      : ""}
+                                </span>
                               </label>
                             );
                           })}
@@ -952,7 +1068,7 @@ export default function Study() {
                           </div>
                         )}
 
-                        {/* Single clear primary action depending on state */}
+                        {/* Primary & Secondary Actions with clear visual separation */}
                         <div className="practice-actions">
                           {!isCurrentChecked ? (
                             <Button onClick={() => checkCurrentQuestion(activeQ)}>
@@ -987,24 +1103,44 @@ export default function Study() {
                                 <RotateCcw size={15} />
                                 {t.tryAgainBtn}
                               </Button>
+                              <button
+                                type="button"
+                                className="quiet-text-action"
+                                onClick={() => {
+                                  const chosenText =
+                                    selectedVal !== undefined
+                                      ? currentQuestionObj.options[Number(selectedVal)]
+                                      : "";
+                                  askWithPrefill(
+                                    lang === "ru"
+                                      ? `В задаче «${currentQuestionObj.text}» я выбрал ответ «${chosenText}». Объясни по шагам, почему этот переход ошибочен и как применить правило темы.`
+                                      : lang === "kk"
+                                        ? `«${currentQuestionObj.text}» есебінде мен «${chosenText}» жауабын таңдадым. Осы қадам неге қате екенін және ережені қалай қолдану керегін түсіндіріп берші.`
+                                        : `«${currentQuestionObj.text}» masalasida men «${chosenText}» javobini tanladim. Nega bu qadam xato ekanini va qoidani qanday qo‘llashni tushuntirib bering.`
+                                  );
+                                }}
+                              >
+                                <Sparkles size={14} />
+                                {t.askAiWhyBtn}
+                              </button>
                             </>
                           )}
                         </div>
 
                         {solvedCount === 3 && (
-                          <p className="notebook-margin-note mt-4">{t.allTasksSolved}</p>
+                          <p className="notebook-margin-note">{t.allTasksSolved}</p>
                         )}
                       </div>
                     ) : (
                       /* Step 4 inside Practice: Dynamic Transfer Problem with new numbers */
                       <div className="practice-stage">
-                        <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+                        <div className="practice-transfer-head">
                           <span className="rule-label">{t.transferTitle}</span>
                           <span className="topic-index-label">#{practiceSeed + 1}/24</span>
                         </div>
-                        <p className="lesson-intro mb-3">{t.transferSub}</p>
+                        <p className="lesson-intro">{t.transferSub}</p>
 
-                        <div className="practice-math-stem">{transferChallenge.transfer}</div>
+                        <div className="practice-math-stem">{formatLabTask(transferChallenge.transfer)}</div>
 
                         <form
                           className="transfer-form"
@@ -1036,7 +1172,7 @@ export default function Study() {
                         {transferStatus && (
                           <div
                             role="status"
-                            className={`feedback mt-3 ${transferStatus === "right" ? "correct" : "wrong"}`}
+                            className={`feedback ${transferStatus === "right" ? "correct" : "wrong"}`}
                           >
                             <strong className="feedback-heading">
                               {transferStatus === "right" ? t.correctTitle : t.wrongTitle}
@@ -1118,94 +1254,98 @@ export default function Study() {
                     )}
                   </TabsContent>
 
-                  {/* TAB 3: ЗАДАТЬ ВОПРОС */}
+                  {/* TAB 3: ИИ-ТЬЮТОР (CLAUDE API) */}
                   <TabsContent value="ai">
-                    <h2 className="steps-heading mt-0">{t.aiTitle}</h2>
-                    <p className="lesson-intro mb-4">{t.aiSub}</p>
+                    <div className="ai-stage">
+                      <h2 className="steps-heading">{t.aiTitle}</h2>
+                      <p className="lesson-intro">{t.aiSub}</p>
 
-                    <div className="mb-4">
-                      <span className="rule-label block mb-2">{t.quickLabel}</span>
-                      <div className="quick-prompts">
-                        {t.quickQuestions.map((qq) => (
-                          <button
-                            key={qq}
-                            type="button"
-                            className="quick-pill"
-                            onClick={() => {
-                              setQuestion(qq);
-                              setError("");
-                            }}
-                          >
-                            {qq}
-                          </button>
-                        ))}
+                      <div className="quick-prompts-block">
+                        <span className="rule-label">{t.quickLabel}</span>
+                        <div className="quick-prompts">
+                          {t.quickQuestions.map((qq) => (
+                            <button
+                              key={qq}
+                              type="button"
+                              className="quick-pill"
+                              onClick={() => {
+                                setQuestion(qq);
+                                setError("");
+                              }}
+                            >
+                              {qq}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
 
-                    <form
-                      className="ai-form"
-                      noValidate
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        void ask();
-                      }}
-                    >
-                      <label htmlFor="learner-question" className="form-label">
-                        {t.question} ({lesson.title})
-                      </label>
-                      <textarea
-                        id="learner-question"
-                        name="learnerQuestion"
-                        value={question}
-                        maxLength={600}
-                        placeholder={t.placeholder}
-                        onChange={(e) => {
-                          setQuestion(e.target.value);
-                          if (error) setError("");
+                      <form
+                        className="ai-form"
+                        noValidate
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          void runExplainQuery(question);
                         }}
-                      />
-                      <span className="small">{question.length}/600</span>
-                      <label className="checkline" onClick={() => setError("")}>
-                        <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
-                        <span>{t.adult}</span>
-                      </label>
-                      <label className="checkline" onClick={() => setError("")}>
-                        <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
-                        <span>
-                          {t.consent}{" "}
-                          <a href="/privacy" onClick={(e) => e.stopPropagation()}>
-                            {t.privacy}
-                          </a>
-                        </span>
-                      </label>
-                      <div>
-                        <Button type="submit" disabled={busy}>
-                          {busy ? t.loading : t.ask}
-                        </Button>
-                      </div>
-                    </form>
-                    <p className="small mt-3">{t.pilot}</p>
-                    {error && (
-                      <p role="alert" className="feedback wrong mt-3">
-                        {error}
-                      </p>
-                    )}
-                    {answer && (
-                      <section aria-live="polite" className="response">
-                        <span className="rule-label">
-                          {answer.source === "claude" ? t.badgeLive : t.badgePreview}
-                        </span>
-                        <p className="mt-2 mb-3">{answer.explanation}</p>
-                        <strong>
-                          {lang === "ru"
-                            ? "Проверь себя:"
-                            : lang === "kk"
-                              ? "Өзіңді тексер:"
-                              : "O‘zingizni tekshiring:"}
-                        </strong>
-                        <p className="mt-1 mb-0">{answer.hint}</p>
-                      </section>
-                    )}
+                      >
+                        <label htmlFor="learner-question" className="form-label">
+                          {t.question} ({lesson.title})
+                        </label>
+                        <textarea
+                          id="learner-question"
+                          name="learnerQuestion"
+                          value={question}
+                          maxLength={600}
+                          placeholder={t.placeholder}
+                          onChange={(e) => {
+                            setQuestion(e.target.value);
+                            if (error) setError("");
+                          }}
+                        />
+                        <div className="ai-meta-row">
+                          <span className="small">{t.schoolPrivacyNote}</span>
+                          <span className="small">{question.length}/600</span>
+                        </div>
+
+                        <label className="checkline" onClick={() => setError("")}>
+                          <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
+                          <span>
+                            {t.consent}{" "}
+                            <a href="/privacy" onClick={(e) => e.stopPropagation()}>
+                              {t.privacy}
+                            </a>
+                          </span>
+                        </label>
+
+                        <div className="practice-actions">
+                          <Button type="submit" disabled={busy}>
+                            <Sparkles size={15} />
+                            {busy ? t.loading : t.ask}
+                          </Button>
+                        </div>
+                      </form>
+                      <p className="small">{t.pilot}</p>
+                      {error && (
+                        <p role="alert" className="feedback wrong">
+                          {error}
+                        </p>
+                      )}
+                      {answer && (
+                        <section aria-live="polite" className="response">
+                          <span className="rule-label">
+                            {answer.source === "claude" ? t.badgeLive : t.badgePreview}
+                          </span>
+                          <p className="response-explanation">{answer.explanation}</p>
+                          <strong>
+                            {lang === "ru"
+                              ? "Проверь себя:"
+                              : lang === "kk"
+                                ? "Өзіңді тексер:"
+                                : "O‘zingizni tekshiring:"}
+                          </strong>
+                          <p className="response-hint">{answer.hint}</p>
+                        </section>
+                      )}
+                    </div>
                   </TabsContent>
                 </Tabs>
               </article>
@@ -1377,12 +1517,11 @@ export default function Study() {
                   if (rmError) setRmError("");
                 }}
               />
-              <span className="small">{goalNote.length}/400</span>
+              <div className="ai-meta-row">
+                <span className="small">{t.schoolPrivacyNote}</span>
+                <span className="small">{goalNote.length}/400</span>
+              </div>
 
-              <label className="checkline" onClick={() => setRmError("")}>
-                <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
-                <span>{t.adult}</span>
-              </label>
               <label className="checkline" onClick={() => setRmError("")}>
                 <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
                 <span>
@@ -1393,8 +1532,9 @@ export default function Study() {
                 </span>
               </label>
 
-              <div>
+              <div className="practice-actions">
                 <Button type="submit" disabled={rmBusy}>
+                  <Sparkles size={15} />
                   {rmBusy ? t.loading : t.rmGenerate}
                 </Button>
               </div>

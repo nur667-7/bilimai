@@ -239,8 +239,8 @@ test('global daily and lifetime pilot limits work across users and days', () => 
   database.close();
 });
 
-test('all three languages cover all 10 UNT topics and answer keys match across languages', () => {
-  assert.equal(untTopicIds.length, 10);
+test('all three languages cover all 16 UNT topics and answer keys match across languages', () => {
+  assert.equal(untTopicIds.length, 16);
   assert.deepEqual(
     lessons.ru.map((l) => l.id),
     untTopicIds
@@ -284,12 +284,12 @@ test('all three languages cover all 10 UNT topics and answer keys match across l
   }
 });
 
-test('UNT exam specification and question bank cover all 10 topics and all 4 official formats with 0/1/2 point scoring', () => {
+test('UNT exam specification and question bank cover all 16 topics and all 4 official formats with 0/1/2 point scoring', () => {
   assert.equal(UNT_OFFICIAL_SPEC.mathLiteracy.questions, 10);
   assert.equal(UNT_OFFICIAL_SPEC.profileMath.questions, 40);
   assert.equal(UNT_OFFICIAL_SPEC.profileMath.maxPoints, 50);
 
-  assert.equal(untQuestions.length, 12);
+  assert.equal(untQuestions.length, 18);
   const coveredTopics = new Set(untQuestions.map((q) => q.topic));
   for (const t of untTopicIds) {
     assert.ok(coveredTopics.has(t), `Missing UNT question for topic ${t}`);
@@ -336,14 +336,14 @@ test('UNT exam specification and question bank cover all 10 topics and all 4 off
     }
   }
   const summary = evaluateUntExam(perfectResponses, untQuestions);
-  assert.equal(summary.earnedPoints, 17);
-  assert.equal(summary.maxPoints, 17);
+  assert.equal(summary.earnedPoints, 23);
+  assert.equal(summary.maxPoints, 23);
   assert.equal(summary.scaledScore50, 50);
   assert.equal(summary.weakTopics.length, 0);
 });
 
 test('Obsidian knowledge graph distinguishes root_gap from blocked_gap and builds topological study plan', () => {
-  assert.equal(UNT_GRAPH_NODES.length, 10);
+  assert.equal(UNT_GRAPH_NODES.length, 16);
   const emptyProgress = { version: 1, records: [] };
   // Suppose linear (root) and quadratic (depends on linear) and functions (depends on quadratic) are weak:
   const state = buildKnowledgeGraphState(emptyProgress, null, ['linear', 'quadratic', 'functions'], 'ru');

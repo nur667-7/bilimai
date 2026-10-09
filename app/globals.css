@@ -122,18 +122,20 @@ summary:focus-visible {
 .beta,
 .num,
 .step-number,
+.option-badge,
 .score,
+.topic-index-label,
 .section-pill,
 .exam-weight-pill,
 .exam-q-number,
 .kg-summary-bar strong,
-.practice-progress-label,
+.practice-counter,
 .practice-dot {
   font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
-   Layout & Header: Modern Textbook Navigation
+   1. Layout & Header: Modern Textbook Navigation
    ========================================================================== */
 .textbook-shell {
   min-height: 100vh;
@@ -143,23 +145,27 @@ summary:focus-visible {
 
 .wrap {
   width: 100%;
-  max-width: 1160px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 0 24px;
+}
+
+.main-container {
+  flex: 1;
 }
 
 .site-header {
   background: #fdfcfa;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .header-inner {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 12px;
-  padding-bottom: 12px;
+  gap: 8px;
+  padding-top: 11px;
+  padding-bottom: 11px;
 }
 
 .header-top-row {
@@ -170,55 +176,71 @@ summary:focus-visible {
   flex-wrap: wrap;
 }
 
-.header-util {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.util-link {
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  text-decoration: none;
-}
-
-.util-link:hover {
-  color: var(--foreground);
-  text-decoration: underline;
-}
-
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: var(--font-serif);
-  font-size: 21px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  gap: 9px;
   text-decoration: none;
   color: var(--foreground);
 }
 
-.brand svg {
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
   height: 24px;
   flex-shrink: 0;
 }
 
-.beta {
+.brand-name {
+  font-family: var(--font-serif);
+  font-style: normal;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.brand-sub {
   font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: var(--secondary);
-  color: var(--muted-foreground);
+  background: var(--accent);
+  color: var(--primary);
+  border: 1px solid #c9d8ec;
   padding: 2px 7px;
   border-radius: 4px;
 }
 
+.header-right,
+.header-util {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.header-quiet-link,
+.util-link {
+  border: 0;
+  background: transparent;
+  padding: 2px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: none;
+}
+
+.header-quiet-link:hover,
+.util-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.lang-switcher,
 .lang-group {
   display: inline-flex;
   background: var(--muted);
@@ -232,17 +254,18 @@ summary:focus-visible {
   border: 0;
   background: transparent;
   color: var(--muted-foreground);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 4px 9px;
-  min-height: 30px;
+  padding: 3px 9px;
+  min-height: 28px;
   border-radius: 4px;
+  transition: background-color 120ms ease, color 120ms ease;
 }
 
+.lang-btn.active,
 .lang-btn[aria-pressed="true"] {
-  background: #ffffff;
-  color: var(--foreground);
-  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.08);
+  background: var(--primary);
+  color: #ffffff;
 }
 
 .primary-nav {
@@ -250,8 +273,7 @@ summary:focus-visible {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  border-top: 1px solid #ede9df;
-  padding-top: 8px;
+  padding-top: 6px;
 }
 
 .primary-nav-link {
@@ -283,12 +305,53 @@ summary:focus-visible {
 }
 
 /* ==========================================================================
-   Main Study Workspace: Unboxed TOC + Single Study Surface
+   Welcome Overview Strip (Collapsible)
    ========================================================================== */
-.workspace-main {
-  flex: 1;
+.welcome-strip {
+  margin-bottom: 18px;
+  padding: 18px 22px;
+  border-radius: 9px;
+  background: #fdfcfa;
+  border: 1px solid #d5cfc2;
+  border-left: 3.5px solid var(--primary);
 }
 
+.welcome-strip-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.welcome-strip-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: normal;
+  font-size: clamp(19px, 2.1vw, 23px);
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.welcome-strip-desc {
+  margin: 0;
+  max-width: 76ch;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #3f3f46;
+}
+
+.welcome-strip-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* ==========================================================================
+   2. Main Study & Lab Workspace: Unified Left Sidebar + Study Surface
+   ========================================================================== */
 .workspace {
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
@@ -296,45 +359,61 @@ summary:focus-visible {
   align-items: start;
 }
 
+.lab-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
 .mobile-topic-bar {
   display: none;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .mobile-topic-bar label {
-  display: block;
   font-size: 11.5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted-foreground);
-  margin-bottom: 4px;
+  white-space: nowrap;
 }
 
 .mobile-topic-select {
-  width: 100%;
-  min-height: 40px;
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
   border: 1px solid var(--input);
   border-radius: 6px;
-  padding: 7px 10px;
+  padding: 6px 10px;
   background: #ffffff;
+  font-size: 14px;
   font-weight: 500;
   color: var(--foreground);
 }
 
-/* Topic List: Editorial Table of Contents (No card border/box) */
+/* Topic List: Editorial Table of Contents (Shared across Study and Lab) */
 .topics {
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
+.topics-heading,
 .topics h2 {
+  font-family: var(--font-sans);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted-foreground);
-  margin: 0 0 10px;
-  padding: 0 8px;
+  margin: 0 0 8px;
+  padding: 0 10px;
   font-weight: 600;
+}
+
+.topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .topic {
@@ -342,15 +421,14 @@ summary:focus-visible {
   display: flex;
   gap: 10px;
   align-items: baseline;
-  padding: 8px 10px;
-  min-height: 40px;
+  padding: 7px 10px;
+  min-height: 38px;
   border: 0;
   border-left: 2.5px solid transparent;
   border-radius: 0 6px 6px 0;
   background: transparent;
   color: #44403c;
   text-align: left;
-  margin: 1px 0;
   transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
 }
 
@@ -360,13 +438,13 @@ summary:focus-visible {
 }
 
 .topic.active {
-  background: #ebe6dc;
+  background: var(--accent);
   border-left-color: var(--primary);
-  color: var(--foreground);
+  color: var(--primary);
 }
 
 .num {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #78716c;
   flex-shrink: 0;
@@ -381,80 +459,92 @@ summary:focus-visible {
 .topic-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   font-size: 13.5px;
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.28;
 }
 
 .topic.active .topic-title {
   font-weight: 600;
+  color: var(--primary);
 }
 
 .topic-title small {
   display: block;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 400;
   color: var(--muted-foreground);
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
-.aside-note {
-  margin-top: 14px;
-  padding: 12px 8px 0;
-  border-top: 1px solid var(--border);
-  color: var(--muted-foreground);
-  font-size: 12.5px;
-}
-
-/* Single Primary Study Surface */
+/* ==========================================================================
+   3. Single Primary Study Surface & Left-Aligned Lesson Header
+   ========================================================================== */
 .surface {
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 32px 36px;
+  padding: 30px 34px;
   min-width: 0;
-  box-shadow: 0 2px 8px rgba(24, 24, 27, 0.03);
+  box-shadow: 0 1px 4px rgba(24, 24, 27, 0.025);
 }
 
+/* Strictly stacked on a single left axis: Category/Number -> Title -> Intro */
 .lesson-head {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #ebe6dc;
+  gap: 6px;
+  margin-bottom: 16px;
 }
 
+.lesson-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.topic-index-label,
 .section-pill {
   display: inline-block;
+  font-family: var(--font-sans);
   font-size: 11.5px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--primary);
-  margin-bottom: 4px;
 }
 
 .lesson-title,
 .lesson-head h2 {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: clamp(24px, 2.8vw, 31px);
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-  color: #111827;
+  font-style: normal;
+  font-size: clamp(25px, 2.8vw, 32px);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.lesson-intro {
+  margin: 0;
+  max-width: 70ch;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  color: #44403c;
 }
 
 .small {
-  font-size: 13.5px;
+  font-size: 13px;
+  line-height: 1.45;
   color: var(--muted-foreground);
 }
 
-/* Lesson Inner Tabs: Calm Textbook Section Switcher */
+/* Lesson Inner Tabs: Consistent Deep Blue Active Semantics */
 .tabsbar,
 .lesson-tabs {
   display: inline-flex !important;
@@ -463,7 +553,7 @@ summary:focus-visible {
   min-height: 38px;
   padding: 3px !important;
   gap: 4px;
-  background: var(--muted) !important;
+  background: #f5f2eb !important;
   border: 1px solid var(--border);
   border-radius: 7px !important;
   margin-bottom: 22px;
@@ -477,31 +567,35 @@ summary:focus-visible {
   height: auto;
   border-radius: 5px !important;
   color: #57534e;
+  border: 1px solid transparent;
 }
 
 .tabsbar [data-slot="tabs-trigger"][data-state="active"],
 .lesson-tabs [data-slot="tabs-trigger"][data-state="active"] {
-  background: #ffffff !important;
-  color: var(--foreground) !important;
+  background: var(--accent) !important;
+  color: var(--primary) !important;
+  border-color: #c9d8ec !important;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.06) !important;
+  box-shadow: none !important;
 }
 
 /* ==========================================================================
-   Inside Lesson: Rule, Centerpiece Formula & Numbered Steps (No Card Noise)
+   4. Inside Lesson: Rule, Centerpiece Formula & Numbered Steps (Zero Line Clutter)
    ========================================================================== */
 .rule {
   background: #f8f6f1;
   border-left: 3px solid var(--primary);
   padding: 14px 18px;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 7px 7px 0;
   font-size: 15.5px;
   line-height: 1.55;
   color: #1f2937;
 }
 
+.rule-label,
 .rule strong {
   display: block;
+  font-family: var(--font-sans);
   color: var(--primary);
   font-size: 11.5px;
   font-weight: 600;
@@ -510,103 +604,139 @@ summary:focus-visible {
   margin-bottom: 4px;
 }
 
+.rule-body {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.58;
+  color: #1f2937;
+}
+
+/* Centerpiece Formula Stage: Soft warm surface without top/bottom rule noise */
 .math-stage {
-  margin: 26px 0 22px;
-  padding: 22px 0 18px;
-  border-top: 1px solid #ebe6dc;
-  border-bottom: 1px solid #ebe6dc;
+  margin: 22px 0;
+  padding: 18px 20px;
+  border-radius: 8px;
+  background: #faf8f4;
 }
 
 .math-stage-label {
-  font-size: 12px;
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted-foreground);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
-/* Primary visual focal point: Large Mathematical Expression */
 .equation {
   font-family: var(--font-math);
-  font-size: clamp(26px, 3.4vw, 36px);
+  font-size: clamp(25px, 3.2vw, 34px);
   font-weight: 400;
-  line-height: 1.35;
+  line-height: 1.32;
   letter-spacing: 0.01em;
-  padding: 6px 0;
+  padding: 2px 0 0;
   margin: 0;
-  background: transparent;
-  border: 0;
   color: #0f172a;
   overflow-wrap: anywhere;
 }
 
-/* Steps: Numbered Notebook Lines without Individual Card Boxes */
+.steps-section {
+  margin-top: 22px;
+}
+
+.steps-heading {
+  margin: 0 0 8px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #18181b;
+}
+
 .steps {
   list-style: none;
   padding: 0;
-  margin: 12px 0 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
 .steps li {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   align-items: baseline;
-  padding: 13px 4px;
-  background: transparent;
-  border-bottom: 1px dashed #e5e0d5;
-  border-radius: 0;
+  padding: 9px 12px;
+  background: #fcfbf9;
+  border-radius: 6px;
   font-size: 15.5px;
   line-height: 1.55;
   color: #1f2937;
 }
 
-.steps li:last-child {
-  border-bottom: 0;
-}
-
 .step-number {
-  font-family: var(--font-serif);
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
   color: var(--primary);
-  min-width: 22px;
+  background: var(--accent);
+  padding: 2px 7px;
+  border-radius: 4px;
+  min-width: 42px;
+  text-align: center;
   flex-shrink: 0;
 }
 
-.step-number::after {
-  content: ".";
+.step-text {
+  flex: 1;
+  min-width: 0;
 }
 
-.callout {
-  background: #faf8f4;
-  border-top: 1px solid #e7e2d8;
-  border-bottom: 1px solid #e7e2d8;
-  padding: 12px 16px;
-  font-size: 14px;
-  color: #44403c;
-  margin-top: 20px;
+.notebook-margin-note {
+  margin: 18px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
 }
 
-.stage-next-step {
+/* Single horizontal divider ONLY where the stage transitions to action */
+.lesson-footer-action {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 20px;
   flex-wrap: wrap;
   margin-top: 24px;
   padding-top: 18px;
   border-top: 1px solid #ebe6dc;
 }
 
+.quiet-text-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  padding: 6px 4px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.quiet-text-action:hover {
+  color: #0f2547;
+}
+
 /* ==========================================================================
-   Practice Stage: Step-by-Step Task Flow & Diagnostic Feedback
+   5. Practice Stage: Full-Width 3-Part Option Rows & Contextual Feedback
    ========================================================================== */
 .practice-stage {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .practice-header-bar {
@@ -615,19 +745,18 @@ summary:focus-visible {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ebe6dc;
+  margin-bottom: 12px;
 }
 
-.practice-progress-label {
-  font-size: 13px;
+.practice-counter {
+  font-size: 12.5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted-foreground);
 }
 
-.practice-dots {
+.practice-step-dots {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -665,38 +794,39 @@ summary:focus-visible {
   color: #92400e;
 }
 
-.question-single {
-  padding: 8px 0 4px;
-}
-
 .practice-math-stem {
   font-family: var(--font-math);
-  font-size: clamp(20px, 2.4vw, 25px);
+  font-size: clamp(20px, 2.3vw, 25px);
   font-weight: 400;
-  line-height: 1.45;
+  line-height: 1.4;
   color: #0f172a;
-  margin: 0 0 18px;
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: #faf8f4;
   overflow-wrap: anywhere;
 }
 
 .options-stack {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 }
 
+/* Uniform Full-Width 3-Part Row: [Letter Badge] [Math Expression] [Selection Status] */
 .option {
+  width: 100%;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
+  justify-content: space-between;
   border: 1px solid #dcd6ca;
-  padding: 11px 15px;
+  padding: 11px 16px;
   border-radius: 7px;
   cursor: pointer;
-  min-height: 46px;
+  min-height: 48px;
   background: #ffffff;
-  font-family: var(--font-math);
-  font-size: 17px;
   transition: border-color 140ms ease, background-color 140ms ease;
 }
 
@@ -709,7 +839,6 @@ summary:focus-visible {
   border-color: var(--primary);
   border-width: 1.5px;
   background: var(--accent);
-  font-weight: 600;
 }
 
 .option.option-correct {
@@ -724,10 +853,68 @@ summary:focus-visible {
   color: #78350f;
 }
 
+.option-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  background: #f5f3ee;
+  color: #44403c;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.option[data-selected="true"] .option-badge {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.option.option-correct .option-badge {
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
+}
+
+.option.option-wrong .option-badge {
+  background: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+}
+
+.option-math-text {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-math);
+  font-size: 18px;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.option-status-indicator {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.option.option-correct .option-status-indicator {
+  color: #15803d;
+}
+
+.option.option-wrong .option-status-indicator {
+  color: #b45309;
+}
+
 .feedback {
   padding: 13px 16px;
   border-radius: 6px;
-  margin-top: 12px;
   font-size: 14.5px;
   line-height: 1.5;
   background: #f0fdf4;
@@ -741,41 +928,120 @@ summary:focus-visible {
   color: #78350f;
 }
 
-.Generator-view {
-  padding: 8px 0;
+.feedback-heading {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
 }
 
-/* ==========================================================================
-   Ask Question / Study Plan Form
-   ========================================================================== */
-.actions {
+.feedback-body {
+  margin: 0;
+}
+
+.error-breakdown-note {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(217, 119, 6, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error-breakdown-note p {
+  margin: 0;
+}
+
+.error-breakdown-solution {
+  font-family: var(--font-math);
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.quiet-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.practice-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.practice-transfer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.transfer-input-row {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: 16px;
+}
+
+/* ==========================================================================
+   6. Ask Question / Socratic AI Tutor & Study Plan
+   ========================================================================== */
+.ai-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.quick-prompts-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .ai-form {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+}
+
+.form-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--foreground);
 }
 
 .ai-form textarea {
   width: 100%;
-  min-height: 104px;
+  min-height: 96px;
   border: 1px solid var(--input);
   border-radius: 6px;
-  padding: 11px 14px;
+  padding: 10px 14px;
   resize: vertical;
   background: #ffffff;
+}
+
+.ai-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .quick-prompts {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 4px 0;
 }
 
 .quick-pill {
@@ -790,15 +1056,16 @@ summary:focus-visible {
 }
 
 .quick-pill:hover {
-  background: #efeae1;
-  border-color: #c7c0b3;
+  background: var(--accent);
+  border-color: #c9d8ec;
+  color: var(--primary);
 }
 
 .checkline {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  font-size: 13.5px;
+  font-size: 13px;
   color: #44403c;
   cursor: pointer;
 }
@@ -807,110 +1074,61 @@ summary:focus-visible {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   border-left: 3px solid var(--primary);
-  border-radius: 0 6px 6px 0;
-  padding: 16px 18px;
+  border-radius: 0 7px 7px 0;
+  padding: 15px 18px;
   background: #f8f6f1;
-  margin-top: 18px;
 }
 
-.source-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-bottom: 8px;
+.response-explanation {
+  margin: 6px 0 10px;
 }
 
-.source-badge.live {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.source-badge.preview {
-  background: #e0e7ff;
-  color: #1e3a8a;
-}
-
-.error {
-  background: #fef2f2;
-  border-left: 3px solid #dc2626;
-  color: #991b1b;
-  padding: 12px 15px;
-  border-radius: 0 6px 6px 0;
-  margin-top: 14px;
+.response-hint {
+  margin: 4px 0 0;
 }
 
 /* ==========================================================================
-   Error Lab (/lab)
+   7. Error Lab (/lab): Full-Width Step Rows & Compact Progress Drawer
    ========================================================================== */
-.lab-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(270px, 1fr);
-  gap: 24px;
-  align-items: start;
+.lab-how-details {
+  font-size: 13.5px;
+  color: var(--muted-foreground);
 }
 
-.lab-topics-desktop {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #ebe6dc;
+.lab-how-details summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--primary);
+  user-select: none;
 }
 
-.topic-chip {
-  padding: 5px 10px;
-  min-height: 32px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: #faf8f5;
+.lab-how-details p {
+  margin: 6px 0 0;
   color: #44403c;
-  font-size: 12.5px;
-  font-weight: 500;
-}
-
-.topic-chip:hover {
-  background: #efeae1;
-}
-
-.topic-chip.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.lab-heading {
-  font-family: var(--font-serif);
-  font-size: clamp(21px, 2.4vw, 26px);
-  font-weight: 500;
-  margin: 14px 0 8px;
-  letter-spacing: -0.015em;
-  color: #111827;
 }
 
 .lab-steps {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 8px;
+  margin-bottom: 14px;
 }
 
-.lab-step-group {
+.lab-step-item {
   display: flex;
   flex-direction: column;
 }
 
+/* Full-width 3-part step row matching Practice options */
 .lab-step {
+  width: 100%;
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
   text-align: left;
-  padding: 12px 14px;
-  min-height: 46px;
+  padding: 12px 16px;
+  min-height: 50px;
   border: 1px solid #dcd6ca;
   border-radius: 7px;
   background: #ffffff;
@@ -929,24 +1147,81 @@ summary:focus-visible {
   background: var(--accent);
 }
 
-.lab-step.step-found {
+.lab-step.selected .step-number {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.lab-step.broken-found {
   border-color: #15803d;
   background: #f0fdf4;
 }
 
-.lab-step.step-wrong-pick {
+.lab-step.broken-found .step-number {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.lab-step.broken-found .option-status-indicator {
+  color: #15803d;
+}
+
+.lab-step.step-valid {
   border-color: #d97706;
   background: #fffbeb;
 }
 
+.lab-step.step-valid .step-number {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.lab-step.step-valid .option-status-indicator {
+  color: #b45309;
+}
+
+.step-math-line {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-math);
+  font-size: 19px;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
 .step-inline-feedback {
-  margin: 6px 0 10px 24px;
+  margin: 6px 0 8px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.step-inline-feedback.wrong {
+  background: #fffbeb;
+  border-left: 3px solid #d97706;
+  color: #78350f;
+}
+
+.step-inline-feedback.correct {
+  background: #f0fdf4;
+  border-left: 3px solid #15803d;
+  color: #14532d;
+}
+
+.transfer-stage {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #ebe6dc;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .lab-input {
   display: block;
   width: 100%;
-  max-width: 300px;
+  max-width: 280px;
   min-height: 42px;
   border: 1px solid var(--input);
   padding: 8px 12px;
@@ -956,67 +1231,104 @@ summary:focus-visible {
   background: #ffffff;
 }
 
-.lab-answer-label {
-  display: block;
-  font-weight: 600;
-  margin: 10px 0 6px;
-}
-
 .lab-math {
   font-family: var(--font-math);
   font-size: 19px;
+  color: #0f172a;
   overflow-wrap: anywhere;
 }
 
-.lab-progress h2 {
-  font-family: var(--font-serif);
-  font-size: 19px;
-  font-weight: 500;
-  margin: 0 0 10px;
+/* Compact Progress Card below Lab Surface */
+.lab-progress {
+  background: #fdfcfa;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lab-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lab-recommend-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lab-progress-drawers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lab-drawer {
+  border-top: 1px solid #ebe6dc;
+  padding-top: 8px;
+}
+
+.lab-drawer summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  user-select: none;
+}
+
+.lab-drawer-body {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .lab-progress h3 {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--muted-foreground);
-  margin: 18px 0 8px;
+  margin: 10px 0 4px;
 }
 
 .lab-progress ul {
   list-style: none;
   padding: 0;
-  margin: 10px 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 18px;
 }
 
 .lab-progress li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid #ebe6dc;
-  font-size: 13.5px;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0ece2;
+  font-size: 13px;
 }
 
 .lab-progress li strong {
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--primary);
   background: var(--accent);
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
 }
 
-.lab-progress .checkline input {
-  margin-top: 3px;
-  min-width: 16px;
-  min-height: 16px;
-}
-
 /* ==========================================================================
-   UNT Mock Exam Simulator (.unt-exam-root)
+   8. UNT Mock Exam Simulator (.unt-exam-root)
    ========================================================================== */
 .unt-exam-root {
   display: flex;
@@ -1054,7 +1366,7 @@ summary:focus-visible {
 
 .exam-nav-grid {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: repeat(9, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -1064,7 +1376,7 @@ summary:focus-visible {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: 38px;
   padding: 4px;
   border-radius: 6px;
   border: 1px solid var(--border);
@@ -1435,7 +1747,7 @@ summary:focus-visible {
 }
 
 /* ==========================================================================
-   Topic Map (.kg-root — Карта тем)
+   9. Topic Map (.kg-root — Карта 16 тем ЕНТ)
    ========================================================================== */
 .kg-root {
   display: flex;
@@ -1557,8 +1869,8 @@ summary:focus-visible {
   display: block;
   width: 100%;
   height: auto;
-  min-height: 340px;
-  max-height: 460px;
+  min-height: 360px;
+  max-height: 490px;
   touch-action: manipulation;
   user-select: none;
 }
@@ -1688,7 +2000,7 @@ summary:focus-visible {
 }
 
 /* ==========================================================================
-   Footer (.site-footer) & Static Documents (/about, /privacy)
+   10. Footer (.site-footer) & Static Documents (/about, /privacy)
    ========================================================================== */
 .site-footer {
   margin-top: 40px;
@@ -1697,49 +2009,40 @@ summary:focus-visible {
   color: var(--muted-foreground);
 }
 
-.site-footer-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1.2fr;
-  gap: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #ebe6dc;
-}
-
-.site-footer-col {
+.site-footer-inner {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-width: 0;
+  gap: 14px;
 }
 
-.site-footer-desc {
-  margin: 4px 0 0;
-  font-size: 13.5px;
-  line-height: 1.55;
-  color: var(--muted-foreground);
+.site-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.site-footer-heading {
-  margin: 0 0 4px;
-  font-size: 12px;
+.site-footer-brand strong {
+  font-family: var(--font-serif);
+  font-size: 17px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--foreground);
 }
 
-.site-footer-links,
-.site-footer-contacts {
-  list-style: none;
-  padding: 0;
+.site-footer-brand p {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
   font-size: 13.5px;
+  color: var(--muted-foreground);
+  max-width: 72ch;
 }
 
-.site-footer-links a,
+.site-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.site-footer-nav a,
 .footer-link-btn {
   display: inline-flex;
   align-items: center;
@@ -1755,49 +2058,26 @@ summary:focus-visible {
   text-align: left;
 }
 
-.site-footer-links a:hover,
+.site-footer-nav a:hover,
 .footer-link-btn:hover {
   color: var(--primary);
   text-decoration: underline;
 }
 
-.site-footer-contacts li {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 13px;
-  color: #44403c;
-}
-
-.contact-label {
-  font-size: 11.5px;
-  color: var(--muted-foreground);
-}
-
-.corp-email-pill {
-  color: var(--primary);
-  font-weight: 500;
-  font-size: 13.5px;
-  text-decoration: none;
-}
-
-.corp-email-pill:hover {
-  text-decoration: underline;
-}
-
-.site-footer-bottom {
+.site-footer-meta-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #ebe6dc;
   font-size: 12.5px;
   color: var(--muted-foreground);
 }
 
 .document {
-  max-width: 820px;
+  max-width: 840px;
   padding: 28px 20px 56px;
   margin: 0 auto;
 }
@@ -1822,81 +2102,103 @@ summary:focus-visible {
 
 .document h1 {
   font-family: var(--font-serif);
+  font-style: normal;
   font-size: clamp(24px, 3vw, 32px);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.2;
   margin-top: 6px;
 }
 
 .document h2 {
   font-family: var(--font-serif);
+  font-style: normal;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 600;
   margin-top: 24px;
   margin-bottom: 8px;
 }
 
 /* ==========================================================================
-   Dedicated Mobile Composition (<= 840px, verified at 390px)
+   11. Mobile First-Screen Composition (<= 840px, verified at 390x844)
    ========================================================================== */
 @media (max-width: 840px) {
   .wrap {
-    padding: 0 14px;
+    padding: 0 12px;
   }
 
   .site-header {
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
 
   .header-inner {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    gap: 6px;
+  }
+
+  .brand-name {
+    font-size: 18px;
+  }
+
+  .brand-sub {
+    padding: 1px 5px;
+    font-size: 10px;
+  }
+
+  .header-right {
     gap: 8px;
   }
 
-  .brand {
-    font-size: 18px;
+  .header-quiet-link {
+    font-size: 12px;
   }
 
   .primary-nav {
     gap: 4px;
-    padding-top: 6px;
+    padding-top: 4px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+
+  .primary-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .primary-nav-link {
     padding: 5px 9px;
-    min-height: 32px;
+    min-height: 31px;
     font-size: 12.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
+  /* Compact single-line topic selector so task fits on first screen */
   .mobile-topic-bar {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
   }
 
-  .workspace {
+  .workspace,
+  .kg-workspace {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
 
-  .topics,
-  .lab-topics-desktop {
+  .topics {
     display: none;
   }
 
-  .lab-layout,
-  .kg-workspace {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-  }
-
   .surface {
-    padding: 18px 16px;
+    padding: 16px 14px;
     border-radius: 8px;
   }
 
   .lesson-head {
-    margin-bottom: 14px;
-    padding-bottom: 12px;
+    gap: 4px;
+    margin-bottom: 12px;
   }
 
   .lesson-title,
@@ -1904,38 +2206,52 @@ summary:focus-visible {
     font-size: 21px;
   }
 
+  .lesson-intro {
+    font-size: 14px;
+  }
+
   .tabsbar,
   .lesson-tabs {
     width: 100%;
     display: flex !important;
+    margin-bottom: 14px;
   }
 
   .tabsbar [data-slot="tabs-trigger"],
   .lesson-tabs [data-slot="tabs-trigger"] {
     flex: 1 1 auto;
-    padding: 6px 8px;
+    padding: 5px 8px;
     font-size: 12.5px;
     text-align: center;
   }
 
   .math-stage {
-    margin: 18px 0 16px;
-    padding: 16px 0 14px;
+    margin: 12px 0;
+    padding: 12px 14px;
   }
 
   .equation {
-    font-size: clamp(22px, 6vw, 28px);
+    font-size: clamp(21px, 5.8vw, 26px);
   }
 
   .steps li {
-    padding: 11px 2px;
+    padding: 8px 10px;
     font-size: 14.5px;
   }
 
-  .step-inline-feedback {
-    margin-left: 8px;
+  .lab-step,
+  .option {
+    padding: 10px 12px;
+    min-height: 44px;
+    gap: 10px;
   }
 
+  .step-math-line,
+  .option-math-text {
+    font-size: 16.5px;
+  }
+
+  .lab-progress ul,
   .kg-summary-bar,
   .exam-format-breakdown {
     grid-template-columns: repeat(2, minmax(0, 1fr));

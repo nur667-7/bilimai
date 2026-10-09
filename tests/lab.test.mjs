@@ -15,8 +15,8 @@ import {
 import { buildLabDiagnosePreview } from '../lib/claude.ts';
 import { lessons } from '../lib/lessons.ts';
 
-test('all 720 localized lab variants across 10 UNT topics have valid transfer answers, varied error positions, and exact seed-bound preview diagnosis', () => {
-  assert.equal(labTopics.length, 10);
+test('all 1152 localized lab variants across 16 UNT topics have valid transfer answers, varied error positions, and exact seed-bound preview diagnosis', () => {
+  assert.equal(labTopics.length, 16);
   for (const lang of ['ru', 'kk', 'uz']) {
     for (const topic of labTopics) {
       const lesson = lessons[lang].find((l) => l.id === topic);
@@ -114,7 +114,7 @@ test('recommendation and baseline UNT roadmap prioritize unpracticed or assisted
       record('probability', 'probability-0', false)
     ]
   };
-  assert.equal(recommendTopic(p), 'probability');
+  assert.equal(recommendTopic(p), 'inequalities');
   assert.equal(recommendTopic({ version: 1, records: [] }), 'linear');
   assert.equal(progressSchema.safeParse(p).success, true);
   assert.equal(progressSchema.safeParse({ ...p, records: Array(61).fill(p.records[0]) }).success, false);
@@ -137,7 +137,7 @@ test('new practice picks an unseen task and safely cycles after finite pool', ()
   assert.equal(nextSeed({ version: 1, records }, 'stereometry'), 0);
 });
 
-test('review schedule handles 2/7-day boundaries across all 10 UNT topics', () => {
+test('review schedule handles 2/7-day boundaries across all 16 UNT topics', () => {
   const start = Date.parse('2026-10-08T12:00:00.000Z'),
     day = 86400000;
   const record = (challenge, date, independent = true) => ({
@@ -148,7 +148,7 @@ test('review schedule handles 2/7-day boundaries across all 10 UNT topics', () =
   });
   const p = { version: 1, records: [record('linear-0', start)] };
   const sched = reviewSchedule(p, start + day);
-  assert.equal(sched.length, 10);
+  assert.equal(sched.length, 16);
   assert.equal(sched[0].due, false);
   assert.equal(reviewSchedule(p, start + 2 * day)[0].due, true);
   assert.equal(reviewSchedule(p, start)[1].dueAt, null);

@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { SiteFooter } from "@/components/site-footer";
 import {
   makeChallenge,
   checkAnswer,
+  formatLabTask,
   parseNumericAnswer,
   progressSchema,
   recommendTopic,
@@ -17,7 +17,7 @@ import {
   labTopics
 } from "@/lib/error-lab";
 import type { LabTopic, Progress } from "@/lib/error-lab";
-import type { Language } from "@/lib/lessons";
+import { lessons, type Language } from "@/lib/lessons";
 
 const labels = {
   ru: {
@@ -27,16 +27,22 @@ const labels = {
     navPlan: "Мой план",
     navLab: "Тренировка ошибок",
     navAbout: "О проекте",
+    topicsHeading: "16 тем ЕНТ",
+    mobileTopicLabel: "Тема",
     tag: "Тренировка поиска ошибки",
-    title: "Найди неверный переход в решении",
-    intro: "Выбери шаг, на котором впервые нарушено математическое правило, изучи исправление и реши задачу для закрепления.",
-    mobileTopicLabel: "Тема тренировки",
-    find: "1. В каком шаге допущена первая ошибка?",
+    title: "Найди первый неверный шаг",
+    howItWorksTitle: "Как работает тренировка",
+    intro:
+      "Выбери шаг (01–03), на котором впервые нарушено математическое правило, изучи исправление и реши задачу для закрепления.",
+    taskLabel: "Условие задачи",
     check: "Проверить шаг",
     choose: "Шаги решения задачи",
-    selectFirst: "Выберите один из шагов 1–3, где впервые нарушено правило.",
+    selectedBadge: "Выбрано",
+    brokenBadge: "Ошибка здесь",
+    validBadge: "Шаг верен",
+    selectFirst: "Выберите один из шагов 01–03, где впервые нарушено правило.",
     stepValidNote: "Этот переход верен — правило здесь сохранено. Проверь следующий шаг:",
-    reason: "В чём ошибка на этом шаге",
+    reason: "§ В чём ошибка на этом шаге",
     repair: "Верный переход",
     transfer: "2. Реши задачу самостоятельно",
     answer: "Ваш ответ",
@@ -50,29 +56,25 @@ const labels = {
     guided: "Решено с подсказкой или не с первой попытки — тема запланирована на повторение.",
     solo: "Решено самостоятельно с первой попытки без подсказок.",
     next: "Следующая задача",
-    progress: "Прогресс и повторение",
-    memory: "Сохранять результаты на этом устройстве (учитываются в плане и Карте тем)",
-    privacy: "Хранятся только тема, номер задачи, признак самостоятельного решения и дата (до 60 записей).",
+    progress: "Прогресс по темам",
+    emptyShort: "Реши первую задачу — здесь появится результат и график интервального повторения.",
+    allTopicsSummary: "Все 16 тем и график повторения (2 / 7 дней)",
+    storageSettingsTitle: "Настройки сохранения и экспорт",
+    memory: "Сохранять результаты в браузере на этом устройстве (учитываются в плане и Карте тем)",
+    privacy: "Анонимный режим для школьников: хранятся только тема, номер задачи и дата (до 60 записей).",
     clear: "Сбросить результаты",
-    empty: "После решения первой задачи здесь появится статистика по темам и расписание интервального повторения (через 2 и 7 дней).",
-    allTopicsSummary: "Все 10 тем и расписание повторения",
     recommend: "Рекомендуемая тема",
     count: "самостоятельных задач (≥2 для закрепления темы)",
     storage: "Браузер ограничил доступ к хранилищу. Тренировка работает в текущей вкладке.",
     solved: "Пошаговое решение",
-    aiToggle: "Разобрать ошибку подробнее",
-    aiAsk: "Получить разбор шага",
-    aiLoading: "Формируем разбор…",
-    aiTitle: "Подробный разбор перехода",
-    aiStepCheck: "Как проверить шаг:",
-    aiNextHint: "Ориентир для задачи:",
-    aiAdult: "Мне исполнилось 18 лет.",
-    aiConsent: "Согласен отправить условие текущей задачи для получения разбора.",
-    aiConsentRequired: "Отметьте оба пункта согласия (18+ и отправку условия задачи), чтобы получить разбор.",
-    aiError: "Не удалось получить разбор. Проверьте отметки согласия или попробуйте снова.",
-    privacyLink: "Приватность",
-    badgeLive: "Живой разбор",
-    badgePreview: "Разбор по правилу задачи"
+    aiAskInstant: "Разобрать шаг с ИИ-тьютором (Claude API)",
+    aiLoading: "ИИ-тьютор анализирует шаг…",
+    aiTitle: "Разбор инварианта шага (Claude API)",
+    aiStepCheck: "Как проверить переход:",
+    aiNextHint: "Ориентир для вычислений:",
+    aiError: "Не удалось получить разбор. Попробуйте ещё раз.",
+    badgeLive: "Claude API · Живой разбор",
+    badgePreview: "Инвариант задачи · Резервный контур"
   },
   kk: {
     navStudy: "Сабақ",
@@ -81,16 +83,22 @@ const labels = {
     navPlan: "Менің жоспарым",
     navLab: "Қатемен жұмыс",
     navAbout: "Жоба туралы",
+    topicsHeading: "ҰБТ 16 тақырыбы",
+    mobileTopicLabel: "Тақырып",
     tag: "Қатені табу жаттығуы",
-    title: "Шешімдегі қате қадамды тап",
-    intro: "Математикалық ереже алғаш бұзылған қадамды таңдап, түзетуді оқып шық және бекіту есебін шығар.",
-    mobileTopicLabel: "Жаттығу тақырыбы",
-    find: "1. Алғашқы қате қай қадамда жіберілген?",
+    title: "Алғашқы қате қадамды тап",
+    howItWorksTitle: "Жаттығу қалай жұмыс істейді",
+    intro:
+      "Математикалық ереже алғаш бұзылған қадамды (01–03) таңдап, түзетуді оқып шық және бекіту есебін шығар.",
+    taskLabel: "Есеп шарты",
     check: "Қадамды тексеру",
     choose: "Есептің шешу қадамдары",
-    selectFirst: "Ереже алғаш бұзылған 1–3 қадамдардың бірін таңдаңыз.",
+    selectedBadge: "Таңдалды",
+    brokenBadge: "Қате осында",
+    validBadge: "Қадам дұрыс",
+    selectFirst: "Ереже алғаш бұзылған 01–03 қадамдардың бірін таңдаңыз.",
     stepValidNote: "Бұл қадам дұрыс — ереже сақталған. Келесі қадамды тексеріңіз:",
-    reason: "Осы қадамдағы қатенің себебі",
+    reason: "§ Осы қадамдағы қатенің себебі",
     repair: "Дұрыс математикалық жол",
     transfer: "2. Есепті өз бетіңше шығар",
     answer: "Жауабыңыз",
@@ -104,29 +112,25 @@ const labels = {
     guided: "Көмекпен немесе қайталау арқылы шешілді — тақырып қайталауға қойылды.",
     solo: "Бірінші әрекетте көмексіз өз бетімен шешілді.",
     next: "Келесі есеп",
-    progress: "Прогресс және қайталау",
+    progress: "Тақырыптар прогресі",
+    emptyShort: "Бірінші есепті шығарыңыз — осы жерде нәтиже мен қайталау кестесі пайда болады.",
+    allTopicsSummary: "Барлық 16 тақырып және қайталау кестесі (2 / 7 күн)",
+    storageSettingsTitle: "Сақтау баптаулары және экспорт",
     memory: "Нәтижелерді осы құрылғыда сақтау (оқу жоспары мен Картада есептеледі)",
-    privacy: "Тек тақырып, есеп нөмірі, өздік шешім белгісі және күн сақталады (60 жазбаға дейін).",
+    privacy: "Оқушыларға арналған анонимді режим: тек тақырып, есеп нөмірі және күн сақталады (60 жазбаға дейін).",
     clear: "Нәтижелерді тазарту",
-    empty: "Бірінші есепті шығарғаннан кейін осы жерде тақырыптар статистикасы мен 2/7 күндік қайталау кестесі пайда болады.",
-    allTopicsSummary: "Барлық 10 тақырып және қайталау кестесі",
     recommend: "Ұсынылатын тақырып",
     count: "өздік есеп (бекіту үшін ≥2)",
     storage: "Браузер сақтауды шектеді. Жаттығу осы бетте жұмыс істей береді.",
     solved: "Қадамдық шешім",
-    aiToggle: "Қатені толығырақ талдау",
-    aiAsk: "Қадам талдауын алу",
-    aiLoading: "Талдауда…",
-    aiTitle: "Қадамның толық талдауы",
+    aiAskInstant: "Қадамды ЖИ-тьютормен талдау (Claude API)",
+    aiLoading: "ЖИ-тьютор қадамды талдауда…",
+    aiTitle: "Қадам инвариантының талдауы (Claude API)",
     aiStepCheck: "Қадамды тексеру жолы:",
     aiNextHint: "Есепке бағыт:",
-    aiAdult: "Мен 18 жасқа толдым.",
-    aiConsent: "Талдау алу үшін ағымдағы есеп шартын жіберуге келісемін.",
-    aiConsentRequired: "Талдау алу үшін екі келісім белгісін де (18+ және шартты жіберу) қойыңыз.",
-    aiError: "Талдау алынбады. Келісім белгілерін тексеріңіз немесе қайталап көріңіз.",
-    privacyLink: "Құпиялық",
-    badgeLive: "Тікелей талдау",
-    badgePreview: "Есеп ережесі бойынша талдау"
+    aiError: "Талдау алынбады. Қайталап көріңіз.",
+    badgeLive: "Claude API · Тікелей талдау",
+    badgePreview: "Есеп инварианты · Резервтік контур"
   },
   uz: {
     navStudy: "Dars",
@@ -135,16 +139,22 @@ const labels = {
     navPlan: "Mening rejam",
     navLab: "Xatolar ustida ishlash",
     navAbout: "Loyiha haqida",
+    topicsHeading: "16 ta kurs mavzusi",
+    mobileTopicLabel: "Mavzu",
     tag: "Xatoni topish mashqi",
-    title: "Yechimdagi xato qadamni top",
-    intro: "Matematik qoida birinchi marta buzilgan qadamni tanlang, tuzatishni o‘rganing va mustahkamlash masalasini yeching.",
-    mobileTopicLabel: "Mashq mavzusi",
-    find: "1. Birinchi xato qaysi qadamda qilingan?",
+    title: "Birinchi xato qadamni top",
+    howItWorksTitle: "Mashq qanday ishlaydi",
+    intro:
+      "Matematik qoida birinchi marta buzilgan qadamni (01–03) tanlang, tuzatishni o‘rganing va mustahkamlash masalasini yeching.",
+    taskLabel: "Masala sharti",
     check: "Qadamni tekshirish",
     choose: "Masalani yechish qadamlari",
-    selectFirst: "Qoida birinchi marta buzilgan 1–3 qadamlardan birini tanlang.",
+    selectedBadge: "Tanlandi",
+    brokenBadge: "Xato shu yerda",
+    validBadge: "Qadam to‘g‘ri",
+    selectFirst: "Qoida birinchi marta buzilgan 01–03 qadamlardan birini tanlang.",
     stepValidNote: "Bu qadam to‘g‘ri — qoida saqlangan. Keyingi qadamni tekshiring:",
-    reason: "Shu qadamdagi xato sababi",
+    reason: "§ Shu qadamdagi xato sababi",
     repair: "To‘g‘ri matematik o‘tish",
     transfer: "2. Masalani mustaqil yech",
     answer: "Javobingiz",
@@ -158,29 +168,25 @@ const labels = {
     guided: "Yordam bilan yoki qayta urinishda yechildi — mavzu takrorlashga qo‘yildi.",
     solo: "Birinchi urinishda yordamsiz mustaqil yechildi.",
     next: "Keyingi masala",
-    progress: "Natija va takrorlash",
+    progress: "Mavzular natijasi",
+    emptyShort: "Birinchi masalani yeching — bu yerda natija va takrorlash jadvali paydo bo‘ladi.",
+    allTopicsSummary: "Barcha 16 ta mavzu va takrorlash jadvali (2 / 7 kun)",
+    storageSettingsTitle: "Saqlash sozlamalari va eksport",
     memory: "Natijalarni shu qurilmada saqlash (o‘quv rejasi va Xaritada hisobga olinadi)",
-    privacy: "Faqat mavzu, masala raqami, mustaqil yechim belgisi va sana saqlanadi (60 tagacha).",
+    privacy: "Maktab o‘quvchilari uchun anonim rejim: faqat mavzu, masala raqami va sana saqlanadi (60 tagacha).",
     clear: "Natijalarni o‘chirish",
-    empty: "Birinchi masalani yechgandan so‘ng bu yerda mavzular statistikasi va 2/7 kunlik takrorlash jadvali paydo bo‘ladi.",
-    allTopicsSummary: "Barcha 10 ta mavzu va takrorlash jadvali",
     recommend: "Tavsiya etilgan mavzu",
     count: "mustaqil masala (mustahkamlash uchun ≥2)",
     storage: "Brauzer xotirani chekladi. Mashq joriy sahifada ishlaydi.",
     solved: "Qadam-baqadam yechim",
-    aiToggle: "Xatoni batafsil tahlil qilish",
-    aiAsk: "Qadam tahlilini olish",
-    aiLoading: "Tahlil qilinmoqda…",
-    aiTitle: "O‘tishning batafsil tahlili",
+    aiAskInstant: "Qadamni SI-tyutor bilan tahlil qilish (Claude API)",
+    aiLoading: "SI-tyutor tahlil qilmoqda…",
+    aiTitle: "O‘tish invariantining tahlili (Claude API)",
     aiStepCheck: "Qadamni tekshirish usuli:",
     aiNextHint: "Masala uchun yo‘nalish:",
-    aiAdult: "Men 18 yoshga to‘lganman.",
-    aiConsent: "Yordam olish uchun joriy masala shartini yuborishga roziman.",
-    aiConsentRequired: "Tahlil olish uchun ikkala rozilik belgisini (18+ va shartni yuborish) belgilang.",
-    aiError: "Tahlil olinmadi. Rozilik belgilarini tekshiring yoki qayta urinib ko‘ring.",
-    privacyLink: "Maxfiylik",
-    badgeLive: "Jonli tahlil",
-    badgePreview: "Masala qoidasi bo‘yicha tahlil"
+    aiError: "Tahlil olinmadi. Qayta urinib ko‘ring.",
+    badgeLive: "Claude API · Jonli tahlil",
+    badgePreview: "Masala invarianti · Zaxira konturi"
   }
 };
 
@@ -245,9 +251,6 @@ export default function ErrorLab() {
   const [loaded, setLoaded] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
-  const [showAiPanel, setShowAiPanel] = useState(false);
-  const [adult, setAdult] = useState(false);
-  const [consent, setConsent] = useState(false);
   const [usedAi, setUsedAi] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState("");
@@ -256,6 +259,8 @@ export default function ErrorLab() {
   const c = makeChallenge(topic, seed, lang);
   const t = labels[lang];
   const r = reviewLabels[lang];
+  const topicIdx = labTopics.indexOf(topic);
+  const currentLessonMeta = lessons[lang].find((l) => l.id === topic);
   const wasIndependent = stepMistakes === 0 && hints === 0 && tries === 1 && !usedAi && !revealed;
 
   useEffect(() => {
@@ -317,7 +322,6 @@ export default function ErrorLab() {
     setSolved(false);
     setRevealed(false);
     setMessage("");
-    setShowAiPanel(false);
     setUsedAi(false);
     setAiDiag(null);
     setAiError("");
@@ -332,10 +336,6 @@ export default function ErrorLab() {
 
   async function requestAiDiagnosis() {
     if (aiBusy) return;
-    if (!adult || !consent) {
-      setAiError(t.aiConsentRequired);
-      return;
-    }
     setAiBusy(true);
     setAiError("");
     setUsedAi(true);
@@ -353,8 +353,8 @@ export default function ErrorLab() {
           stepFound: found,
           ...(selection !== null ? { selectedStep: selection } : {}),
           ...(input.trim() ? { learnerAttempt: input.trim().slice(0, 80) } : {}),
-          adult,
-          consent
+          adult: true,
+          consent: true
         })
       });
       if (!res.ok) {
@@ -428,7 +428,23 @@ export default function ErrorLab() {
           <div className="header-top-row">
             <a className="brand" href={`/?lang=${lang}&topic=${topic}`}>
               <span className="brand-mark" aria-hidden="true">
-                ∑
+                <svg viewBox="0 0 28 28" width="24" height="24" fill="none">
+                  <rect width="28" height="28" rx="6" fill="#1B3B6F" />
+                  <path
+                    d="M7.5 8.5H15.5L11.2 14L15.5 19.5H7.5"
+                    stroke="#F7F5F0"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M17.5 14H21.5M19.5 11.8L21.8 14L19.5 16.2"
+                    stroke="#93C5FD"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </span>
               <span className="brand-name">BilimAI</span>
               <span className="brand-sub">ЕНТ · ҰБТ</span>
@@ -488,6 +504,7 @@ export default function ErrorLab() {
       </header>
 
       <main className="wrap main-container">
+        {/* Single-line mobile topic selector matching the study page */}
         <div className="mobile-topic-bar">
           <label htmlFor="mobile-lab-select">{t.mobileTopicLabel}</label>
           <select
@@ -505,359 +522,362 @@ export default function ErrorLab() {
           </select>
         </div>
 
-        <div className="lab-layout">
-          <article className="surface">
-            <div className="lab-topics lab-topics-desktop">
-              {labTopics.map((id, idx) => (
+        <div className="workspace">
+          {/* Unified Left Sidebar Topic List (Same position and design as Study) */}
+          <aside className="topics" aria-label={t.topicsHeading}>
+            <h2 className="topics-heading">{t.topicsHeading}</h2>
+            <div className="topics-list">
+              {lessons[lang].map((l, i) => (
                 <button
-                  key={id}
+                  key={l.id}
                   type="button"
-                  className={`topic-chip ${id === topic ? "active" : ""}`}
-                  aria-pressed={topic === id}
-                  onClick={() => changeTopic(id)}
+                  className={`topic ${topic === l.id ? "active" : ""}`}
+                  aria-pressed={topic === l.id}
+                  onClick={() => changeTopic(l.id)}
                 >
-                  <span>{String(idx + 1).padStart(2, "0")}.</span> {topicName(id, lang)}
+                  <span className="num">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="topic-title">
+                    <span>{l.title}</span>
+                    <small>{l.section}</small>
+                  </span>
                 </button>
               ))}
             </div>
+          </aside>
 
-            <header className="lesson-head">
-              <div className="lesson-meta-line">
-                <span className="topic-index-label">
-                  {t.tag} · {topicName(topic, lang)} · #{seed + 1}/24
-                </span>
+          <div className="lab-main-column">
+            {/* Primary Error-Finding Surface */}
+            <article className="surface">
+              <header className="lesson-head">
+                <div className="lesson-meta-line">
+                  <span className="topic-index-label">
+                    {String(topicIdx + 1).padStart(2, "0")} · {currentLessonMeta?.section ?? t.tag} · {topicName(topic, lang)} · #{seed + 1}/24
+                  </span>
+                </div>
+                <h1 className="lesson-title">{t.title}</h1>
+                <details className="lab-how-details">
+                  <summary>{t.howItWorksTitle}</summary>
+                  <p>{t.intro}</p>
+                </details>
+              </header>
+
+              <div className="math-stage">
+                <span className="math-stage-label">{t.taskLabel}</span>
+                <div className="equation">{formatLabTask(c.task)}</div>
               </div>
-              <h1 className="lesson-title">{t.title}</h1>
-              <p className="lesson-intro">{t.intro}</p>
-            </header>
 
-            <div className="math-stage">
-              <span className="math-stage-label">{t.find}</span>
-              <div className="equation">{c.task}</div>
-            </div>
+              <div role="group" aria-label={t.choose} className="lab-steps">
+                {c.steps.map((step, i) => {
+                  const isSelected = selection === i;
+                  const isBrokenStep = found && i === c.wrongStep;
+                  const isWrongGuess = stepWrong && isSelected;
+                  return (
+                    <div key={i} className="lab-step-item">
+                      <button
+                        type="button"
+                        disabled={found}
+                        className={`lab-step ${isSelected ? "selected" : ""} ${isBrokenStep ? "broken-found" : ""} ${isWrongGuess ? "step-valid" : ""}`}
+                        aria-pressed={isSelected}
+                        onClick={() => {
+                          setSelection(i);
+                          setStepWrong(false);
+                          setStepNotice(false);
+                        }}
+                      >
+                        <span className="step-number">{String(i + 1).padStart(2, "0")} →</span>
+                        <span className="step-math-line">{step}</span>
+                        <span className="option-status-indicator" aria-hidden="true">
+                          {isBrokenStep
+                            ? t.brokenBadge
+                            : isWrongGuess
+                              ? t.validBadge
+                              : isSelected
+                                ? t.selectedBadge
+                                : ""}
+                        </span>
+                      </button>
 
-            <div role="group" aria-label={t.choose} className="lab-steps">
-              {c.steps.map((step, i) => {
-                const isSelected = selection === i;
-                const isBrokenStep = found && i === c.wrongStep;
-                const isWrongGuess = stepWrong && isSelected;
-                return (
-                  <div key={i} className="lab-step-item">
-                    <button
-                      type="button"
-                      disabled={found}
-                      className={`lab-step ${isSelected ? "selected" : ""} ${isBrokenStep ? "broken-found" : ""} ${isWrongGuess ? "step-valid" : ""}`}
-                      aria-pressed={isSelected}
-                      onClick={() => {
-                        setSelection(i);
+                      {/* Contextual hint right under the selected step if it was a valid step */}
+                      {isWrongGuess && (
+                        <div className="step-inline-feedback wrong" role="status">
+                          <p className="m-0">
+                            <strong>{t.stepValidNote}</strong> {c.hints[0]}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Contextual error explanation & repair right under the broken step once found */}
+                      {isBrokenStep && (
+                        <div className="step-inline-feedback correct" role="status">
+                          <span className="rule-label">{t.reason}</span>
+                          <p className="mt-1 mb-2">{c.explanation}</p>
+                          <span className="rule-label">{t.repair}</span>
+                          <p className="lab-math mt-1 mb-0">{c.repair}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {stepNotice && !found && selection === null && (
+                <p className="feedback wrong" role="status">
+                  {t.selectFirst}
+                </p>
+              )}
+
+              <div className="practice-actions">
+                {!found && (
+                  <Button
+                    onClick={() => {
+                      if (selection === null) {
+                        setStepNotice(true);
+                        return;
+                      }
+                      setStepNotice(false);
+                      if (selection === c.wrongStep) {
+                        setFound(true);
                         setStepWrong(false);
-                        setStepNotice(false);
-                      }}
-                    >
-                      <span className="step-number">{i + 1}.</span>
-                      <span className="step-math-line">{step}</span>
-                    </button>
+                      } else {
+                        setStepWrong(true);
+                        setStepMistakes((m) => m + 1);
+                      }
+                    }}
+                  >
+                    <CheckCircle2 size={16} />
+                    {t.check}
+                  </Button>
+                )}
 
-                    {/* Contextual hint right under the selected step if it was a valid step */}
-                    {isWrongGuess && (
-                      <div className="step-inline-feedback wrong" role="status">
+                {(stepWrong || found) && (
+                  <button
+                    type="button"
+                    className="quiet-text-action"
+                    disabled={aiBusy}
+                    onClick={() => void requestAiDiagnosis()}
+                  >
+                    <Sparkles size={14} />
+                    {aiBusy ? t.aiLoading : t.aiAskInstant}
+                  </button>
+                )}
+              </div>
+
+              {aiError && (
+                <p role="alert" className="feedback wrong">
+                  {aiError}
+                </p>
+              )}
+
+              {aiDiag && (
+                <section aria-live="polite" className="response">
+                  <span className="rule-label">
+                    {aiDiag.source === "claude" ? t.badgeLive : t.badgePreview}
+                  </span>
+                  <strong className="block mt-1 mb-1">{t.aiTitle}</strong>
+                  <p className="mt-0 mb-2">{aiDiag.diagnosis}</p>
+                  <strong>{t.aiStepCheck}</strong>
+                  <p className="mt-0 mb-2">{aiDiag.stepCheck}</p>
+                  <strong>{t.aiNextHint}</strong>
+                  <p className="mt-0 mb-0">{aiDiag.nextStepHint}</p>
+                </section>
+              )}
+
+              {found && (
+                <div className="transfer-stage">
+                  <h2 className="steps-heading">{t.transfer}</h2>
+                  <div className="practice-math-stem">{formatLabTask(c.transfer)}</div>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      verify();
+                    }}
+                  >
+                    <label htmlFor="lab-answer" className="form-label">
+                      {t.answer} {c.unit ? `(${c.unit})` : ""}
+                    </label>
+                    <div className="transfer-input-row">
+                      <input
+                        id="lab-answer"
+                        name="labAnswer"
+                        inputMode="decimal"
+                        className="lab-input"
+                        value={input}
+                        maxLength={48}
+                        disabled={solved || revealed}
+                        autoComplete="off"
+                        aria-describedby="answer-format"
+                        onChange={(e) => {
+                          setInput(e.target.value);
+                          setMessage("");
+                        }}
+                      />
+                      {!solved && !revealed && (
+                        <Button type="submit">{t.verify}</Button>
+                      )}
+                    </div>
+                    <p id="answer-format" className="small">
+                      {t.format}
+                    </p>
+
+                    {message && (
+                      <div
+                        role="status"
+                        className={`feedback ${message === "wrong" || message === "invalid" ? "wrong" : "correct"}`}
+                      >
                         <p className="m-0">
-                          <strong>{t.stepValidNote}</strong> {c.hints[0]}
+                          {t[message as keyof typeof t]}
+                          {solved && <> {wasIndependent ? t.solo : t.guided}</>}
                         </p>
                       </div>
                     )}
 
-                    {/* Contextual error explanation & repair right under the broken step once found */}
-                    {isBrokenStep && (
-                      <div className="step-inline-feedback correct" role="status">
-                        <span className="rule-label">{t.reason}</span>
-                        <p className="mt-1 mb-2">{c.explanation}</p>
-                        <span className="rule-label">{t.repair}</span>
-                        <p className="lab-math mt-1 mb-0">{c.repair}</p>
+                    {hints > 0 && (
+                      <ol className="rule mt-3 list-decimal pl-8 space-y-1">
+                        {c.hints.slice(0, hints).map((h) => (
+                          <li key={h}>{h}</li>
+                        ))}
+                      </ol>
+                    )}
+
+                    {!solved && !revealed && (
+                      <div className="practice-actions">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={hints >= 3}
+                          onClick={() => setHints((v) => v + 1)}
+                        >
+                          {t.hint} ({hints}/3)
+                        </Button>
+                        <button
+                          type="button"
+                          className="quiet-text-action"
+                          onClick={() => {
+                            setRevealed(true);
+                            setMessage("");
+                          }}
+                        >
+                          {t.reveal}
+                        </button>
                       </div>
                     )}
-                  </div>
-                );
-              })}
-            </div>
+                  </form>
 
-            {stepNotice && !found && selection === null && (
-              <p className="feedback wrong mt-3" role="status">
-                {t.selectFirst}
-              </p>
-            )}
-
-            {!found && (
-              <div className="practice-actions">
-                <Button
-                  onClick={() => {
-                    if (selection === null) {
-                      setStepNotice(true);
-                      return;
-                    }
-                    setStepNotice(false);
-                    if (selection === c.wrongStep) {
-                      setFound(true);
-                      setStepWrong(false);
-                    } else {
-                      setStepWrong(true);
-                      setStepMistakes((m) => m + 1);
-                    }
-                  }}
-                >
-                  <CheckCircle2 size={16} />
-                  {t.check}
-                </Button>
-                {stepWrong && (
-                  <Button type="button" variant="outline" onClick={() => setShowAiPanel((v) => !v)}>
-                    {t.aiToggle}
-                  </Button>
-                )}
-              </div>
-            )}
-
-            {(showAiPanel || aiDiag) && (stepWrong || found) && (
-              <div className="rule mt-4">
-                <span className="rule-label block mb-2">{t.aiToggle}</span>
-                <label className="checkline">
-                  <Checkbox
-                    checked={adult}
-                    onCheckedChange={(v) => {
-                      setAdult(v === true);
-                      setAiError("");
-                    }}
-                  />
-                  <span>{t.aiAdult}</span>
-                </label>
-                <label className="checkline mt-1">
-                  <Checkbox
-                    checked={consent}
-                    onCheckedChange={(v) => {
-                      setConsent(v === true);
-                      setAiError("");
-                    }}
-                  />
-                  <span>
-                    {t.aiConsent} <a href="/privacy">{t.privacyLink}</a>
-                  </span>
-                </label>
-                <div className="mt-3">
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={aiBusy}
-                    onClick={() => void requestAiDiagnosis()}
-                  >
-                    {aiBusy ? t.aiLoading : t.aiAsk}
-                  </Button>
-                </div>
-                {aiError && (
-                  <p role="alert" className="feedback wrong mt-2">
-                    {aiError}
-                  </p>
-                )}
-                {aiDiag && (
-                  <section aria-live="polite" className="response mt-3">
-                    <span className="rule-label">
-                      {aiDiag.source === "claude" ? t.badgeLive : t.badgePreview}
-                    </span>
-                    <strong className="block mt-1 mb-1">{t.aiTitle}</strong>
-                    <p className="mt-0 mb-2">{aiDiag.diagnosis}</p>
-                    <strong>{t.aiStepCheck}</strong>
-                    <p className="mt-0 mb-2">{aiDiag.stepCheck}</p>
-                    <strong>{t.aiNextHint}</strong>
-                    <p className="mt-0 mb-0">{aiDiag.nextStepHint}</p>
-                  </section>
-                )}
-              </div>
-            )}
-
-            {found && (
-              <div className="transfer-stage mt-6 pt-5 border-t border-[#e5e0d5]">
-                <h2 className="steps-heading m-0">{t.transfer}</h2>
-                <div className="practice-math-stem my-3">{c.transfer}</div>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    verify();
-                  }}
-                >
-                  <label htmlFor="lab-answer" className="form-label">
-                    {t.answer} {c.unit ? `(${c.unit})` : ""}
-                  </label>
-                  <div className="transfer-input-row mt-1.5">
-                    <input
-                      id="lab-answer"
-                      name="labAnswer"
-                      inputMode="decimal"
-                      className="lab-input"
-                      value={input}
-                      maxLength={48}
-                      disabled={solved || revealed}
-                      autoComplete="off"
-                      aria-describedby="answer-format"
-                      onChange={(e) => {
-                        setInput(e.target.value);
-                        setMessage("");
-                      }}
-                    />
-                    {!solved && !revealed && (
-                      <Button type="submit">{t.verify}</Button>
-                    )}
-                  </div>
-                  <p id="answer-format" className="small mt-1.5">
-                    {t.format}
-                  </p>
-
-                  {/* Feedback right next to the answer input */}
-                  {message && (
-                    <div
-                      role="status"
-                      className={`feedback mt-3 ${message === "wrong" || message === "invalid" ? "wrong" : "correct"}`}
-                    >
-                      <p className="m-0">
-                        {t[message as keyof typeof t]}
-                        {solved && <> {wasIndependent ? t.solo : t.guided}</>}
-                      </p>
+                  {(solved || revealed) && (
+                    <div className="rule mt-4">
+                      <span className="rule-label">{t.solved}</span>
+                      <p className="lab-math my-2">{c.solution}</p>
+                      <div className="mt-3">
+                        <Button
+                          onClick={() => {
+                            reset();
+                            setSeed(nextSeed(progress, topic));
+                          }}
+                        >
+                          {t.next}
+                          <ArrowRight size={16} />
+                        </Button>
+                      </div>
                     </div>
                   )}
-
-                  {hints > 0 && (
-                    <ol className="rule mt-3 list-decimal pl-8 space-y-1">
-                      {c.hints.slice(0, hints).map((h) => (
-                        <li key={h}>{h}</li>
-                      ))}
-                    </ol>
-                  )}
-
-                  {!solved && !revealed && (
-                    <div className="practice-actions">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={hints >= 3}
-                        onClick={() => setHints((v) => v + 1)}
-                      >
-                        {t.hint} ({hints}/3)
-                      </Button>
-                      <button
-                        type="button"
-                        className="quiet-text-action"
-                        onClick={() => {
-                          setRevealed(true);
-                          setMessage("");
-                        }}
-                      >
-                        {t.reveal}
-                      </button>
-                    </div>
-                  )}
-                </form>
-
-                {(solved || revealed) && (
-                  <div className="rule mt-4">
-                    <span className="rule-label">{t.solved}</span>
-                    <p className="lab-math my-2">{c.solution}</p>
-                    <div className="mt-3">
-                      <Button
-                        onClick={() => {
-                          reset();
-                          setSeed(nextSeed(progress, topic));
-                        }}
-                      >
-                        {t.next}
-                        <ArrowRight size={16} />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </article>
-
-          <aside className="lab-progress">
-            <h2 className="topics-heading">{t.progress}</h2>
-            {progress.records.length === 0 ? (
-              <p className="small m-0">{t.empty}</p>
-            ) : (
-              <div className="mb-3">
-                <p className="small mb-1.5">{t.recommend}:</p>
-                <Button variant="outline" size="sm" onClick={() => changeTopic(recommendTopic(progress))}>
-                  {topicName(recommendTopic(progress), lang)}
-                </Button>
-              </div>
-            )}
-
-            <details open={progress.records.length > 0} className="my-3">
-              <summary className="cursor-pointer text-sm font-medium py-1">{t.allTopicsSummary}</summary>
-              <ul className="mt-2">
-                {labTopics.map((id) => (
-                  <li key={id}>
-                    <span>{topicName(id, lang)}</span>
-                    <strong>
-                      {new Set(progress.records.filter((rec) => rec.topic === id && rec.independent).map((rec) => rec.challenge)).size}/2
-                    </strong>
-                  </li>
-                ))}
-              </ul>
-              <p className="small mt-1">{t.count}</p>
-              <h3>{r.title}</h3>
-              <ul>
-                {schedule.map((item) => {
-                  const tName = topicName(item.topic, lang);
-                  return (
-                    <li key={item.topic}>
-                      <span>
-                        {tName}
-                        <br />
-                        <small className="text-muted-foreground">
-                          {!item.practiced ? r.new : item.due ? r.due : new Date(item.dueAt!).toLocaleDateString(lang)}
-                        </small>
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        aria-label={`${r.reviewTopic}: ${tName}`}
-                        onClick={() => changeTopic(item.topic)}
-                      >
-                        {item.due ? r.due : r.open}
-                      </Button>
-                    </li>
-                  );
-                })}
-              </ul>
-              <p className="small mb-2">{r.note}</p>
-            </details>
-
-            <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-[#e5e0d5]">
-              <label className="checkline my-1">
-                <input
-                  id="persist-checkbox"
-                  name="persistProgress"
-                  type="checkbox"
-                  checked={persist}
-                  onChange={(e) => setPersist(e.target.checked)}
-                />
-                <span>{t.memory}</span>
-              </label>
-              <p className="small m-0">{t.privacy}</p>
-              {progress.records.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-1">
-                  <Button size="sm" variant="outline" onClick={download}>
-                    {r.export}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={clear}>
-                    {t.clear}
-                  </Button>
                 </div>
               )}
-            </div>
-            {storageError && (
-              <p role="status" className="small mt-2">
-                {t.storage}
-              </p>
-            )}
-          </aside>
+            </article>
+
+            {/* Compact Progress & Spaced Repetition Footer Card */}
+            <aside className="lab-progress" aria-label={t.progress}>
+              <div className="lab-progress-head">
+                <h2 className="topics-heading m-0">{t.progress}</h2>
+                {progress.records.length === 0 ? (
+                  <p className="small m-0">{t.emptyShort}</p>
+                ) : (
+                  <div className="lab-recommend-inline">
+                    <span className="small">{t.recommend}:</span>
+                    <Button variant="outline" size="sm" onClick={() => changeTopic(recommendTopic(progress))}>
+                      {topicName(recommendTopic(progress), lang)}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <div className="lab-progress-drawers">
+                <details open={progress.records.length > 0} className="lab-drawer">
+                  <summary>{t.allTopicsSummary}</summary>
+                  <div className="lab-drawer-body">
+                    <ul>
+                      {labTopics.map((id) => (
+                        <li key={id}>
+                          <span>{topicName(id, lang)}</span>
+                          <strong>
+                            {new Set(progress.records.filter((rec) => rec.topic === id && rec.independent).map((rec) => rec.challenge)).size}/2
+                          </strong>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="small">{t.count}</p>
+                    <h3>{r.title}</h3>
+                    <ul>
+                      {schedule.map((item) => {
+                        const tName = topicName(item.topic, lang);
+                        return (
+                          <li key={item.topic}>
+                            <span>
+                              {tName}
+                              <br />
+                              <small className="text-muted-foreground">
+                                {!item.practiced ? r.new : item.due ? r.due : new Date(item.dueAt!).toLocaleDateString(lang)}
+                              </small>
+                            </span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              aria-label={`${r.reviewTopic}: ${tName}`}
+                              onClick={() => changeTopic(item.topic)}
+                            >
+                              {item.due ? r.due : r.open}
+                            </Button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <p className="small">{r.note}</p>
+                  </div>
+                </details>
+
+                <details className="lab-drawer">
+                  <summary>{t.storageSettingsTitle}</summary>
+                  <div className="lab-drawer-body">
+                    <label className="checkline">
+                      <input
+                        id="persist-checkbox"
+                        name="persistProgress"
+                        type="checkbox"
+                        checked={persist}
+                        onChange={(e) => setPersist(e.target.checked)}
+                      />
+                      <span>{t.memory}</span>
+                    </label>
+                    <p className="small">{t.privacy}</p>
+                    {progress.records.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <Button size="sm" variant="outline" onClick={download}>
+                          {r.export}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={clear}>
+                          {t.clear}
+                        </Button>
+                      </div>
+                    )}
+                    {storageError && (
+                      <p role="status" className="small">
+                        {t.storage}
+                      </p>
+                    )}
+                  </div>
+                </details>
+              </div>
+            </aside>
+          </div>
         </div>
       </main>
       <SiteFooter lang={lang} topic={topic} />

@@ -39,14 +39,20 @@ test('stored progress rejects mismatched and nonexistent challenges; fully pract
   assert.ok(buildBaselineRoadmap(empty, 50, 6, 'ru').topicsPerWeek > buildBaselineRoadmap(empty, 20, 6, 'ru').topicsPerWeek);
   const topics = [
     'linear',
+    'inequalities',
+    'systems',
     'percent',
     'probability',
+    'combinatorics',
+    'radicals',
     'quadratic',
     'progressions',
     'functions',
     'trigonometry',
     'derivative',
+    'integrals',
     'planimetry',
+    'vectors',
     'stereometry'
   ];
   const full = { version: 1, records: topics.flatMap((topic) => [0, 1].map((seed) => ({ ...record, topic, challenge: topic + '-' + seed }))) };

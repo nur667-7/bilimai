@@ -26,8 +26,8 @@ export const roadmapInputSchema = z
     language: z.enum(languages),
     targetScore: z.number().int().min(20).max(50),
     weeksLeft: z.number().int().min(1).max(24),
-    weakTopics: z.array(topicEnum).max(10),
-    masteredTopics: z.array(topicEnum).max(10),
+    weakTopics: z.array(topicEnum).max(16),
+    masteredTopics: z.array(topicEnum).max(16),
     goalNote: z.string().trim().min(3).max(400),
     consent: z.literal(true),
     adult: z.literal(true)

@@ -629,6 +629,222 @@ export const untQuestions: UntQuestion[] = [
       uz: "x³ hosilasini topishda 3 koeffitsiyentni unutish yoki x = 2 bilan f′(2) = −3 qiymatini adashtirish."
     },
     labSeed: 11
+  },
+  {
+    id: "unt-q13-inequalities",
+    order: 13,
+    format: "single",
+    subtest: "profile_math",
+    untNumberRange: "№1–25",
+    topic: "inequalities",
+    maxPoints: 1,
+    prompt: {
+      ru: "Найдите количество всех целых решений неравенства (x − 2)(x + 3) ≤ 0.",
+      kk: "(x − 2)(x + 3) ≤ 0 теңсіздігінің барлық бүтін шешімдерінің санын табыңыз.",
+      uz: "(x − 2)(x + 3) ≤ 0 tengsizlikning barcha butun yechimlari sonini toping."
+    },
+    options: {
+      ru: ["4", "5", "6", "7"],
+      kk: ["4", "5", "6", "7"],
+      uz: ["4", "5", "6", "7"]
+    },
+    correctIndex: 2,
+    rule: {
+      ru: "По методу интервалов для (x − x₁)(x − x₂) ≤ 0 решением является замкнутый отрезок [−3; 2], включая оба конца.",
+      kk: "Интервалдар әдісі бойынша (x − x₁)(x − x₂) ≤ 0 теңсіздігінің шешімі — екі шетін қоса алғандағы [−3; 2] кесіндісі.",
+      uz: "Intervallar usuliga ko‘ra (x − x₁)(x − x₂) ≤ 0 tengsizlik yechimi ikkala uchini o‘z ichiga olgan [−3; 2] kesmadir."
+    },
+    explanation: {
+      ru: "Нули произведения: x = −3 и x = 2. На отрезке [−3; 2] лежат целые числа −3, −2, −1, 0, 1, 2 — всего 6 целых решений.",
+      kk: "Көбейтіндінің нөлдері: x = −3 және x = 2. [−3; 2] кесіндісінде −3, −2, −1, 0, 1, 2 бүтін сандары жатыр — барлығы 6 шешім.",
+      uz: "Ko‘paytma nollari: x = −3 va x = 2. [−3; 2] kesmada −3, −2, −1, 0, 1, 2 butun sonlari bor — jami 6 ta yechim."
+    },
+    trap: {
+      ru: "Вычесть 2 − (−3) = 5 и забыть прибавить 1 при подсчёте целых точек замкнутого отрезка.",
+      kk: "2 − (−3) = 5 деп есептеп, кесіндінің екі шеткі нүктесі де кіретінін (+1) ұмыту.",
+      uz: "2 − (−3) = 5 deb hisoblab, kesmaning ikkala чекка nuqtasi ham kirishini (+1) unutish."
+    },
+    labSeed: 12
+  },
+  {
+    id: "unt-q14-systems",
+    order: 14,
+    format: "single",
+    subtest: "profile_math",
+    untNumberRange: "№1–25",
+    topic: "systems",
+    maxPoints: 1,
+    prompt: {
+      ru: "Решите систему уравнений { x + y = 9; x·y = 20 } и найдите значение выражения |x − y|.",
+      kk: "{ x + y = 9; x·y = 20 } теңдеулер жүйесін шешіп, |x − y| өрнегінің мәнін табыңыз.",
+      uz: "{ x + y = 9; x·y = 20 } tenglamalar sistemasini yeching va |x − y| ifodaning qiymatini toping."
+    },
+    options: {
+      ru: ["1", "2", "4", "5"],
+      kk: ["1", "2", "4", "5"],
+      uz: ["1", "2", "4", "5"]
+    },
+    correctIndex: 0,
+    rule: {
+      ru: "Симметричная система { x + y = S; x·y = P } задаёт корни вспомогательного уравнения t² − St + P = 0 или тождество (x − y)² = (x + y)² − 4xy.",
+      kk: "{ x + y = S; x·y = P } симметриялы жүйесі үшін (x − y)² = (x + y)² − 4xy тепе-теңдігі орындалады.",
+      uz: "{ x + y = S; x·y = P } simmetrik sistema uchun (x − y)² = (x + y)² − 4xy ayniyat o‘rinli."
+    },
+    explanation: {
+      ru: "(x − y)² = 9² − 4 × 20 = 81 − 80 = 1 ⇒ |x − y| = 1 (пары (5; 4) и (4; 5)).",
+      kk: "(x − y)² = 9² − 4 × 20 = 81 − 80 = 1 ⇒ |x − y| = 1 ((5; 4) және (4; 5) жұптары).",
+      uz: "(x − y)² = 9² − 4 × 20 = 81 − 80 = 1 ⇒ |x − y| = 1 ((5; 4) va (4; 5) juftliklar)."
+    },
+    trap: {
+      ru: "Выбрать один из найденных корней (4 или 5) вместо модуля их разности |5 − 4| = 1.",
+      kk: "|5 − 4| = 1 айырмасының орнына түбірлердің бірін (4 немесе 5) белгілеп қою.",
+      uz: "|5 − 4| = 1 ayirma o‘rniga ildizlardan birini (4 yoki 5) tanlash."
+    },
+    labSeed: 13
+  },
+  {
+    id: "unt-q15-combinatorics",
+    order: 15,
+    format: "single",
+    subtest: "math_literacy",
+    untNumberRange: "Мат. грам. №1–10",
+    topic: "combinatorics",
+    maxPoints: 1,
+    prompt: {
+      ru: "В шахматном турнире участвуют 8 школьников, и каждый сыграл с каждым ровно по одной партии. Сколько всего партий было сыграно?",
+      kk: "Шахмат турниріне 8 оқушы қатысып, әрқайсысы бір-бірімен дәл бір партиядан ойнады. Барлығы неше партия ойналды?",
+      uz: "Shaxmat turnirida 8 нафар o‘quvchi qatnashib, har biri bir-biri bilan bittadan partiya o‘ynadi. Jami nechta partiya o‘ynalgan?"
+    },
+    options: {
+      ru: ["16", "28", "56", "64"],
+      kk: ["16", "28", "56", "64"],
+      uz: ["16", "28", "56", "64"]
+    },
+    correctIndex: 1,
+    rule: {
+      ru: "Число партий (рукопожатий) между n участниками равно числу сочетаний без учёта порядка: C(n, 2) = n(n − 1) / 2.",
+      kk: "n қатысушы арасындағы партиялар саны реттілік ескерілмейтін терулер санына тең: C(n, 2) = n(n − 1) / 2.",
+      uz: "n ishtirokchi orasidagi partiyalar soni kombinatsiyalar formulasiga teng: C(n, 2) = n(n − 1) / 2."
+    },
+    explanation: {
+      ru: "C(8, 2) = (8 × 7) / 2 = 28 партий.",
+      kk: "C(8, 2) = (8 × 7) / 2 = 28 партия.",
+      uz: "C(8, 2) = (8 × 7) / 2 = 28 ta partiya."
+    },
+    trap: {
+      ru: "Забыть разделить произведение 8 × 7 = 56 на 2 (посчитав каждую партию дважды за обоих игроков).",
+      kk: "8 × 7 = 56 көбейтіндісін 2-ге бөлуді ұмыту (әр партияны екі рет санау).",
+      uz: "8 × 7 = 56 ko‘paytmani 2 ga bo‘lishni unutish."
+    },
+    labSeed: 14
+  },
+  {
+    id: "unt-q16-radicals",
+    order: 16,
+    format: "single",
+    subtest: "profile_math",
+    untNumberRange: "№1–25",
+    topic: "radicals",
+    maxPoints: 1,
+    prompt: {
+      ru: "Решите иррациональное уравнение √(2x + 7) = 5.",
+      kk: "√(2x + 7) = 5 иррационал теңдеуін шешіңіз.",
+      uz: "√(2x + 7) = 5 irratsional tenglamani yeching."
+    },
+    options: {
+      ru: ["x = 1,5", "x = 9", "x = 16", "x = 6"],
+      kk: ["x = 1,5", "x = 9", "x = 16", "x = 6"],
+      uz: ["x = 1,5", "x = 9", "x = 16", "x = 6"]
+    },
+    correctIndex: 1,
+    rule: {
+      ru: "При r ≥ 0 уравнение √f(x) = r равносильно f(x) = r².",
+      kk: "r ≥ 0 болғанда √f(x) = r теңдеуі f(x) = r² теңдеуімен мәндес.",
+      uz: "r ≥ 0 bo‘lganda √f(x) = r tenglama f(x) = r² ga teng kuchli."
+    },
+    explanation: {
+      ru: "Возведём обе части в квадрат: 2x + 7 = 5² = 25 ⇒ 2x = 18 ⇒ x = 9.",
+      kk: "Екі жағын квадраттаймыз: 2x + 7 = 25 ⇒ 2x = 18 ⇒ x = 9.",
+      uz: "Ikki tomonni kvadratga oshiramiz: 2x + 7 = 25 ⇒ 2x = 18 ⇒ x = 9."
+    },
+    trap: {
+      ru: "Умножить 5 × 2 = 10 вместо возведения в квадрат (25) и получить 2x = 3 ⇒ x = 1,5.",
+      kk: "5-ті квадраттаудың (25) орнына 2-ге көбейтіп (10), x = 1,5 алу.",
+      uz: "5 ni kvadratga oshirish (25) o‘rniga 2 ga ko‘paytirib (10), x = 1,5 olish."
+    },
+    labSeed: 15
+  },
+  {
+    id: "unt-q17-integrals",
+    order: 17,
+    format: "single",
+    subtest: "profile_math",
+    untNumberRange: "№1–25",
+    topic: "integrals",
+    maxPoints: 1,
+    prompt: {
+      ru: "Вычислите площадь криволинейной трапеции, ограниченной параболой y = 3x² + 2, осью Ox и прямыми x = 0 и x = 2.",
+      kk: "y = 3x² + 2 параболасымен, Ox осімен және x = 0, x = 2 түзулерімен шектелген қисықсызықты трапецияның ауданын табыңыз.",
+      uz: "y = 3x² + 2 parabola, Ox o‘qi hamda x = 0, x = 2 to‘g‘ri chiziqlar bilan chegaralangan egri chiziqli trapetsiya yuzasini toping."
+    },
+    options: {
+      ru: ["10", "12", "14", "28"],
+      kk: ["10", "12", "14", "28"],
+      uz: ["10", "12", "14", "28"]
+    },
+    correctIndex: 1,
+    rule: {
+      ru: "По формуле Ньютона — Лейбница S = ∫₀² (3x² + 2) dx = F(2) − F(0), где F(x) = x³ + 2x.",
+      kk: "Ньютон — Лейбниц формуласы бойынша S = ∫₀² (3x² + 2) dx = F(2) − F(0), мұндағы F(x) = x³ + 2x.",
+      uz: "Nyuton — Leybnits formulasiga ko‘ra S = ∫₀² (3x² + 2) dx = F(2) − F(0), bu yerda F(x) = x³ + 2x."
+    },
+    explanation: {
+      ru: "Первообразная F(x) = x³ + 2x. Подставляем пределы: F(2) − F(0) = (2³ + 2×2) − 0 = 8 + 4 = 12.",
+      kk: "Алғашқы функция F(x) = x³ + 2x. Шектерді қоямыз: F(2) − F(0) = (8 + 4) − 0 = 12.",
+      uz: "Boshlang‘ich funksiya F(x) = x³ + 2x. Chegaralarni qo‘yamiz: F(2) − F(0) = (8 + 4) − 0 = 12."
+    },
+    trap: {
+      ru: "Забыть проинтегрировать константу 2 (получив 8 + 2 = 10) или не разделить 3x³ на 3 (получив 28).",
+      kk: "2 тұрақтысын x-ке көбейтуді ұмытып 10 алу немесе 3-ке бөлмей 28 алу.",
+      uz: "2 o‘zgarmasni x ga ko‘paytirishni unutib 10 olish yoki 3 ga bo‘lmay 28 olish."
+    },
+    labSeed: 16
+  },
+  {
+    id: "unt-q18-vectors",
+    order: 18,
+    format: "single",
+    subtest: "profile_math",
+    untNumberRange: "№1–25",
+    topic: "vectors",
+    maxPoints: 1,
+    prompt: {
+      ru: "При каком значении m векторы a⃗(3; −4) и b⃗(8; m) перпендикулярны?",
+      kk: "m-нің қандай мәнінде a⃗(3; −4) және b⃗(8; m) векторлары перпендикуляр болады?",
+      uz: "m ning qanday qiymatida a⃗(3; −4) va b⃗(8; m) vektorlar perpendikulyar bo‘ladi?"
+    },
+    options: {
+      ru: ["−6", "6", "4", "−4"],
+      kk: ["−6", "6", "4", "−4"],
+      uz: ["−6", "6", "4", "−4"]
+    },
+    correctIndex: 1,
+    rule: {
+      ru: "Ненулевые векторы перпендикулярны тогда и только тогда, когда их скалярное произведение равно нулю: x₁x₂ + y₁y₂ = 0.",
+      kk: "Нөлдік емес векторлар перпендикуляр болуы үшін олардың скаляр көбейтіндісі нөлге тең болуы шарт: x₁x₂ + y₁y₂ = 0.",
+      uz: "Noldan farqli vektorlar perpendikulyar bo‘lishi uchun ularning skalyar ko‘paytmasi nolga teng bo‘lishi shart: x₁x₂ + y₁y₂ = 0."
+    },
+    explanation: {
+      ru: "a⃗ · b⃗ = 3 × 8 + (−4) × m = 0 ⇒ 24 − 4m = 0 ⇒ m = 6.",
+      kk: "a⃗ · b⃗ = 3 × 8 + (−4) × m = 0 ⇒ 24 − 4m = 0 ⇒ m = 6.",
+      uz: "a⃗ · b⃗ = 3 × 8 + (−4) × m = 0 ⇒ 24 − 4m = 0 ⇒ m = 6."
+    },
+    trap: {
+      ru: "Потерять знак минус у координаты −4 и получить 24 + 4m = 0 ⇒ m = −6.",
+      kk: "−4 координатасының таңбасын жоғалтып, m = −6 жауабын таңдау.",
+      uz: "−4 koordinata ishorasini yo‘qotib, m = −6 javobini tanlash."
+    },
+    labSeed: 17
   }
 ];
 
@@ -804,7 +1020,7 @@ export const untAttemptSummarySchema = z
     earnedPoints: z.number().int().min(0).max(60),
     maxPoints: z.number().int().min(1).max(60),
     scaledScore50: z.number().int().min(0).max(50),
-    weakTopics: z.array(z.enum(topicIds)).max(10),
+    weakTopics: z.array(z.enum(topicIds)).max(16),
     topicRatios: z.record(z.enum(topicIds), z.number().min(0).max(1))
   })
   .strict();
