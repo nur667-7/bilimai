@@ -1,9 +1,9 @@
 export default function About() {
   return (
-    <main className="document agy-shell">
+    <main className="document textbook-shell">
       <a href="/">← BilimAI · к урокам и практике</a>
 
-      <div className="document-card agy-floating-island">
+      <div className="document-card">
         <span className="eyebrow">О проекте · RU / EN</span>
         <h1>BilimAI — диагностическая подготовка к ЕНТ (ҰБТ) по математике</h1>
         <p>

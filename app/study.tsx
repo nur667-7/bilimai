@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { BookOpen, CheckCircle2, ClipboardCheck, Compass, FlaskConical, GitBranch, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, RotateCcw } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SiteFooter } from "@/components/site-footer";
-import { lessons, untTopicIds, type Language, type TopicId } from "@/lib/lessons";
+import { getOptionFeedback, lessons, untTopicIds, type Language, type TopicId } from "@/lib/lessons";
 import {
   buildBaselineRoadmap,
   checkAnswer,
@@ -29,42 +29,49 @@ import { KnowledgeGraphView } from "@/app/knowledge-graph-view";
 
 const copy = {
   ru: {
-    eyebrow: "Математика ЕНТ (ҰБТ) · 10 тем · 18+",
-    title: "Понимай каждый шаг решения, а не заучивай ответы.",
-    sub: "Разбери правило и пример, сдай пробное ЕНТ, открой граф пробелов «Второй мозг» или найди ошибку в Лаборатории.",
-    openLab: "Лаборатория ошибок →",
-    topics: "Темы ЕНТ (10)",
-    mobileTopicLabel: "Тема урока",
-    lesson: "Объяснение",
-    practice: "Практика (3)",
-    examTab: "Пробное ЕНТ",
-    graphTab: "Второй мозг",
-    ai: "Разобрать вопрос",
-    roadmapTab: "Мой план",
-    rule: "Ключевое правило и инвариант",
-    example: "Пошаговый разбор примера",
-    hint: "Проверь каждый шаг своим устным объяснением, затем переходи к практике или в Лабораторию ошибок.",
-    check: "Проверить ответы",
-    retryWrong: "Исправить ошибки",
-    showSolutions: "Показать разбор всех вопросов",
-    reset: "Сбросить тест",
-    correct: "Верно",
-    wrong: "Пока неверно — проверь условие и знак перехода",
-    result: "Результат",
-    choose: "Ответьте на все три вопроса, чтобы проверить себя.",
-    session: "Ответы хранятся только в открытой вкладке.",
-    transferTitle: "Дополнительная задача с новыми числами",
-    transferSub: "Реши задачу по правилу темы (генерируются 24 варианта с разными числами).",
-    transferCheck: "Проверить число",
-    transferNext: "Новые числа →",
+    navStudy: "Занятие",
+    navGraph: "Карта тем",
+    navExam: "Пробное ЕНТ",
+    navPlan: "Мой план",
+    navLab: "Тренировка ошибок",
+    navAbout: "О проекте",
+    topics: "Темы курса",
+    mobileTopicLabel: "Тема занятия",
+    lesson: "Разбор",
+    practice: "Практика",
+    ai: "Задать вопрос",
+    rule: "Главное правило",
+    exampleLabel: "Пример",
+    exampleSteps: "Пошаговый разбор",
+    note: "Проговори каждый переход своими словами — почему равенство или свойство сохраняется на этом шаге.",
+    solveSelf: "Решить самостоятельно",
+    askAboutRule: "Задать вопрос по правилу",
+    taskProgress: "Задача",
+    ofLabel: "из",
+    extraTaskTab: "Свои числа",
+    checkOne: "Проверить ответ",
+    chooseOptionPrompt: "Выберите один из вариантов ответа выше, чтобы проверить решение.",
+    correctTitle: "Верно",
+    wrongTitle: "Обрати внимание на переход",
+    analyzeErrorBtn: "Разобрать ошибку",
+    tryAgainBtn: "Попробовать ещё раз",
+    nextTaskBtn: "Следующая задача",
+    ruleBreakdownTitle: "Разбор по правилу темы:",
+    openLabForTopic: "Потренировать поиск ошибки в этой теме",
+    allTasksSolved: "Все 3 задачи решены верно. Закрепи правило на задаче с новыми числами или переходи к следующей теме.",
+    nextTopicBtn: "Следующая тема курса",
+    transferTitle: "Задача с новыми числами",
+    transferSub: "Примени главное правило темы без вариантов ответа (доступно 24 варианта чисел).",
+    transferCheck: "Проверить ответ",
+    transferNext: "Другие числа",
     transferRight: "Верно! Правило применено точно.",
-    transferWrong: "Ответ пока не совпал. Проверь вычисления по правилу урока.",
-    transferInvalid: "Введите целое число, десятичную дробь или дробь вида 3/7.",
-    aiTitle: "Сократический разбор вопроса по теме",
-    aiSub: "Помощник объясняет выбранную тему с опорой на правило урока и задаёт наводящий вопрос без подсказки готового ответа.",
-    question: "Ваш вопрос по теме",
+    transferWrong: "Ответ пока не совпал. Сверь вычисления с главным правилом темы.",
+    transferInvalid: "Введите целое число, десятичную дробь или обыкновенную дробь вида 3/7.",
+    aiTitle: "Задать вопрос по теме",
+    aiSub: "Помощник объясняет выбранную тему с опорой на главное правило урока и задаёт наводящий вопрос без подсказки готового ответа.",
+    question: "Ваш вопрос",
     placeholder: "Например: почему в теореме Виета сумма корней берётся с противоположным знаком?",
-    quickLabel: "Подставить пример вопроса:",
+    quickLabel: "Частые вопросы по теме:",
     quickQuestions: [
       "Почему при переносе слагаемого через знак равенства меняется знак?",
       "Как быстро проверить, не перепутаны ли формулы в этой теме?",
@@ -72,75 +79,77 @@ const copy = {
     ],
     adult: "Мне исполнилось 18 лет.",
     consent: "Согласен отправить текст учебного вопроса для получения разбора. Не ввожу личные данные.",
-    ask: "Получить разбор",
-    loading: "Формируем разбор…",
-    pilot: "Прозрачный статус ответа: при подключённом ключе сервера отображается живой ответ Claude API, в демо-режиме — структурный превью-разбор по правилу урока.",
-    read: "О проекте",
+    ask: "Получить объяснение",
+    loading: "Формируем объяснение…",
+    pilot: "При подключённом ключе сервера отображается живой ответ модели, в демо-режиме — структурный разбор по правилу урока.",
     privacy: "Приватность",
-    foot: "BilimAI · 10 тем ЕНТ · 240 упражнений на каждом языке (RU / KK / UZ)",
-    static: "Выверенные правила и примеры по 10 темам",
-    next: "Можно исправить неверные ответы или открыть полный разбор.",
-    done: "Все ответы верны! Попробуй задачу с новыми числами ниже или переходи в Лабораторию ошибок.",
-    rmTitle: "Учебный план подготовки к ЕНТ",
-    rmSub: "Приоритет тем рассчитывается по вашим самостоятельным решениям в Лаборатории ошибок и выбранной цели.",
+    rmTitle: "План подготовки к ЕНТ",
+    rmSub: "Очерёдность тем строится по результатам решения задач и выбранной цели.",
     rmTarget: "Целевой балл ЕНТ (из 50)",
     rmWeeks: "Недель до экзамена",
-    rmWeak: "Темы, вызывающие трудности",
-    rmConsolidation: "Базово закреплено (≥2 самостоятельных задач в /lab)",
-    rmConsolidationEmpty: "Пока нет закреплённых тем — решите по 2 задачи без подсказок в Лаборатории ошибок.",
+    rmWeak: "Темы, которые нужно подтянуть",
+    rmConsolidation: "Закреплено (≥2 самостоятельных решения)",
+    rmConsolidationEmpty: "Пока нет закреплённых тем — решите по 2 задачи без подсказок в разделе «Тренировка ошибок».",
     rmGoal: "Цель и главная трудность",
     rmGoalPlaceholder: "Например: путаю знаки в тригонометрии и формулы объёмов пирамиды, нужно набрать 42+ за 6 недель",
     rmPresets: [
       "Цель 45/50 за 6 недель: путаю знаки в теореме Виета, логарифмах и тригонометрии",
       "Цель 38/50 за 4 недели: нужно подтянуть производную, площади и объёмы фигур"
     ],
-    rmGenerate: "Составить персональный план",
+    rmGenerate: "Составить учебный план",
     rmBaseTitle: "Рекомендуемая очерёдность тем",
-    rmPhase1: "Этап 1 (недели 1–2): закрытие пробелов",
+    rmPhase1: "Этап 1 (недели 1–2): базовые темы и закрытие пробелов",
     rmPhase2: "Этап 2 (недели 3+): закрепление и перенос навыка",
     rmClaudeTitle: "Персональный план по неделям",
     rmMilestones: "Шаги по неделям",
     rmHabit: "Режим занятий",
-    badgeLive: "Claude API · Живой ответ",
-    badgePreview: "Демо-режим · Структурный превью-ответ"
+    badgeLive: "Живой разбор",
+    badgePreview: "Разбор по правилу урока"
   },
   kk: {
-    eyebrow: "ҰБТ Математика · 10 тақырып · 18+",
-    title: "Дайын жауапты жаттамай, әр қадамның логикасын түсін.",
-    sub: "Ереже мен мысалды талдап, жаттығуда өзіңді тексер немесе Қателер зертханасында дайын шешімдегі қатені тап.",
-    openLab: "Қателер зертханасы →",
-    topics: "ҰБТ тақырыптары (10)",
+    navStudy: "Сабақ",
+    navGraph: "Тақырыптар картасы",
+    navExam: "Байқау ҰБТ",
+    navPlan: "Менің жоспарым",
+    navLab: "Қатемен жұмыс",
+    navAbout: "Жоба туралы",
+    topics: "Курс тақырыптары",
     mobileTopicLabel: "Сабақ тақырыбы",
-    lesson: "Түсіндіру",
-    practice: "Жаттығу (3)",
-    examTab: "Байқау ҰБТ",
-    graphTab: "Екінші ми",
-    ai: "Сұрақты талдау",
-    roadmapTab: "Менің жоспарым",
-    rule: "Негізгі ереже мен инвариант",
-    example: "Мысалды қадамдап талдау",
-    hint: "Әр қадамды өз сөзіңізбен түсіндіріп көріңіз, содан кейін жаттығуға немесе Қателер зертханасына өтіңіз.",
-    check: "Жауаптарды тексеру",
-    retryWrong: "Қателерді түзету",
-    showSolutions: "Барлық сұрақтың талдауын көрсету",
-    reset: "Тестті қайта бастау",
-    correct: "Дұрыс",
-    wrong: "Әзірше қате — шарт пен таңбаны тексеріңіз",
-    result: "Нәтиже",
-    choose: "Өзіңізді тексеру үшін үш сұраққа да жауап беріңіз.",
-    session: "Жауаптар тек ашық бетте сақталады.",
-    transferTitle: "Жаңа сандармен қосымша есеп",
-    transferSub: "Тақырып ережесі бойынша есепті шығарыңыз (24 түрлі нұсқа).",
-    transferCheck: "Санды тексеру",
-    transferNext: "Жаңа сандар →",
+    lesson: "Талдау",
+    practice: "Жаттығу",
+    ai: "Сұрақ қою",
+    rule: "Негізгі ереже",
+    exampleLabel: "Мысал",
+    exampleSteps: "Қадамдық талдау",
+    note: "Әр қадамды өз сөзіңізбен түсіндіріп көріңіз — теңдік немесе қасиет неліктен сақталады.",
+    solveSelf: "Өз бетінше шығару",
+    askAboutRule: "Ереже бойынша сұрақ қою",
+    taskProgress: "Есеп",
+    ofLabel: "/",
+    extraTaskTab: "Жаңа сандар",
+    checkOne: "Жауапты тексеру",
+    chooseOptionPrompt: "Шешімді тексеру үшін жоғарыдағы жауап нұсқаларының бірін таңдаңыз.",
+    correctTitle: "Дұрыс",
+    wrongTitle: "Амал мен таңбаға назар аударыңыз",
+    analyzeErrorBtn: "Қатені талдау",
+    tryAgainBtn: "Қайта көру",
+    nextTaskBtn: "Келесі есеп",
+    ruleBreakdownTitle: "Тақырып ережесі бойынша талдау:",
+    openLabForTopic: "Осы тақырып бойынша қате табуды жаттықтыру",
+    allTasksSolved: "Барлық 3 есеп дұрыс шешілді. Ережені жаңа сандармен бекітіңіз немесе келесі тақырыпқа өтіңіз.",
+    nextTopicBtn: "Келесі тақырып",
+    transferTitle: "Жаңа сандармен есеп",
+    transferSub: "Тақырыптың негізгі ережесін дайын нұсқаларсыз қолданыңыз (24 нұсқа).",
+    transferCheck: "Жауапты тексеру",
+    transferNext: "Басқа сандар",
     transferRight: "Дұрыс! Ереже дәл қолданылды.",
-    transferWrong: "Жауап сәйкес келмеді. Сабақ ережесі бойынша есептеуді тексеріңіз.",
+    transferWrong: "Жауап сәйкес келмеді. Есептеуді негізгі ережемен салыстырыңыз.",
     transferInvalid: "Бүтін сан, ондық бөлшек немесе 3/7 түріндегі бөлшек енгізіңіз.",
-    aiTitle: "Тақырып бойынша сұрақты сократтық талдау",
-    aiSub: "Көмекші таңдалған тақырыпты сабақ ережесіне сүйеніп түсіндіреді және дайын жауапты айтпай бағыттаушы сұрақ қояды.",
-    question: "Тақырып бойынша сұрағыңыз",
+    aiTitle: "Тақырып бойынша сұрақ қою",
+    aiSub: "Көмекші таңдалған тақырыпты негізгі ережеге сүйеніп түсіндіреді және дайын жауапты айтпай бағыттаушы сұрақ қояды.",
+    question: "Сұрағыңыз",
     placeholder: "Мысалы: Виет теоремасында түбірлер қосындысы неге қарама-қарсы таңбамен алынады?",
-    quickLabel: "Сұрақ үлгісін қою:",
+    quickLabel: "Жиі қойылатын сұрақтар:",
     quickQuestions: [
       "Теңдеудің бір жағынан екінші жағына шығарғанда таңба неге өзгереді?",
       "Осы бөлімдегі формулаларды шатастырмау үшін нені есте сақтау керек?",
@@ -148,75 +157,77 @@ const copy = {
     ],
     adult: "Мен 18 жасқа толдым.",
     consent: "Талдау алу үшін оқу сұрағымды жіберуге келісемін. Жеке деректерді енгізбеймін.",
-    ask: "Талдауды алу",
+    ask: "Түсіндірме алу",
     loading: "Талдау дайындалып жатыр…",
-    pilot: "Жауап мәртебесі ашық көрсетіледі: сервер кілті қосылғанда тікелей Claude API жауабы, ал демо-режимде сабақ ережесіне негізделген құрылымдық превью беріледі.",
-    read: "Жоба туралы",
+    pilot: "Сервер кілті қосылғанда тікелей жауап, ал демо-режимде сабақ ережесіне негізделген талдау беріледі.",
     privacy: "Құпиялық",
-    foot: "BilimAI · 10 ҰБТ тақырыбы · Әр тілде 240 жаттығу (RU / KK / UZ)",
-    static: "10 тақырып бойынша тексерілген ережелер мен мысалдар",
-    next: "Қате жауаптарды түзетуге немесе толық талдауды ашуға болады.",
-    done: "Барлық жауап дұрыс! Төмендегі жаңа сандармен есепті шығарып көріңіз немесе Қателер зертханасына өтіңіз.",
-    rmTitle: "ҰБТ-ға дайындықтың оқу жоспары",
-    rmSub: "Тақырыптар басымдығы Қателер зертханасындағы өздік шешімдеріңіз бен мақсатты балға қарай есептеледі.",
+    rmTitle: "ҰБТ-ға дайындық жоспары",
+    rmSub: "Тақырыптар реті шығарылған есептер нәтижесі мен мақсатты балға қарай құрылады.",
     rmTarget: "Мақсатты ҰБТ балы (50-ден)",
     rmWeeks: "Емтиханға дейінгі апта саны",
-    rmWeak: "Қиындық тудыратын тақырыптар",
-    rmConsolidation: "Базалық деңгейде бекітілді (/lab ішінде ≥2 өздік есеп)",
-    rmConsolidationEmpty: "Әзірше бекітілген тақырып жоқ — Қателер зертханасында көмексіз 2 есептен шығарыңыз.",
+    rmWeak: "Қайталауды қажет ететін тақырыптар",
+    rmConsolidation: "Бекітілді (≥2 өздік шешім)",
+    rmConsolidationEmpty: "Әзірше бекітілген тақырып жоқ — «Қатемен жұмыс» бөлімінде көмексіз 2 есептен шығарыңыз.",
     rmGoal: "Мақсатыңыз және негізгі қиындық",
     rmGoalPlaceholder: "Мысалы: тригонометрия мен пирамида көлемінде қателесемін, 6 аптада 42+ балл жинау керек",
     rmPresets: [
       "6 аптада 45/50 балл: Виет теоремасы, логарифм және тригонометрияда таңба қателері",
       "4 аптада 38/50 балл: туынды, планиметрия аудандары және пирамида көлемі"
     ],
-    rmGenerate: "Жеке жоспар құру",
+    rmGenerate: "Оқу жоспарын құру",
     rmBaseTitle: "Ұсынылатын тақырыптар реті",
-    rmPhase1: "1-кезең (1–2 апта): негізгі олқылықтарды жою",
+    rmPhase1: "1-кезең (1–2 апта): базалық тақырыптар және олқылықтарды жою",
     rmPhase2: "2-кезең (3+ апта): бекіту және дағдыны тексеру",
     rmClaudeTitle: "Апталық жеке жоспар",
     rmMilestones: "Апталық қадамдар",
     rmHabit: "Дайындық тәртібі",
-    badgeLive: "Claude API · Тікелей жауап",
-    badgePreview: "Демо-режим · Құрылымдық превью"
+    badgeLive: "Тікелей талдау",
+    badgePreview: "Сабақ ережесі бойынша талдау"
   },
   uz: {
-    eyebrow: "Matematika · 10 ta mavzu · 18+",
-    title: "Javobni yodlama, har bir qadam mantiqini tushunib ol.",
-    sub: "Qoida va namunani tahlil qiling, sinov UBT topshiring, «Ikkinchi miya» grafini oching yoki Xatolar laboratoriyasida yechimdagi xatoni toping.",
-    openLab: "Xatolar laboratoriyasi →",
-    topics: "Dastur mavzulari (10)",
+    navStudy: "Dars",
+    navGraph: "Mavzular xaritasi",
+    navExam: "Sinov UBT",
+    navPlan: "Mening rejam",
+    navLab: "Xatolar ustida ishlash",
+    navAbout: "Loyiha haqida",
+    topics: "Kurs mavzulari",
     mobileTopicLabel: "Dars mavzusi",
-    lesson: "Tushuntirish",
-    practice: "Mashq (3)",
-    examTab: "Sinov UBT",
-    graphTab: "Ikkinchi miya",
-    ai: "Savolni tahlil qilish",
-    roadmapTab: "Mening rejam",
-    rule: "Asosiy qoida va invariant",
-    example: "Namunani qadam-baqadam tahlil qilish",
-    hint: "Har bir qadamni o‘z so‘zlaringiz bilan tushuntiring, keyin mashq yoki Xatolar laboratoriyasiga o‘ting.",
-    check: "Javoblarni tekshirish",
-    retryWrong: "Xatolarni tuzatish",
-    showSolutions: "Barcha savollar tahlilini ko‘rsatish",
-    reset: "Testni qayta boshlash",
-    correct: "To‘g‘ri",
-    wrong: "Hozircha noto‘g‘ri — shart va ishorani tekshiring",
-    result: "Natija",
-    choose: "O‘zingizni tekshirish uchun uchala savolga javob bering.",
-    session: "Javoblar faqat ochiq sahifada saqlanadi.",
-    transferTitle: "Yangi sonlar bilan qo‘shimcha masala",
-    transferSub: "Mavzu qoidasi asosida masalani yeching (24 xil variant).",
-    transferCheck: "Sonni tekshirish",
-    transferNext: "Yangi sonlar →",
+    lesson: "Tahlil",
+    practice: "Mashq",
+    ai: "Savol berish",
+    rule: "Asosiy qoida",
+    exampleLabel: "Namuna",
+    exampleSteps: "Qadam-baqadam yechim",
+    note: "Har bir qadamni o‘z so‘zlaringiz bilan tushuntiring — tenglik yoki xossa nega saqlanib qoladi.",
+    solveSelf: "Mustaqil yechish",
+    askAboutRule: "Qoida bo‘yicha savol berish",
+    taskProgress: "Masala",
+    ofLabel: "/",
+    extraTaskTab: "Yangi sonlar",
+    checkOne: "Javobni tekshirish",
+    chooseOptionPrompt: "Yechimni tekshirish uchun yuqoridagi javob variantlaridan birini tanlang.",
+    correctTitle: "To‘g‘ri",
+    wrongTitle: "Amal va ishoraga e’tibor bering",
+    analyzeErrorBtn: "Xatoni tahlil qilish",
+    tryAgainBtn: "Qayta urinib ko‘rish",
+    nextTaskBtn: "Keyingi masala",
+    ruleBreakdownTitle: "Mavzu qoidasi bo‘yicha tahlil:",
+    openLabForTopic: "Shu mavzuda xatoni topishni mashq qilish",
+    allTasksSolved: "Barcha 3 ta masala to‘g‘ri yechildi. Qoidani yangi sonlar bilan mustahkamlang yoki keyingi mavzuga o‘ting.",
+    nextTopicBtn: "Keyingi mavzu",
+    transferTitle: "Yangi sonlar bilan masala",
+    transferSub: "Mavzuning asosiy qoidasini tayyor variantlarsiz qo‘llang (24 xil variant).",
+    transferCheck: "Javobni tekshirish",
+    transferNext: "Boshqa sonlar",
     transferRight: "To‘g‘ri! Qoida aniq qo‘llanildi.",
-    transferWrong: "Javob mos kelmadi. Dars qoidasi bo‘yicha hisobni tekshiring.",
+    transferWrong: "Javob mos kelmadi. Hisobni asosiy qoida bilan solishtiring.",
     transferInvalid: "Butun son, o‘nli kasr yoki 3/7 shaklidagi kasr kiriting.",
-    aiTitle: "Mavzu bo‘yicha savolning Sokratik tahlili",
-    aiSub: "Yordamchi tanlangan mavzuni dars qoidasiga tayangan holda tushuntiradi va tayyor javobni aytmasdan yo‘naltiruvchi savol beradi.",
-    question: "Mavzu bo‘yicha savolingiz",
+    aiTitle: "Mavzu bo‘yicha savol berish",
+    aiSub: "Yordamchi tanlangan mavzuni asosiy qoidaga tayangan holda tushuntiradi va tayyor javobni aytmasdan yo‘naltiruvchi savol beradi.",
+    question: "Savolingiz",
     placeholder: "Masalan: nega Viyet teoremasida ildizlar yig‘indisi qarama-qarshi ishora bilan olinadi?",
-    quickLabel: "Savol namunasini qo‘yish:",
+    quickLabel: "Ko‘p beriladigan savollar:",
     quickQuestions: [
       "Nega hadni tenglikning boshqa tomoniga o‘tkazganda ishora o‘zgaradi?",
       "Shu bo‘limdagi formulalarni adashtirmaslik uchun nimaga e’tibor berish kerak?",
@@ -226,35 +237,30 @@ const copy = {
     consent: "Tahlil olish uchun o‘quv savolimni yuborishga roziman. Shaxsiy ma’lumot kiritmayman.",
     ask: "Tushuntirish olish",
     loading: "Javob tayyorlanmoqda…",
-    pilot: "Javob holati ochiq ko‘rsatiladi: server kaliti yoqilganda jonli Claude API javobi, demo rejimda esa dars qoidasi asosida tuzilgan prevyu qaytariladi.",
-    read: "Loyiha haqida",
+    pilot: "Server kaliti yoqilganda jonli javob, demo rejimda esa dars qoidasi asosida tahlil qaytariladi.",
     privacy: "Maxfiylik",
-    foot: "BilimAI · 10 ta mavzu · Har bir tilda 240 ta mashq (RU / KK / UZ)",
-    static: "10 ta mavzu bo‘yicha tekshirilgan qoida va namunalar",
-    next: "Noto‘g‘ri javoblarni tuzatish yoki to‘liq tahlilni ochish mumkin.",
-    done: "Barcha javoblar to‘g‘ri! Quyidagi yangi sonlar bilan masalani yechib ko‘ring yoki Xatolar laboratoriyasiga o‘ting.",
-    rmTitle: "Imtihonga tayyorgarlik o‘quv rejasi",
-    rmSub: "Mavzular ustuvorligi Xatolar laboratoriyasidagi mustaqil yechimlaringiz va maqsadli ball asosida hisoblanadi.",
+    rmTitle: "Imtihonga tayyorgarlik rejasi",
+    rmSub: "Mavzular tartibi yechilgan masalalar natijasi va maqsadli ball asosida tuziladi.",
     rmTarget: "Maqsadli ball (50 dan)",
     rmWeeks: "Imtihongacha haftalar soni",
-    rmWeak: "Qiyinchilik tug‘diradigan mavzular",
-    rmConsolidation: "Bazaviy mustahkamlangan (/lab ichida ≥2 mustaqil masala)",
-    rmConsolidationEmpty: "Hozircha mustahkamlangan mavzu yo‘q — Xatolar laboratoriyasida yordamsiz 2 tadan masala yeching.",
+    rmWeak: "Mustahkamlash kerak bo‘lgan mavzular",
+    rmConsolidation: "Mustahkamlangan (≥2 mustaqil masala)",
+    rmConsolidationEmpty: "Hozircha mustahkamlangan mavzu yo‘q — «Xatolar ustida ishlash» bo‘limida yordamsiz 2 tadan masala yeching.",
     rmGoal: "Maqsadingiz va asosiy qiyinchilik",
     rmGoalPlaceholder: "Masalan: logarifm va hosilada xato qilaman, 6 haftada 42+ ball yig‘ishim kerak",
     rmPresets: [
       "6 haftada 45/50 ball: Viyet teoremasi, logarifm va trigonometriyada ishora xatolari",
       "4 haftada 38/50 ball: hosila hamda geometrik yuzalar va hajmlar"
     ],
-    rmGenerate: "Shaxsiy rejani tuzish",
+    rmGenerate: "O‘quv rejasini tuzish",
     rmBaseTitle: "Tavsiya etilgan mavzular tartibi",
-    rmPhase1: "1-bosqich (1–2 hafta): asosiy bo‘shliqlarni yopish",
+    rmPhase1: "1-bosqich (1–2 hafta): tayanch mavzular va bo‘shliqlarni yopish",
     rmPhase2: "2-bosqich (3+ hafta): mustahkamlash va ko‘nikmani tekshirish",
     rmClaudeTitle: "Haftalik shaxsiy o‘quv rejasi",
     rmMilestones: "Haftalik qadamlar",
     rmHabit: "Kunlik tayyorgarlik tartibi",
-    badgeLive: "Claude API · Jonli javob",
-    badgePreview: "Demo rejim · Tuzilgan prevyu"
+    badgeLive: "Jonli tahlil",
+    badgePreview: "Dars qoidasi bo‘yicha tahlil"
   }
 };
 
@@ -279,14 +285,18 @@ export default function Study() {
   const [lang, setLang] = useState<Language>("ru");
   const [topic, setTopic] = useState<TopicId>("linear");
   const [tab, setTab] = useState("lesson");
+
+  // Focused step-by-step practice state (questions 0, 1, 2 + transfer task index 3)
+  const [activeQ, setActiveQ] = useState<number>(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [checked, setChecked] = useState(false);
-  const [showExplanations, setShowExplanations] = useState(false);
+  const [checkedMap, setCheckedMap] = useState<Record<number, boolean>>({});
+  const [expandedErrorMap, setExpandedErrorMap] = useState<Record<number, boolean>>({});
   const [practiceNotice, setPracticeNotice] = useState(false);
 
   const [practiceSeed, setPracticeSeed] = useState(0);
   const [transferInput, setTransferInput] = useState("");
   const [transferStatus, setTransferStatus] = useState<"" | "right" | "wrong" | "invalid">("");
+  const [showTransferRule, setShowTransferRule] = useState(false);
 
   const [question, setQuestion] = useState("");
   const [adult, setAdult] = useState(false);
@@ -310,10 +320,16 @@ export default function Study() {
   const current = useRef({ topic, language: lang });
 
   const lesson = lessons[lang].find((l) => l.id === topic)!;
+  const topicIndex = lessons[lang].findIndex((l) => l.id === topic);
+  const nextTopicId = lessons[lang][(topicIndex + 1) % lessons[lang].length].id;
   const t = copy[lang];
-  const score = lesson.questions.filter((q, i) => answers[i] === String(q.correct)).length;
+
+  const solvedCount = lesson.questions.filter((q, i) => checkedMap[i] && answers[i] === String(q.correct)).length;
   const baseline = buildBaselineRoadmap(labProgress, targetScore, weeksLeft, lang);
   const transferChallenge = makeChallenge(topic, practiceSeed, lang);
+
+  // Whether we are inside the active study lesson view vs a top-level section (Topic Map, UNT Exam, Study Plan)
+  const isStudySection = tab === "lesson" || tab === "practice" || tab === "ai";
 
   useEffect(() => {
     current.current = { topic, language: lang };
@@ -403,7 +419,7 @@ export default function Study() {
         ? {
             quota: "Лимит запросов пилота исчерпан. Продолжите с готовыми материалами.",
             origin: "Неверный источник запроса.",
-            input: "Проверьте заполнение вопроса и отметьте оба пункта согласия."
+            input: "Заполните текст вопроса и отметьте оба пункта согласия."
           }
         : lang === "kk"
           ? {
@@ -429,11 +445,14 @@ export default function Study() {
   function reset() {
     generation.current++;
     controller.current?.abort();
+    setActiveQ(0);
     setAnswers({});
-    setChecked(false);
-    setShowExplanations(false);
+    setCheckedMap({});
+    setExpandedErrorMap({});
+    setPracticeNotice(false);
     setTransferInput("");
     setTransferStatus("");
+    setShowTransferRule(false);
     setAnswer(null);
     setError("");
     setBusy(false);
@@ -443,7 +462,7 @@ export default function Study() {
   function selectTopic(id: TopicId) {
     reset();
     setTopic(id);
-    if (tab === "roadmap" || tab === "exam") setTab("lesson");
+    if (!isStudySection) setTab("lesson");
   }
 
   function openTopicLesson(id: TopicId) {
@@ -473,28 +492,32 @@ export default function Study() {
     setLang(value);
   }
 
-  function retryWrongAnswers() {
-    const nextAnswers: Record<number, string> = {};
-    lesson.questions.forEach((q, idx) => {
-      if (answers[idx] === String(q.correct)) {
-        nextAnswers[idx] = answers[idx];
-      }
-    });
-    setAnswers(nextAnswers);
-    setChecked(false);
-    setShowExplanations(false);
-  }
-
-  function handleCheckPractice() {
-    if (Object.keys(answers).length < 3) {
+  function checkCurrentQuestion(qIdx: number) {
+    if (answers[qIdx] === undefined) {
       setPracticeNotice(true);
-      const firstUnanswered = [0, 1, 2].find((idx) => answers[idx] === undefined) ?? 0;
-      const el = document.getElementById(`q${firstUnanswered}`);
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     setPracticeNotice(false);
-    setChecked(true);
+    setCheckedMap((prev) => ({ ...prev, [qIdx]: true }));
+  }
+
+  function retryQuestion(qIdx: number) {
+    setCheckedMap((prev) => {
+      const next = { ...prev };
+      delete next[qIdx];
+      return next;
+    });
+    setExpandedErrorMap((prev) => {
+      const next = { ...prev };
+      delete next[qIdx];
+      return next;
+    });
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[qIdx];
+      return next;
+    });
+    setPracticeNotice(false);
   }
 
   function checkTransfer() {
@@ -600,638 +623,815 @@ export default function Study() {
     }
   }
 
-  return (
-    <div className="agy-shell">
-      <header className="wrap top agy-floating-dock">
-        <a className="brand" href="/">
-          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-            <rect width="32" height="32" rx="9" fill="url(#agyBrandGrad)" />
-            <path d="M9 10h8.5a4.5 4.5 0 0 1 0 9H9V10zm0 9h9.5a4.5 4.5 0 0 1 0 9H9v-9z" fill="#fff" fillOpacity="0.95" />
-            <defs>
-              <linearGradient id="agyBrandGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#2563eb" />
-                <stop offset="1" stopColor="#4f46e5" />
-              </linearGradient>
-            </defs>
-          </svg>
-          BilimAI <span className="beta">ЕНТ · ҰБТ</span>
-        </a>
-        <nav className="topnav" aria-label="Навигация">
-          <button
-            type="button"
-            className={`topnav-pill ${tab === "exam" ? "active" : ""}`}
-            onClick={() => setTab("exam")}
-          >
-            <ClipboardCheck size={14} />
-            {t.examTab}
-          </button>
-          <button
-            type="button"
-            className={`topnav-pill ${tab === "graph" ? "active" : ""}`}
-            onClick={() => setTab("graph")}
-          >
-            <GitBranch size={14} />
-            {t.graphTab}
-          </button>
-          <a href={`/lab?lang=${lang}&topic=${topic}`}>{t.openLab}</a>
-          <a href="#claude-engine" className="topnav-pill accent">
-            <Sparkles size={13} aria-hidden="true" />
-            Claude API
-          </a>
-          <a href="#contacts">{lang === "ru" ? "Контакты" : lang === "kk" ? "Байланыс" : "Aloqa"}</a>
-          <a href="/about">{t.read}</a>
-          <div className="flex gap-1" aria-label="Язык">
-            <Button variant={lang === "ru" ? "default" : "ghost"} size="sm" aria-pressed={lang === "ru"} onClick={() => selectLanguage("ru")}>
-              RU
-            </Button>
-            <Button variant={lang === "kk" ? "default" : "ghost"} size="sm" aria-pressed={lang === "kk"} onClick={() => selectLanguage("kk")}>
-              KK
-            </Button>
-            <Button variant={lang === "uz" ? "default" : "ghost"} size="sm" aria-pressed={lang === "uz"} onClick={() => selectLanguage("uz")}>
-              UZ
-            </Button>
-          </div>
-        </nav>
-      </header>
+  const currentQuestionObj = lesson.questions[activeQ] ?? lesson.questions[0];
+  const isCurrentChecked = Boolean(checkedMap[activeQ]);
+  const selectedVal = answers[activeQ];
+  const isCurrentCorrect = isCurrentChecked && selectedVal === String(currentQuestionObj.correct);
+  const diagnosticMessage =
+    isCurrentChecked && selectedVal !== undefined
+      ? getOptionFeedback(topic, activeQ, Number(selectedVal), lang)
+      : "";
 
-      <main className="wrap">
-        <section className="compact-hero agy-floating-island">
-          <div className="compact-hero-text">
-            <span className="eyebrow">{t.eyebrow}</span>
-            <h1>{t.title}</h1>
-            <p>{t.sub}</p>
+  return (
+    <div className="textbook-shell">
+      {/* 1. Header: Primary Product Sections + Language Switcher */}
+      <header className="site-header">
+        <div className="wrap header-inner">
+          <div className="header-top-row">
+            <a
+              className="brand"
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                setTab("lesson");
+              }}
+            >
+              <span className="brand-mark" aria-hidden="true">
+                ∑
+              </span>
+              <span className="brand-name">BilimAI</span>
+              <span className="brand-sub">ЕНТ · ҰБТ</span>
+            </a>
+
+            <div className="header-right">
+              <a className="header-quiet-link" href="/about">
+                {t.navAbout}
+              </a>
+              <div className="lang-switcher" role="group" aria-label="Язык">
+                <button
+                  type="button"
+                  className={`lang-btn ${lang === "ru" ? "active" : ""}`}
+                  aria-pressed={lang === "ru"}
+                  onClick={() => selectLanguage("ru")}
+                >
+                  RU
+                </button>
+                <button
+                  type="button"
+                  className={`lang-btn ${lang === "kk" ? "active" : ""}`}
+                  aria-pressed={lang === "kk"}
+                  onClick={() => selectLanguage("kk")}
+                >
+                  ҚАЗ
+                </button>
+                <button
+                  type="button"
+                  className={`lang-btn ${lang === "uz" ? "active" : ""}`}
+                  aria-pressed={lang === "uz"}
+                  onClick={() => selectLanguage("uz")}
+                >
+                  OʻZB
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="hero-actions">
+
+          <nav className="primary-nav" aria-label="Основные разделы">
             <button
               type="button"
-              className={`cta-pill secondary ${tab === "exam" ? "active" : ""}`}
-              onClick={() => setTab("exam")}
+              className={`primary-nav-link ${isStudySection ? "active" : ""}`}
+              aria-current={isStudySection ? "page" : undefined}
+              onClick={() => setTab("lesson")}
             >
-              <ClipboardCheck size={16} />
-              {t.examTab}
+              {t.navStudy}
             </button>
             <button
               type="button"
-              className={`cta-pill secondary ${tab === "graph" ? "active" : ""}`}
+              className={`primary-nav-link ${tab === "graph" ? "active" : ""}`}
+              aria-current={tab === "graph" ? "page" : undefined}
               onClick={() => setTab("graph")}
             >
-              <GitBranch size={16} />
-              {t.graphTab}
+              {t.navGraph}
             </button>
-            <a className="cta-pill" href={`/lab?lang=${lang}&topic=${topic}`}>
-              <FlaskConical size={16} />
-              {t.openLab}
+            <button
+              type="button"
+              className={`primary-nav-link ${tab === "exam" ? "active" : ""}`}
+              aria-current={tab === "exam" ? "page" : undefined}
+              onClick={() => setTab("exam")}
+            >
+              {t.navExam}
+            </button>
+            <button
+              type="button"
+              className={`primary-nav-link ${tab === "roadmap" ? "active" : ""}`}
+              aria-current={tab === "roadmap" ? "page" : undefined}
+              onClick={() => setTab("roadmap")}
+            >
+              {t.navPlan}
+            </button>
+            <a className="primary-nav-link" href={`/lab?lang=${lang}&topic=${topic}`}>
+              {t.navLab}
             </a>
-          </div>
-        </section>
-
-        <div className="mobile-topic-bar">
-          <label htmlFor="mobile-lesson-select" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {t.mobileTopicLabel}
-          </label>
-          <select
-            id="mobile-lesson-select"
-            name="mobileLessonSelect"
-            className="mobile-topic-select"
-            value={topic}
-            onChange={(e) => selectTopic(e.target.value as TopicId)}
-          >
-            {lessons[lang].map((l, idx) => (
-              <option key={l.id} value={l.id}>
-                {String(idx + 1).padStart(2, "0")}. {l.title} ({l.section})
-              </option>
-            ))}
-          </select>
+          </nav>
         </div>
+      </header>
 
-        <div className="workspace">
-          <aside className="topics agy-floating-island">
-            <h2>{t.topics}</h2>
-            {lessons[lang].map((l, i) => (
-              <button
-                key={l.id}
-                type="button"
-                className={`topic ${topic === l.id ? "active" : ""}`}
-                aria-pressed={topic === l.id}
-                onClick={() => selectTopic(l.id)}
+      <main className="wrap main-container">
+        {isStudySection ? (
+          <>
+            {/* Mobile Topic Selector (Clean single dropdown above the study page) */}
+            <div className="mobile-topic-bar">
+              <label htmlFor="mobile-lesson-select">{t.mobileTopicLabel}</label>
+              <select
+                id="mobile-lesson-select"
+                name="mobileLessonSelect"
+                className="mobile-topic-select"
+                value={topic}
+                onChange={(e) => selectTopic(e.target.value as TopicId)}
               >
-                <span className="num">{String(i + 1).padStart(2, "0")}</span>
-                <span className="topic-title">
-                  {l.title}
-                  <small>{l.section}</small>
-                </span>
-              </button>
-            ))}
-            <div className="aside-note">
-              <BookOpen size={18} className="mb-1.5" />
-              {t.static}
-            </div>
-          </aside>
-
-          <section className="surface agy-floating-island" aria-label={lesson.title}>
-            <div className="lesson-head">
-              <div>
-                <h2>{lesson.title}</h2>
-                <p className="small mt-1 mb-0">{lesson.intro}</p>
-              </div>
-              <span className="section-pill">{lesson.section}</span>
+                {lessons[lang].map((l, idx) => (
+                  <option key={l.id} value={l.id}>
+                    {String(idx + 1).padStart(2, "0")}. {l.title}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <Tabs value={tab} onValueChange={setTab}>
-              <TabsList className="tabsbar h-auto flex-wrap justify-start">
-                <TabsTrigger value="lesson">{t.lesson}</TabsTrigger>
-                <TabsTrigger value="practice">{t.practice}</TabsTrigger>
-                <TabsTrigger value="exam">
-                  <ClipboardCheck size={15} />
-                  {t.examTab}
-                </TabsTrigger>
-                <TabsTrigger value="graph">
-                  <GitBranch size={15} />
-                  {t.graphTab}
-                </TabsTrigger>
-                <TabsTrigger value="ai">
-                  <Sparkles size={15} />
-                  {t.ai}
-                </TabsTrigger>
-                <TabsTrigger value="roadmap">
-                  <Compass size={15} />
-                  {t.roadmapTab}
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="lesson">
-                <div className="rule">
-                  <strong>{t.rule}</strong>
-                  {lesson.rule}
-                </div>
-                <h3 className="text-base mt-5 font-bold">{t.example}</h3>
-                <div className="equation">{lesson.example}</div>
-                <ol className="steps">
-                  {lesson.steps.map((step, i) => (
-                    <li key={step}>
-                      <span className="step-number">{i + 1}</span>
-                      <span>{step}</span>
-                    </li>
-                  ))}
-                </ol>
-                <div className="callout">{t.hint}</div>
-                <div className="actions">
-                  <Button onClick={() => setTab("practice")}>{t.practice}</Button>
-                  <Button variant="outline" onClick={() => setTab("exam")}>
-                    <ClipboardCheck size={15} />
-                    {t.examTab}
-                  </Button>
-                  <Button variant="outline" onClick={() => setTab("graph")}>
-                    <GitBranch size={15} />
-                    {t.graphTab}
-                  </Button>
-                  <Button variant="outline" onClick={() => setTab("ai")}>
-                    <Sparkles size={15} />
-                    {t.ai}
-                  </Button>
-                  <a className="cta-pill secondary text-xs ml-auto" href={`/lab?lang=${lang}&topic=${topic}`}>
-                    <FlaskConical size={14} />
-                    {t.openLab}
-                  </a>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="practice">
-                <p className="small mb-2">{t.session}</p>
-                {lesson.questions.map((q, i) => {
-                  const isCorrect = answers[i] === String(q.correct);
-                  return (
-                    <div className="question" key={q.text}>
-                      <h3 id={`q${i}`}>
-                        {i + 1}. {q.text}
-                      </h3>
-                      <RadioGroup
-                        aria-labelledby={`q${i}`}
-                        value={answers[i] ?? ""}
-                        disabled={checked}
-                        onValueChange={(v) => {
-                          setPracticeNotice(false);
-                          setAnswers((prev) => ({ ...prev, [i]: v }));
-                        }}
-                      >
-                        {q.options.map((option, j) => (
-                          <label
-                            className="option"
-                            key={option}
-                            data-selected={answers[i] === String(j)}
-                            onClick={() => {
-                              if (!checked) {
-                                setPracticeNotice(false);
-                                setAnswers((prev) => ({ ...prev, [i]: String(j) }));
-                              }
-                            }}
-                          >
-                            <RadioGroupItem value={String(j)} id={`q${i}a${j}`} />
-                            <span>{option}</span>
-                          </label>
-                        ))}
-                      </RadioGroup>
-                      {checked && (
-                        <div className={`feedback ${!isCorrect ? "wrong" : ""}`}>
-                          <strong>{isCorrect ? t.correct : t.wrong}. </strong>
-                          {(isCorrect || showExplanations) && <span>{q.why}</span>}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                <div className="actions">
-                  {checked ? (
-                    <>
-                      <span role="status" className="score">
-                        {t.result}: {score}/3
-                      </span>
-                      {score < 3 && (
-                        <Button variant="default" onClick={retryWrongAnswers}>
-                          {t.retryWrong}
-                        </Button>
-                      )}
-                      {score < 3 && !showExplanations && (
-                        <Button variant="outline" onClick={() => setShowExplanations(true)}>
-                          {t.showSolutions}
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          setAnswers({});
-                          setChecked(false);
-                          setShowExplanations(false);
-                          setPracticeNotice(false);
-                        }}
-                      >
-                        <RotateCcw size={16} />
-                        {t.reset}
-                      </Button>
-                    </>
-                  ) : (
-                    <Button onClick={handleCheckPractice}>
-                      <CheckCircle2 size={16} />
-                      {t.check} ({Object.keys(answers).length}/3)
-                    </Button>
-                  )}
-                </div>
-                {practiceNotice && !checked && Object.keys(answers).length < 3 && (
-                  <p role="status" className="feedback wrong">
-                    {t.choose} ({Object.keys(answers).length}/3)
-                  </p>
-                )}
-                <p className="small mt-2">{checked ? (score === 3 ? t.done : t.next) : t.choose}</p>
-
-                <div className="callout mt-6">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <strong>{t.transferTitle}</strong>
-                    <span className="section-pill">#{practiceSeed + 1}/24</span>
-                  </div>
-                  <p className="small mt-1 mb-2">{t.transferSub}</p>
-                  <p className="lab-task my-2">{transferChallenge.transfer}</p>
-                  <div className="flex flex-wrap items-center gap-2 mt-2">
-                    <input
-                      id="transfer-answer-input"
-                      name="transferAnswer"
-                      type="text"
-                      className="lab-input"
-                      value={transferInput}
-                      maxLength={40}
-                      placeholder={transferChallenge.unit || "0"}
-                      aria-label={t.transferTitle}
-                      onChange={(e) => {
-                        setTransferInput(e.target.value);
-                        setTransferStatus("");
-                      }}
-                    />
-                    <Button type="button" size="sm" onClick={checkTransfer}>
-                      {t.transferCheck}
-                    </Button>
-                    <Button
+            <div className="workspace">
+              {/* 2. Topic List: Unboxed Textbook Table of Contents */}
+              <aside className="topics" aria-label={t.topics}>
+                <h2 className="topics-heading">{t.topics}</h2>
+                <div className="topics-list">
+                  {lessons[lang].map((l, i) => (
+                    <button
+                      key={l.id}
                       type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setPracticeSeed((s) => (s + 1) % 24);
-                        setTransferInput("");
-                        setTransferStatus("");
-                      }}
+                      className={`topic ${topic === l.id ? "active" : ""}`}
+                      aria-pressed={topic === l.id}
+                      onClick={() => selectTopic(l.id)}
                     >
-                      {t.transferNext}
-                    </Button>
-                  </div>
-                  {transferStatus && (
-                    <p role="status" className={`feedback mt-2 ${transferStatus !== "right" ? "wrong" : ""}`}>
-                      {transferStatus === "right"
-                        ? `${t.transferRight} (${transferChallenge.solution})`
-                        : transferStatus === "invalid"
-                          ? t.transferInvalid
-                          : t.transferWrong}
-                    </p>
-                  )}
+                      <span className="num">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="topic-title">
+                        <span>{l.title}</span>
+                        <small>{l.section}</small>
+                      </span>
+                    </button>
+                  ))}
                 </div>
-              </TabsContent>
+              </aside>
 
-              <TabsContent value="exam">
-                <UntExamView
-                  lang={lang}
-                  lastSavedAttempt={untStorage.lastAttempt}
-                  initialTopic={topic}
-                  onCompleteExam={handleCompleteUntExam}
-                  onOpenGraph={(focusTopic) => {
-                    if (focusTopic) setTopic(focusTopic);
-                    setTab("graph");
-                  }}
-                  onOpenLesson={openTopicLesson}
-                />
-              </TabsContent>
+              {/* 3. Single Main Study Surface (No nested card boxes inside) */}
+              <article className="surface" aria-label={lesson.title}>
+                <header className="lesson-head">
+                  <div className="lesson-meta-line">
+                    <span className="topic-index-label">
+                      {String(topicIndex + 1).padStart(2, "0")} · {lesson.section}
+                    </span>
+                  </div>
+                  <h1 className="lesson-title">{lesson.title}</h1>
+                  <p className="lesson-intro">{lesson.intro}</p>
+                </header>
 
-              <TabsContent value="graph">
-                <KnowledgeGraphView
-                  lang={lang}
-                  progress={labProgress}
-                  untAttempt={untStorage.lastAttempt}
-                  weakTopics={weakTopics}
-                  selectedTopic={topic}
-                  onSelectTopic={setTopic}
-                  onOpenLesson={openTopicLesson}
-                  onOpenExam={() => setTab("exam")}
-                  onToggleWeakTopic={toggleWeakTopic}
-                />
-              </TabsContent>
+                {/* Inside the lesson: only 3 calm actions for the current topic */}
+                <Tabs value={tab} onValueChange={setTab}>
+                  <TabsList className="tabsbar">
+                    <TabsTrigger value="lesson">{t.lesson}</TabsTrigger>
+                    <TabsTrigger value="practice">{t.practice}</TabsTrigger>
+                    <TabsTrigger value="ai">{t.ai}</TabsTrigger>
+                  </TabsList>
 
-              <TabsContent value="ai">
-                <h3 className="text-lg font-bold">{t.aiTitle}</h3>
-                <p className="small mb-3">{t.aiSub}</p>
+                  {/* TAB 1: РАЗБОР (Rule -> Centerpiece Formula -> Numbered Steps -> Single Next Step) */}
+                  <TabsContent value="lesson">
+                    <div className="rule">
+                      <span className="rule-label">{t.rule}</span>
+                      <p className="rule-body">{lesson.rule}</p>
+                    </div>
 
-                <div className="mb-3">
-                  <span className="small font-semibold block mb-1">{t.quickLabel}</span>
-                  <div className="quick-prompts">
-                    {t.quickQuestions.map((qq) => (
-                      <button
-                        key={qq}
-                        type="button"
-                        className="quick-pill"
+                    <div className="math-stage">
+                      <span className="math-stage-label">{t.exampleLabel}</span>
+                      <div className="equation" aria-label={t.exampleLabel}>
+                        {lesson.example}
+                      </div>
+                    </div>
+
+                    <div className="steps-section">
+                      <h2 className="steps-heading">{t.exampleSteps}</h2>
+                      <ol className="steps">
+                        {lesson.steps.map((step, i) => (
+                          <li key={step}>
+                            <span className="step-number">{i + 1}.</span>
+                            <span className="step-text">{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+
+                    <p className="notebook-margin-note">{t.note}</p>
+
+                    <div className="lesson-footer-action">
+                      <Button
                         onClick={() => {
-                          setQuestion(qq);
-                          setError("");
+                          setTab("practice");
+                          setActiveQ(0);
                         }}
                       >
-                        {qq}
+                        {t.solveSelf}
+                        <ArrowRight size={16} />
+                      </Button>
+                      <button
+                        type="button"
+                        className="quiet-text-action"
+                        onClick={() => setTab("ai")}
+                      >
+                        {t.askAboutRule}
                       </button>
-                    ))}
-                  </div>
-                </div>
-
-                <form
-                  className="ai-form"
-                  noValidate
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    void ask();
-                  }}
-                >
-                  <label htmlFor="learner-question" className="font-semibold text-sm">
-                    {t.question} ({lesson.title})
-                  </label>
-                  <textarea
-                    id="learner-question"
-                    name="learnerQuestion"
-                    value={question}
-                    maxLength={600}
-                    placeholder={t.placeholder}
-                    onChange={(e) => {
-                      setQuestion(e.target.value);
-                      if (error) setError("");
-                    }}
-                  />
-                  <span className="small">{question.length}/600</span>
-                  <label className="checkline" onClick={() => setError("")}>
-                    <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
-                    <span>{t.adult}</span>
-                  </label>
-                  <label className="checkline" onClick={() => setError("")}>
-                    <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
-                    <span>
-                      {t.consent} <a href="/privacy" onClick={(e) => e.stopPropagation()}>{t.privacy}</a>
-                    </span>
-                  </label>
-                  <div>
-                    <Button type="submit" disabled={busy}>
-                      <Sparkles size={15} />
-                      {busy ? t.loading : t.ask}
-                    </Button>
-                  </div>
-                </form>
-                <p className="small mt-3">{t.pilot}</p>
-                {error && (
-                  <p role="alert" className="error">
-                    {error}
-                  </p>
-                )}
-                {answer && (
-                  <section aria-live="polite" className="response">
-                    <div className={`source-badge ${answer.source === "claude" ? "live" : "preview"}`}>
-                      {answer.source === "claude" ? t.badgeLive : t.badgePreview}
                     </div>
-                    <p className="mt-1 mb-3">{answer.explanation}</p>
-                    <strong>{lang === "ru" ? "Наводящий вопрос:" : lang === "kk" ? "Бағыттаушы сұрақ:" : "Yo‘naltiruvchi savol:"}</strong>
-                    <p className="mt-1 mb-0">{answer.hint}</p>
-                  </section>
-                )}
-              </TabsContent>
+                  </TabsContent>
 
-              <TabsContent value="roadmap">
-                <h3 className="text-lg font-bold">{t.rmTitle}</h3>
-                <p className="small mb-3">{t.rmSub}</p>
-
-                <div className="callout mb-4">
-                  <strong>{t.rmBaseTitle}</strong>
-                  <p className="small mt-1">
-                    {lang === "ru"
-                      ? `Цель: ${targetScore}/50 баллов · Срок: ${weeksLeft} нед. · Тем в неделю: ~${baseline.topicsPerWeek}`
-                      : lang === "kk"
-                        ? `Мақсат: ${targetScore}/50 балл · Мерзімі: ${weeksLeft} апта · Аптасына: ~${baseline.topicsPerWeek} тақырып`
-                        : `Maqsad: ${targetScore}/50 ball · Muddat: ${weeksLeft} hafta · Haftasiga: ~${baseline.topicsPerWeek} mavzu`}
-                  </p>
-                  <p className="small font-semibold mt-2">{t.rmConsolidation}:</p>
-                  {baseline.masteredTopics.length === 0 ? (
-                    <p className="small m-0">{t.rmConsolidationEmpty}</p>
-                  ) : (
-                    <p className="small m-0">{baseline.masteredTopics.map((id) => topicName(id, lang)).join(", ")}</p>
-                  )}
-                  <p className="small font-semibold mt-2">{t.rmPhase1}:</p>
-                  <ul className="small list-disc pl-5">
-                    {baseline.priorityModules
-                      .filter((m) => m.phase === 1)
-                      .map((m) => (
-                        <li key={m.topic}>
-                          <button type="button" className="underline font-medium cursor-pointer" onClick={() => selectTopic(m.topic)}>
-                            {m.title}
-                          </button>{" "}
-                          ({m.soloCount}/2)
-                        </li>
-                      ))}
-                  </ul>
-                  <p className="small font-semibold mt-2">{t.rmPhase2}:</p>
-                  <ul className="small list-disc pl-5">
-                    {baseline.priorityModules
-                      .filter((m) => m.phase === 2)
-                      .map((m) => (
-                        <li key={m.topic}>
-                          <button type="button" className="underline font-medium cursor-pointer" onClick={() => selectTopic(m.topic)}>
-                            {m.title}
-                          </button>{" "}
-                          ({m.soloCount}/2)
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-
-                <form
-                  className="ai-form"
-                  noValidate
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    void askRoadmap();
-                  }}
-                >
-                  <div className="flex flex-wrap gap-4">
-                    <label htmlFor="target-score-input" className="flex flex-col gap-1 text-sm font-semibold">
-                      <span>{t.rmTarget}</span>
-                      <input
-                        id="target-score-input"
-                        name="targetScore"
-                        type="number"
-                        min={20}
-                        max={50}
-                        value={targetScore}
-                        className="lab-input"
-                        onChange={(e) => setTargetScore(Math.max(20, Math.min(50, Number(e.target.value) || 40)))}
-                      />
-                    </label>
-                    <label htmlFor="weeks-left-input" className="flex flex-col gap-1 text-sm font-semibold">
-                      <span>{t.rmWeeks}</span>
-                      <input
-                        id="weeks-left-input"
-                        name="weeksLeft"
-                        type="number"
-                        min={1}
-                        max={24}
-                        value={weeksLeft}
-                        className="lab-input"
-                        onChange={(e) => setWeeksLeft(Math.max(1, Math.min(24, Number(e.target.value) || 6)))}
-                      />
-                    </label>
-                  </div>
-
-                  <div>
-                    <span className="block font-semibold text-sm mb-2">{t.rmWeak}</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {untTopicIds.map((id) => (
-                        <Button
-                          key={id}
-                          type="button"
-                          size="sm"
-                          variant={weakTopics.includes(id) ? "default" : "outline"}
-                          aria-pressed={weakTopics.includes(id)}
-                          onClick={() => toggleWeakTopic(id)}
-                        >
-                          {topicName(id, lang)}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <span className="small font-semibold block mb-1">{t.quickLabel}</span>
-                    <div className="quick-prompts">
-                      {t.rmPresets.map((preset) => (
+                  {/* TAB 2: ПРАКТИКА (Step-by-step solving -> Contextual Feedback right next to answer) */}
+                  <TabsContent value="practice">
+                    <div className="practice-header-bar">
+                      <span className="practice-counter">
+                        {activeQ < 3
+                          ? `${t.taskProgress} ${activeQ + 1} ${t.ofLabel} ${lesson.questions.length}`
+                          : t.transferTitle}
+                      </span>
+                      <div className="practice-step-dots" role="tablist" aria-label={t.practice}>
+                        {lesson.questions.map((q, idx) => {
+                          const done = checkedMap[idx] && answers[idx] === String(q.correct);
+                          const hasErr = checkedMap[idx] && answers[idx] !== String(q.correct);
+                          return (
+                            <button
+                              key={q.text}
+                              type="button"
+                              role="tab"
+                              aria-selected={activeQ === idx}
+                              className={`practice-dot ${activeQ === idx ? "active" : ""} ${done ? "done" : ""} ${hasErr ? "err" : ""}`}
+                              onClick={() => {
+                                setActiveQ(idx);
+                                setPracticeNotice(false);
+                              }}
+                            >
+                              {idx + 1}
+                            </button>
+                          );
+                        })}
                         <button
-                          key={preset}
                           type="button"
-                          className="quick-pill"
+                          role="tab"
+                          aria-selected={activeQ === 3}
+                          className={`practice-dot extra ${activeQ === 3 ? "active" : ""} ${transferStatus === "right" ? "done" : ""}`}
                           onClick={() => {
-                            setGoalNote(preset);
-                            setRmError("");
+                            setActiveQ(3);
+                            setPracticeNotice(false);
                           }}
                         >
-                          {preset}
+                          {t.extraTaskTab}
                         </button>
-                      ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <label htmlFor="roadmap-goal" className="font-semibold text-sm">
-                    {t.rmGoal}
-                  </label>
-                  <textarea
-                    id="roadmap-goal"
-                    name="roadmapGoal"
-                    value={goalNote}
-                    maxLength={400}
-                    placeholder={t.rmGoalPlaceholder}
-                    onChange={(e) => {
-                      setGoalNote(e.target.value);
-                      if (rmError) setRmError("");
-                    }}
-                  />
-                  <span className="small">{goalNote.length}/400</span>
+                    {activeQ < 3 ? (
+                      <div className="practice-stage" key={`q-${activeQ}`}>
+                        <div className="practice-math-stem" id={`q${activeQ}`}>
+                          {currentQuestionObj.text}
+                        </div>
 
-                  <label className="checkline" onClick={() => setRmError("")}>
-                    <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
-                    <span>{t.adult}</span>
-                  </label>
-                  <label className="checkline" onClick={() => setRmError("")}>
-                    <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
-                    <span>
-                      {t.consent} <a href="/privacy" onClick={(e) => e.stopPropagation()}>{t.privacy}</a>
-                    </span>
-                  </label>
+                        <RadioGroup
+                          aria-labelledby={`q${activeQ}`}
+                          value={selectedVal ?? ""}
+                          disabled={isCurrentChecked}
+                          onValueChange={(v) => {
+                            setPracticeNotice(false);
+                            setAnswers((prev) => ({ ...prev, [activeQ]: v }));
+                          }}
+                        >
+                          {currentQuestionObj.options.map((option, j) => {
+                            const isSelected = selectedVal === String(j);
+                            const isOptionCorrect = j === currentQuestionObj.correct;
+                            const stateClass = isCurrentChecked
+                              ? isOptionCorrect
+                                ? "option-correct"
+                                : isSelected
+                                  ? "option-wrong"
+                                  : ""
+                              : "";
+                            return (
+                              <label
+                                className={`option ${stateClass}`}
+                                key={option}
+                                data-selected={isSelected}
+                                onClick={() => {
+                                  if (!isCurrentChecked) {
+                                    setPracticeNotice(false);
+                                    setAnswers((prev) => ({ ...prev, [activeQ]: String(j) }));
+                                  }
+                                }}
+                              >
+                                <RadioGroupItem value={String(j)} id={`q${activeQ}a${j}`} />
+                                <span className="option-math-text">{option}</span>
+                              </label>
+                            );
+                          })}
+                        </RadioGroup>
 
-                  <div>
-                    <Button type="submit" disabled={rmBusy}>
-                      <Compass size={15} />
-                      {rmBusy ? t.loading : t.rmGenerate}
-                    </Button>
-                  </div>
-                </form>
+                        {practiceNotice && !isCurrentChecked && selectedVal === undefined && (
+                          <div role="status" className="feedback wrong">
+                            {t.chooseOptionPrompt}
+                          </div>
+                        )}
 
-                {rmError && (
-                  <p role="alert" className="error">
-                    {rmError}
-                  </p>
-                )}
+                        {/* Contextual feedback right next to the answer */}
+                        {isCurrentChecked && (
+                          <div role="status" className={`feedback ${isCurrentCorrect ? "correct" : "wrong"}`}>
+                            <strong className="feedback-heading">
+                              {isCurrentCorrect ? t.correctTitle : t.wrongTitle}
+                            </strong>
+                            <p className="feedback-body">{diagnosticMessage}</p>
 
-                {aiRoadmap && (
-                  <section aria-live="polite" className="response mt-4">
-                    <div className={`source-badge ${aiRoadmap.source === "claude" ? "live" : "preview"}`}>
-                      {aiRoadmap.source === "claude" ? t.badgeLive : t.badgePreview}
+                            {!isCurrentCorrect && expandedErrorMap[activeQ] && (
+                              <div className="error-breakdown-note">
+                                <strong>{t.ruleBreakdownTitle}</strong>
+                                <p>{lesson.rule}</p>
+                                <p className="error-breakdown-solution">{currentQuestionObj.why}</p>
+                                <a className="quiet-inline-link" href={`/lab?lang=${lang}&topic=${topic}`}>
+                                  {t.openLabForTopic} →
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Single clear primary action depending on state */}
+                        <div className="practice-actions">
+                          {!isCurrentChecked ? (
+                            <Button onClick={() => checkCurrentQuestion(activeQ)}>
+                              <CheckCircle2 size={16} />
+                              {t.checkOne}
+                            </Button>
+                          ) : isCurrentCorrect ? (
+                            <Button
+                              onClick={() => {
+                                setPracticeNotice(false);
+                                setActiveQ((prev) => Math.min(3, prev + 1));
+                              }}
+                            >
+                              {t.nextTaskBtn}
+                              <ArrowRight size={16} />
+                            </Button>
+                          ) : (
+                            <>
+                              {!expandedErrorMap[activeQ] && (
+                                <Button
+                                  onClick={() =>
+                                    setExpandedErrorMap((prev) => ({ ...prev, [activeQ]: true }))
+                                  }
+                                >
+                                  {t.analyzeErrorBtn}
+                                </Button>
+                              )}
+                              <Button
+                                variant={expandedErrorMap[activeQ] ? "default" : "outline"}
+                                onClick={() => retryQuestion(activeQ)}
+                              >
+                                <RotateCcw size={15} />
+                                {t.tryAgainBtn}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+
+                        {solvedCount === 3 && (
+                          <p className="notebook-margin-note mt-4">{t.allTasksSolved}</p>
+                        )}
+                      </div>
+                    ) : (
+                      /* Step 4 inside Practice: Dynamic Transfer Problem with new numbers */
+                      <div className="practice-stage">
+                        <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+                          <span className="rule-label">{t.transferTitle}</span>
+                          <span className="topic-index-label">#{practiceSeed + 1}/24</span>
+                        </div>
+                        <p className="lesson-intro mb-3">{t.transferSub}</p>
+
+                        <div className="practice-math-stem">{transferChallenge.transfer}</div>
+
+                        <form
+                          className="transfer-form"
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            checkTransfer();
+                          }}
+                        >
+                          <div className="transfer-input-row">
+                            <input
+                              id="transfer-answer-input"
+                              name="transferAnswer"
+                              type="text"
+                              inputMode="decimal"
+                              className="lab-input"
+                              value={transferInput}
+                              maxLength={40}
+                              placeholder={transferChallenge.unit || "0"}
+                              aria-label={t.transferTitle}
+                              onChange={(e) => {
+                                setTransferInput(e.target.value);
+                                setTransferStatus("");
+                              }}
+                            />
+                            <Button type="submit">{t.transferCheck}</Button>
+                          </div>
+                        </form>
+
+                        {transferStatus && (
+                          <div
+                            role="status"
+                            className={`feedback mt-3 ${transferStatus === "right" ? "correct" : "wrong"}`}
+                          >
+                            <strong className="feedback-heading">
+                              {transferStatus === "right" ? t.correctTitle : t.wrongTitle}
+                            </strong>
+                            <p className="feedback-body">
+                              {transferStatus === "right"
+                                ? `${t.transferRight} (${transferChallenge.solution})`
+                                : transferStatus === "invalid"
+                                  ? t.transferInvalid
+                                  : t.transferWrong}
+                            </p>
+                            {transferStatus === "wrong" && showTransferRule && (
+                              <div className="error-breakdown-note">
+                                <strong>{t.ruleBreakdownTitle}</strong>
+                                <p>{lesson.rule}</p>
+                                <p className="error-breakdown-solution">{transferChallenge.hints[0]}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="practice-actions">
+                          {transferStatus === "right" ? (
+                            <>
+                              <Button
+                                onClick={() => {
+                                  setPracticeSeed((s) => (s + 1) % 24);
+                                  setTransferInput("");
+                                  setTransferStatus("");
+                                  setShowTransferRule(false);
+                                }}
+                              >
+                                {t.nextTaskBtn}
+                                <ArrowRight size={16} />
+                              </Button>
+                              <button
+                                type="button"
+                                className="quiet-text-action"
+                                onClick={() => selectTopic(nextTopicId)}
+                              >
+                                {t.nextTopicBtn} →
+                              </button>
+                            </>
+                          ) : transferStatus === "wrong" ? (
+                            <>
+                              {!showTransferRule && (
+                                <Button onClick={() => setShowTransferRule(true)}>
+                                  {t.analyzeErrorBtn}
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  setPracticeSeed((s) => (s + 1) % 24);
+                                  setTransferInput("");
+                                  setTransferStatus("");
+                                  setShowTransferRule(false);
+                                }}
+                              >
+                                {t.transferNext}
+                              </Button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              className="quiet-text-action"
+                              onClick={() => {
+                                setPracticeSeed((s) => (s + 1) % 24);
+                                setTransferInput("");
+                                setTransferStatus("");
+                                setShowTransferRule(false);
+                              }}
+                            >
+                              {t.transferNext}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  {/* TAB 3: ЗАДАТЬ ВОПРОС */}
+                  <TabsContent value="ai">
+                    <h2 className="steps-heading mt-0">{t.aiTitle}</h2>
+                    <p className="lesson-intro mb-4">{t.aiSub}</p>
+
+                    <div className="mb-4">
+                      <span className="rule-label block mb-2">{t.quickLabel}</span>
+                      <div className="quick-prompts">
+                        {t.quickQuestions.map((qq) => (
+                          <button
+                            key={qq}
+                            type="button"
+                            className="quick-pill"
+                            onClick={() => {
+                              setQuestion(qq);
+                              setError("");
+                            }}
+                          >
+                            {qq}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <strong className="block text-base mb-1">{t.rmClaudeTitle}</strong>
-                    <p className="mt-1 mb-3">{aiRoadmap.summary}</p>
-                    <ul className="list-disc pl-5 my-2 space-y-1">
-                      {aiRoadmap.priorityModules.map((pm) => (
-                        <li key={pm.topic}>
-                          <strong>{topicName(pm.topic, lang)}:</strong> {pm.reason} → <em>{pm.recommendedAction}</em>
-                        </li>
-                      ))}
-                    </ul>
-                    <strong className="block mt-3">{t.rmMilestones}</strong>
-                    <ol className="list-decimal pl-5 my-2 space-y-1">
-                      {aiRoadmap.weeklyMilestones.map((m, idx) => (
-                        <li key={idx}>{m}</li>
-                      ))}
-                    </ol>
-                    <strong className="block mt-3">{t.rmHabit}</strong>
-                    <p className="mt-1 mb-0">{aiRoadmap.dailyHabit}</p>
-                  </section>
-                )}
-              </TabsContent>
-            </Tabs>
+
+                    <form
+                      className="ai-form"
+                      noValidate
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void ask();
+                      }}
+                    >
+                      <label htmlFor="learner-question" className="form-label">
+                        {t.question} ({lesson.title})
+                      </label>
+                      <textarea
+                        id="learner-question"
+                        name="learnerQuestion"
+                        value={question}
+                        maxLength={600}
+                        placeholder={t.placeholder}
+                        onChange={(e) => {
+                          setQuestion(e.target.value);
+                          if (error) setError("");
+                        }}
+                      />
+                      <span className="small">{question.length}/600</span>
+                      <label className="checkline" onClick={() => setError("")}>
+                        <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
+                        <span>{t.adult}</span>
+                      </label>
+                      <label className="checkline" onClick={() => setError("")}>
+                        <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
+                        <span>
+                          {t.consent}{" "}
+                          <a href="/privacy" onClick={(e) => e.stopPropagation()}>
+                            {t.privacy}
+                          </a>
+                        </span>
+                      </label>
+                      <div>
+                        <Button type="submit" disabled={busy}>
+                          {busy ? t.loading : t.ask}
+                        </Button>
+                      </div>
+                    </form>
+                    <p className="small mt-3">{t.pilot}</p>
+                    {error && (
+                      <p role="alert" className="feedback wrong mt-3">
+                        {error}
+                      </p>
+                    )}
+                    {answer && (
+                      <section aria-live="polite" className="response">
+                        <span className="rule-label">
+                          {answer.source === "claude" ? t.badgeLive : t.badgePreview}
+                        </span>
+                        <p className="mt-2 mb-3">{answer.explanation}</p>
+                        <strong>
+                          {lang === "ru"
+                            ? "Проверь себя:"
+                            : lang === "kk"
+                              ? "Өзіңді тексер:"
+                              : "O‘zingizni tekshiring:"}
+                        </strong>
+                        <p className="mt-1 mb-0">{answer.hint}</p>
+                      </section>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </article>
+            </div>
+          </>
+        ) : tab === "exam" ? (
+          <section className="surface section-surface" aria-label={t.navExam}>
+            <UntExamView
+              lang={lang}
+              lastSavedAttempt={untStorage.lastAttempt}
+              initialTopic={topic}
+              onCompleteExam={handleCompleteUntExam}
+              onOpenGraph={(focusTopic) => {
+                if (focusTopic) setTopic(focusTopic);
+                setTab("graph");
+              }}
+              onOpenLesson={openTopicLesson}
+            />
           </section>
-        </div>
+        ) : tab === "graph" ? (
+          <section className="surface section-surface" aria-label={t.navGraph}>
+            <KnowledgeGraphView
+              lang={lang}
+              progress={labProgress}
+              untAttempt={untStorage.lastAttempt}
+              weakTopics={weakTopics}
+              selectedTopic={topic}
+              onSelectTopic={setTopic}
+              onOpenLesson={openTopicLesson}
+              onOpenExam={() => setTab("exam")}
+              onToggleWeakTopic={toggleWeakTopic}
+            />
+          </section>
+        ) : (
+          <section className="surface section-surface" aria-label={t.navPlan}>
+            <header className="lesson-head">
+              <h1 className="lesson-title">{t.rmTitle}</h1>
+              <p className="lesson-intro">{t.rmSub}</p>
+            </header>
+
+            <div className="rule mb-6">
+              <span className="rule-label">{t.rmBaseTitle}</span>
+              <p className="small mt-1 mb-2">
+                {lang === "ru"
+                  ? `Цель: ${targetScore}/50 баллов · Срок: ${weeksLeft} нед. · Тем в неделю: ~${baseline.topicsPerWeek}`
+                  : lang === "kk"
+                    ? `Мақсат: ${targetScore}/50 балл · Мерзімі: ${weeksLeft} апта · Аптасына: ~${baseline.topicsPerWeek} тақырып`
+                    : `Maqsad: ${targetScore}/50 ball · Muddat: ${weeksLeft} hafta · Haftasiga: ~${baseline.topicsPerWeek} mavzu`}
+              </p>
+              <p className="small font-medium mt-2">{t.rmConsolidation}:</p>
+              {baseline.masteredTopics.length === 0 ? (
+                <p className="small m-0">{t.rmConsolidationEmpty}</p>
+              ) : (
+                <p className="small m-0">{baseline.masteredTopics.map((id) => topicName(id, lang)).join(", ")}</p>
+              )}
+              <p className="small font-medium mt-3">{t.rmPhase1}:</p>
+              <ul className="small list-disc pl-5">
+                {baseline.priorityModules
+                  .filter((m) => m.phase === 1)
+                  .map((m) => (
+                    <li key={m.topic}>
+                      <button type="button" className="quiet-inline-link" onClick={() => selectTopic(m.topic)}>
+                        {m.title}
+                      </button>{" "}
+                      ({m.soloCount}/2)
+                    </li>
+                  ))}
+              </ul>
+              <p className="small font-medium mt-3">{t.rmPhase2}:</p>
+              <ul className="small list-disc pl-5">
+                {baseline.priorityModules
+                  .filter((m) => m.phase === 2)
+                  .map((m) => (
+                    <li key={m.topic}>
+                      <button type="button" className="quiet-inline-link" onClick={() => selectTopic(m.topic)}>
+                        {m.title}
+                      </button>{" "}
+                      ({m.soloCount}/2)
+                    </li>
+                  ))}
+              </ul>
+            </div>
+
+            <form
+              className="ai-form"
+              noValidate
+              onSubmit={(e) => {
+                e.preventDefault();
+                void askRoadmap();
+              }}
+            >
+              <div className="flex flex-wrap gap-4">
+                <label htmlFor="target-score-input" className="flex flex-col gap-1 text-sm font-medium">
+                  <span>{t.rmTarget}</span>
+                  <input
+                    id="target-score-input"
+                    name="targetScore"
+                    type="number"
+                    min={20}
+                    max={50}
+                    value={targetScore}
+                    className="lab-input"
+                    onChange={(e) => setTargetScore(Math.max(20, Math.min(50, Number(e.target.value) || 40)))}
+                  />
+                </label>
+                <label htmlFor="weeks-left-input" className="flex flex-col gap-1 text-sm font-medium">
+                  <span>{t.rmWeeks}</span>
+                  <input
+                    id="weeks-left-input"
+                    name="weeksLeft"
+                    type="number"
+                    min={1}
+                    max={24}
+                    value={weeksLeft}
+                    className="lab-input"
+                    onChange={(e) => setWeeksLeft(Math.max(1, Math.min(24, Number(e.target.value) || 6)))}
+                  />
+                </label>
+              </div>
+
+              <div>
+                <span className="block font-medium text-sm mb-2">{t.rmWeak}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {untTopicIds.map((id) => (
+                    <Button
+                      key={id}
+                      type="button"
+                      size="sm"
+                      variant={weakTopics.includes(id) ? "default" : "outline"}
+                      aria-pressed={weakTopics.includes(id)}
+                      onClick={() => toggleWeakTopic(id)}
+                    >
+                      {topicName(id, lang)}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="rule-label block mb-1.5">{t.quickLabel}</span>
+                <div className="quick-prompts">
+                  {t.rmPresets.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      className="quick-pill"
+                      onClick={() => {
+                        setGoalNote(preset);
+                        setRmError("");
+                      }}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label htmlFor="roadmap-goal" className="form-label">
+                {t.rmGoal}
+              </label>
+              <textarea
+                id="roadmap-goal"
+                name="roadmapGoal"
+                value={goalNote}
+                maxLength={400}
+                placeholder={t.rmGoalPlaceholder}
+                onChange={(e) => {
+                  setGoalNote(e.target.value);
+                  if (rmError) setRmError("");
+                }}
+              />
+              <span className="small">{goalNote.length}/400</span>
+
+              <label className="checkline" onClick={() => setRmError("")}>
+                <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
+                <span>{t.adult}</span>
+              </label>
+              <label className="checkline" onClick={() => setRmError("")}>
+                <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
+                <span>
+                  {t.consent}{" "}
+                  <a href="/privacy" onClick={(e) => e.stopPropagation()}>
+                    {t.privacy}
+                  </a>
+                </span>
+              </label>
+
+              <div>
+                <Button type="submit" disabled={rmBusy}>
+                  {rmBusy ? t.loading : t.rmGenerate}
+                </Button>
+              </div>
+            </form>
+
+            {rmError && (
+              <p role="alert" className="feedback wrong mt-3">
+                {rmError}
+              </p>
+            )}
+
+            {aiRoadmap && (
+              <section aria-live="polite" className="response mt-4">
+                <span className="rule-label">
+                  {aiRoadmap.source === "claude" ? t.badgeLive : t.badgePreview}
+                </span>
+                <h2 className="steps-heading mt-1 mb-2">{t.rmClaudeTitle}</h2>
+                <p className="mt-1 mb-3">{aiRoadmap.summary}</p>
+                <ul className="list-disc pl-5 my-2 space-y-1">
+                  {aiRoadmap.priorityModules.map((pm) => (
+                    <li key={pm.topic}>
+                      <strong>{topicName(pm.topic, lang)}:</strong> {pm.reason} → <em>{pm.recommendedAction}</em>
+                    </li>
+                  ))}
+                </ul>
+                <strong className="block mt-3">{t.rmMilestones}</strong>
+                <ol className="list-decimal pl-5 my-2 space-y-1">
+                  {aiRoadmap.weeklyMilestones.map((m, idx) => (
+                    <li key={idx}>{m}</li>
+                  ))}
+                </ol>
+                <strong className="block mt-3">{t.rmHabit}</strong>
+                <p className="mt-1 mb-0">{aiRoadmap.dailyHabit}</p>
+              </section>
+            )}
+          </section>
+        )}
       </main>
       <SiteFooter lang={lang} topic={topic} onSelectTab={setTab} />
     </div>

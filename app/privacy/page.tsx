@@ -1,8 +1,8 @@
 export default function Privacy() {
   return (
-    <main className="document agy-shell">
+    <main className="document textbook-shell">
       <a href="/">← BilimAI · к урокам и практике</a>
-      <div className="document-card agy-floating-island">
+      <div className="document-card">
         <span className="eyebrow">Приватность и данные · 18+</span>
         <h1>Данные и приватность</h1>
         <p>

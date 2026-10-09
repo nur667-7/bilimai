@@ -15,7 +15,7 @@ import {
   ProviderError,
   quotaSQL
 } from '../lib/claude.ts';
-import { lessons, untTopicIds } from '../lib/lessons.ts';
+import { lessons, untTopicIds, getOptionFeedback } from '../lib/lessons.ts';
 import {
   untQuestions,
   scoreUntQuestion,
@@ -268,6 +268,19 @@ test('all three languages cover all 10 UNT topics and answer keys match across l
       lessons.ru[i].questions.map((q) => q.correct),
       lessons.kk[i].questions.map((q) => q.correct)
     );
+  }
+  for (const language of ['ru', 'kk', 'uz']) {
+    for (const lesson of lessons[language]) {
+      lesson.questions.forEach((q, qi) => {
+        q.options.forEach((_, oi) => {
+          const fb = getOptionFeedback(lesson.id, qi, oi, language);
+          assert.ok(fb && fb.length > 12, `Missing feedback for ${lesson.id} q${qi} opt${oi} (${language})`);
+          if (oi !== q.correct) {
+            assert.notEqual(fb, q.explanation, `Distractor ${oi} in ${lesson.id} q${qi} (${language}) should have specific error diagnosis`);
+          }
+        });
+      });
+    }
   }
 });
 
