@@ -122,7 +122,7 @@ export function createDemoProfile(role: "student" | "teacher", lang: Language = 
     return {
       id: "teacher-101",
       name: lang === "kk" ? "Айгүл Сәтбаева" : lang === "uz" ? "Aziza Karimova" : "Айгуль Сатпаева",
-      identifier: "teacher@aniq.kz",
+      identifier: "teacher@bilimai.dpdns.org",
       role: "teacher",
       grade: "teacher",
       targetUniversity: "kbtu",

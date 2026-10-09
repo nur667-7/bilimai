@@ -10,9 +10,9 @@ type SiteFooterProps = {
 const FOOTER_COPY = {
   ru: {
     summary:
-      "Aniq AI (ex-BilimAI) — платформа точной ИИ-диагностики математического мышления и подготовки к ЕНТ (ҰБТ): все 16 разделов НЦТ РК, Рентген черновика, 1 152 сценария поиска ошибки, Радар гранта РК и сократический ИИ-тьютор (Claude API).",
+      "BilimAI — единая ИИ-экосистема подготовки ко всем 12 предметам ЕНТ (ҰБТ): 10 вариантов × 40 вопросов (4 800 заданий), Рентген черновика, 1 152 сценария поиска ошибки, Радар гранта РК, 6 научных методик и сократический ИИ-тьютор (Claude API).",
     navLesson: "Учебник и практика",
-    navXray: "🔬 Рентген & Грант РК",
+    navXray: "Рентген & Грант РК",
     navGraph: "Карта 16 тем",
     navExam: "Пробное ЕНТ",
     navPlan: "Мой план",
@@ -24,9 +24,9 @@ const FOOTER_COPY = {
   },
   kk: {
     summary:
-      "Aniq AI (ex-BilimAI) — орыс, қазақ және өзбек тілдеріндегі ҰБТ математикасына (ҰТО 16 бөлімі) дайындыққа арналған дәл диагностикалық ЖИ-платформа: шешім рентгені, 1 152 қате табу есебі және ҚР грант радары.",
+      "BilimAI — орыс, қазақ және өзбек тілдеріндегі барлық 12 ҰБТ пәніне (10 нұсқа × 40 сұрақ = 4 800 тапсырма) дайындыққа арналған дәл диагностикалық ЖИ-платформа: шешім рентгені, 1 152 қате табу есебі және ҚР грант радары.",
     navLesson: "Оқулық пен жаттығу",
-    navXray: "🔬 Рентген & ҚР Гранты",
+    navXray: "Рентген & ҚР Гранты",
     navGraph: "16 тақырып картасы",
     navExam: "Байқау ҰБТ",
     navPlan: "Менің жоспарым",
@@ -38,9 +38,9 @@ const FOOTER_COPY = {
   },
   uz: {
     summary:
-      "Aniq AI (ex-BilimAI) — rus, qozoq va o‘zbek tillarida matematika bo‘yicha (16 ta bo‘lim) aniq diagnostik SI-platforma: qoralama rentgeni, 1 152 ta xato topish masalasi va grant radari.",
+      "BilimAI — rus, qozoq va o‘zbek tillarida barcha 12 ta UBT fani (10 variant × 40 savol = 4 800 topshiriq) bo‘yicha aniq diagnostik SI-platforma: qoralama rentgeni, 1 152 ta xato topish masalasi va grant radari.",
     navLesson: "Darslik va mashq",
-    navXray: "🔬 Rentgen & Grant",
+    navXray: "Rentgen & Grant",
     navGraph: "16 mavzu xaritasi",
     navExam: "Sinov imtihoni",
     navPlan: "Mening rejam",
@@ -66,9 +66,9 @@ export function SiteFooter({ lang, topic = "linear", onSelectTab }: SiteFooterPr
       <div className="site-footer-inner">
         <div className="site-footer-brand">
           <div className="flex items-center gap-2 mb-1">
-            <span className="aniq-logo-badge w-6 h-6 text-xs">A</span>
+            <span className="aniq-logo-badge w-6 h-6 text-xs">B</span>
             <strong>
-              Aniq<span className="text-brand">AI</span>
+              Bilim<span className="text-brand">AI</span>
             </strong>
           </div>
           <p>{c.summary}</p>

@@ -380,7 +380,7 @@ test('Obsidian knowledge graph distinguishes root_gap from blocked_gap and build
   assert.equal(state.studyPlan[0].topic, 'linear');
 });
 
-test('Aniq AI Draft X-Ray (untTrapCases & analyzeCustomDraft) and KZ University Grant Radar work across ru, kk, and uz', () => {
+test('BilimAI Draft X-Ray (untTrapCases & analyzeCustomDraft) and KZ University Grant Radar work across ru, kk, and uz', () => {
   assert.equal(untTrapCases.length, 6);
   for (const trap of untTrapCases) {
     assert.ok(trap.fractureIndex >= 0 && trap.fractureIndex <= 3);

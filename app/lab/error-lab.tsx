@@ -430,9 +430,9 @@ export default function ErrorLab() {
           <div className="header-top-row">
             <a className="brand" href={`/?lang=${lang}&topic=${topic}`}>
               <span className="brand-mark aniq-logo-badge" aria-hidden="true">
-                A
+                B
               </span>
-              <span className="brand-name">Aniq AI</span>
+              <span className="brand-name">BilimAI</span>
               <span className="brand-sub">ҰБТ · ЕНТ · X-Ray</span>
             </a>
 

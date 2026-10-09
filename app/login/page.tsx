@@ -12,10 +12,10 @@ import {
 
 const loginCopy = {
   ru: {
-    title: "Вход в платформу Aniq AI",
+    title: "Вход в платформу BilimAI",
     sub: "Войдите по Email или ID ученика, чтобы синхронизировать Радар гранта РК, граф 16 тем и Рентген черновика",
     idLabel: "Email или ID ученика",
-    idPlaceholder: "student@aniq.kz или 1001",
+    idPlaceholder: "student@bilimai.dpdns.org или 1001",
     passLabel: "Пароль",
     passPlaceholder: "••••••••",
     submitBtn: "Войти в кабинет",
@@ -27,10 +27,10 @@ const loginCopy = {
     backHome: "← На главную"
   },
   kk: {
-    title: "Aniq AI платформасына кіру",
+    title: "BilimAI платформасына кіру",
     sub: "ҚР грант радарын, 16 тақырып графын және шешім рентгенін сақтау үшін Email немесе оқушы ID-ін енгізіңіз",
     idLabel: "Email немесе оқушы ID-і",
-    idPlaceholder: "student@aniq.kz немесе 1001",
+    idPlaceholder: "student@bilimai.dpdns.org немесе 1001",
     passLabel: "Құпиясөз",
     passPlaceholder: "••••••••",
     submitBtn: "Кабинетке кіру",
@@ -42,10 +42,10 @@ const loginCopy = {
     backHome: "← Басты бетке"
   },
   uz: {
-    title: "Aniq AI platformasiga kirish",
+    title: "BilimAI platformasiga kirish",
     sub: "Grant radari, 16 mavzu xaritasi va qoralama rentgenini saqlash uchun Email yoki o‘quvchi ID raqamini kiriting",
     idLabel: "Email yoki o‘quvchi ID raqami",
-    idPlaceholder: "student@aniq.kz yoki 1001",
+    idPlaceholder: "student@bilimai.dpdns.org yoki 1001",
     passLabel: "Parol",
     passPlaceholder: "••••••••",
     submitBtn: "Kabinetga kirish",
@@ -136,9 +136,9 @@ export default function LoginPage() {
 
       <div className="aniq-auth-container">
         <a className="aniq-brand-logo justify-center mb-7" href={`/?lang=${lang}`}>
-          <span className="aniq-logo-badge">A</span>
+          <span className="aniq-logo-badge">B</span>
           <span>
-            Aniq<span className="text-brand">AI</span>
+            Bilim<span className="text-brand">AI</span>
           </span>
           <span className="brand-sub">ЕНТ · ҰБТ</span>
         </a>

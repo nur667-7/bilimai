@@ -1,7 +1,7 @@
 {
-  "name": "Aniq AI — Математика ЕНТ (ҰБТ)",
-  "short_name": "Aniq AI",
-  "description": "Точная диагностика излома логики (Draft X-Ray), Радар гранта ВУЗов РК, 16 разделов НЦТ РК и сократический ИИ-тьютор на базе Claude API.",
+  "name": "BilimAI — Единая ИИ-экосистема ЕНТ (ҰБТ)",
+  "short_name": "BilimAI",
+  "description": "Все 12 предметов ЕНТ (10 вариантов × 40 вопросов), Рентген черновика (Draft X-Ray), Радар гранта ВУЗов РК и сократический ИИ-тьютор на базе Claude API.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#faf5ec",

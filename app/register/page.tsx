@@ -13,7 +13,7 @@ import {
 const registerCopy = {
   ru: {
     badge: "Открытая регистрация без ограничений · Госстандарт РК",
-    title: "Создать аккаунт в Aniq AI",
+    title: "Создать аккаунт в BilimAI",
     sub: "Настройте свой паспорт абитуриента ЕНТ или кабинет учителя за 20 секунд — и сразу получите прогноз гранта РК и карту 16 разделов.",
     roleLabel: "Выберите вашу роль",
     roleStudent: "Ученик / Абитуриент ЕНТ",
@@ -21,7 +21,7 @@ const registerCopy = {
     nameLabel: "Имя и фамилия (или псевдоним)",
     namePlaceholder: "Алихан Нурланов",
     idLabel: "Email или школьный ID",
-    idPlaceholder: "student@aniq.kz или 1001",
+    idPlaceholder: "student@bilimai.dpdns.org или 1001",
     gradeLabel: "Класс обучения",
     uniLabel: "Целевой ВУЗ Казахстана (для Радара гранта)",
     targetScoreLabel: "Целевой балл по профильной математике (из 50)",
@@ -34,7 +34,7 @@ const registerCopy = {
   },
   kk: {
     badge: "Ашық тіркелу · ҚР МЖМБС стандарты",
-    title: "Aniq AI аккаунтын ашу",
+    title: "BilimAI аккаунтын ашу",
     sub: "20 секунд ішінде ҰБТ талапкері паспортын немесе мұғалім кабинетін баптап, ҚР грант радары мен 16 бөлім картасын алыңыз.",
     roleLabel: "Рөліңізді таңдаңыз",
     roleStudent: "Оқушы / ҰБТ талапкері",
@@ -42,7 +42,7 @@ const registerCopy = {
     nameLabel: "Аты-жөні (немесе лақап ат)",
     namePlaceholder: "Әлихан Нұрланов",
     idLabel: "Email немесе мектеп ID-і",
-    idPlaceholder: "student@aniq.kz немесе 1001",
+    idPlaceholder: "student@bilimai.dpdns.org немесе 1001",
     gradeLabel: "Оқу сыныбы",
     uniLabel: "Мақсатты ҚР ЖОО (Грант радары үшін)",
     targetScoreLabel: "Профильдік математикадан мақсатты балл (50-ден)",
@@ -55,7 +55,7 @@ const registerCopy = {
   },
   uz: {
     badge: "Ochiq ro‘yxatdan o‘tish · Davlat standarti",
-    title: "Aniq AI da akkaunt yaratish",
+    title: "BilimAI da akkaunt yaratish",
     sub: "20 soniyada abituriyent pasportini yoki o‘qituvchi kabinetini sozlang va grant radari hamda 16 bo‘lim xaritasiga ega bo‘ling.",
     roleLabel: "Rolingizni tanlang",
     roleStudent: "O‘quvchi / Abituriyent",
@@ -63,7 +63,7 @@ const registerCopy = {
     nameLabel: "Ism va familiya",
     namePlaceholder: "Sardor Alimov",
     idLabel: "Email yoki o‘quvchi ID raqami",
-    idPlaceholder: "student@aniq.kz yoki 1001",
+    idPlaceholder: "student@bilimai.dpdns.org yoki 1001",
     gradeLabel: "O‘quv sinfi",
     uniLabel: "Maqsadli OTM (Grant radari uchun)",
     targetScoreLabel: "Matematikadan maqsadli ball (50 dan)",
@@ -151,9 +151,9 @@ export default function RegisterPage() {
 
       <div className="aniq-auth-container max-w-lg">
         <a className="aniq-brand-logo justify-center mb-6" href={`/?lang=${lang}`}>
-          <span className="aniq-logo-badge">A</span>
+          <span className="aniq-logo-badge">B</span>
           <span>
-            Aniq<span className="text-brand">AI</span>
+            Bilim<span className="text-brand">AI</span>
           </span>
           <span className="brand-sub">ЕНТ · ҰБТ</span>
         </a>

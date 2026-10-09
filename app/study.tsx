@@ -92,22 +92,22 @@ const copy = {
     welcomeTitle: "Понимать логику, находить ловушки и",
     welcomeHighlight: "брать государственный грант на ЕНТ",
     welcomeDesc:
-      "Платформа точной когнитивной диагностики Aniq AI: все 12 предметов ЕНТ (по 10 полных вариантов из 40 вопросов = 50 баллов), построчный Рентген черновика, 1 152 задачи на поиск излома логики, граф знаний и 6 доказательных научных методик обучения.",
+      "Платформа точной когнитивной диагностики BilimAI: все 12 предметов ЕНТ (по 10 полных вариантов из 40 вопросов = 50 баллов), построчный Рентген черновика, 1 152 задачи на поиск излома логики, граф знаний и 6 доказательных научных методик обучения.",
     welcomeCtaRegister: "Создать паспорт абитуриента",
     welcomeCtaXray: "Рентген черновика",
     welcomeCtaExam: "Пробное ЕНТ (12 предметов)",
     welcomeCtaGraph: "Карта 16 тем",
     welcomeCtaLab: "Тренировка ошибок",
     welcomeHide: "Свернуть витрину",
-    welcomeShow: "Витрина Aniq AI",
+    welcomeShow: "Витрина BilimAI",
     compactWelcomeLabel: "Быстрый старт ЕНТ (12 предметов × 10 вариантов по 40 вопр.):",
     allSubjectsTitle: "Все 12 официальных предметов ЕНТ (НЦТ РК) · 4 800 заданий",
     allSubjectsSub:
       "Выберите любой профильный или обязательный предмет ЕНТ: внутри каждого доступны 10 полных вариантов по 40 вопросов (50 баллов) всех 4 форматов НЦТ и полный справочник формул, дат и законов.",
-    bentoKicker: "ШЕСТЬ МОДУЛЕЙ ANIQ AI",
+    bentoKicker: "ШЕСТЬ МОДУЛЕЙ BILIMAI",
     bentoTitle: "Инженерная архитектура подготовки к ЕНТ без «AI-слопа»",
     scienceKicker: "ДОКАЗАТЕЛЬНАЯ КОГНИТИВНАЯ НАУКА В ЯДРЕ ПЛАТФОРМЫ",
-    scienceTitle: "6 научных методик мировых учёных, встроенных в алгоритмы Aniq AI",
+    scienceTitle: "6 научных методик мировых учёных, встроенных в алгоритмы BilimAI",
     scienceSub:
       "Каждое действие на платформе опирается на математические модели когнитивной психологии и педагогических исследований Чикагского университета, ETH Zurich, Carnegie Mellon и UCLA.",
     topics: "16 разделов математики ЕНТ",
@@ -200,22 +200,22 @@ const copy = {
     welcomeTitle: "Логиканы түсіну, тұзақты табу және",
     welcomeHighlight: "ҰБТ мемлекеттік грантын жеңіп алу",
     welcomeDesc:
-      "Aniq AI дәл когнитивті диагностика платформасы: барлық 12 ҰБТ пәні (40 сұрақтан 10 толық нұсқа = 50 балл), шешім рентгені, 1 152 қате қадамды табу есебі, білім графы және 6 ғылыми оқыту әдістемесі.",
+      "BilimAI дәл когнитивті диагностика платформасы: барлық 12 ҰБТ пәні (40 сұрақтан 10 толық нұсқа = 50 балл), шешім рентгені, 1 152 қате қадамды табу есебі, білім графы және 6 ғылыми оқыту әдістемесі.",
     welcomeCtaRegister: "Талапкер паспортын ашу",
     welcomeCtaXray: "Шешім рентгені",
     welcomeCtaExam: "Байқау ҰБТ (12 пән)",
     welcomeCtaGraph: "16 тақырып картасы",
     welcomeCtaLab: "Қатемен жұмыс",
     welcomeHide: "Витринаны жинау",
-    welcomeShow: "Aniq AI витринасы",
+    welcomeShow: "BilimAI витринасы",
     compactWelcomeLabel: "ҰБТ жылдам бастау (12 пән × 40 сұрақтан 10 нұсқа):",
     allSubjectsTitle: "Барлық 12 ресми ҰБТ пәні (ҚР ҰТО) · 4 800 тапсырма",
     allSubjectsSub:
       "Кез келген бейіндік немесе міндетті пәнді таңдаңыз: әр пәнде 40 сұрақтан тұратын 10 толық нұсқа (50 балл) және формулалар, даталар мен заңдар анықтамалығы бар.",
-    bentoKicker: "ANIQ AI АЛТЫ МОДУЛІ",
+    bentoKicker: "BILIMAI АЛТЫ МОДУЛІ",
     bentoTitle: "ҰБТ-ға дайындық пен математиканы түсінудің инженерлік жүйесі",
     scienceKicker: "ПЛАТФОРМА ЯДРОСЫНДАҒЫ ДӘЛЕЛДІ КОГНИТИВТІ ҒЫЛЫМ",
-    scienceTitle: "Aniq AI алгоритмдеріне енгізілген әлем ғалымдарының 6 ғылыми әдістемесі",
+    scienceTitle: "BilimAI алгоритмдеріне енгізілген әлем ғалымдарының 6 ғылыми әдістемесі",
     scienceSub:
       "Платформадағы әрбір қадам Чикаго университеті, ETH Zurich, Carnegie Mellon және UCLA зерттеулерінің математикалық модельдеріне негізделген.",
     topics: "ҰБТ математикасының 16 бөлімі",
@@ -308,22 +308,22 @@ const copy = {
     welcomeTitle: "Mantiqni tushunish, tuzoqni topish va",
     welcomeHighlight: "davlat grantini yutib olish",
     welcomeDesc:
-      "Aniq AI kognitiv diagnostika platformasi: barcha 12 ta UBT fani (40 savoldan 10 ta to‘liq variant = 50 ball), qoralama rentgeni, 1 152 ta xato qadamni topish masalasi, bilimlar grafi va 6 ta ilmiy o‘qitish metodikasi.",
+      "BilimAI kognitiv diagnostika platformasi: barcha 12 ta UBT fani (40 savoldan 10 ta to‘liq variant = 50 ball), qoralama rentgeni, 1 152 ta xato qadamni topish masalasi, bilimlar grafi va 6 ta ilmiy o‘qitish metodikasi.",
     welcomeCtaRegister: "Abituriyent pasportini yaratish",
     welcomeCtaXray: "Qoralama rentgeni",
     welcomeCtaExam: "Sinov UBT (12 fan)",
     welcomeCtaGraph: "16 mavzu xaritasi",
     welcomeCtaLab: "Xatolar ustida ishlash",
     welcomeHide: "Vitrinani yopish",
-    welcomeShow: "Aniq AI vitrinasi",
+    welcomeShow: "BilimAI vitrinasi",
     compactWelcomeLabel: "UBT tezkor start (12 fan × 40 savoldan 10 variant):",
     allSubjectsTitle: "Barcha 12 ta rasmiy UBT fani · 4 800 ta topshiriq",
     allSubjectsSub:
       "Istalgan profil yoki majburiy fanni tanlang: har bir fanda 40 savoldan iborat 10 ta to‘liq variant (50 ball) va formulalar, sanalar hamda qonunlar ma’lumotnomasi mavjud.",
-    bentoKicker: "ANIQ AI OLTI MODULI",
+    bentoKicker: "BILIMAI OLTI MODULI",
     bentoTitle: "Imtihonda yuqori ball va matematikani tushunish uchun muhandislik tizimi",
     scienceKicker: "PLATFORMA YADROSIDAGI ISBOTLANGAN KOGNITIV ILM-FAN",
-    scienceTitle: "Aniq AI algoritmlariga kiritilgan jahon olimlarining 6 ta ilmiy metodikasi",
+    scienceTitle: "BilimAI algoritmlariga kiritilgan jahon olimlarining 6 ta ilmiy metodikasi",
     scienceSub:
       "Platformadagi har bir qadam Chikago universiteti, ETH Zurich, Carnegie Mellon va UCLA tadqiqotlarining matematik modellariga asoslangan.",
     topics: "16 ta matematika bo‘limi",
@@ -911,7 +911,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
 
   return (
     <div className="textbook-shell">
-      {/* 1. Header: Aniq AI Brand + Theme Toggle + Language Switcher + Auth Buttons + Primary Nav */}
+      {/* 1. Header: BilimAI Brand + Theme Toggle + Language Switcher + Auth Buttons + Primary Nav */}
       <header className="site-header">
         <div className="wrap header-inner">
           <div className="header-top-row">
@@ -924,10 +924,10 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
               }}
             >
               <span className="aniq-logo-badge" aria-hidden="true">
-                A
+                B
               </span>
               <span className="aniq-logo-word">
-                Aniq<span className="text-brand">AI</span>
+                Bilim<span className="text-brand">AI</span>
               </span>
               <span className="brand-sub">ЕНТ · ҰБТ · 12 пән</span>
             </a>

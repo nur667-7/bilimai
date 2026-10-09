@@ -9,9 +9,9 @@ import { calculateGrantRadar, kzUniversities, type UniversityId, type UserProfil
 
 const xrayCopy = {
   ru: {
-    kicker: "УНИКАЛЬНАЯ ТЕХНОЛОГИЯ ANIQ AI · LOGIC FRACTURE X-RAY",
+    kicker: "УНИКАЛЬНАЯ ТЕХНОЛОГИЯ BILIMAI · LOGIC FRACTURE X-RAY",
     title: "Рентген черновика, 60-сек детектор ловушек и Радар гранта РК",
-    sub: "Обычные тесты ставят 0 баллов за всю задачу из-за одной забытой скобки ОДЗ. Aniq AI находит точную строку излома логики, не штрафует усвоенные темы и считает прирост шансов на госгрант в вузы Казахстана.",
+    sub: "Обычные тесты ставят 0 баллов за всю задачу из-за одной забытой скобки ОДЗ. BilimAI находит точную строку излома логики, не штрафует усвоенные темы и считает прирост шансов на госгрант в вузы Казахстана.",
     modeBlitz: "Блиц «Детектор ловушки за 60 сек»",
     modeDraft: "Рентген своего черновика",
     modeGrant: "Радар гранта ВУЗов РК",
@@ -56,9 +56,9 @@ const xrayCopy = {
     targetBadge: "Твоя цель"
   },
   kk: {
-    kicker: "ANIQ AI БІРЕГЕЙ ТЕХНОЛОГИЯСЫ · LOGIC FRACTURE X-RAY",
+    kicker: "BILIMAI БІРЕГЕЙ ТЕХНОЛОГИЯСЫ · LOGIC FRACTURE X-RAY",
     title: "Шешім рентгені, 60-сек тұзақ детекторы және ҚР грант радары",
-    sub: "Кәдімгі тесттер бір ғана АОО (ОДЗ) жақшасы үшін бүкіл есепке 0 балл қояды. Aniq AI логика үзілген нақты жолды табады, меңгерілген тақырыптарды айыппұлсыз сақтайды және ҚР ЖОО грантына түсу мүмкіндігін есептейді.",
+    sub: "Кәдімгі тесттер бір ғана АОО (ОДЗ) жақшасы үшін бүкіл есепке 0 балл қояды. BilimAI логика үзілген нақты жолды табады, меңгерілген тақырыптарды айыппұлсыз сақтайды және ҚР ЖОО грантына түсу мүмкіндігін есептейді.",
     modeBlitz: "60 сек «ҰБТ тұзағын тап» блиці",
     modeDraft: "Өз шешіміңнің рентгені",
     modeGrant: "ҚР ЖОО грант радары",
@@ -103,9 +103,9 @@ const xrayCopy = {
     targetBadge: "Таңдалған ЖОО"
   },
   uz: {
-    kicker: "ANIQ AI NOYOB TEXNOLOGIYASI · LOGIC FRACTURE X-RAY",
+    kicker: "BILIMAI NOYOB TEXNOLOGIYASI · LOGIC FRACTURE X-RAY",
     title: "Qoralama rentgeni, 60-soniya tuzoq detektori va Grant radari",
-    sub: "Oddiy testlar bitta unutilgan qavs uchun butun masalaga 0 ball qo‘yadi. Aniq AI mantiq buzilgan aniq qatorni topadi, o‘zlashtirilgan mavzularni jarimasiz saqlaydi va grant imkoniyatini hisoblaydi.",
+    sub: "Oddiy testlar bitta unutilgan qavs uchun butun masalaga 0 ball qo‘yadi. BilimAI mantiq buzilgan aniq qatorni topadi, o‘zlashtirilgan mavzularni jarimasiz saqlaydi va grant imkoniyatini hisoblaydi.",
     modeBlitz: "60 soniya «Tuzoqni top» blitsi",
     modeDraft: "O‘z qoralamangiz rentgeni",
     modeGrant: "OTM grant radari",
