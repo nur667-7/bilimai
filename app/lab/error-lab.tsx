@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, BookOpen, Calendar, CheckCircle2, FlaskConical, GitBranch, Microscope, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter } from "@/components/site-footer";
+import { PixelBrandMark } from "@/components/pixel-mosaic";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import {
   makeChallenge,
@@ -503,23 +504,32 @@ export default function ErrorLab({
         <div className="wrap header-inner">
           <div className="header-top-row">
             <a className="aniq-brand-logo" href={`/?lang=${lang}`}>
-              <span className="aniq-logo-badge" aria-hidden="true">
-                B
-              </span>
-              <span className="aniq-logo-word">
-                Bilim<span className="text-brand">AI</span>
-              </span>
-              <span className="brand-sub">ЕНТ · ҰБТ</span>
+              <PixelBrandMark size={26} />
+              <span className="aniq-logo-word">BilimAI</span>
+              <span className="brand-sub hide-on-narrow-mobile">ЕНТ · ҰБТ</span>
             </a>
 
-            <div className="header-right">
-              <a className="header-quiet-link" href={`/welcome?lang=${lang}`}>
-                {t.navHowItWorks}
+            {/* 4 Goal-Oriented Primary Sections (Inline on Desktop, Fixed Bottom Nav on Mobile) */}
+            <nav className="primary-nav" aria-label="Основные разделы">
+              <a className="primary-nav-link" href={`/?lang=${lang}&tab=today&topic=${topic}`}>
+                <Compass size={15} />
+                <span>{t.navToday}</span>
               </a>
-              <a className="header-quiet-link hide-on-narrow-mobile" href={`/about?lang=${lang}`}>
-                {t.navAbout}
+              <a className="primary-nav-link active" aria-current="page" href={`/lab?lang=${lang}&topic=${topic}`}>
+                <BookOpen size={15} />
+                <span>{t.navLearn}</span>
               </a>
+              <a className="primary-nav-link" href={`/?lang=${lang}&tab=exam&topic=${topic}`}>
+                <Target size={15} />
+                <span>{t.navExam}</span>
+              </a>
+              <a className="primary-nav-link" href={`/?lang=${lang}&tab=profile&topic=${topic}`}>
+                <User size={15} />
+                <span>{t.navProfile}</span>
+              </a>
+            </nav>
 
+            <div className="header-right">
               <div className="lang-switcher" role="group" aria-label="Language">
                 <button
                   type="button"
@@ -548,32 +558,8 @@ export default function ErrorLab({
               </div>
 
               <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
-
-              <a className="header-quiet-link" href={`/?lang=${lang}&tab=profile&topic=${topic}`}>
-                {t.navProfile}
-              </a>
             </div>
           </div>
-
-          {/* 4 Goal-Oriented Primary Sections */}
-          <nav className="primary-nav" aria-label="Основные разделы">
-            <a className="primary-nav-link" href={`/?lang=${lang}&tab=today&topic=${topic}`}>
-              <Compass size={15} />
-              <span>{t.navToday}</span>
-            </a>
-            <a className="primary-nav-link active" aria-current="page" href={`/lab?lang=${lang}&topic=${topic}`}>
-              <BookOpen size={15} />
-              <span>{t.navLearn}</span>
-            </a>
-            <a className="primary-nav-link" href={`/?lang=${lang}&tab=exam&topic=${topic}`}>
-              <Target size={15} />
-              <span>{t.navExam}</span>
-            </a>
-            <a className="primary-nav-link" href={`/?lang=${lang}&tab=profile&topic=${topic}`}>
-              <User size={15} />
-              <span>{t.navProfile}</span>
-            </a>
-          </nav>
         </div>
       </header>
 

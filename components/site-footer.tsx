@@ -1,5 +1,6 @@
 "use client";
 import type { Language, TopicId } from "@/lib/lessons";
+import { PixelBrandMark } from "@/components/pixel-mosaic";
 
 type SiteFooterProps = {
   lang: Language;
@@ -17,8 +18,8 @@ const FOOTER_COPY = {
     navExam: "Пробное ЕНТ",
     navProfile: "Профиль",
     navLab: "Тренировка ошибок",
-    navWelcome: "Как работает BilimAI",
-    navAbout: "О проекте и методике",
+    navWelcome: "Обзор",
+    navHelp: "Помощь и о проекте",
     navPrivacy: "Конфиденциальность",
     contactLabel: "Обратная связь:",
     location: "Алматы, Казахстан"
@@ -31,8 +32,8 @@ const FOOTER_COPY = {
     navExam: "Сынақ ҰБТ",
     navProfile: "Профиль",
     navLab: "Қатемен жұмыс",
-    navWelcome: "BilimAI қалай жұмыс істейді",
-    navAbout: "Жоба және әдістеме",
+    navWelcome: "Шолу",
+    navHelp: "Көмек және жоба туралы",
     navPrivacy: "Құпиялылық",
     contactLabel: "Байланыс:",
     location: "Алматы, Қазақстан"
@@ -45,8 +46,8 @@ const FOOTER_COPY = {
     navExam: "Sinov UBT",
     navProfile: "Profil",
     navLab: "Xatolar ustida ishlash",
-    navWelcome: "BilimAI qanday ishlaydi",
-    navAbout: "Loyiha va metodika",
+    navWelcome: "Sharh",
+    navHelp: "Yordam va loyiha haqida",
     navPrivacy: "Maxfiylik",
     contactLabel: "Aloqa:",
     location: "Olmaota, Qozog‘iston"
@@ -56,7 +57,7 @@ const FOOTER_COPY = {
 export function SiteFooter({
   lang,
   topic = "linear",
-  compact = false,
+  compact = true,
   onSelectTab
 }: SiteFooterProps) {
   const c = FOOTER_COPY[lang];
@@ -70,16 +71,19 @@ export function SiteFooter({
   if (compact) {
     return (
       <footer className="wrap site-footer site-footer-compact" aria-label="Footer">
-        <div className="site-footer-meta-row">
-          <span>
-            <strong>BilimAI</strong> ·{" "}
-            <a href={`/welcome?lang=${lang}`}>{c.navWelcome}</a> ·{" "}
-            <a href={`/about?lang=${lang}`}>{c.navAbout}</a> ·{" "}
+        <div className="site-footer-compact-inner">
+          <span className="site-footer-compact-links">
+            <strong className="site-footer-compact-brand">BilimAI</strong>
+            <span aria-hidden="true">·</span>
+            <a href={`/about?lang=${lang}`}>{c.navHelp}</a>
+            <span aria-hidden="true">·</span>
+            <a href={`/welcome?lang=${lang}`}>{c.navWelcome}</a>
+            <span aria-hidden="true">·</span>
             <a href={`/privacy?lang=${lang}`}>{c.navPrivacy}</a>
           </span>
-          <span>
-            <a href="mailto:nurbek@bilimai.dpdns.org">nurbek@bilimai.dpdns.org</a>
-          </span>
+          <a className="site-footer-compact-mail" href="mailto:nurbek@bilimai.dpdns.org">
+            nurbek@bilimai.dpdns.org
+          </a>
         </div>
       </footer>
     );
@@ -90,10 +94,8 @@ export function SiteFooter({
       <div className="site-footer-inner">
         <div className="site-footer-brand">
           <div className="flex items-center gap-2 mb-1">
-            <span className="aniq-logo-badge w-6 h-6 text-xs">B</span>
-            <strong>
-              Bilim<span className="text-brand">AI</span>
-            </strong>
+            <PixelBrandMark size={22} />
+            <strong>BilimAI</strong>
           </div>
           <p>{c.summary}</p>
         </div>
@@ -124,7 +126,7 @@ export function SiteFooter({
           )}
           <a href={`/lab?lang=${lang}&topic=${topic}`}>{c.navLab}</a>
           <a href={`/welcome?lang=${lang}`}>{c.navWelcome}</a>
-          <a href={`/about?lang=${lang}`}>{c.navAbout}</a>
+          <a href={`/about?lang=${lang}`}>{c.navHelp}</a>
           <a href={`/privacy?lang=${lang}`}>{c.navPrivacy}</a>
         </nav>
 

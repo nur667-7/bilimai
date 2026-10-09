@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, GraduationCap, UserCheck } from "lucide-react";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
+import { PixelBrandMark } from "@/components/pixel-mosaic";
 import type { Language } from "@/lib/curriculum";
 import {
   kzUniversities,
@@ -161,11 +162,10 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
         <div className="aniq-auth-card">
           <div className="aniq-auth-header-row">
             <a className="aniq-brand-logo" href={returnHref}>
-              <span className="aniq-logo-badge">B</span>
+              <PixelBrandMark size={24} />
               <span>
                 Bilim<span className="text-brand">AI</span>
               </span>
-              <span className="brand-sub">ЕНТ · ҰБТ</span>
             </a>
             <a href={returnHref} className="aniq-auth-skip-link">
               {c.tryWithoutAuth}

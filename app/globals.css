@@ -3,57 +3,57 @@
 @import "../vendor/shadcn-tailwind-4.13.0.css";
 
 :root {
-  --background: #faf5ec;
-  --foreground: #231c12;
-  --card: #fffdf8;
-  --card-foreground: #231c12;
-  --popover: #fffdf8;
-  --popover-foreground: #231c12;
-  --primary: #1b3b6f;
-  --primary-foreground: #ffffff;
-  --brand: #9a5209;
-  --brand-2: #7c3f06;
-  --accent-warm: #b53f1a;
-  --ink: #231c12;
-  --secondary: #f2eadb;
-  --secondary-foreground: #231c12;
-  --muted: #f3ecdf;
-  --muted-foreground: #594833;
-  --accent: #edf2f9;
-  --accent-foreground: #1b3b6f;
-  --destructive: #b83b2b;
-  --border: rgba(88, 62, 30, 0.18);
-  --input: rgba(88, 62, 30, 0.32);
-  --ring: #9a5209;
+  --background: #F5F7FC;
+  --foreground: #172033;
+  --card: #FFFFFF;
+  --card-foreground: #172033;
+  --popover: #FFFFFF;
+  --popover-foreground: #172033;
+  --primary: #355CFF;
+  --primary-foreground: #FFFFFF;
+  --brand: #355CFF;
+  --brand-2: #2447E5;
+  --accent-warm: #755FF8;
+  --ink: #172033;
+  --secondary: #EAEFF8;
+  --secondary-foreground: #172033;
+  --muted: #EDF1FA;
+  --muted-foreground: #4E5D78;
+  --accent: #EBF0FF;
+  --accent-foreground: #355CFF;
+  --destructive: #DC2626;
+  --border: rgba(23, 32, 51, 0.09);
+  --input: rgba(23, 32, 51, 0.18);
+  --ring: #355CFF;
   --radius: 0.65rem;
-  --font-serif: "Newsreader", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-serif: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Arial, sans-serif;
   --font-math: "STIX Two Math", "Cambria Math", "Times New Roman", Georgia, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 html.dark {
-  --background: #171208;
-  --foreground: #f7f0e4;
-  --card: #241c11;
-  --card-foreground: #f7f0e4;
-  --popover: #241c11;
-  --popover-foreground: #f7f0e4;
-  --primary: #f5b358;
-  --primary-foreground: #1c1306;
-  --brand: #f5b358;
-  --brand-2: #f7c274;
-  --accent-warm: #f2825b;
-  --ink: #f7f0e4;
-  --secondary: #2e2416;
-  --secondary-foreground: #f7f0e4;
-  --muted: #2a2013;
-  --muted-foreground: #cfc0a9;
-  --accent: rgba(245, 179, 88, 0.16);
-  --accent-foreground: #f7c274;
-  --destructive: #f87171;
-  --border: rgba(255, 228, 185, 0.18);
-  --input: rgba(255, 228, 185, 0.32);
-  --ring: #f5b358;
+  --background: #0B111E;
+  --foreground: #F1F5F9;
+  --card: #121B2E;
+  --card-foreground: #F1F5F9;
+  --popover: #121B2E;
+  --popover-foreground: #F1F5F9;
+  --primary: #5273FF;
+  --primary-foreground: #FFFFFF;
+  --brand: #6382FF;
+  --brand-2: #849BFF;
+  --accent-warm: #8B75FF;
+  --ink: #F1F5F9;
+  --secondary: #1A253D;
+  --secondary-foreground: #F1F5F9;
+  --muted: #172136;
+  --muted-foreground: #94A3B8;
+  --accent: rgba(82, 115, 255, 0.16);
+  --accent-foreground: #93ADFF;
+  --destructive: #F87171;
+  --border: rgba(148, 163, 184, 0.16);
+  --input: rgba(148, 163, 184, 0.28);
+  --ring: #5273FF;
 }
 
 @theme inline {
@@ -94,15 +94,12 @@ body {
   max-width: 100%;
   overflow-x: hidden;
   background-color: var(--background);
-  background-image:
-    radial-gradient(900px 420px at 12% -5%, rgba(217, 138, 43, 0.14), transparent 62%),
-    radial-gradient(760px 380px at 88% 8%, rgba(216, 90, 48, 0.1), transparent 58%);
-  background-attachment: fixed;
+  background-image: none;
   color: var(--foreground);
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.6;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 h1,
@@ -6374,5 +6371,528 @@ input[type="range"] {
     flex: 1 1 100%;
   }
 }
+
+/* ============================================================================
+   SECTION 18: CALM LEARNING PLATFORM & PIXEL-BLOCK GRADIENT SIGNATURE
+   Palette:
+     - Background: #F5F7FC (Dark: #0B111E)
+     - Text:       #172033 (Dark: #F1F5F9)
+     - Primary:    #355CFF (Dark: #5273FF)
+     - Pixel Gradient: #355CFF (Blue) -> #755FF8 (Lilac) -> #14B8A6 (Teal)
+   ============================================================================ */
+
+/* 18.1 Signature Pixel-Block Components (First screen, Logo, Progress Bar ONLY) */
+.pixel-brand-mark {
+  flex-shrink: 0;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(53, 92, 255, 0.2);
+}
+
+.pixel-progress-track {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 2px;
+  border-radius: 6px;
+  background: rgba(23, 32, 51, 0.06);
+}
+
+html.dark .pixel-progress-track {
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.pixel-progress-cell {
+  height: 8px;
+  border-radius: 2px;
+  background: rgba(23, 32, 51, 0.08);
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+html.dark .pixel-progress-cell {
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.pixel-progress-cell.filled {
+  box-shadow: 0 1px 2px rgba(53, 92, 255, 0.18);
+}
+
+.today-hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.85fr);
+  gap: 24px;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 860px) {
+  .today-hero-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+.pixel-mosaic-banner {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #F8FAFF;
+  border: 1px solid rgba(53, 92, 255, 0.14);
+}
+
+html.dark .pixel-mosaic-banner {
+  background: #152038;
+  border-color: rgba(82, 115, 255, 0.24);
+}
+
+.pixel-mosaic-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.pixel-mosaic-caption {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.01em;
+}
+
+.pixel-mosaic-sub {
+  font-size: 11.5px;
+  color: var(--muted-foreground);
+  line-height: 1.35;
+}
+
+.pixel-mosaic-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 5px;
+  margin: 8px 0 10px;
+}
+
+.pixel-mosaic-cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 4px;
+  min-height: 18px;
+}
+
+.pixel-mosaic-cell.empty {
+  background: rgba(23, 32, 51, 0.07);
+  border: 1px dashed rgba(23, 32, 51, 0.15);
+}
+
+html.dark .pixel-mosaic-cell.empty {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.pixel-mosaic-cell.filled {
+  box-shadow: 0 1px 2px rgba(23, 32, 51, 0.1);
+}
+
+.pixel-mosaic-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.pixel-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pixel-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.pixel-legend-swatch.gap {
+  background: rgba(23, 32, 51, 0.12);
+  border: 1px dashed rgba(23, 32, 51, 0.28);
+}
+
+/* 18.2 Single-Row Compact Header on Desktop & Mobile */
+.site-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: auto;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.primary-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--secondary);
+  border: 0;
+}
+
+.primary-nav-tab {
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  border: 0;
+  background: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.primary-nav-tab.active {
+  background: var(--card);
+  color: var(--primary);
+  box-shadow: 0 1px 2px rgba(23, 32, 51, 0.06);
+}
+
+@media (max-width: 768px) {
+  .site-header {
+    padding: 8px 0;
+    margin-bottom: 12px;
+  }
+
+  .site-header .primary-nav {
+    display: none !important;
+  }
+
+  .header-top-row {
+    flex: 1 1 auto;
+  }
+}
+
+/* 18.3 Remove Excess Borders & Nested Cards — Separate via Spacing & Hairlines */
+.surface {
+  background: var(--card);
+  border: 1px solid rgba(23, 32, 51, 0.07);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.03);
+  padding: 24px;
+}
+
+@media (max-width: 640px) {
+  .surface {
+    padding: 16px 14px;
+    border-radius: 12px;
+  }
+}
+
+/* Remove nested boxes inside .surface */
+.learn-subnav {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  padding: 0 0 12px 0 !important;
+  margin-bottom: 18px !important;
+  box-shadow: none !important;
+}
+
+.learn-subnav-pill {
+  background: var(--secondary);
+  border: 1px solid transparent;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.learn-subnav-pill.active {
+  background: var(--accent);
+  color: var(--primary);
+  border-color: rgba(53, 92, 255, 0.22);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.steps li {
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 12px 4px !important;
+}
+
+.steps li:last-child {
+  border-bottom: 0 !important;
+}
+
+.math-stage,
+.practice-stage,
+.ai-stage {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 8px 0 0 0 !important;
+}
+
+.plan-actions-section,
+.plan-summary-card,
+.kg-start-banner,
+.xray-header-card {
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 18px 0 4px 0 !important;
+}
+
+.kg-top-recommendation-card {
+  border: 0 !important;
+  border-left: 3px solid var(--primary) !important;
+  border-radius: 0 10px 10px 0 !important;
+  background: var(--accent) !important;
+  padding: 14px 16px !important;
+}
+
+.today-quick-start-grid {
+  gap: 10px;
+}
+
+.today-quick-card {
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  background: #F8FAFC;
+  box-shadow: none;
+}
+
+.today-quick-card:hover {
+  border-color: var(--primary);
+  background: var(--accent);
+}
+
+.profile-stat-card,
+.profile-uni-card {
+  border: 0;
+  background: #F5F7FC;
+  border-radius: 10px;
+}
+
+/* 18.4 Tasks: Solid Background, Crisp Formulas, Zero Gradients Under Text */
+.math,
+.practice-math-stem,
+.unt-q-stem,
+.step-expr {
+  background: #F8FAFC;
+  background-image: none !important;
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  border-radius: 10px;
+  color: #172033;
+  font-family: var(--font-math);
+}
+
+.practice-math-stem {
+  font-size: 1.2rem;
+  line-height: 1.55;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.option {
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 32, 51, 0.11);
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.option:hover,
+.option[data-selected="true"] {
+  border-color: var(--primary);
+  background: var(--accent);
+}
+
+/* 18.5 Strong Visual Hierarchy: Dominant #355CFF Primary CTA vs Calm Secondary */
+.aniq-primary-link-btn,
+.aniq-btn-primary,
+button[data-slot="button"].bg-primary {
+  background-color: #355CFF !important;
+  background-image: none !important;
+  color: #FFFFFF !important;
+  border-color: #355CFF !important;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(53, 92, 255, 0.22);
+}
+
+.aniq-primary-link-btn:hover,
+.aniq-btn-primary:hover,
+button[data-slot="button"].bg-primary:hover {
+  background-color: #2447E5 !important;
+  border-color: #2447E5 !important;
+}
+
+.btn-ghost-sm {
+  background: transparent;
+  border: 1px solid rgba(23, 32, 51, 0.12);
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.btn-ghost-sm:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+/* 18.6 Compact 16-Row Topic Map (/?tab=graph) */
+.kg-compact-rows-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+.kg-list-item-group {
+  gap: 0;
+}
+
+.kg-step-card.kg-compact-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 10px;
+  margin: 0;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.kg-step-card.kg-compact-row:hover {
+  background: rgba(53, 92, 255, 0.05) !important;
+}
+
+.kg-step-card.kg-compact-row.active,
+.kg-step-card.kg-compact-row.selected {
+  background: rgba(53, 92, 255, 0.06) !important;
+}
+
+.kg-compact-row-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.kg-compact-row-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.kg-step-rank {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  min-width: 24px;
+}
+
+.kg-compact-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.kg-inline-inspector {
+  margin: 6px 0 4px 0;
+  border: 0;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 8px 8px 0;
+  background: #F8FAFF;
+  padding: 12px 14px;
+}
+
+/* 18.7 Cool Dark Mode Overrides (Replacing Legacy Warm Brown Selectors) */
+html.dark body {
+  background-color: #0B111E !important;
+  background-image: none !important;
+  color: #F1F5F9 !important;
+}
+
+html.dark .surface,
+html.dark .aniq-auth-card,
+html.dark .lab-card,
+html.dark .mobile-bottom-nav {
+  background-color: #121B2E !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+  color: #F1F5F9 !important;
+}
+
+html.dark .math,
+html.dark .practice-math-stem,
+html.dark .unt-q-stem,
+html.dark .step-expr,
+html.dark .today-quick-card,
+html.dark .profile-stat-card,
+html.dark .profile-uni-card,
+html.dark .kg-inline-inspector {
+  background-color: #17223B !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+  color: #F1F5F9 !important;
+}
+
+html.dark .option {
+  background-color: #152036 !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  color: #F1F5F9 !important;
+}
+
+html.dark .option:hover,
+html.dark .option[data-selected="true"] {
+  background-color: rgba(82, 115, 255, 0.18) !important;
+  border-color: #6382FF !important;
+}
+
 
 

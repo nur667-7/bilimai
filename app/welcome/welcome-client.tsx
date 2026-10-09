@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Language } from "@/lib/curriculum";
 import { UNT_SUBJECTS, type UntSubjectId } from "@/lib/unt-all-subjects";
 import { SubjectIcon } from "@/app/unt-exam-view";
+import { PixelBrandMark, PixelKnowledgeMosaic } from "@/components/pixel-mosaic";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 
 const COPY: Record<
@@ -221,16 +222,14 @@ export default function WelcomeClient({
       <header className="study-topbar">
         <div className="study-topbar-inner">
           <div className="study-brand-row">
-            <a href={`/?lang=${lang}`} className="brand-mark">
-              <span className="brand-symbol" aria-hidden="true">
-                ∑
-              </span>
-              <span>BilimAI</span>
+            <a href={`/?lang=${lang}`} className="aniq-brand-logo">
+              <PixelBrandMark size={26} />
+              <span className="aniq-logo-word">BilimAI</span>
             </a>
-            <span className="brand-Sep" aria-hidden="true">
+            <span className="brand-Sep hide-on-narrow-mobile" aria-hidden="true">
               /
             </span>
-            <span className="brand-subtitle">{t.eyebrow}</span>
+            <span className="brand-subtitle hide-on-narrow-mobile">{t.eyebrow}</span>
           </div>
 
           <div className="study-controls-row">
@@ -255,11 +254,11 @@ export default function WelcomeClient({
 
             <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
-            <a href={`/?tab=profile&lang=${lang}`} className="top-UtilityLink">
+            <a href={`/?tab=profile&lang=${lang}`} className="top-UtilityLink hide-on-narrow-mobile">
               {t.profileLink}
             </a>
 
-            <a href={`/?tab=lesson&lang=${lang}`} className="btn-primary welcome-top-cta">
+            <a href={`/?tab=lesson&lang=${lang}`} className="btn-primary welcome-top-cta hide-on-narrow-mobile">
               {t.primaryCta}
             </a>
           </div>
@@ -275,6 +274,8 @@ export default function WelcomeClient({
               {t.title}
             </h1>
             <p className="welcome-main-lead">{t.subtitle}</p>
+
+            <PixelKnowledgeMosaic className="mt-1" />
 
             <div className="welcome-cta-row">
               <a href={`/?tab=lesson&lang=${lang}`} className="btn-primary">

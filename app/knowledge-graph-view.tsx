@@ -18,6 +18,7 @@ import {
   ZoomOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PixelProgressBar } from "@/components/pixel-mosaic";
 import {
   buildKnowledgeGraphState,
   type ComputedGraphNode,
@@ -404,14 +405,15 @@ export function KnowledgeGraphView({
     setOffsets({});
   }
 
-  function renderNodeDetailsCard(node: ComputedGraphNode) {
+  function renderNodeDetailsCard(node: ComputedGraphNode, reasonText?: string) {
     const nodeLesson = lessons[lang].find((l) => l.id === node.id)!;
     const palette = NODE_COLORS[node.status];
     return (
       <div
-        className="kg-inline-inspector mt-3 pt-3 border-t border-border"
+        className="kg-inline-inspector mt-2.5 pt-3 border-t border-border"
         onClick={(e) => e.stopPropagation()}
       >
+        {reasonText && <p className="small m-0 mb-2.5">{reasonText}</p>}
         <div className="kg-inspector-stats">
           <div className="kg-mini-stat">
             <span className="small">{t.labStatLabel}</span>
@@ -565,41 +567,54 @@ export function KnowledgeGraphView({
 
   return (
     <div className="kg-root">
-      {/* 1. Одна главная рекомендация «С чего начать» сверху */}
-      <div className="callout mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <span className="text-xs uppercase tracking-wider font-bold text-primary block">
-            {t.startHereTitle}
-          </span>
-          <strong className="text-base block mt-0.5">
-            {nextRecommendedNode.orderNumber}. {nextRecommendedNode.title}
-          </strong>
-          <p className="small m-0 mt-0.5">
-            {isAssessed
-              ? graphState.studyPlan[0]?.reason
-              : t.startHereUnassessed}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            className="min-h-11"
-            onClick={() => onOpenLesson(nextRecommendedTopic)}
-          >
-            <BookOpen size={15} />
-            <span>{t.btnLesson}</span>
-          </Button>
-          {!isAssessed && (
+      {/* 1. Одна главная рекомендация «С чего начать» сверху + пиксельный индикатор прогресса */}
+      <div className="kg-start-banner mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <span className="text-xs uppercase tracking-wider font-bold text-primary block">
+              {t.startHereTitle}
+            </span>
+            <strong className="text-base block mt-0.5">
+              {nextRecommendedNode.orderNumber}. {nextRecommendedNode.title}
+            </strong>
+            <p className="small m-0 mt-0.5">
+              {isAssessed
+                ? graphState.studyPlan[0]?.reason
+                : t.startHereUnassessed}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
-              variant="outline"
               className="min-h-11"
-              onClick={onOpenExam}
+              onClick={() => onOpenLesson(nextRecommendedTopic)}
             >
-              <CheckCircle2 size={15} />
-              <span>{t.startDiagBtn}</span>
+              <BookOpen size={15} />
+              <span>{t.btnLesson}</span>
             </Button>
-          )}
+            {!isAssessed && (
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={onOpenExam}
+              >
+                <CheckCircle2 size={15} />
+                <span>{t.startDiagBtn}</span>
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="mt-3 pt-2.5 border-t border-border/60 flex flex-wrap items-center justify-between gap-2">
+          <span className="small">
+            {t.summaryMastered}: <strong className="tabular-nums">{graphState.summary.masteredCount} / 16</strong>
+          </span>
+          <PixelProgressBar
+            value={graphState.summary.masteredCount}
+            max={16}
+            segments={16}
+            label={t.summaryMastered}
+          />
         </div>
       </div>
 
@@ -660,56 +675,59 @@ export function KnowledgeGraphView({
         </div>
       </div>
 
-      {/* 3. Основное содержимое: Компактный список с раскрытием прямо под выбранной темой (или 2D Граф) */}
+      {/* 3. Компактные строки 16 тем вместо 16 больших карточек (подробности по нажатию) */}
       {displayMode === "path" ? (
         <div className="kg-path-list">
           <div className="mb-2">
             <h3 className="font-bold text-base m-0">{t.studyPlanTitle}</h3>
             <p className="small m-0">{t.studyPlanSub}</p>
           </div>
-          {graphState.studyPlan
-            .filter((step) => {
-              const n = nodeMap.get(step.topic);
-              return n ? isVisibleInFilter(n) : true;
-            })
-            .map((step) => {
-              const stepNode = nodeMap.get(step.topic)!;
-              const palette = NODE_COLORS[step.status];
-              const isExpanded = selectedTopic === step.topic;
+          <div className="kg-compact-rows-container">
+            {graphState.studyPlan
+              .filter((step) => {
+                const n = nodeMap.get(step.topic);
+                return n ? isVisibleInFilter(n) : true;
+              })
+              .map((step) => {
+                const stepNode = nodeMap.get(step.topic)!;
+                const palette = NODE_COLORS[step.status];
+                const isExpanded = selectedTopic === step.topic;
 
-              return (
-                <div
-                  key={step.topic}
-                  className={`kg-step-card ${isExpanded ? "active" : ""}`}
-                  onClick={() => onSelectTopic(step.topic)}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="kg-step-rank tabular-nums">#{stepNode.orderNumber}</span>
-                      <strong>{step.title}</strong>
+                return (
+                  <div
+                    key={step.topic}
+                    className={`kg-step-card kg-compact-row ${isExpanded ? "active" : ""}`}
+                    onClick={() => onSelectTopic(step.topic)}
+                  >
+                    <div className="kg-compact-row-head">
+                      <div className="kg-compact-row-title">
+                        <span className="kg-step-rank tabular-nums">
+                          {String(stepNode.orderNumber).padStart(2, "0")}
+                        </span>
+                        <strong>{step.title}</strong>
+                      </div>
+                      <div className="kg-compact-row-meta">
+                        <span
+                          className="kg-status-pill"
+                          style={{
+                            borderColor: stepNode.hasEvidence ? palette.stroke : undefined
+                          }}
+                        >
+                          {getStatusLabel(stepNode)}
+                          {stepNode.hasEvidence ? ` · ${step.masteryPercent}%` : ""}
+                        </span>
+                        <span className="small text-muted-foreground inline-flex items-center gap-0.5">
+                          {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="kg-status-pill"
-                        style={{
-                          borderColor: stepNode.hasEvidence ? palette.stroke : undefined
-                        }}
-                      >
-                        {getStatusLabel(stepNode)}
-                        {stepNode.hasEvidence ? ` · ${step.masteryPercent}%` : ""}
-                      </span>
-                      <span className="small text-muted-foreground inline-flex items-center gap-0.5">
-                        {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-                      </span>
-                    </div>
+
+                    {/* Подробности темы и причина приоритета раскрываются по нажатию на строку */}
+                    {isExpanded && renderNodeDetailsCard(stepNode, step.reason)}
                   </div>
-                  <p className="small mt-1 mb-0">{step.reason}</p>
-
-                  {/* Раскрытие выбранной темы ПРЯМО ПОД НЕЙ (без прокрутки на 5000px вниз!) */}
-                  {isExpanded && renderNodeDetailsCard(stepNode)}
-                </div>
-              );
-            })}
+                );
+              })}
+          </div>
         </div>
       ) : (
         <div>

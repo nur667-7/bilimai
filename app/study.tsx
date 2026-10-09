@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SiteFooter } from "@/components/site-footer";
+import { PixelBrandMark, PixelKnowledgeMosaic, PixelProgressBar } from "@/components/pixel-mosaic";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import { getOptionFeedback, lessons, untTopicIds, type Language, type TopicId } from "@/lib/lessons";
 import {
@@ -1275,7 +1276,7 @@ export default function Study({
 
   return (
     <div className="textbook-shell has-mobile-bottom-nav">
-      {/* Header: BilimAI Brand + Language Switcher + Theme Toggle + 4 Primary Goal-Oriented Sections */}
+      {/* Compact Single-Row Header: Pixel Brand Logo + 4 Primary Sections (Desktop) + Language & Theme */}
       <header className="site-header">
         <div className="wrap header-inner">
           <div className="header-top-row">
@@ -1287,23 +1288,56 @@ export default function Study({
                 handleTabChange("today");
               }}
             >
-              <span className="aniq-logo-badge" aria-hidden="true">
-                B
-              </span>
-              <span className="aniq-logo-word">
-                Bilim<span className="text-brand">AI</span>
-              </span>
-              <span className="brand-sub">ЕНТ · ҰБТ</span>
+              <PixelBrandMark size={26} />
+              <span className="aniq-logo-word">BilimAI</span>
+              <span className="brand-sub hide-on-narrow-mobile">ЕНТ · ҰБТ</span>
             </a>
 
-            <div className="header-right">
-              <a className="header-quiet-link" href={`/welcome?lang=${lang}`}>
-                {t.navHowItWorks}
-              </a>
-              <a className="header-quiet-link hide-on-narrow-mobile" href={`/about?lang=${lang}`}>
-                {t.navAbout}
-              </a>
+            {/* 4 Goal-Oriented Primary Sections (Inline on Desktop, Fixed Bottom Nav on Mobile) */}
+            <nav className="primary-nav" aria-label="Основные разделы">
+              <button
+                type="button"
+                className={`primary-nav-link ${isTodaySection ? "active" : ""}`}
+                aria-current={isTodaySection ? "page" : undefined}
+                onClick={() => handleTabChange("today")}
+              >
+                <Compass size={15} />
+                <span>{t.navToday}</span>
+              </button>
+              <button
+                type="button"
+                className={`primary-nav-link ${isLearnSection ? "active" : ""}`}
+                aria-current={isLearnSection ? "page" : undefined}
+                onClick={() => {
+                  if (!isLearnSection) {
+                    handleTabChange("lesson");
+                  }
+                }}
+              >
+                <BookOpen size={15} />
+                <span>{t.navLearn}</span>
+              </button>
+              <button
+                type="button"
+                className={`primary-nav-link ${isExamSection ? "active" : ""}`}
+                aria-current={isExamSection ? "page" : undefined}
+                onClick={() => handleTabChange("exam")}
+              >
+                <Target size={15} />
+                <span>{t.navExam}</span>
+              </button>
+              <button
+                type="button"
+                className={`primary-nav-link ${isProfileSection ? "active" : ""}`}
+                aria-current={isProfileSection ? "page" : undefined}
+                onClick={() => handleTabChange("profile")}
+              >
+                <User size={15} />
+                <span>{t.navProfile}</span>
+              </button>
+            </nav>
 
+            <div className="header-right">
               <div className="lang-switcher" role="group" aria-label="Язык">
                 <button
                   type="button"
@@ -1332,87 +1366,8 @@ export default function Study({
               </div>
 
               <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
-
-              {userProfile && userProfile.name ? (
-                <div className="aniq-user-chip">
-                  <button
-                    type="button"
-                    className="aniq-user-btn"
-                    onClick={() => handleTabChange("profile")}
-                    title={userProfile.identifier}
-                  >
-                    <User size={14} />
-                    <span>{userProfile.name}</span>
-                    {targetUniShort && <span className="aniq-user-uni">{targetUniShort}</span>}
-                  </button>
-                  <button
-                    type="button"
-                    className="aniq-logout-btn"
-                    title={t.logoutBtn}
-                    aria-label={t.logoutBtn}
-                    onClick={() => {
-                      clearUserProfile();
-                      setUserProfile(null);
-                    }}
-                  >
-                    <LogOut size={14} />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="header-quiet-link"
-                  onClick={() => handleTabChange("profile")}
-                >
-                  {t.navProfile}
-                </button>
-              )}
             </div>
           </div>
-
-          {/* 4 Goal-Oriented Primary Sections */}
-          <nav className="primary-nav" aria-label="Основные разделы">
-            <button
-              type="button"
-              className={`primary-nav-link ${isTodaySection ? "active" : ""}`}
-              aria-current={isTodaySection ? "page" : undefined}
-              onClick={() => handleTabChange("today")}
-            >
-              <Compass size={15} />
-              <span>{t.navToday}</span>
-            </button>
-            <button
-              type="button"
-              className={`primary-nav-link ${isLearnSection ? "active" : ""}`}
-              aria-current={isLearnSection ? "page" : undefined}
-              onClick={() => {
-                if (!isLearnSection) {
-                  handleTabChange("lesson");
-                }
-              }}
-            >
-              <BookOpen size={15} />
-              <span>{t.navLearn}</span>
-            </button>
-            <button
-              type="button"
-              className={`primary-nav-link ${isExamSection ? "active" : ""}`}
-              aria-current={isExamSection ? "page" : undefined}
-              onClick={() => handleTabChange("exam")}
-            >
-              <Target size={15} />
-              <span>{t.navExam}</span>
-            </button>
-            <button
-              type="button"
-              className={`primary-nav-link ${isProfileSection ? "active" : ""}`}
-              aria-current={isProfileSection ? "page" : undefined}
-              onClick={() => handleTabChange("profile")}
-            >
-              <User size={15} />
-              <span>{t.navProfile}</span>
-            </button>
-          </nav>
         </div>
       </header>
 
@@ -1499,99 +1454,127 @@ export default function Study({
             {!hasLearningHistory && tab === "today" ? (
               /* FIRST-TIME VISITOR VIEW ON / */
               <section className="surface section-surface today-hero-card" aria-label={t.navToday}>
-                <span className="rule-label">{t.todayFirstEyebrow}</span>
-                <h1 className="lesson-title mt-1">{t.todayFirstTitle}</h1>
-                <p className="lesson-intro mt-2">{t.todayFirstSub}</p>
+                <div className="today-hero-layout">
+                  <div className="today-hero-copy">
+                    <span className="rule-label">{t.todayFirstEyebrow}</span>
+                    <h1 className="lesson-title mt-1">{t.todayFirstTitle}</h1>
+                    <p className="lesson-intro mt-2">{t.todayFirstSub}</p>
 
-                <div className="today-primary-actions mt-5">
-                  <Button
-                    size="lg"
-                    onClick={() => {
-                      handleSubjectChange("math");
-                      openTopicLesson("linear");
-                    }}
-                  >
-                    <span>{t.todayStartBtn}</span>
-                    <ArrowRight size={16} />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      handleSubjectChange("math");
-                      handleTabChange("exam");
-                    }}
-                  >
-                    <Target size={15} />
-                    <span>{t.todayCheckMathBtn}</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      handleSubjectChange("math");
-                      handleTabChange("graph");
-                    }}
-                  >
-                    <GitBranch size={15} />
-                    <span>{t.todayPickTopicBtn}</span>
-                  </Button>
+                    <div className="today-primary-actions mt-5">
+                      <Button
+                        size="lg"
+                        onClick={() => {
+                          handleSubjectChange("math");
+                          openTopicLesson("linear");
+                        }}
+                      >
+                        <span>{t.todayStartBtn}</span>
+                        <ArrowRight size={16} />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          handleSubjectChange("math");
+                          handleTabChange("exam");
+                        }}
+                      >
+                        <Target size={15} />
+                        <span>{t.todayCheckMathBtn}</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          handleSubjectChange("math");
+                          handleTabChange("graph");
+                        }}
+                      >
+                        <GitBranch size={15} />
+                        <span>{t.todayPickTopicBtn}</span>
+                      </Button>
+                    </div>
+
+                    <p className="small text-muted-foreground mt-3 mb-0">
+                      {t.todayOptionalRegNote}{" "}
+                      <a href={`/welcome?lang=${lang}`} className="quiet-inline-link">
+                        {t.navHowItWorks} →
+                      </a>
+                    </p>
+                  </div>
+
+                  {/* Signature Pixel-Block Mosaic Illustration (Filling knowledge gaps) */}
+                  <div className="today-hero-visual">
+                    <PixelKnowledgeMosaic />
+                    <div className="today-hero-progress-caption">
+                      <span className="small">{t.topics}</span>
+                      <PixelProgressBar value={3} max={16} segments={16} label={t.topics} />
+                    </div>
+                  </div>
                 </div>
-
-                <p className="small text-muted-foreground mt-3 mb-0">
-                  {t.todayOptionalRegNote}{" "}
-                  <a href={`/welcome?lang=${lang}`} className="quiet-inline-link">
-                    {t.navHowItWorks} →
-                  </a>
-                </p>
               </section>
             ) : (
               /* RETURNING VISITOR VIEW ON / */
               <section className="surface section-surface today-continue-card" aria-label={t.todayContinueBadge}>
-                <div className="lesson-meta-line">
-                  <span className="rule-label">{t.todayContinueBadge}</span>
-                  <span className="lesson-honest-status">
-                    {topicStatusInfo.hasActivity
-                      ? t.statusAssessedShort(solvedCount, lesson.questions.length, topicStatusInfo.soloReviews)
-                      : t.statusNotAssessedShort}
-                  </span>
-                </div>
-                <h1 className="lesson-title mt-1">
-                  {t.todayContinueTitle(lesson.title, continueModeLabel)}
-                </h1>
-                <p className="lesson-intro mt-1">{lesson.intro}</p>
+                <div className="today-hero-layout">
+                  <div className="today-hero-copy">
+                    <div className="lesson-meta-line">
+                      <span className="rule-label">{t.todayContinueBadge}</span>
+                      <span className="lesson-honest-status">
+                        {topicStatusInfo.hasActivity
+                          ? t.statusAssessedShort(solvedCount, lesson.questions.length, topicStatusInfo.soloReviews)
+                          : t.statusNotAssessedShort}
+                      </span>
+                    </div>
+                    <h1 className="lesson-title mt-1">
+                      {t.todayContinueTitle(lesson.title, continueModeLabel)}
+                    </h1>
+                    <p className="lesson-intro mt-1">{lesson.intro}</p>
 
-                <div className="today-primary-actions mt-4">
-                  <Button
-                    onClick={() =>
-                      handleTabChange(checkedCount > 0 ? "practice" : "lesson")
-                    }
-                  >
-                    <span>{t.todayContinueBtn}</span>
-                    <ArrowRight size={16} />
-                  </Button>
-                  <Button variant="outline" onClick={() => handleTabChange("graph")}>
-                    <GitBranch size={15} />
-                    <span>{t.todaySwitchTopicBtn}</span>
-                  </Button>
-                  <Button variant="outline" onClick={() => handleTabChange("exam")}>
-                    <Target size={15} />
-                    <span>{t.navExam}</span>
-                  </Button>
+                    <div className="today-primary-actions mt-4">
+                      <Button
+                        onClick={() =>
+                          handleTabChange(checkedCount > 0 ? "practice" : "lesson")
+                        }
+                      >
+                        <span>{t.todayContinueBtn}</span>
+                        <ArrowRight size={16} />
+                      </Button>
+                      <Button variant="outline" onClick={() => handleTabChange("graph")}>
+                        <GitBranch size={15} />
+                        <span>{t.todaySwitchTopicBtn}</span>
+                      </Button>
+                      <Button variant="outline" onClick={() => handleTabChange("exam")}>
+                        <Target size={15} />
+                        <span>{t.navExam}</span>
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="today-hero-visual">
+                    <PixelKnowledgeMosaic lang={lang} masteredCount={baseline.masteredTopics.length} />
+                  </div>
                 </div>
 
-                {/* Next Scheduled Review Line */}
+                {/* Next Scheduled Review Line + Pixel Mastery Bar */}
                 <div className="today-review-strip mt-4 pt-3 border-t border-border/60 flex flex-wrap items-center justify-between gap-2">
                   <span className="small">
                     <strong>{t.todayNextReviewLabel}</strong>{" "}
                     {nextDueReview ? topicName(nextDueReview.topic, lang) : t.todayNoDueReview}
                   </span>
-                  {nextDueReview && (
-                    <a
-                      href={`/lab?lang=${lang}&topic=${nextDueReview.topic}`}
-                      className="quiet-inline-link text-sm"
-                    >
-                      {t.todayNextReviewBtn}
-                    </a>
-                  )}
+                  <div className="flex items-center gap-3">
+                    <PixelProgressBar
+                      value={baseline.masteredTopics.length}
+                      max={16}
+                      segments={16}
+                      label={t.topics}
+                    />
+                    {nextDueReview && (
+                      <a
+                        href={`/lab?lang=${lang}&topic=${nextDueReview.topic}`}
+                        className="quiet-inline-link text-sm"
+                      >
+                        {t.todayNextReviewBtn}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </section>
             )}
@@ -2086,11 +2069,21 @@ export default function Study({
                     </p>
 
                     <div className="practice-header-bar">
-                      <span className="practice-counter">
-                        {activeQ < 3
-                          ? `${t.taskProgress} ${activeQ + 1} ${t.ofLabel} ${lesson.questions.length}`
-                          : t.transferTitle}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="practice-counter">
+                          {activeQ < 3
+                            ? `${t.taskProgress} ${activeQ + 1} ${t.ofLabel} ${lesson.questions.length}`
+                            : t.transferTitle}
+                        </span>
+                        <div className="w-24 hidden sm:block">
+                          <PixelProgressBar
+                            value={solvedCount}
+                            max={Math.max(1, lesson.questions.length)}
+                            segments={6}
+                            label={t.practice}
+                          />
+                        </div>
+                      </div>
                       <div className="practice-step-dots" role="tablist" aria-label={t.practice}>
                         {lesson.questions.map((q, idx) => {
                           const done = checkedMap[idx] && answers[idx] === String(q.correct);
