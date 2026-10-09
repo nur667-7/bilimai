@@ -32,7 +32,7 @@ function Checkbox({
         onClick?.(e);
       }}
       className={cn(
-        "peer inline-flex size-4.5 shrink-0 cursor-pointer items-center justify-center rounded-[5px] border border-input bg-white shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+        "peer inline-flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-[5px] border border-input bg-white shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
         className
       )}
       {...props}

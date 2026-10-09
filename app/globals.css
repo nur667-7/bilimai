@@ -5874,3 +5874,147 @@ html.dark .lesson-tabs [data-slot="tabs-trigger"] {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ==========================================================================
+   16. Clickability, Hit-Testing & Mobile Ergonomics Fixes (390x844 & WCAG 2.2 AA)
+   ========================================================================== */
+.aniq-auth-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.aniq-auth-skip-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.aniq-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aniq-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.aniq-role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.aniq-role-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.aniq-role-card.active {
+  border-color: var(--primary);
+  background: var(--accent);
+  color: var(--primary);
+}
+
+.aniq-demo-divider {
+  margin: 16px 0 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.aniq-demo-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Ensure all interactive text links, summary toggles, and range inputs meet WCAG 2.2 AA (>=24px height) */
+.top-UtilityLink,
+.inline-action-link,
+.header-quiet-link,
+.quiet-inline-link,
+.footer-link-btn,
+.site-footer a,
+.welcome-footer a,
+.aniq-auth-inline-link,
+.aniq-auth-footer a,
+.document a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding-block: 3px;
+}
+
+.lab-drawer > summary,
+.plan-collapsible-details > summary,
+.aniq-optional-summary {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+input[type="range"] {
+  min-height: 28px;
+  cursor: pointer;
+}
+
+.lang-pill,
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+}
+
+.prompt-chip {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.exam-compact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .lab-progress ul,
+  .kg-summary-bar,
+  .exam-format-breakdown {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lab-progress li {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+

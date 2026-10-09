@@ -80,7 +80,7 @@ const GRAPH_UI_COPY = {
     filterLit: "Мат. сауаттылық",
     filterAlg: "Алгебра мен талдау",
     filterGeo: "Геометрия мен триг.",
-    modeGraph: "Показать граф связей",
+    modeGraph: "Байланыс графын көрсету",
     modePath: "Қадамдық тізім",
     themeDark: "Қараңғы фон",
     themeLight: "Ашық парақ",
@@ -336,7 +336,12 @@ export function KnowledgeGraphView({
 
   function handleNodePointerDown(e: React.PointerEvent<SVGGElement>, id: TopicId) {
     e.stopPropagation();
-    e.currentTarget.setPointerCapture(e.pointerId);
+    onSelectTopic(id);
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Synthetic or assistive pointer events may not have an active hardware pointerId
+    }
     const cur = offsets[id] ?? { dx: 0, dy: 0 };
     dragState.current = {
       kind: "node",
@@ -346,7 +351,6 @@ export function KnowledgeGraphView({
       origX: cur.dx,
       origY: cur.dy
     };
-    onSelectTopic(id);
   }
 
   function handlePointerMove(e: React.PointerEvent<SVGSVGElement>) {
@@ -416,7 +420,7 @@ export function KnowledgeGraphView({
           <span className="small">{t.summaryNext}</span>
           <button
             type="button"
-            className="underline font-bold text-left text-sm text-primary"
+            className="underline font-bold text-left text-sm text-primary inline-flex items-center min-h-[28px]"
             onClick={() => onSelectTopic(graphState.summary.nextBestTopic)}
           >
             {topicName(graphState.summary.nextBestTopic, lang)} →
@@ -448,7 +452,7 @@ export function KnowledgeGraphView({
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <Button
             type="button"
             size="sm"
@@ -666,6 +670,7 @@ export function KnowledgeGraphView({
                         )} (${nodeAssessed ? `${node.masteryPercent}%` : t.notAssessedLabel})`}
                         aria-pressed={isSelected}
                         style={{ opacity: nodeOpacity, cursor: "pointer" }}
+                        onClick={() => onSelectTopic(node.id)}
                         onPointerDown={(e) => handleNodePointerDown(e, node.id)}
                         onMouseEnter={() => setHoveredTopic(node.id)}
                         onMouseLeave={() => setHoveredTopic(null)}
@@ -946,7 +951,7 @@ export function KnowledgeGraphView({
 
             <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5 text-xs">
               <a
-                className="underline font-semibold inline-flex items-center gap-1"
+                className="underline font-semibold inline-flex items-center gap-1 min-h-[28px] py-1"
                 href={`/lab?lang=${lang}&topic=${activeNode.id}`}
               >
                 <FlaskConical size={13} />
@@ -954,7 +959,7 @@ export function KnowledgeGraphView({
               </a>
               <button
                 type="button"
-                className="underline font-semibold"
+                className="underline font-semibold inline-flex items-center min-h-[28px] py-1"
                 onClick={() => onToggleWeakTopic(activeNode.id)}
               >
                 {activeNode.isWeakMarked ? t.unmarkGapBtn : t.markGapBtn}

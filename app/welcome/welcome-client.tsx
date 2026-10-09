@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import type { Language } from "@/lib/curriculum";
 import { UNT_SUBJECTS, type UntSubjectId } from "@/lib/unt-all-subjects";
 import { SubjectIcon } from "@/app/unt-exam-view";
@@ -222,12 +221,12 @@ export default function WelcomeClient({
       <header className="study-topbar">
         <div className="study-topbar-inner">
           <div className="study-brand-row">
-            <Link href={`/?lang=${lang}`} className="brand-mark">
+            <a href={`/?lang=${lang}`} className="brand-mark">
               <span className="brand-symbol" aria-hidden="true">
                 ∑
               </span>
               <span>BilimAI</span>
-            </Link>
+            </a>
             <span className="brand-Sep" aria-hidden="true">
               /
             </span>
@@ -256,13 +255,13 @@ export default function WelcomeClient({
 
             <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
-            <Link href={`/login?lang=${lang}`} className="top-UtilityLink">
+            <a href={`/login?lang=${lang}`} className="top-UtilityLink">
               {t.profileLink}
-            </Link>
+            </a>
 
-            <Link href={`/?lang=${lang}`} className="btn-primary welcome-top-cta">
+            <a href={`/?lang=${lang}`} className="btn-primary welcome-top-cta">
               {t.primaryCta}
-            </Link>
+            </a>
           </div>
         </div>
       </header>
@@ -278,15 +277,15 @@ export default function WelcomeClient({
             <p className="welcome-main-lead">{t.subtitle}</p>
 
             <div className="welcome-cta-row">
-              <Link href={`/?lang=${lang}`} className="btn-primary">
+              <a href={`/?lang=${lang}`} className="btn-primary">
                 {t.primaryCta}
-              </Link>
-              <Link href={`/?tab=exam&lang=${lang}`} className="btn-ghost">
+              </a>
+              <a href={`/?tab=exam&lang=${lang}`} className="btn-ghost">
                 {t.examCta}
-              </Link>
-              <Link href={`/lab?lang=${lang}`} className="btn-ghost">
+              </a>
+              <a href={`/lab?lang=${lang}`} className="btn-ghost">
                 {t.labCta}
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -328,9 +327,9 @@ export default function WelcomeClient({
                   {MINI_STEPS[pickedStep].isError ? t.miniCorrectMsg : t.miniWrongMsg}
                 </p>
                 <div style={{ marginTop: "0.5rem" }}>
-                  <Link href={`/lab?lang=${lang}`} className="inline-action-link">
+                  <a href={`/lab?lang=${lang}`} className="inline-action-link">
                     {t.miniOpenLab}
-                  </Link>
+                  </a>
                 </div>
               </div>
             )}
@@ -345,9 +344,9 @@ export default function WelcomeClient({
               <article key={item.title} className="welcome-tool-card">
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
-                <Link href={item.href} className="inline-action-link">
+                <a href={item.href} className="inline-action-link">
                   {item.cta}
-                </Link>
+                </a>
               </article>
             ))}
           </div>
@@ -370,7 +369,7 @@ export default function WelcomeClient({
               officialMaxPoints: number;
               title: Record<Language, string>;
             }) => (
-              <Link
+              <a
                 key={subj.id}
                 href={`/?tab=exam&subject=${subj.id}&lang=${lang}`}
                 className="welcome-subject-card"
@@ -385,7 +384,7 @@ export default function WelcomeClient({
                   </span>
                   <span className="welcome-subj-badge">{t.trainingBadge}</span>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
 
@@ -397,7 +396,7 @@ export default function WelcomeClient({
               officialMaxPoints: number;
               title: Record<Language, string>;
             }) => (
-              <Link
+              <a
                 key={subj.id}
                 href={`/?tab=exam&subject=${subj.id}&lang=${lang}`}
                 className="welcome-subject-card"
@@ -412,15 +411,15 @@ export default function WelcomeClient({
                   </span>
                   <span className="welcome-subj-badge">{t.trainingBadge}</span>
                 </div>
-              </Link>
+              </a>
             ))}
           </div>
         </section>
 
         <footer className="welcome-footer">
-          <Link href={`/about?lang=${lang}`}>{t.footerAbout}</Link>
+          <a href={`/about?lang=${lang}`}>{t.footerAbout}</a>
           <span aria-hidden="true">·</span>
-          <Link href={`/privacy?lang=${lang}`}>{t.footerPrivacy}</Link>
+          <a href={`/privacy?lang=${lang}`}>{t.footerPrivacy}</a>
           <span aria-hidden="true">·</span>
           <a
             href="https://testcenter.kz/?page_id=15074&lang=ru"

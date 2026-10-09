@@ -53,7 +53,7 @@ import type { Language, TopicId } from "@/lib/lessons";
 const EXAM_COPY = {
   ru: {
     changeSetupBtn: "Сменить предмет / вариант",
-    hideSetupBtn: "Свернуть настройки и перейти к вопросу №1",
+    hideSetupBtn: "Скрыть настройки",
     startExamBtn: "Начать вариант",
     modeLabel: "Режим набора:",
     modeOfficial: "Официальный формат НЦТ",
@@ -113,7 +113,7 @@ const EXAM_COPY = {
   },
   kk: {
     changeSetupBtn: "Пән / нұсқаны ауыстыру",
-    hideSetupBtn: "Баптауды жауып, №1 сұраққа өту",
+    hideSetupBtn: "Баптауды жабу",
     startExamBtn: "Нұсқаны бастау",
     modeLabel: "Жинақ режимі:",
     modeOfficial: "ҚР ҰТО ресми форматы",
@@ -173,7 +173,7 @@ const EXAM_COPY = {
   },
   uz: {
     changeSetupBtn: "Fan / variantni o‘zgartirish",
-    hideSetupBtn: "Sozlamani yopib, №1 savolga o‘tish",
+    hideSetupBtn: "Sozlamani yopish",
     startExamBtn: "Variantni boshlash",
     modeLabel: "To‘plam rejimi:",
     modeOfficial: "Rasmiy UBT formati",
@@ -516,6 +516,7 @@ export function UntExamView({
             type="button"
             size="sm"
             variant={showSetupDrawer ? "default" : "outline"}
+            className="whitespace-normal text-left h-auto min-h-9 py-1.5 max-w-full shrink"
             onClick={() => setShowSetupDrawer((prev) => !prev)}
           >
             <Settings2 size={14} />
@@ -525,6 +526,7 @@ export function UntExamView({
             type="button"
             size="sm"
             variant={showQuestionGrid ? "default" : "outline"}
+            className="whitespace-normal text-left h-auto min-h-9 py-1.5 max-w-full shrink"
             onClick={() => setShowQuestionGrid((prev) => !prev)}
           >
             <Grid size={14} />
