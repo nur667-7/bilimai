@@ -37,6 +37,9 @@ export const metadata: Metadata = {
       uz: "https://bilimai.dpdns.org/?lang=uz"
     }
   },
+  verification: {
+    google: "d2d0fcaf5b36a61d"
+  },
   robots: {
     index: true,
     follow: true,
