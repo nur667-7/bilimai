@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SiteFooter } from "@/components/site-footer";
 import { lessons, untTopicIds, type Language, type TopicId } from "@/lib/lessons";
 import {
   buildBaselineRoadmap,
@@ -633,6 +634,11 @@ export default function Study() {
             {t.graphTab}
           </button>
           <a href={`/lab?lang=${lang}&topic=${topic}`}>{t.openLab}</a>
+          <a href="#claude-engine" className="topnav-pill accent">
+            <Sparkles size={13} aria-hidden="true" />
+            Claude API
+          </a>
+          <a href="#contacts">{lang === "ru" ? "Контакты" : lang === "kk" ? "Байланыс" : "Aloqa"}</a>
           <a href="/about">{t.read}</a>
           <div className="flex gap-1" aria-label="Язык">
             <Button variant={lang === "ru" ? "default" : "ghost"} size="sm" aria-pressed={lang === "ru"} onClick={() => selectLanguage("ru")}>
@@ -1227,14 +1233,7 @@ export default function Study() {
           </section>
         </div>
       </main>
-      <footer className="wrap foot agy-floating-dock">
-        <span>{t.foot}</span>
-        <div>
-          <a href={`/lab?lang=${lang}&topic=${topic}`}>{t.openLab}</a>
-          <a href="/about">{t.read}</a>
-          <a href="/privacy">{t.privacy}</a>
-        </div>
-      </footer>
+      <SiteFooter lang={lang} topic={topic} onSelectTab={setTab} />
     </div>
   );
 }

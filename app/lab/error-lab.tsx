@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { SiteFooter } from "@/components/site-footer";
 import {
   makeChallenge,
   checkAnswer,
@@ -423,6 +424,11 @@ export default function ErrorLab() {
         </a>
         <nav className="topnav" aria-label="Language">
           <a href="/" className="topnav-pill">{t.back}</a>
+          <a href="#claude-engine" className="topnav-pill accent">
+            <Sparkles size={13} aria-hidden="true" />
+            Claude API
+          </a>
+          <a href="#contacts">{lang === "ru" ? "Контакты" : lang === "kk" ? "Байланыс" : "Aloqa"}</a>
           <a href="/about">{t.aboutLink}</a>
           <div className="flex gap-1">
             {(["ru", "kk", "uz"] as Language[]).map((l) => (
@@ -772,14 +778,7 @@ export default function ErrorLab() {
           </aside>
         </div>
       </main>
-      <footer className="wrap foot agy-floating-dock">
-        <span>{t.static}</span>
-        <div>
-          <a href="/">{t.back}</a>
-          <a href="/about">{t.aboutLink}</a>
-          <a href="/privacy">{t.privacyLink}</a>
-        </div>
-      </footer>
+      <SiteFooter lang={lang} topic={topic} />
     </div>
   );
 }
