@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Calendar, CheckCircle2, FlaskConical, GitBranch, Microscope, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter } from "@/components/site-footer";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
@@ -232,7 +232,7 @@ const storageKey = "bilimai-lab-v1";
 const initialProgress: Progress = { version: 1, records: [] };
 
 export default function ErrorLab() {
-  const { theme, toggleTheme } = useAniqTheme();
+  const { dark, toggleTheme } = useAniqTheme();
   const [lang, setLang] = useState<Language>("ru");
   const [topic, setTopic] = useState<LabTopic>("linear");
   const [seed, setSeed] = useState(0);
@@ -441,7 +441,7 @@ export default function ErrorLab() {
                 {t.navAbout}
               </a>
 
-              <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
+              <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
               <div className="lang-switcher" role="group" aria-label="Language">
                 <button
@@ -483,22 +483,28 @@ export default function ErrorLab() {
 
           <nav className="primary-nav" aria-label="Основные разделы">
             <a className="primary-nav-link" href={`/?lang=${lang}&topic=${topic}`}>
-              {t.navStudy}
+              <BookOpen size={14} />
+              <span>{t.navStudy}</span>
             </a>
             <a className="primary-nav-link primary-nav-link-xray" href={`/?lang=${lang}&tab=xray&topic=${topic}`}>
-              {lang === "kk" ? "🔬 Рентген & Грант РК" : lang === "uz" ? "🔬 Rentgen & Grant" : "🔬 Рентген & Грант РК"}
+              <Microscope size={14} />
+              <span>{lang === "kk" ? "Рентген & Грант РК" : lang === "uz" ? "Rentgen & Grant" : "Рентген & Грант РК"}</span>
             </a>
             <a className="primary-nav-link" href={`/?lang=${lang}&tab=graph&topic=${topic}`}>
-              {t.navGraph}
+              <GitBranch size={14} />
+              <span>{t.navGraph}</span>
             </a>
             <a className="primary-nav-link" href={`/?lang=${lang}&tab=exam&topic=${topic}`}>
-              {t.navExam}
+              <Target size={14} />
+              <span>{t.navExam}</span>
             </a>
             <a className="primary-nav-link" href={`/?lang=${lang}&tab=roadmap&topic=${topic}`}>
-              {t.navPlan}
+              <Calendar size={14} />
+              <span>{t.navPlan}</span>
             </a>
             <a className="primary-nav-link active" aria-current="page" href={`/lab?lang=${lang}&topic=${topic}`}>
-              {t.navLab}
+              <FlaskConical size={14} />
+              <span>{t.navLab}</span>
             </a>
           </nav>
         </div>

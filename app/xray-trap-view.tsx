@@ -12,9 +12,9 @@ const xrayCopy = {
     kicker: "УНИКАЛЬНАЯ ТЕХНОЛОГИЯ ANIQ AI · LOGIC FRACTURE X-RAY",
     title: "Рентген черновика, 60-сек детектор ловушек и Радар гранта РК",
     sub: "Обычные тесты ставят 0 баллов за всю задачу из-за одной забытой скобки ОДЗ. Aniq AI находит точную строку излома логики, не штрафует усвоенные темы и считает прирост шансов на госгрант в вузы Казахстана.",
-    modeBlitz: "⚡ Блиц «Детектор ловушки за 60 сек»",
-    modeDraft: "🔬 Рентген своего черновика",
-    modeGrant: "🎓 Радар гранта ВУЗов РК",
+    modeBlitz: "Блиц «Детектор ловушки за 60 сек»",
+    modeDraft: "Рентген своего черновика",
+    modeGrant: "Радар гранта ВУЗов РК",
     streakLabel: "Серия без ошибок",
     disarmedLabel: "Обезврежено ловушек",
     timerLabel: "Таймер блица",
@@ -33,7 +33,7 @@ const xrayCopy = {
     preservedLabel: "Сохранённый навык (не требует переучивания):",
     askClaudeBtn: "Разобрать эту ловушку с Claude API",
     openTopicBtn: "Открыть урок по теме",
-    nextTrapBtn: "Следующая ловушка →",
+    nextTrapBtn: "Следующая ловушка",
     customDraftTitle: "Построчный дебаггер твоего черновика решения",
     customDraftSub: "Вставь шаги своего решения (по 1 переходу на строку) или выбери частый черновик абитуриента ниже. Движок отделит верные шаги от точки излома.",
     presetsLabel: "Примеры черновиков с ловушками ЕНТ:",
@@ -59,9 +59,9 @@ const xrayCopy = {
     kicker: "ANIQ AI БІРЕГЕЙ ТЕХНОЛОГИЯСЫ · LOGIC FRACTURE X-RAY",
     title: "Шешім рентгені, 60-сек тұзақ детекторы және ҚР грант радары",
     sub: "Кәдімгі тесттер бір ғана АОО (ОДЗ) жақшасы үшін бүкіл есепке 0 балл қояды. Aniq AI логика үзілген нақты жолды табады, меңгерілген тақырыптарды айыппұлсыз сақтайды және ҚР ЖОО грантына түсу мүмкіндігін есептейді.",
-    modeBlitz: "⚡ 60 сек «ҰБТ тұзағын тап» блиці",
-    modeDraft: "🔬 Өз шешіміңнің рентгені",
-    modeGrant: "🎓 ҚР ЖОО грант радары",
+    modeBlitz: "60 сек «ҰБТ тұзағын тап» блиці",
+    modeDraft: "Өз шешіміңнің рентгені",
+    modeGrant: "ҚР ЖОО грант радары",
     streakLabel: "Қатесіз серия",
     disarmedLabel: "Залалсызданған тұзақ",
     timerLabel: "Блиц таймері",
@@ -80,7 +80,7 @@ const xrayCopy = {
     preservedLabel: "Сақталған дағды (қайта оқуды қажет етпейді):",
     askClaudeBtn: "Осы тұзақты Claude API-мен талдау",
     openTopicBtn: "Тақырып сабағын ашу",
-    nextTrapBtn: "Келесі тұзақ →",
+    nextTrapBtn: "Келесі тұзақ",
     customDraftTitle: "Шешім жазбасының жолдық дебаггері",
     customDraftSub: "Шешім қадамдарын (әр жолға 1 қадам) енгізіңіз немесе төмендегі дайын үлгіні таңдаңыз.",
     presetsLabel: "ҰБТ тұзақтары бар жазба үлгілері:",
@@ -106,9 +106,9 @@ const xrayCopy = {
     kicker: "ANIQ AI NOYOB TEXNOLOGIYASI · LOGIC FRACTURE X-RAY",
     title: "Qoralama rentgeni, 60-soniya tuzoq detektori va Grant radari",
     sub: "Oddiy testlar bitta unutilgan qavs uchun butun masalaga 0 ball qo‘yadi. Aniq AI mantiq buzilgan aniq qatorni topadi, o‘zlashtirilgan mavzularni jarimasiz saqlaydi va grant imkoniyatini hisoblaydi.",
-    modeBlitz: "⚡ 60 soniya «Tuzoqni top» blitsi",
-    modeDraft: "🔬 O‘z qoralamangiz rentgeni",
-    modeGrant: "🎓 OTM grant radari",
+    modeBlitz: "60 soniya «Tuzoqni top» blitsi",
+    modeDraft: "O‘z qoralamangiz rentgeni",
+    modeGrant: "OTM grant radari",
     streakLabel: "Xatosiz seriya",
     disarmedLabel: "Topilgan tuzoqlar",
     timerLabel: "Blits taymeri",
@@ -127,7 +127,7 @@ const xrayCopy = {
     preservedLabel: "Saqlangan ko‘nikma (qayta o‘qish shart emas):",
     askClaudeBtn: "Claude API bilan tahlil qilish",
     openTopicBtn: "Mavzu darsini ochish",
-    nextTrapBtn: "Keyingi tuzoq →",
+    nextTrapBtn: "Keyingi tuzoq",
     customDraftTitle: "Yechim qoralamasining qator-baqator debaggeri",
     customDraftSub: "Yechim qadamlarini (har bir qatorga 1 tadan) kiriting yoki quyidagi tayyor namunalardan birini tanlang.",
     presetsLabel: "Tuzoqli qoralama namunalari:",
@@ -263,7 +263,8 @@ export function XrayTrapView({
             className={`xray-mode-btn ${subMode === "blitz" ? "active" : ""}`}
             onClick={() => setSubMode("blitz")}
           >
-            {c.modeBlitz}
+            <Zap size={14} />
+            <span>{c.modeBlitz}</span>
           </button>
           <button
             type="button"
@@ -272,7 +273,8 @@ export function XrayTrapView({
             className={`xray-mode-btn ${subMode === "draft" ? "active" : ""}`}
             onClick={() => setSubMode("draft")}
           >
-            {c.modeDraft}
+            <Microscope size={14} />
+            <span>{c.modeDraft}</span>
           </button>
           <button
             type="button"
@@ -281,7 +283,8 @@ export function XrayTrapView({
             className={`xray-mode-btn ${subMode === "grant" ? "active" : ""}`}
             onClick={() => setSubMode("grant")}
           >
-            {c.modeGrant}
+            <GraduationCap size={14} />
+            <span>{c.modeGrant}</span>
           </button>
         </div>
       </div>
@@ -411,7 +414,8 @@ export function XrayTrapView({
 
               <div className="xray-diag-actions">
                 <Button size="sm" onClick={handleNextTrap}>
-                  {c.nextTrapBtn}
+                  <span>{c.nextTrapBtn}</span>
+                  <ArrowRight size={14} />
                 </Button>
                 <Button
                   size="sm"
@@ -423,10 +427,13 @@ export function XrayTrapView({
                 </Button>
                 <button
                   type="button"
-                  className="quiet-text-action"
+                  className="quiet-text-action inline-flex items-center gap-1"
                   onClick={() => onSelectTopic(currentTrap.topic)}
                 >
-                  {c.openTopicBtn}: {topicName(currentTrap.topic, lang)} →
+                  <span>
+                    {c.openTopicBtn}: {topicName(currentTrap.topic, lang)}
+                  </span>
+                  <ArrowRight size={13} />
                 </button>
               </div>
             </div>
@@ -502,8 +509,11 @@ export function XrayTrapView({
                     </div>
                     <p className="xray-trace-note">{line.note}</p>
                     {line.correctedLine && (
-                      <p className="xray-trace-fix">
-                        ✓ {c.correctedLabel} <strong>{line.correctedLine}</strong>
+                      <p className="xray-trace-fix inline-flex items-center gap-1">
+                        <CheckCircle2 size={14} />
+                        <span>
+                          {c.correctedLabel} <strong>{line.correctedLine}</strong>
+                        </span>
                       </p>
                     )}
                   </div>

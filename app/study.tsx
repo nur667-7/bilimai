@@ -1,7 +1,32 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
-import { ArrowRight, BookOpen, BrainCircuit, CheckCircle2, Compass, GraduationCap, LogOut, Microscope, RotateCcw, Sparkles, Target, User } from "lucide-react";
+import {
+  ArrowRight,
+  Award,
+  BookOpen,
+  Brain,
+  BrainCircuit,
+  Calendar,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Compass,
+  FlaskConical,
+  GitBranch,
+  GraduationCap,
+  Layers,
+  LogOut,
+  Microscope,
+  RotateCcw,
+  Shuffle,
+  Sparkles,
+  Target,
+  User,
+  X
+} from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,6 +52,19 @@ import {
   type UntStorage
 } from "@/lib/unt-exam";
 import {
+  UNT_PROFILE_COMBINATIONS,
+  UNT_SUBJECTS,
+  type UntSubjectId
+} from "@/lib/unt-all-subjects";
+import {
+  SCIENTIFIC_METHODS,
+  buildBjorkInterleavedList,
+  computeBloomMasteryGate,
+  computeEbbinghausRetention,
+  computeSwellerScaffoldingLevel,
+  type ScientificMethodSpec
+} from "@/lib/scientific-pedagogy";
+import {
   clearUserProfile,
   kzUniversities,
   loadUserProfile,
@@ -34,45 +72,53 @@ import {
   type UniversityId,
   type UserProfile
 } from "@/lib/user-profile";
-import { UntExamView } from "@/app/unt-exam-view";
+import { SubjectIcon, UntExamView } from "@/app/unt-exam-view";
 import { KnowledgeGraphView } from "@/app/knowledge-graph-view";
 import { XrayTrapView } from "@/app/xray-trap-view";
 
 const copy = {
   ru: {
     navStudy: "Занятие",
-    navXray: "🔬 Рентген & Грант РК",
+    navXray: "Рентген & Грант РК",
     navGraph: "Карта тем",
-    navExam: "Пробное ЕНТ",
-    navPlan: "Мой план",
+    navExam: "Пробное ЕНТ · 12 предметов",
+    navPlan: "Научный план",
     navLab: "Тренировка ошибок",
     navAbout: "О проекте",
     loginBtn: "Войти",
     registerBtn: "Начать",
     logoutBtn: "Выйти",
-    welcomeBadge: "Единая ИИ-платформа математики и ЕНТ · 16 разделов НЦТ РК",
+    welcomeBadge: "Единая ИИ-экосистема ЕНТ (ҰБТ) · 12 предметов НЦТ РК · 10 вариантов × 40 вопросов",
     welcomeTitle: "Понимать логику, находить ловушки и",
-    welcomeHighlight: "брать грант на ЕНТ",
+    welcomeHighlight: "брать государственный грант на ЕНТ",
     welcomeDesc:
-      "Единая платформа точной математической диагностики Aniq AI: построчный Рентген черновика, 1 152 задачи на поиск неверного шага, пробное ЕНТ, граф знаний, сократический ИИ-тьютор Claude API и Радар госгранта ВУЗов РК.",
-    welcomeCtaRegister: "Создать аккаунт",
-    welcomeCtaXray: "🔬 Рентген черновика",
-    welcomeCtaExam: "Пробное ЕНТ",
+      "Платформа точной когнитивной диагностики Aniq AI: все 12 предметов ЕНТ (по 10 полных вариантов из 40 вопросов = 50 баллов), построчный Рентген черновика, 1 152 задачи на поиск излома логики, граф знаний и 6 доказательных научных методик обучения.",
+    welcomeCtaRegister: "Создать паспорт абитуриента",
+    welcomeCtaXray: "Рентген черновика",
+    welcomeCtaExam: "Пробное ЕНТ (12 предметов)",
     welcomeCtaGraph: "Карта 16 тем",
     welcomeCtaLab: "Тренировка ошибок",
     welcomeHide: "Свернуть витрину",
     welcomeShow: "Витрина Aniq AI",
+    compactWelcomeLabel: "Быстрый старт ЕНТ (12 предметов × 10 вариантов по 40 вопр.):",
+    allSubjectsTitle: "Все 12 официальных предметов ЕНТ (НЦТ РК) · 4 800 заданий",
+    allSubjectsSub:
+      "Выберите любой профильный или обязательный предмет ЕНТ: внутри каждого доступны 10 полных вариантов по 40 вопросов (50 баллов) всех 4 форматов НЦТ и полный справочник формул, дат и законов.",
     bentoKicker: "ШЕСТЬ МОДУЛЕЙ ANIQ AI",
-    bentoTitle: "Всё для победы на ЕНТ и понимания математики",
-    topics: "16 тем ЕНТ",
+    bentoTitle: "Инженерная архитектура подготовки к ЕНТ без «AI-слопа»",
+    scienceKicker: "ДОКАЗАТЕЛЬНАЯ КОГНИТИВНАЯ НАУКА В ЯДРЕ ПЛАТФОРМЫ",
+    scienceTitle: "6 научных методик мировых учёных, встроенных в алгоритмы Aniq AI",
+    scienceSub:
+      "Каждое действие на платформе опирается на математические модели когнитивной психологии и педагогических исследований Чикагского университета, ETH Zurich, Carnegie Mellon и UCLA.",
+    topics: "16 разделов математики ЕНТ",
     mobileTopicLabel: "Тема",
     lesson: "Разбор",
     practice: "Практика",
     ai: "ИИ-тьютор",
     rule: "§ Главное правило (инвариант)",
-    exampleLabel: "Разбор образца",
+    exampleLabel: "Разбор эталонного образца НЦТ",
     exampleSteps: "Пошаговый ход решения",
-    note: "Проговори каждый переход своими словами — почему равенство или свойство сохраняется на этом шаге.",
+    note: "Метод самообъяснения (Chi & Feynman): проговорите каждый переход своими словами — почему равенство или свойство сохраняется на этом шаге.",
     solveSelf: "Решить самостоятельно",
     askAboutRule: "Задать вопрос по правилу",
     taskProgress: "Задача",
@@ -82,25 +128,25 @@ const copy = {
     chooseOptionPrompt: "Выберите один из вариантов ответа выше, чтобы проверить решение.",
     selectedIndicator: "Выбрано",
     correctTitle: "Верно",
-    wrongTitle: "Обрати внимание на переход",
+    wrongTitle: "Обратите внимание на переход",
     analyzeErrorBtn: "Показать правило",
     askAiWhyBtn: "Разобрать с ИИ-тьютором (Claude)",
     tryAgainBtn: "Попробовать ещё раз",
     nextTaskBtn: "Следующая задача",
     ruleBreakdownTitle: "Разбор по правилу темы:",
     openLabForTopic: "Потренировать поиск ошибки в этой теме",
-    allTasksSolved: "Все 3 задачи решены верно. Закрепи правило на задаче с новыми числами или переходи к следующей теме.",
+    allTasksSolved: "Все 3 задачи решены верно. Закрепите правило на задаче с новыми числами или переходите к следующей теме.",
     nextTopicBtn: "Следующая тема курса",
     transferTitle: "Задача с новыми числами",
-    transferSub: "Примени главное правило темы без вариантов ответа (доступно 24 варианта чисел).",
+    transferSub: "Примените главное правило темы без вариантов ответа (доступно 24 варианта чисел).",
     transferCheck: "Проверить ответ",
     transferNext: "Другие числа",
     transferRight: "Верно! Правило применено точно.",
-    transferWrong: "Ответ пока не совпал. Сверь вычисления с главным правилом темы.",
+    transferWrong: "Ответ пока не совпал. Сверьте вычисления с главным правилом темы.",
     transferInvalid: "Введите целое число, десятичную дробь или обыкновенную дробь вида 3/7.",
     aiTitle: "Сократический ИИ-тьютор (Claude API)",
     aiSub:
-      "В отличие от статического учебника, Claude API анализирует твой вопрос или конкретную ошибку в вычислениях, объясняет правило простыми словами на выбранном языке и задаёт проверочный вопрос без спойлера ответа.",
+      "В отличие от обычного чат-бота, Claude API анализирует конкретную ошибку в вычислениях, объясняет правило простыми словами на выбранном языке и задаёт проверочный вопрос по методу Фейнмана без спойлера ответа.",
     question: "Ваш вопрос или шаг, который вызвал трудность",
     placeholder: "Например: почему в теореме Виета сумма корней берётся с противоположным знаком?",
     quickLabel: "Частые вопросы по теме:",
@@ -116,12 +162,12 @@ const copy = {
     loading: "ИИ-тьютор формирует разбор…",
     pilot: "Генеративный разбор выполняется через защищённый серверный маршрут /api/explain (Claude API с детерминированным резервным контуром).",
     privacy: "Приватность",
-    rmTitle: "Персональный план подготовки к ЕНТ",
-    rmSub: "Очерёдность 16 тем строится по результатам пробного ЕНТ, тренировки ошибок и выбранной цели.",
+    rmTitle: "Научный план подготовки к ЕНТ (Bloom 2σ + Ebbinghaus SM-2 + Bjork Interleaving)",
+    rmSub: "Очерёдность 16 тем строится по кривой забывания Эббингауза R(t) = exp(−t/S), порогу мастерства Блума (80%) и интерливингу Бьорка.",
     rmTarget: "Целевой балл ЕНТ (из 50)",
     rmWeeks: "Недель до экзамена",
-    rmWeak: "Темы, которые нужно подтянуть (из 16 разделов ЕНТ)",
-    rmConsolidation: "Закреплено (≥2 самостоятельных решения)",
+    rmWeak: "Темы с потерей баллов (из 16 разделов ЕНТ)",
+    rmConsolidation: "Закреплено по порогу Блума (≥2 самостоятельных решения)",
     rmConsolidationEmpty: "Пока нет закреплённых тем — решите по 2 задачи без подсказок в разделе «Тренировка ошибок».",
     rmGoal: "Цель и главная трудность для ИИ-планировщика (Claude API)",
     rmGoalPlaceholder: "Например: путаю знаки в тригонометрии и формулы объёмов пирамиды, нужно набрать 42+ за 6 недель",
@@ -130,49 +176,57 @@ const copy = {
       "Цель 38/50 за 4 недели: нужно подтянуть производную, первообразную и стереометрию"
     ],
     rmGenerate: "Составить план с Claude API",
-    rmBaseTitle: "Рекомендуемая очерёдность тем",
-    rmPhase1: "Этап 1 (недели 1–2): базовые темы и закрытие пробелов",
-    rmPhase2: "Этап 2 (недели 3+): закрепление и перенос навыка",
+    rmBaseTitle: "Рекомендуемая очерёдность тем (Матрица Блума + Эббингауза)",
+    rmPhase1: "Этап 1 (недели 1–2): корневые пререквизиты и закрытие пробелов",
+    rmPhase2: "Этап 2 (недели 3+): интерливинг Бьорка и перенос навыка",
     rmClaudeTitle: "Персональный план по неделям",
     rmMilestones: "Шаги по неделям",
-    rmHabit: "Режим занятий",
+    rmHabit: "Научный режим занятий",
     badgeLive: "Claude API · Живой разбор",
     badgePreview: "Инвариант урока · Резервный контур"
   },
   kk: {
     navStudy: "Сабақ",
-    navXray: "🔬 Рентген & ҚР Гранты",
+    navXray: "Рентген & ҚР Гранты",
     navGraph: "Тақырыптар картасы",
-    navExam: "Байқау ҰБТ",
-    navPlan: "Менің жоспарым",
+    navExam: "Байқау ҰБТ · 12 пән",
+    navPlan: "Ғылыми жоспар",
     navLab: "Қатемен жұмыс",
     navAbout: "Жоба туралы",
     loginBtn: "Кіру",
     registerBtn: "Бастау",
     logoutBtn: "Шығу",
-    welcomeBadge: "Математика және ҰБТ-ға арналған бірыңғай ЖИ-платформа · ҰТО 16 бөлімі",
+    welcomeBadge: "Бірыңғай ҰБТ ЖИ-экожүйесі · ҚР ҰТО 12 пәні · 10 нұсқа × 40 сұрақ",
     welcomeTitle: "Логиканы түсіну, тұзақты табу және",
-    welcomeHighlight: "ҰБТ грантын жеңіп алу",
+    welcomeHighlight: "ҰБТ мемлекеттік грантын жеңіп алу",
     welcomeDesc:
-      "Aniq AI дәл математикалық диагностика платформасы: шешім рентгені, 1 152 қате қадамды табу есебі, байқау ҰБТ, білім графы, Claude API сократикалық тьюторы және ҚР ЖОО грант радары.",
-    welcomeCtaRegister: "Аккаунт ашу",
-    welcomeCtaXray: "🔬 Шешім рентгені",
-    welcomeCtaExam: "Байқау ҰБТ",
+      "Aniq AI дәл когнитивті диагностика платформасы: барлық 12 ҰБТ пәні (40 сұрақтан 10 толық нұсқа = 50 балл), шешім рентгені, 1 152 қате қадамды табу есебі, білім графы және 6 ғылыми оқыту әдістемесі.",
+    welcomeCtaRegister: "Талапкер паспортын ашу",
+    welcomeCtaXray: "Шешім рентгені",
+    welcomeCtaExam: "Байқау ҰБТ (12 пән)",
     welcomeCtaGraph: "16 тақырып картасы",
     welcomeCtaLab: "Қатемен жұмыс",
     welcomeHide: "Витринаны жинау",
     welcomeShow: "Aniq AI витринасы",
+    compactWelcomeLabel: "ҰБТ жылдам бастау (12 пән × 40 сұрақтан 10 нұсқа):",
+    allSubjectsTitle: "Барлық 12 ресми ҰБТ пәні (ҚР ҰТО) · 4 800 тапсырма",
+    allSubjectsSub:
+      "Кез келген бейіндік немесе міндетті пәнді таңдаңыз: әр пәнде 40 сұрақтан тұратын 10 толық нұсқа (50 балл) және формулалар, даталар мен заңдар анықтамалығы бар.",
     bentoKicker: "ANIQ AI АЛТЫ МОДУЛІ",
-    bentoTitle: "ҰБТ-ға дайындық пен математиканы түсінуге қажеттінің бәрі",
-    topics: "ҰБТ 16 тақырыбы",
+    bentoTitle: "ҰБТ-ға дайындық пен математиканы түсінудің инженерлік жүйесі",
+    scienceKicker: "ПЛАТФОРМА ЯДРОСЫНДАҒЫ ДӘЛЕЛДІ КОГНИТИВТІ ҒЫЛЫМ",
+    scienceTitle: "Aniq AI алгоритмдеріне енгізілген әлем ғалымдарының 6 ғылыми әдістемесі",
+    scienceSub:
+      "Платформадағы әрбір қадам Чикаго университеті, ETH Zurich, Carnegie Mellon және UCLA зерттеулерінің математикалық модельдеріне негізделген.",
+    topics: "ҰБТ математикасының 16 бөлімі",
     mobileTopicLabel: "Тақырып",
     lesson: "Талдау",
     practice: "Жаттығу",
     ai: "ЖИ-тьютор",
     rule: "§ Негізгі ереже (инвариант)",
-    exampleLabel: "Үлгі талдауы",
+    exampleLabel: "ҰТО эталондық үлгісін талдау",
     exampleSteps: "Қадамдық шешу жолы",
-    note: "Әр қадамды өз сөзіңізбен түсіндіріп көріңіз — теңдік немесе қасиет неліктен сақталады.",
+    note: "Өзіндік түсіндіру әдісі (Chi & Feynman): әр қадамды өз сөзіңізбен түсіндіріп көріңіз — теңдік неліктен сақталады.",
     solveSelf: "Өз бетінше шығару",
     askAboutRule: "Ереже бойынша сұрақ қою",
     taskProgress: "Есеп",
@@ -200,7 +254,7 @@ const copy = {
     transferInvalid: "Бүтін сан, ондық бөлшек немесе 3/7 түріндегі бөлшек енгізіңіз.",
     aiTitle: "Сократикалық ЖИ-тьютор (Claude API)",
     aiSub:
-      "Кәдімгі оқулықтан айырмашылығы — Claude API сіздің нақты сұрағыңызды немесе жіберген қатеңізді талдап, ережені түсінікті тілде түсіндіреді және дайын жауапты айтпай бағыттаушы сұрақ қояды.",
+      "Кәдімгі чат-боттан айырмашылығы — Claude API сіздің нақты қатеңізді талдап, ережені түсінікті тілде түсіндіреді және Фейнман әдісі бойынша бағыттаушы сұрақ қояды.",
     question: "Сұрағыңыз немесе қиындық тудырған қадам",
     placeholder: "Мысалы: Виет теоремасында түбірлер қосындысы неге қарама-қарсы таңбамен алынады?",
     quickLabel: "Жиі қойылатын сұрақтар:",
@@ -216,12 +270,12 @@ const copy = {
     loading: "Талдау дайындалып жатыр…",
     pilot: "Генеративті талдау қорғалған /api/explain серверлік маршруты арқылы (Claude API + резервтік контур) орындалады.",
     privacy: "Құпиялық",
-    rmTitle: "ҰБТ-ға жеке дайындық жоспары",
-    rmSub: "16 тақырыптың реті байқау ҰБТ, қатемен жұмыс және мақсатты балға қарай құрылады.",
+    rmTitle: "ҰБТ-ға ғылыми дайындық жоспары (Bloom 2σ + Ebbinghaus SM-2 + Bjork Interleaving)",
+    rmSub: "16 тақырыптың реті Эббингауз ұмыту қисығы R(t) = exp(−t/S), Блумның 80% шеберлік шегі және Бьорк интерливингі бойынша құрылады.",
     rmTarget: "Мақсатты ҰБТ балы (50-ден)",
     rmWeeks: "Емтиханға дейінгі апта саны",
     rmWeak: "Қайталауды қажет ететін тақырыптар (16 бөлімнен)",
-    rmConsolidation: "Бекітілді (≥2 өздік шешім)",
+    rmConsolidation: "Блум шегі бойынша бекітілді (≥2 өздік шешім)",
     rmConsolidationEmpty: "Әзірше бекітілген тақырып жоқ — «Қатемен жұмыс» бөлімінде көмексіз 2 есептен шығарыңыз.",
     rmGoal: "ЖИ-жоспарлаушыға (Claude API) арналған мақсат пен қиындық",
     rmGoalPlaceholder: "Мысалы: тригонометрия мен пирамида көлемінде қателесемін, 6 аптада 42+ балл жинау керек",
@@ -230,41 +284,49 @@ const copy = {
       "4 аптада 38/50 балл: туынды, интеграл және стереометрия"
     ],
     rmGenerate: "Claude API арқылы жоспар құру",
-    rmBaseTitle: "Ұсынылатын тақырыптар реті",
-    rmPhase1: "1-кезең (1–2 апта): базалық тақырыптар және олқылықтарды жою",
-    rmPhase2: "2-кезең (3+ апта): бекіту және дағдыны тексеру",
+    rmBaseTitle: "Ұсынылатын тақырыптар реті (Блум + Эббингауз матрицасы)",
+    rmPhase1: "1-кезең (1–2 апта): базалық пререквизиттер және олқылықтарды жою",
+    rmPhase2: "2-кезең (3+ апта): Бьорк интерливингі және дағдыны тексеру",
     rmClaudeTitle: "Апталық жеке жоспар",
     rmMilestones: "Апталық қадамдар",
-    rmHabit: "Дайындық тәртібі",
+    rmHabit: "Ғылыми дайындық тәртібі",
     badgeLive: "Claude API · Тікелей талдау",
     badgePreview: "Сабақ инварианты · Резервтік контур"
   },
   uz: {
     navStudy: "Dars",
-    navXray: "🔬 Rentgen & Grant",
+    navXray: "Rentgen & Grant",
     navGraph: "Mavzular xaritasi",
-    navExam: "Sinov UBT",
-    navPlan: "Mening rejam",
+    navExam: "Sinov UBT · 12 fan",
+    navPlan: "Ilmiy reja",
     navLab: "Xatolar ustida ishlash",
     navAbout: "Loyiha haqida",
     loginBtn: "Kirish",
     registerBtn: "Boshlash",
     logoutBtn: "Chiqish",
-    welcomeBadge: "Matematika va imtihon uchun yagona SI-platforma · 16 ta bo‘lim",
+    welcomeBadge: "Yagona UBT SI-ekotizimi · 12 ta fan · 10 variant × 40 savol",
     welcomeTitle: "Mantiqni tushunish, tuzoqni topish va",
-    welcomeHighlight: "davlat grantini yutish",
+    welcomeHighlight: "davlat grantini yutib olish",
     welcomeDesc:
-      "Aniq AI aniq matematik diagnostika platformasi: qoralama rentgeni, 1 152 ta xato qadamni topish masalasi, sinov UBT, bilimlar grafi, Claude API tyutori va grant radari.",
-    welcomeCtaRegister: "Akkaunt yaratish",
-    welcomeCtaXray: "🔬 Qoralama rentgeni",
-    welcomeCtaExam: "Sinov UBT",
+      "Aniq AI kognitiv diagnostika platformasi: barcha 12 ta UBT fani (40 savoldan 10 ta to‘liq variant = 50 ball), qoralama rentgeni, 1 152 ta xato qadamni topish masalasi, bilimlar grafi va 6 ta ilmiy o‘qitish metodikasi.",
+    welcomeCtaRegister: "Abituriyent pasportini yaratish",
+    welcomeCtaXray: "Qoralama rentgeni",
+    welcomeCtaExam: "Sinov UBT (12 fan)",
     welcomeCtaGraph: "16 mavzu xaritasi",
     welcomeCtaLab: "Xatolar ustida ishlash",
     welcomeHide: "Vitrinani yopish",
     welcomeShow: "Aniq AI vitrinasi",
+    compactWelcomeLabel: "UBT tezkor start (12 fan × 40 savoldan 10 variant):",
+    allSubjectsTitle: "Barcha 12 ta rasmiy UBT fani · 4 800 ta topshiriq",
+    allSubjectsSub:
+      "Istalgan profil yoki majburiy fanni tanlang: har bir fanda 40 savoldan iborat 10 ta to‘liq variant (50 ball) va formulalar, sanalar hamda qonunlar ma’lumotnomasi mavjud.",
     bentoKicker: "ANIQ AI OLTI MODULI",
-    bentoTitle: "Imtihonda yuqori ball va matematikani tushunish uchun barchasi",
-    topics: "16 ta kurs mavzusi",
+    bentoTitle: "Imtihonda yuqori ball va matematikani tushunish uchun muhandislik tizimi",
+    scienceKicker: "PLATFORMA YADROSIDAGI ISBOTLANGAN KOGNITIV ILM-FAN",
+    scienceTitle: "Aniq AI algoritmlariga kiritilgan jahon olimlarining 6 ta ilmiy metodikasi",
+    scienceSub:
+      "Platformadagi har bir qadam Chikago universiteti, ETH Zurich, Carnegie Mellon va UCLA tadqiqotlarining matematik modellariga asoslangan.",
+    topics: "16 ta matematika bo‘limi",
     mobileTopicLabel: "Mavzu",
     lesson: "Tahlil",
     practice: "Mashq",
@@ -272,7 +334,7 @@ const copy = {
     rule: "§ Asosiy qoida (invariant)",
     exampleLabel: "Namuna tahlili",
     exampleSteps: "Qadam-baqadam yechim",
-    note: "Har bir qadamni o‘z so‘zlaringiz bilan tushuntiring — tenglik yoki xossa nega saqlanib qoladi.",
+    note: "O‘z-o‘ziga tushuntirish usuli (Chi & Feynman): har bir qadamni o‘z so‘zlaringiz bilan tushuntiring.",
     solveSelf: "Mustaqil yechish",
     askAboutRule: "Qoida bo‘yicha savol berish",
     taskProgress: "Masala",
@@ -300,7 +362,7 @@ const copy = {
     transferInvalid: "Butun son, o‘nli kasr yoki 3/7 shaklidagi kasr kiriting.",
     aiTitle: "Sokratik SI-tyutor (Claude API)",
     aiSub:
-      "Oddiy darslikdan farqli o‘laroq, Claude API sizning savolingiz yoki aniq xatongizni tahlil qiladi, qoidani sodda tilda tushuntiradi va tayyor javobni aytmasdan yo‘naltiruvchi savol beradi.",
+      "Oddiy chat-botdan farqli o‘laroq, Claude API sizning aniq xatongizni tahlil qiladi, qoidani sodda tilda tushuntiradi va Feynman usulida yo‘naltiruvchi savol beradi.",
     question: "Savolingiz yoki qiyinchilik tug‘dirgan qadam",
     placeholder: "Masalan: nega Viyet teoremasida ildizlar yig‘indisi qarama-qarshi ishora bilan olinadi?",
     quickLabel: "Ko‘p beriladigan savollar:",
@@ -316,12 +378,12 @@ const copy = {
     loading: "Javob tayyorlanmoqda…",
     pilot: "Generativ tahlil himoyalangan /api/explain server yo‘nalishi orqali (Claude API + zaxira konturi) bajariladi.",
     privacy: "Maxfiylik",
-    rmTitle: "Imtihonga shaxsiy tayyorgarlik rejasi",
-    rmSub: "16 ta mavzu tartibi sinov testi, xatolar ustida ishlash natijalari va maqsadli ball asosida tuziladi.",
+    rmTitle: "Imtihonga ilmiy tayyorgarlik rejasi (Bloom 2σ + Ebbinghaus SM-2 + Bjork Interleaving)",
+    rmSub: "16 ta mavzu tartibi Ebbingauz unutish egri chizig‘i R(t) = exp(−t/S), Blumning 80% mahorat chegarasi va Byork interlivingi asosida tuziladi.",
     rmTarget: "Maqsadli ball (50 dan)",
     rmWeeks: "Imtihongacha haftalar soni",
     rmWeak: "Mustahkamlash kerak bo‘lgan mavzular (16 bo‘limdan)",
-    rmConsolidation: "Mustahkamlangan (≥2 mustaqil masala)",
+    rmConsolidation: "Blum chegarasi bo‘yicha mustahkamlangan (≥2 mustaqil masala)",
     rmConsolidationEmpty: "Hozircha mustahkamlangan mavzu yo‘q — «Xatolar ustida ishlash» bo‘limida yordamsiz 2 tadan masala yeching.",
     rmGoal: "SI-rejalashtiruvchi (Claude API) uchun maqsad va qiyinchilik",
     rmGoalPlaceholder: "Masalan: logarifm va hosilada xato qilaman, 6 haftada 42+ ball yig‘ishim kerak",
@@ -330,16 +392,33 @@ const copy = {
       "4 haftada 38/50 ball: hosila, integral va stereometriya"
     ],
     rmGenerate: "Claude API bilan reja tuzish",
-    rmBaseTitle: "Tavsiya etilgan mavzular tartibi",
-    rmPhase1: "1-bosqich (1–2 hafta): tayanch mavzular va bo‘shliqlarni yopish",
-    rmPhase2: "2-bosqich (3+ hafta): mustahkamlash va ko‘nikmani tekshirish",
+    rmBaseTitle: "Tavsiya etilgan mavzular tartibi (Blum + Ebbingauz matritsasi)",
+    rmPhase1: "1-bosqich (1–2 hafta): tayanch prerevizitlar va bo‘shliqlarni yopish",
+    rmPhase2: "2-bosqich (3+ hafta): Byork interlivingi va ko‘nikmani tekshirish",
     rmClaudeTitle: "Haftalik shaxsiy o‘quv rejasi",
     rmMilestones: "Haftalik qadamlar",
-    rmHabit: "Kunlik tayyorgarlik tartibi",
+    rmHabit: "Ilmiy tayyorgarlik tartibi",
     badgeLive: "Claude API · Jonli tahlil",
     badgePreview: "Dars invarianti · Zaxira konturi"
   }
 };
+
+function ScienceMethodIcon({ icon, size = 18 }: { icon: ScientificMethodSpec["icon"]; size?: number }) {
+  switch (icon) {
+    case "GitBranch":
+      return <GitBranch size={size} aria-hidden="true" />;
+    case "Clock":
+      return <Clock size={size} aria-hidden="true" />;
+    case "Microscope":
+      return <Microscope size={size} aria-hidden="true" />;
+    case "Shuffle":
+      return <Shuffle size={size} aria-hidden="true" />;
+    case "Layers":
+      return <Layers size={size} aria-hidden="true" />;
+    case "Sparkles":
+      return <Sparkles size={size} aria-hidden="true" />;
+  }
+}
 
 type WebContext = {
   registerTool: (
@@ -359,12 +438,18 @@ type ClaudeRoadmap = {
 const emptyProgress: Progress = { version: 1, records: [] };
 const optionLetters = ["A", "B", "C", "D"];
 
-export default function Study() {
+export interface StudyProps {
+  initialWelcomeOpen?: boolean;
+}
+
+export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
   const { dark, toggleTheme } = useAniqTheme();
   const [lang, setLang] = useState<Language>("ru");
   const [topic, setTopic] = useState<TopicId>("linear");
   const [tab, setTab] = useState("lesson");
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(initialWelcomeOpen);
+  const [examSubjectId, setExamSubjectId] = useState<UntSubjectId>("math");
+  const [examVariantNumber, setExamVariantNumber] = useState<number>(1);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // Focused step-by-step practice state (questions 0, 1, 2 + transfer task index 3)
@@ -410,6 +495,39 @@ export default function Study() {
 
   const isStudySection = tab === "lesson" || tab === "practice" || tab === "ai";
 
+  // Scientific Learning Telemetry for the active topic (Bloom + Ebbinghaus + Sweller + Bjork)
+  const topicScientificTelemetry = useMemo(() => {
+    const topicRecords = labProgress.records.filter((r) => r.topic === topic);
+    const soloReviews = topicRecords.filter((r) => r.independent).length;
+    const untRatio = untStorage.lastAttempt?.topicRatios?.[topic];
+    const masteryPercent = Math.min(
+      100,
+      Math.round(
+        (untRatio !== undefined ? untRatio * 60 : 45) +
+          Math.min(40, soloReviews * 20) +
+          (solvedCount * 5)
+      )
+    );
+    const ebbinghaus = computeEbbinghausRetention(
+      soloReviews > 0 ? 1 : 2,
+      soloReviews + (solvedCount === 3 ? 1 : 0),
+      masteryPercent >= 80 ? 5 : 4
+    );
+    const bloomGate = computeBloomMasteryGate([masteryPercent]);
+    const sweller = computeSwellerScaffoldingLevel(masteryPercent, lang);
+    return { masteryPercent, ebbinghaus, bloomGate, sweller, soloReviews };
+  }, [labProgress.records, untStorage.lastAttempt, topic, solvedCount, lang]);
+
+  const interleavedQueue = useMemo(() => {
+    const items = baseline.priorityModules.map((m) => ({
+      topic: m.topic,
+      title: m.title,
+      phase: m.phase,
+      soloCount: m.soloCount
+    }));
+    return buildBjorkInterleavedList(items).slice(0, 8);
+  }, [baseline.priorityModules]);
+
   useEffect(() => {
     current.current = { topic, language: lang };
   }, [topic, lang]);
@@ -435,6 +553,18 @@ export default function Study() {
         if (qLang === "ru" || qLang === "kk" || qLang === "uz") {
           setLang(qLang);
         }
+        const qWelcome = params.get("welcome");
+        if (qWelcome === "1" || qWelcome === "true") {
+          setShowWelcome(true);
+        }
+        const qSubject = params.get("subject");
+        if (qSubject && UNT_SUBJECTS.some((s) => s.id === qSubject)) {
+          setExamSubjectId(qSubject as UntSubjectId);
+        }
+        const qVariant = Number(params.get("variant"));
+        if (Number.isInteger(qVariant) && qVariant >= 1 && qVariant <= 10) {
+          setExamVariantNumber(qVariant);
+        }
         const qTab = params.get("tab");
         if (
           qTab === "lesson" ||
@@ -446,7 +576,7 @@ export default function Study() {
           qTab === "roadmap"
         ) {
           setTab(qTab);
-          if (qTab !== "lesson") setShowWelcome(false);
+          if (qWelcome !== "1") setShowWelcome(false);
         }
         const qTopic = params.get("topic");
         if (qTopic && (untTopicIds as readonly string[]).includes(qTopic)) {
@@ -566,6 +696,17 @@ export default function Study() {
     reset();
     setTopic(id);
     setTab("lesson");
+    setShowWelcome(false);
+  }
+
+  function launchSubjectExam(subjId: UntSubjectId, variantNum: number = 1) {
+    setExamSubjectId(subjId);
+    setExamVariantNumber(variantNum);
+    setTab("exam");
+    setShowWelcome(false);
+    setTimeout(() => {
+      document.getElementById("workspace-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 40);
   }
 
   function handleCompleteUntExam(summary: UntAttemptSummary) {
@@ -684,6 +825,7 @@ export default function Study() {
     setConsent(true);
     setQuestion(prefilled);
     setTab("ai");
+    setShowWelcome(false);
     void runExplainQuery(prefilled);
   }
 
@@ -747,6 +889,7 @@ export default function Study() {
 
   function jumpToSection(nextTab: string) {
     setTab(nextTab);
+    setShowWelcome(false);
     setTimeout(() => {
       document.getElementById("workspace-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 40);
@@ -786,16 +929,17 @@ export default function Study() {
               <span className="aniq-logo-word">
                 Aniq<span className="text-brand">AI</span>
               </span>
-              <span className="brand-sub">ЕНТ · ҰБТ</span>
+              <span className="brand-sub">ЕНТ · ҰБТ · 12 пән</span>
             </a>
 
             <div className="header-right">
               <button
                 type="button"
-                className="header-quiet-link"
+                className="header-quiet-link inline-flex items-center gap-1"
                 onClick={() => setShowWelcome((v) => !v)}
               >
-                {showWelcome ? t.welcomeHide : t.welcomeShow}
+                {showWelcome ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                <span>{showWelcome ? t.welcomeHide : t.welcomeShow}</span>
               </button>
               <a className="header-quiet-link" href="/about">
                 {t.navAbout}
@@ -873,50 +1017,104 @@ export default function Study() {
               type="button"
               className={`primary-nav-link ${isStudySection ? "active" : ""}`}
               aria-current={isStudySection ? "page" : undefined}
-              onClick={() => setTab("lesson")}
+              onClick={() => {
+                setTab("lesson");
+                setShowWelcome(false);
+              }}
             >
-              {t.navStudy}
+              <BookOpen size={14} />
+              <span>{t.navStudy}</span>
             </button>
             <button
               type="button"
               className={`primary-nav-link xray-nav-highlight ${tab === "xray" ? "active" : ""}`}
               aria-current={tab === "xray" ? "page" : undefined}
-              onClick={() => setTab("xray")}
+              onClick={() => {
+                setTab("xray");
+                setShowWelcome(false);
+              }}
             >
-              {t.navXray}
+              <Microscope size={14} />
+              <span>{t.navXray}</span>
             </button>
             <button
               type="button"
               className={`primary-nav-link ${tab === "graph" ? "active" : ""}`}
               aria-current={tab === "graph" ? "page" : undefined}
-              onClick={() => setTab("graph")}
+              onClick={() => {
+                setTab("graph");
+                setShowWelcome(false);
+              }}
             >
-              {t.navGraph}
+              <GitBranch size={14} />
+              <span>{t.navGraph}</span>
             </button>
             <button
               type="button"
               className={`primary-nav-link ${tab === "exam" ? "active" : ""}`}
               aria-current={tab === "exam" ? "page" : undefined}
-              onClick={() => setTab("exam")}
+              onClick={() => {
+                setTab("exam");
+                setShowWelcome(false);
+              }}
             >
-              {t.navExam}
+              <Target size={14} />
+              <span>{t.navExam}</span>
             </button>
             <button
               type="button"
               className={`primary-nav-link ${tab === "roadmap" ? "active" : ""}`}
               aria-current={tab === "roadmap" ? "page" : undefined}
-              onClick={() => setTab("roadmap")}
+              onClick={() => {
+                setTab("roadmap");
+                setShowWelcome(false);
+              }}
             >
-              {t.navPlan}
+              <Calendar size={14} />
+              <span>{t.navPlan}</span>
             </button>
             <a className="primary-nav-link" href={`/lab?lang=${lang}&topic=${topic}`}>
-              {t.navLab}
+              <FlaskConical size={14} />
+              <span>{t.navLab}</span>
             </a>
           </nav>
         </div>
       </header>
 
-      {/* 2. Floating Hero + 3D Fibonacci Sphere Canvas + 6-Card Bento Showcase (inspired by bilim-ai.kz) */}
+      {/* 2A. Compact 1-Line Welcome & All-12-Subjects Command Bar when inside Workspace */}
+      {!showWelcome && (
+        <div className="wrap">
+          <div className="aniq-compact-welcome-bar">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="aniq-compact-label">
+                <Award size={14} className="text-amber-600 shrink-0" />
+                <span>{t.compactWelcomeLabel}</span>
+              </span>
+              {UNT_SUBJECTS.slice(0, 6).map((subj) => (
+                <button
+                  key={subj.id}
+                  type="button"
+                  className={`aniq-compact-subj-pill ${tab === "exam" && examSubjectId === subj.id ? "active" : ""}`}
+                  onClick={() => launchSubjectExam(subj.id, 1)}
+                >
+                  <SubjectIcon subjectId={subj.id} size={13} />
+                  <span>{subj.shortTitle[lang]}</span>
+                </button>
+              ))}
+              <button
+                type="button"
+                className="aniq-compact-subj-pill highlight"
+                onClick={() => setShowWelcome(true)}
+              >
+                <Sparkles size={13} />
+                <span>{t.welcomeShow} (12 предметов + 6 методик)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2B. Full Floating Welcome Page Showcase (3D Fibonacci Sphere + 12 UNT Subjects + Bento + 6 Scientific Methods) */}
       {showWelcome && (
         <section className="aniq-hero-showcase" aria-label={t.welcomeBadge}>
           <HeroCanvas />
@@ -942,7 +1140,8 @@ export default function Study() {
                   onClick={() => jumpToSection("xray")}
                   className="aniq-btn aniq-btn-primary aniq-btn-lg"
                 >
-                  {t.welcomeCtaXray}
+                  <Microscope size={18} />
+                  <span>{t.welcomeCtaXray}</span>
                   <ArrowRight size={18} />
                 </button>
                 <button
@@ -950,14 +1149,16 @@ export default function Study() {
                   onClick={() => jumpToSection("exam")}
                   className="aniq-btn aniq-btn-ghost aniq-btn-lg aniq-glass"
                 >
-                  {t.welcomeCtaExam}
+                  <Target size={18} />
+                  <span>{t.welcomeCtaExam}</span>
                 </button>
                 {!userProfile && (
                   <a
                     href={`/register?lang=${lang}`}
                     className="aniq-btn aniq-btn-ghost aniq-btn-lg"
                   >
-                    {t.welcomeCtaRegister}
+                    <GraduationCap size={18} />
+                    <span>{t.welcomeCtaRegister}</span>
                   </a>
                 )}
               </div>
@@ -965,21 +1166,65 @@ export default function Study() {
               {/* 4 Glass Stat Tiles */}
               <div className="aniq-stat-grid">
                 <div className="aniq-stat-tile aniq-glass">
-                  <div className="aniq-stat-num gradient-text">16 тем</div>
-                  <div className="aniq-stat-lbl">по спецификации НЦТ</div>
+                  <div className="aniq-stat-num gradient-text">12 предметов</div>
+                  <div className="aniq-stat-lbl">по спецификации НЦТ РК</div>
                 </div>
                 <div className="aniq-stat-tile aniq-glass">
-                  <div className="aniq-stat-num gradient-text">1 152</div>
-                  <div className="aniq-stat-lbl">задачи-ловушки ЕНТ</div>
+                  <div className="aniq-stat-num gradient-text">4 800</div>
+                  <div className="aniq-stat-lbl">заданий в 120 вариантах ЕНТ</div>
                 </div>
                 <div className="aniq-stat-tile aniq-glass">
-                  <div className="aniq-stat-num gradient-text">3 языка</div>
-                  <div className="aniq-stat-lbl">ҚАЗ · РУС · OʻZB</div>
+                  <div className="aniq-stat-num gradient-text">6 методик</div>
+                  <div className="aniq-stat-lbl">Bloom 2σ · SM-2 · Kapur · Bjork</div>
                 </div>
                 <div className="aniq-stat-tile aniq-glass">
                   <div className="aniq-stat-num gradient-text">Claude AI</div>
-                  <div className="aniq-stat-lbl">+ Радар гранта РК</div>
+                  <div className="aniq-stat-lbl">+ Радар гранта ВУЗов РК</div>
                 </div>
+              </div>
+            </div>
+
+            {/* Interactive 12 UNT Subjects & Profile Combination Hub */}
+            <div className="aniq-subjects-showcase mt-8">
+              <div className="aniq-bento-head">
+                <div className="aniq-bento-kicker">ПОЛНЫЙ ОХВАТ НЦТ РК (TESTCENTER.KZ)</div>
+                <h3 className="aniq-bento-title">{t.allSubjectsTitle}</h3>
+                <p className="small max-w-2xl mx-auto mt-1">{t.allSubjectsSub}</p>
+              </div>
+
+              <div className="unt-subject-grid mt-4">
+                {UNT_SUBJECTS.map((subj) => (
+                  <button
+                    key={subj.id}
+                    type="button"
+                    className="unt-subject-card"
+                    style={{ "--subj-accent": `rgb(${subj.accentRgb})` } as React.CSSProperties}
+                    onClick={() => launchSubjectExam(subj.id, 1)}
+                  >
+                    <span className="unt-subject-icon">
+                      <SubjectIcon subjectId={subj.id} size={18} />
+                    </span>
+                    <span className="unt-subject-info">
+                      <strong>{subj.title[lang]}</strong>
+                      <small>10 вариантов × 40 вопр. (50 б.)</small>
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2 mt-3">
+                {UNT_PROFILE_COMBINATIONS.map((combo) => (
+                  <button
+                    key={combo.id}
+                    type="button"
+                    className="unt-combo-chip"
+                    onClick={() => launchSubjectExam(combo.subjects[0], 1)}
+                  >
+                    <GraduationCap size={13} />
+                    <span>{combo.title[lang]}</span>
+                    <small className="opacity-75">· {combo.careers[lang]}</small>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -994,116 +1239,106 @@ export default function Study() {
                 <button
                   type="button"
                   onClick={() => jumpToSection("xray")}
-                  className="bento-wrap text-left"
-                  style={{ ["--tile-rgb" as string]: "216 90 48" }}
+                  className="bento-tile text-left"
+                  style={{ ["--tile-rgb" as string]: "216, 90, 48" }}
                 >
-                  <div className="bento-tile">
-                    <span
-                      className="bento-icon"
-                      style={{
-                        background: "linear-gradient(135deg, #d85a30, #8a2c14)",
-                        boxShadow: "0 6px 16px -6px rgba(216, 90, 48, 0.55)"
-                      }}
-                    >
-                      <Microscope size={22} />
-                    </span>
-                    <div className="bento-badge-tag">ИЗЮМИНКА СТАРТАПА</div>
-                    <h4 className="bento-card-title">Рентген черновика & Блиц ловушек</h4>
-                    <p className="bento-card-desc">
-                      Построчный дебаггер решения и 60-сек поиск точки излома логики (ОДЗ, знак, модуль) без штрафа за усвоенные темы.
-                    </p>
-                  </div>
+                  <span
+                    className="bento-icon"
+                    style={{
+                      background: "linear-gradient(135deg, #d85a30, #8a2c14)",
+                      boxShadow: "0 6px 16px -6px rgba(216, 90, 48, 0.55)"
+                    }}
+                  >
+                    <Microscope size={22} />
+                  </span>
+                  <div className="bento-badge-tag">ИЗЮМИНКА СТАРТАПА</div>
+                  <h4 className="bento-card-title">Рентген черновика & Блиц ловушек</h4>
+                  <p className="bento-card-desc">
+                    Построчный дебаггер решения и 60-сек поиск точки излома логики (ОДЗ, знак, модуль) без штрафа за усвоенные темы.
+                  </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => jumpToSection("lesson")}
-                  className="bento-wrap text-left"
-                  style={{ ["--tile-rgb" as string]: "217 138 43" }}
+                  className="bento-tile text-left"
+                  style={{ ["--tile-rgb" as string]: "217, 138, 43" }}
                 >
-                  <div className="bento-tile">
-                    <span
-                      className="bento-icon"
-                      style={{
-                        background: "linear-gradient(135deg, #d98a2b, #7c4a0e)",
-                        boxShadow: "0 6px 16px -6px rgba(217, 138, 43, 0.55)"
-                      }}
-                    >
-                      <BookOpen size={22} />
-                    </span>
-                    <h4 className="bento-card-title">Интерактивный учебник (16 разделов)</h4>
-                    <p className="bento-card-desc">
-                      Главное правило-инвариант, крупная формула, разбор по шагам и перенос навыка на задачи с новыми числами.
-                    </p>
-                  </div>
+                  <span
+                    className="bento-icon"
+                    style={{
+                      background: "linear-gradient(135deg, #d98a2b, #7c4a0e)",
+                      boxShadow: "0 6px 16px -6px rgba(217, 138, 43, 0.55)"
+                    }}
+                  >
+                    <BookOpen size={22} />
+                  </span>
+                  <h4 className="bento-card-title">Интерактивный учебник (16 разделов)</h4>
+                  <p className="bento-card-desc">
+                    Главное правило-инвариант, крупная формула, разбор по шагам Свеллера и перенос навыка на задачи с новыми числами.
+                  </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => jumpToSection("exam")}
-                  className="bento-wrap text-left"
-                  style={{ ["--tile-rgb" as string]: "255 154 60" }}
+                  className="bento-tile text-left"
+                  style={{ ["--tile-rgb" as string]: "255, 154, 60" }}
                 >
-                  <div className="bento-tile">
-                    <span
-                      className="bento-icon"
-                      style={{
-                        background: "linear-gradient(135deg, #ff9a3c, #994d08)",
-                        boxShadow: "0 6px 16px -6px rgba(255, 154, 60, 0.55)"
-                      }}
-                    >
-                      <Target size={22} />
-                    </span>
-                    <h4 className="bento-card-title">Пробное ЕНТ (4 формата НЦТ РК)</h4>
-                    <p className="bento-card-desc">
-                      Одновыборные (1 б.), контекстные сюжеты, задания на соответствие A/B (2 б.) и множественный выбор из 6 (2 б.).
-                    </p>
-                  </div>
+                  <span
+                    className="bento-icon"
+                    style={{
+                      background: "linear-gradient(135deg, #ff9a3c, #994d08)",
+                      boxShadow: "0 6px 16px -6px rgba(255, 154, 60, 0.55)"
+                    }}
+                  >
+                    <Target size={22} />
+                  </span>
+                  <h4 className="bento-card-title">Пробное ЕНТ · 12 предметов × 10 вариантов</h4>
+                  <p className="bento-card-desc">
+                    По 40 вопросов (50 баллов) на каждый вариант: одновыборные, контекст, соответствие A/B (2 б.) и мультивыбор из 6 (2 б.).
+                  </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => jumpToSection("graph")}
-                  className="bento-wrap text-left"
-                  style={{ ["--tile-rgb" as string]: "10 132 216" }}
+                  className="bento-tile text-left"
+                  style={{ ["--tile-rgb" as string]: "10, 132, 216" }}
                 >
-                  <div className="bento-tile">
-                    <span
-                      className="bento-icon"
-                      style={{
-                        background: "linear-gradient(135deg, #0a84d8, #083b66)",
-                        boxShadow: "0 6px 16px -6px rgba(10, 132, 216, 0.55)"
-                      }}
-                    >
-                      <BrainCircuit size={22} />
-                    </span>
-                    <h4 className="bento-card-title">Граф знаний «Второй мозг»</h4>
-                    <p className="bento-card-desc">
-                      Направленный граф зависимостей 16 тем: отделяет корневой пробел в базе от заблокированных сложных разделов.
-                    </p>
-                  </div>
+                  <span
+                    className="bento-icon"
+                    style={{
+                      background: "linear-gradient(135deg, #0a84d8, #083b66)",
+                      boxShadow: "0 6px 16px -6px rgba(10, 132, 216, 0.55)"
+                    }}
+                  >
+                    <BrainCircuit size={22} />
+                  </span>
+                  <h4 className="bento-card-title">Граф знаний «Второй мозг» (Bloom 2σ)</h4>
+                  <p className="bento-card-desc">
+                    Направленный граф пререквизитов с порогом мастерства 80%: отделяет корневой пробел в базе от зависимых разделов.
+                  </p>
                 </button>
 
                 <a
                   href={`/lab?lang=${lang}&topic=${topic}`}
-                  className="bento-wrap text-left no-underline"
-                  style={{ ["--tile-rgb" as string]: "21 163 127" }}
+                  className="bento-tile text-left no-underline"
+                  style={{ ["--tile-rgb" as string]: "21, 163, 127" }}
                 >
-                  <div className="bento-tile">
-                    <span
-                      className="bento-icon"
-                      style={{
-                        background: "linear-gradient(135deg, #15a37f, #094a3b)",
-                        boxShadow: "0 6px 16px -6px rgba(21, 163, 127, 0.55)"
-                      }}
-                    >
-                      <Compass size={22} />
-                    </span>
-                    <h4 className="bento-card-title">Лаборатория 1 152 ошибок & Claude</h4>
-                    <p className="bento-card-desc">
-                      Тренажёр поиска первого неверного шага и безопасный сократический ИИ-тьютор, который учит думать, а не списывать.
-                    </p>
-                  </div>
+                  <span
+                    className="bento-icon"
+                    style={{
+                      background: "linear-gradient(135deg, #15a37f, #094a3b)",
+                      boxShadow: "0 6px 16px -6px rgba(21, 163, 127, 0.55)"
+                    }}
+                  >
+                    <Compass size={22} />
+                  </span>
+                  <h4 className="bento-card-title">Лаборатория 1 152 ошибок & Claude</h4>
+                  <p className="bento-card-desc">
+                    Метод продуктивной неудачи Ману Капура (ETH Zurich): поиск первого неверного шага даёт 2× перенос навыка на ЕНТ.
+                  </p>
                 </a>
 
                 <div className="bento-cta-tile">
@@ -1124,10 +1359,42 @@ export default function Study() {
                       onClick={() => jumpToSection("xray")}
                       className="aniq-btn aniq-btn-outline-white"
                     >
-                      Открыть Радар →
+                      <span>Открыть Радар</span>
+                      <ArrowRight size={14} />
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* 6 Scientific Learning Methodologies Showcase */}
+            <div className="aniq-science-showcase mt-8">
+              <div className="aniq-bento-head">
+                <div className="aniq-bento-kicker">{t.scienceKicker}</div>
+                <h3 className="aniq-bento-title">{t.scienceTitle}</h3>
+                <p className="small max-w-2xl mx-auto mt-1">{t.scienceSub}</p>
+              </div>
+
+              <div className="science-methods-grid mt-4">
+                {SCIENTIFIC_METHODS.map((m) => (
+                  <div key={m.id} className="science-method-card">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="science-method-icon">
+                        <ScienceMethodIcon icon={m.icon} size={17} />
+                      </span>
+                      <span className="science-effect-pill">{m.effectMetric}</span>
+                    </div>
+                    <h4 className="science-method-title">{m.title[lang]}</h4>
+                    <p className="science-method-meta">
+                      {m.scientist} · {m.institution} ({m.year})
+                    </p>
+                    <code className="science-formula-box">{m.formula}</code>
+                    <p className="small mt-2 mb-1.5">{m.evidenceSummary[lang]}</p>
+                    <p className="small m-0 font-medium text-amber-800 dark:text-amber-300">
+                      {m.platformMechanism[lang]}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1188,6 +1455,27 @@ export default function Study() {
                   </div>
                   <h1 className="lesson-title">{lesson.title}</h1>
                   <p className="lesson-intro">{lesson.intro}</p>
+
+                  {/* Live Scientific Pedagogy Telemetry Strip for Active Topic */}
+                  <div className="science-telemetry-strip mt-3">
+                    <span className="science-telemetry-pill">
+                      <GitBranch size={13} />
+                      <span>
+                        Bloom 2σ: <strong>{topicScientificTelemetry.masteryPercent}%</strong> (порог 80%)
+                      </span>
+                    </span>
+                    <span className="science-telemetry-pill">
+                      <Clock size={13} />
+                      <span>
+                        Эббингауз R(t): <strong>{topicScientificTelemetry.ebbinghaus.retentionPercent}%</strong> · повтор через{" "}
+                        <strong>{topicScientificTelemetry.ebbinghaus.nextIntervalDays} дн.</strong>
+                      </span>
+                    </span>
+                    <span className="science-telemetry-pill">
+                      <Brain size={13} />
+                      <span>{topicScientificTelemetry.sweller.label}</span>
+                    </span>
+                  </div>
                 </header>
 
                 {/* Inside the lesson: 3 calm modes for the current topic */}
@@ -1217,7 +1505,7 @@ export default function Study() {
                       <ol className="steps">
                         {lesson.steps.map((step, i) => (
                           <li key={step}>
-                            <span className="step-number">{String(i + 1).padStart(2, "0")} →</span>
+                            <span className="step-number">{String(i + 1).padStart(2, "0")}</span>
                             <span className="step-text">{step}</span>
                           </li>
                         ))}
@@ -1335,15 +1623,15 @@ export default function Study() {
                                 <span className="option-badge">{optionLetters[j] ?? j + 1}</span>
                                 <span className="option-math-text">{option}</span>
                                 <span className="option-status-indicator" aria-hidden="true">
-                                  {isCurrentChecked
-                                    ? isOptionCorrect
-                                      ? "✓"
-                                      : isSelected
-                                        ? "✕"
-                                        : ""
-                                    : isSelected
-                                      ? t.selectedIndicator
-                                      : ""}
+                                  {isCurrentChecked ? (
+                                    isOptionCorrect ? (
+                                      <Check size={14} />
+                                    ) : isSelected ? (
+                                      <X size={14} />
+                                    ) : null
+                                  ) : isSelected ? (
+                                    t.selectedIndicator
+                                  ) : null}
                                 </span>
                               </label>
                             );
@@ -1369,8 +1657,9 @@ export default function Study() {
                                 <strong>{t.ruleBreakdownTitle}</strong>
                                 <p>{lesson.rule}</p>
                                 <p className="error-breakdown-solution">{currentQuestionObj.why}</p>
-                                <a className="quiet-inline-link" href={`/lab?lang=${lang}&topic=${topic}`}>
-                                  {t.openLabForTopic} →
+                                <a className="quiet-inline-link inline-flex items-center gap-1" href={`/lab?lang=${lang}&topic=${topic}`}>
+                                  <span>{t.openLabForTopic}</span>
+                                  <ArrowRight size={13} />
                                 </a>
                               </div>
                             )}
@@ -1519,10 +1808,11 @@ export default function Study() {
                               </Button>
                               <button
                                 type="button"
-                                className="quiet-text-action"
+                                className="quiet-text-action inline-flex items-center gap-1"
                                 onClick={() => selectTopic(nextTopicId)}
                               >
-                                {t.nextTopicBtn} →
+                                <span>{t.nextTopicBtn}</span>
+                                <ArrowRight size={14} />
                               </button>
                             </>
                           ) : transferStatus === "wrong" ? (
@@ -1682,6 +1972,8 @@ export default function Study() {
               lang={lang}
               lastSavedAttempt={untStorage.lastAttempt}
               initialTopic={topic}
+              initialSubjectId={examSubjectId}
+              initialVariantNumber={examVariantNumber}
               onCompleteExam={handleCompleteUntExam}
               onOpenGraph={(focusTopic) => {
                 if (focusTopic) setTopic(focusTopic);
@@ -1730,28 +2022,57 @@ export default function Study() {
               <ul className="small list-disc pl-5">
                 {baseline.priorityModules
                   .filter((m) => m.phase === 1)
-                  .map((m) => (
-                    <li key={m.topic}>
-                      <button type="button" className="quiet-inline-link" onClick={() => selectTopic(m.topic)}>
-                        {m.title}
-                      </button>{" "}
-                      ({m.soloCount}/2)
-                    </li>
-                  ))}
+                  .map((m) => {
+                    const ret = computeEbbinghausRetention(m.soloCount > 0 ? 1 : 2, m.soloCount, 4);
+                    return (
+                      <li key={m.topic}>
+                        <button type="button" className="quiet-inline-link" onClick={() => selectTopic(m.topic)}>
+                          {m.title}
+                        </button>{" "}
+                        ({m.soloCount}/2 · Эббингауз R(t) = {ret.retentionPercent}%, повтор: {ret.nextIntervalDays} дн.)
+                      </li>
+                    );
+                  })}
               </ul>
-              <p className="small font-medium mt-3">{t.rmPhase2}:</p>
-              <ul className="small list-disc pl-5">
-                {baseline.priorityModules
-                  .filter((m) => m.phase === 2)
-                  .map((m) => (
-                    <li key={m.topic}>
-                      <button type="button" className="quiet-inline-link" onClick={() => selectTopic(m.topic)}>
-                        {m.title}
-                      </button>{" "}
-                      ({m.soloCount}/2)
-                    </li>
-                  ))}
-              </ul>
+              <p className="small font-medium mt-3">{t.rmPhase2} (Очередь Бьорка без смежных повторов):</p>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {interleavedQueue.map((item, idx) => (
+                  <button
+                    key={`${item.topic}-${idx}`}
+                    type="button"
+                    className="unt-combo-chip"
+                    onClick={() => selectTopic(item.topic)}
+                  >
+                    <Shuffle size={12} />
+                    <span>
+                      {idx + 1}. {item.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 6 Scientific Methodologies Reference Panel inside Roadmap */}
+            <div className="mb-6">
+              <span className="rule-label block mb-2">{t.scienceTitle}</span>
+              <div className="science-methods-grid">
+                {SCIENTIFIC_METHODS.map((m) => (
+                  <div key={m.id} className="science-method-card">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="science-method-icon">
+                        <ScienceMethodIcon icon={m.icon} size={16} />
+                      </span>
+                      <span className="science-effect-pill">{m.effectMetric}</span>
+                    </div>
+                    <h3 className="science-method-title">{m.title[lang]}</h3>
+                    <p className="science-method-meta">
+                      {m.scientist} · {m.institution} ({m.year})
+                    </p>
+                    <code className="science-formula-box">{m.formula}</code>
+                    <p className="small mt-1.5 mb-0">{m.evidenceSummary[lang]}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <form

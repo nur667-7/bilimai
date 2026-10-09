@@ -1,13 +1,14 @@
-# Aniq AI (ex-BilimAI) — Платформа точной диагностики и подготовки к ЕНТ (ҰБТ) по математике
+# Aniq AI (ex-BilimAI) — Платформа точной диагностики и подготовки ко всем 12 предметам ЕНТ (ҰБТ)
 
 [![Production](https://img.shields.io/badge/Production-bilimai.dpdns.org-D98A2B)](https://bilimai.dpdns.org)
+[![Welcome Showcase](https://img.shields.io/badge/Welcome_Showcase-%2Fwelcome-F97316)](https://bilimai.dpdns.org/welcome)
+[![All 12 UNT Subjects](https://img.shields.io/badge/UNT_Simulator-12_Subjects_%C3%97_10_Variants_%C3%97_40_Q_(4,800_Q)-2563EB)](https://bilimai.dpdns.org/?tab=exam)
 [![Draft X-Ray](https://img.shields.io/badge/Killer_Feature-Draft_X--Ray_%26_KZ_Grant_Radar-D85A30)](https://bilimai.dpdns.org/?tab=xray)
+[![Scientific Pedagogy](https://img.shields.io/badge/Science_Engine-Bloom_2%CF%83_%7C_Ebbinghaus_SM--2_%7C_Kapur_%7C_Bjork_%7C_Sweller_%7C_Feynman-15803D)](https://bilimai.dpdns.org/?tab=graph)
 [![Error Lab](https://img.shields.io/badge/Error_Lab-1,152_Scenarios-15803D)](https://bilimai.dpdns.org/lab)
-[![UNT Curriculum](https://img.shields.io/badge/UNT_Mathematics-16_Official_Sections-1B3B6F)](https://bilimai.dpdns.org/?tab=graph)
-[![Languages](https://img.shields.io/badge/Languages-RU_%7C_KK_%7C_UZ-44403C)](https://bilimai.dpdns.org)
-[![Tests](https://img.shields.io/badge/Tests-23%2F23_Passing-15803D)](#7-верификация-и-запуск-тестов)
+[![Tests](https://img.shields.io/badge/Tests-25%2F25_Passing-15803D)](#7-верификация-и-запуск-тестов)
 
-**Aniq AI** (ранее *BilimAI*) — трёхъязычная (`ru` / `kk` / `uz`) диагностическая EdTech-платформа для старшеклассников (9–11 классы), абитуриентов и учителей Казахстана и Центральной Азии, готовящихся к **ЕНТ / ҰБТ** по математической грамотности и профильной математике.
+**Aniq AI** (ранее *BilimAI*) — трёхъязычная (`ru` / `kk` / `uz`) диагностическая EdTech-платформа для старшеклассников (9–11 классы), абитуриентов и учителей Казахстана и Центральной Азии, готовящихся к **ЕНТ / ҰБТ** по **всем 12 официальным предметам НЦТ РК** (`testcenter.kz`).
 
 ### Почему бренд переименован в **Aniq AI** (Deep Naming Research)
 В EdTech-пространстве Казахстана и Центральной Азии корень *Bilim* перегружен десятками одноимённых продуктов (`bilim-ai.kz`, *BilimLand*, *BilimClass*, *BilimCenter*, *eBilim*). Бренд **Aniq AI** создан на пересечении трёх языков региона и глобального рынка:
@@ -15,13 +16,24 @@
 - **Узбекский (`Aniq fanlar`):** официальный термин **«Точные науки»** (математика, физика, логика).
 - **Английский / Global (`Aniq`):** читается как `Unique + Analytic + IQ`, начинается на `A` (выгодно в каталогах и таблицах акселераторов) и свободен от товарных коллизий в нише AI-математики.
 
-### Изюминка стартапа (Killer Feature): **Рентген черновика (Draft X-Ray) & Радар гранта ВУЗов РК**
-В отличие от обычных чат-ботов (выдающих готовые ответы) и тестов (показывающих только «0 баллов за задачу, иди переучивай всю тему»), **Aniq AI** разделяет **пробелы в теории** и **когнитивные ловушки ЕНТ**:
-1. **⚡ Блиц «Детектор ловушки за 60 секунд»:** 6 реальных ловушек ЕНТ (`TRAP-01..06`: логарифм с основанием $0 < a < 1$, потеря модуля $\sqrt{x^2} = |x|$, посторонний корень знаменателя ОДЗ, знак суммы в теореме Виета, производная сложной функции, множитель $\frac{1}{3}$ в пирамиде). Ученик кликает ровно на ту строку черновика, где впервые сломался инвариант.
-2. **🔬 Живой Рентген своего черновика (`analyzeCustomDraft`):** ученик вставляет свои построчные вычисления и получает мгновенную разметку каждой строки: `[✓ ВЕРНО]` (навык сохранён и не штрафуется), `[⚡ ИЗЛОМ ЛОГИКИ]` (первая строка с нарушением инварианта) и `[↳ СЛЕДСТВИЕ]` (каскадный сдвиг ответа).
-3. **🎓 Радар гранта ВУЗов РК (`calculateGrantRadar`):** рассчитывает вероятность поступления на государственный грант в **КБТУ (KBTU), МУИТ (IITU), Astana IT (AITU), SDU, Satbayev University и КазНУ** до и после устранения когнитивных ловушек (+6…+10 баллов к результату ЕНТ без переучивания всей теории).
+### Ключевые возможности платформы (v3.0 — World-Standard Edition)
+1. **🏛️ Полный охват всех 12 предметов ЕНТ НЦТ РК (`lib/unt-all-subjects.ts`):**
+   - **3 обязательных предмета:** История Казахстана, Математическая грамотность, Грамотность чтения.
+   - **9 профильных предметов:** Профильная математика, Физика, Информатика, Химия, Биология, География, Всемирная история, Основы права, Английский язык.
+   - **10 полных вариантов по 40 вопросов (50 баллов) на каждый предмет (`12 × 10 × 40 = 4 800 заданий`):** точное соблюдение регламента НЦТ РК (`Q1–Q25` с 1 ответом за 1 балл, `Q26–Q30` контекстный блок за 1 балл, `Q31–Q35` соответствие `A/B → 1..4` за 2 балла, `Q36–Q40` множественный выбор 1–3 из 6 за 2 балла) + встроенная официальная шпаргалка формул/дат/законов по каждому предмету.
+2. **🧬 6 научных методик мировых учёных (`lib/scientific-pedagogy.ts`):**
+   - **Benjamin Bloom (1984, $2\sigma$ Mastery Gate 80%):** блокировка перехода к зависимым темам графа знаний, пока мастерство пререквизита $< 80\%$.
+   - **Hermann Ebbinghaus (1885) & Piotr Woźniak (SM-2):** живой расчёт кривой забывания $R(t) = e^{-\Delta t / S}$ и интервалов повторения тем.
+   - **Manu Kapur (ETH Zurich, Productive Failure) & Kurt VanLehn (CMU, Buggy Rules):** поиск первой сломанной строки черновика до показа готового шаблона (+118% к переносу навыка).
+   - **Robert A. Bjork (UCLA, Desirable Difficulties & Interleaving):** перемешанная очередь несмежных разделов ЕНТ (`buildBjorkInterleavedList`), исключающая две подряд задачи одного типа.
+   - **John Sweller (UNSW, Cognitive Load & Guidance Fading):** затухание подсказок по мере роста мастерства (`worked_example → faded_steps → independent_problem`).
+   - **Michelene Chi & Richard Feynman (Self-Explanation Protocol):** сократическая защита шага решения и инварианта через Claude API.
+3. **⚡ Рентген черновика (Draft X-Ray) & Радар гранта ВУЗов РК (`lib/xray-trap.ts`):**
+   - **Блиц «Детектор ловушки за 60 секунд» (`TRAP-01..06`),** живой построчный анализатор своего черновика (`analyzeCustomDraft`) и расчёт вероятности гранта в **KBTU, IITU, AITU, SDU, Satbayev University, KazNU**.
 
-- **Продакшн:** [https://bilimai.dpdns.org](https://bilimai.dpdns.org)
+- **Продакшн (Рабочая тетрадь + Командная строка):** [https://bilimai.dpdns.org](https://bilimai.dpdns.org)
+- **Welcome-страница (Flying Antigravity Showcase):** [https://bilimai.dpdns.org/welcome](https://bilimai.dpdns.org/welcome)
+- **Симулятор 12 предметов ЕНТ (10 вариантов × 40 вопросов):** [https://bilimai.dpdns.org/?tab=exam](https://bilimai.dpdns.org/?tab=exam)
 - **Рентген черновика & Радар гранта (`/?tab=xray`):** [https://bilimai.dpdns.org/?tab=xray](https://bilimai.dpdns.org/?tab=xray)
 - **Вход и Демо-профили Ученика/Учителя (`/login`):** [https://bilimai.dpdns.org/login](https://bilimai.dpdns.org/login)
 - **Регистрация с выбором целевого ВУЗа РК (`/register`):** [https://bilimai.dpdns.org/register](https://bilimai.dpdns.org/register)

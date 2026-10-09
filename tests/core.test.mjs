@@ -36,6 +36,18 @@ import {
   userProfileSchema,
   createDemoProfile
 } from '../lib/user-profile.ts';
+import {
+  UNT_SUBJECTS,
+  UNT_PROFILE_COMBINATIONS,
+  generateSubjectUntVariant
+} from '../lib/unt-all-subjects.ts';
+import {
+  SCIENTIFIC_METHODS,
+  computeEbbinghausRetention,
+  computeBloomMasteryGate,
+  computeSwellerScaffoldingLevel,
+  buildBjorkInterleavedList
+} from '../lib/scientific-pedagogy.ts';
 
 const input = { topic: 'linear', language: 'ru', question: 'Почему вычитаем 6?', adult: true, consent: true };
 const config = { key: 'TEST_ONLY_NOT_REAL', model: 'test-model' };
@@ -406,3 +418,82 @@ test('Aniq AI Draft X-Ray (untTrapCases & analyzeCustomDraft) and KZ University 
   assert.equal(radar.universities.length, 6);
   assert.ok(radar.universities[0].afterFixChancePercent >= radar.universities[0].currentChancePercent);
 });
+
+test('All 12 official UNT subjects provide reference cheatsheets and 10 full 40-question (50-point) variants', () => {
+  assert.equal(UNT_SUBJECTS.length, 12);
+  assert.equal(UNT_PROFILE_COMBINATIONS.length, 6);
+
+  for (const subj of UNT_SUBJECTS) {
+    assert.ok(subj.referenceCheatsheet.length >= 2, `Missing cheatsheet for ${subj.id}`);
+    assert.ok(subj.sections.ru.length >= 4, `Missing sections for ${subj.id}`);
+
+    for (let v = 1; v <= 10; v++) {
+      const qs = generateSubjectUntVariant(subj.id, v);
+      assert.equal(qs.length, 40, `Expected 40 questions in ${subj.id} variant #${v}`);
+
+      const singleCount = qs.filter((q) => q.format === 'single').length;
+      const contextCount = qs.filter((q) => q.format === 'context').length;
+      const matchingCount = qs.filter((q) => q.format === 'matching').length;
+      const multipleCount = qs.filter((q) => q.format === 'multiple').length;
+
+      assert.equal(singleCount, 25);
+      assert.equal(contextCount, 5);
+      assert.equal(matchingCount, 5);
+      assert.equal(multipleCount, 5);
+
+      const maxPts = qs.reduce((sum, q) => sum + q.maxPoints, 0);
+      assert.equal(maxPts, 50, `Expected 50 maxPoints in ${subj.id} variant #${v}`);
+    }
+
+    // Verify full evaluation on variant #1 of each subject
+    const v1 = generateSubjectUntVariant(subj.id, 1);
+    const perfectAns = {};
+    for (const q of v1) {
+      if (q.format === 'single' || q.format === 'context') {
+        perfectAns[q.id] = { format: q.format, selectedIndex: q.correctIndex };
+      } else if (q.format === 'matching') {
+        perfectAns[q.id] = { format: 'matching', pairs: [q.correctPairs[0], q.correctPairs[1]] };
+      } else {
+        perfectAns[q.id] = { format: 'multiple', selectedIndices: [...q.correctIndices] };
+      }
+    }
+    const evalRes = evaluateUntExam(perfectAns, v1);
+    assert.equal(evalRes.earnedPoints, 50);
+    assert.equal(evalRes.maxPoints, 50);
+    assert.equal(evalRes.scaledScore50, 50);
+  }
+});
+
+test('Scientific Pedagogy Engine implements Bloom 2σ Mastery Gate, Ebbinghaus SM-2 Retention, Sweller CLT, and Bjork Interleaving', () => {
+  assert.equal(SCIENTIFIC_METHODS.length, 6);
+
+  const retFresh = computeEbbinghausRetention(0, 3, 5);
+  assert.equal(retFresh.retentionPercent, 100);
+  assert.equal(retFresh.status, 'fresh');
+
+  const retDecayed = computeEbbinghausRetention(14, 1, 4);
+  assert.ok(retDecayed.retentionPercent < 85);
+
+  const gateBlocked = computeBloomMasteryGate([85, 65]);
+  assert.equal(gateBlocked.unlocked, false);
+  assert.equal(gateBlocked.minParentMastery, 65);
+
+  const gateUnlocked = computeBloomMasteryGate([82, 90]);
+  assert.equal(gateUnlocked.unlocked, true);
+
+  const sweller1 = computeSwellerScaffoldingLevel(25, 'ru');
+  assert.equal(sweller1.level, 1);
+  const sweller4 = computeSwellerScaffoldingLevel(88, 'ru');
+  assert.equal(sweller4.level, 4);
+  assert.equal(sweller4.requireFeynmanCheck, true);
+
+  const interleaved = buildBjorkInterleavedList([
+    { topic: 'linear', id: 1 },
+    { topic: 'linear', id: 2 },
+    { topic: 'quadratic', id: 3 },
+    { topic: 'logarithms', id: 4 }
+  ]);
+  assert.equal(interleaved.length, 4);
+  assert.notEqual(interleaved[0].topic, interleaved[1].topic);
+});
+
