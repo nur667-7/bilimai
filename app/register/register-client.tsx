@@ -11,6 +11,7 @@ import {
   type UniversityId,
   type UserProfile
 } from "@/lib/user-profile";
+import { useAuxiliaryPageNavigation } from "@/lib/use-study-navigation";
 
 const registerCopy = {
   ru: {
@@ -89,7 +90,7 @@ const registerCopy = {
 
 export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language }) {
   const { dark, toggleTheme } = useAniqTheme();
-  const [lang, setLang] = useState<Language>(initialLang);
+  const { lang, changeLanguage: handleLangChange } = useAuxiliaryPageNavigation(initialLang);
   const [role, setRole] = useState<"student" | "teacher">("student");
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
@@ -104,15 +105,6 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
   useEffect(() => {
     setReturnHref(resolveReturnHref(lang));
   }, [lang]);
-
-  function handleLangChange(nextLang: Language) {
-    setLang(nextLang);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.set("lang", nextLang);
-      window.history.replaceState({}, "", url.toString());
-    }
-  }
 
   function handleRegister(e: React.FormEvent) {
     e.preventDefault();

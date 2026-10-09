@@ -22,6 +22,7 @@ import type { LabTopic, Progress } from "@/lib/error-lab";
 import { lessons, type Language } from "@/lib/lessons";
 
 import { saveNavContext } from "@/lib/user-profile";
+import { useAuxiliaryPageNavigation } from "@/lib/use-study-navigation";
 import { Compass, User } from "lucide-react";
 
 const labels = {
@@ -264,7 +265,7 @@ export default function ErrorLab({
   initialTopic?: LabTopic;
 } = {}) {
   const { dark, toggleTheme } = useAniqTheme();
-  const [lang, setLang] = useState<Language>(initialLang);
+  const { lang, setLang, updateQueryParams } = useAuxiliaryPageNavigation(initialLang);
   const [topic, setTopic] = useState<LabTopic>(initialTopic);
   const [seed, setSeed] = useState(0);
   const [selection, setSelection] = useState<number | null>(null);
@@ -393,22 +394,12 @@ export default function ErrorLab({
     reset();
     setTopic(value);
     setSeed(nextSeed(progress, value));
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("lang", lang);
-      url.searchParams.set("topic", value);
-      window.history.pushState({ lang, topic: value }, "", url.toString());
-    } catch {}
+    updateQueryParams({ lang, topic: value }, "push");
   }
 
   function changeLang(nextLang: Language) {
     setLang(nextLang);
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("lang", nextLang);
-      url.searchParams.set("topic", topic);
-      window.history.replaceState({ lang: nextLang, topic }, "", url.toString());
-    } catch {}
+    updateQueryParams({ lang: nextLang, topic }, "replace");
   }
 
   async function requestAiDiagnosis() {

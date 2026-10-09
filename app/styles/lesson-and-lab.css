@@ -1,0 +1,758 @@
+/* Lesson Surface, Formula Stage, Practice & Error Lab (/lab) */
+
+/* ==========================================================================
+   4. Inside Lesson: Rule, Centerpiece Formula & Numbered Steps (Zero Line Clutter)
+   ========================================================================== */
+
+.rule {
+  background: #f8f6f1;
+  border-left: 3px solid var(--primary);
+  padding: 14px 18px;
+  border-radius: 0 7px 7px 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: #1f2937;
+}
+
+.rule-label,
+.rule strong {
+  display: block;
+  font-family: var(--font-sans);
+  color: var(--primary);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.rule-body {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.58;
+  color: #1f2937;
+}
+
+/* Centerpiece Formula Stage: Soft warm surface without top/bottom rule noise */
+
+.math-stage {
+  margin: 22px 0;
+  padding: 18px 20px;
+  border-radius: 8px;
+  background: #faf8f4;
+}
+
+.math-stage-label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+  margin-bottom: 4px;
+}
+
+.equation {
+  font-family: var(--font-math);
+  font-size: clamp(25px, 3.2vw, 34px);
+  font-weight: 400;
+  line-height: 1.32;
+  letter-spacing: 0.01em;
+  padding: 2px 0 0;
+  margin: 0;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.steps-section {
+  margin-top: 22px;
+}
+
+.steps-heading {
+  margin: 0 0 8px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #18181b;
+}
+
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.steps li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 9px 12px;
+  background: #fcfbf9;
+  border-radius: 6px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: #1f2937;
+}
+
+.step-number {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--accent);
+  padding: 2px 7px;
+  border-radius: 4px;
+  min-width: 42px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.step-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.notebook-margin-note {
+  margin: 18px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+/* Single horizontal divider ONLY where the stage transitions to action */
+
+.lesson-footer-action {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #ebe6dc;
+}
+
+.quiet-text-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  padding: 6px 4px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.quiet-text-action:hover {
+  color: #0f2547;
+}
+
+/* ==========================================================================
+   5. Practice Stage: Full-Width 3-Part Option Rows & Contextual Feedback
+   ========================================================================== */
+
+.practice-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.practice-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.practice-counter {
+  font-size: 12.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.practice-step-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.practice-dot {
+  min-width: 32px;
+  height: 30px;
+  padding: 0 9px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: #faf8f5;
+  color: #44403c;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.practice-dot.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.practice-dot.done {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.practice-dot.err {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.practice-math-stem {
+  font-family: var(--font-math);
+  font-size: clamp(20px, 2.3vw, 25px);
+  font-weight: 400;
+  line-height: 1.4;
+  color: #0f172a;
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: #faf8f4;
+  overflow-wrap: anywhere;
+}
+
+.options-stack {
+  display: flex !important;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Uniform Full-Width 3-Part Row: [Letter Badge] [Math Expression] [Selection Status] */
+
+.option {
+  width: 100%;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #dcd6ca;
+  padding: 11px 16px;
+  border-radius: 7px;
+  cursor: pointer;
+  min-height: 48px;
+  background: #ffffff;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.option:hover {
+  border-color: #9ca3af;
+  background: #faf9f6;
+}
+
+.option[data-selected="true"] {
+  border-color: var(--primary);
+  border-width: 1.5px;
+  background: var(--accent);
+}
+
+.option.option-correct {
+  border-color: #15803d;
+  background: #f0fdf4;
+  color: #14532d;
+}
+
+.option.option-wrong {
+  border-color: #d97706;
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.option-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  background: #f5f3ee;
+  color: #44403c;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.option[data-selected="true"] .option-badge {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.option.option-correct .option-badge {
+  background: #15803d;
+  border-color: #15803d;
+  color: #ffffff;
+}
+
+.option.option-wrong .option-badge {
+  background: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+}
+
+.option-math-text {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-math);
+  font-size: 18px;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.option-status-indicator {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.option.option-correct .option-status-indicator {
+  color: #15803d;
+}
+
+.option.option-wrong .option-status-indicator {
+  color: #b45309;
+}
+
+.feedback {
+  padding: 13px 16px;
+  border-radius: 6px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  background: #f0fdf4;
+  border-left: 3px solid #15803d;
+  color: #14532d;
+}
+
+.feedback.wrong {
+  background: #fffbeb;
+  border-left: 3px solid #d97706;
+  color: #78350f;
+}
+
+.feedback-heading {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.feedback-body {
+  margin: 0;
+}
+
+.error-breakdown-note {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(217, 119, 6, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error-breakdown-note p {
+  margin: 0;
+}
+
+.error-breakdown-solution {
+  font-family: var(--font-math);
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.quiet-inline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.practice-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.practice-transfer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.transfer-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   6. Ask Question / Socratic AI Tutor & Study Plan
+   ========================================================================== */
+
+.ai-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.quick-prompts-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-form {
+  display: grid;
+  gap: 10px;
+}
+
+.form-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.ai-form textarea {
+  width: 100%;
+  min-height: 96px;
+  border: 1px solid var(--input);
+  border-radius: 6px;
+  padding: 10px 14px;
+  resize: vertical;
+  background: #ffffff;
+}
+
+.ai-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quick-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-pill {
+  font-size: 12.5px;
+  background: #f8f6f1;
+  color: #292524;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 11px;
+  min-height: 34px;
+  text-align: left;
+}
+
+.quick-pill:hover {
+  background: var(--accent);
+  border-color: #c9d8ec;
+  color: var(--primary);
+}
+
+.checkline {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: #44403c;
+  cursor: pointer;
+}
+
+.response {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 7px 7px 0;
+  padding: 15px 18px;
+  background: #f8f6f1;
+}
+
+.response-explanation {
+  margin: 6px 0 10px;
+}
+
+.response-hint {
+  margin: 4px 0 0;
+}
+
+/* ==========================================================================
+   7. Error Lab (/lab): Full-Width Step Rows & Compact Progress Drawer
+   ========================================================================== */
+
+.lab-how-details {
+  font-size: 13.5px;
+  color: var(--muted-foreground);
+}
+
+.lab-how-details summary {
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--primary);
+  user-select: none;
+}
+
+.lab-how-details p {
+  margin: 6px 0 0;
+  color: #44403c;
+}
+
+.lab-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.lab-step-item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Full-width 3-part step row matching Practice options */
+
+.lab-step {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  text-align: left;
+  padding: 12px 16px;
+  min-height: 50px;
+  border: 1px solid #dcd6ca;
+  border-radius: 7px;
+  background: #ffffff;
+  color: var(--foreground);
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.lab-step:hover:not(:disabled) {
+  border-color: #9ca3af;
+  background: #faf9f6;
+}
+
+.lab-step.selected {
+  border-color: var(--primary);
+  border-width: 1.5px;
+  background: var(--accent);
+}
+
+.lab-step.selected .step-number {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.lab-step.broken-found {
+  border-color: #15803d;
+  background: #f0fdf4;
+}
+
+.lab-step.broken-found .step-number {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.lab-step.broken-found .option-status-indicator {
+  color: #15803d;
+}
+
+.lab-step.step-valid {
+  border-color: #d97706;
+  background: #fffbeb;
+}
+
+.lab-step.step-valid .step-number {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.lab-step.step-valid .option-status-indicator {
+  color: #b45309;
+}
+
+.step-math-line {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-math);
+  font-size: 19px;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.step-inline-feedback {
+  margin: 6px 0 8px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.step-inline-feedback.wrong {
+  background: #fffbeb;
+  border-left: 3px solid #d97706;
+  color: #78350f;
+}
+
+.step-inline-feedback.correct {
+  background: #f0fdf4;
+  border-left: 3px solid #15803d;
+  color: #14532d;
+}
+
+.transfer-stage {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #ebe6dc;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lab-input {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  min-height: 42px;
+  border: 1px solid var(--input);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: var(--font-math);
+  font-size: 18px;
+  background: #ffffff;
+}
+
+.lab-math {
+  font-family: var(--font-math);
+  font-size: 19px;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+/* Compact Progress Card below Lab Surface */
+
+.lab-progress {
+  background: #fdfcfa;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lab-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lab-recommend-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lab-progress-drawers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lab-drawer {
+  border-top: 1px solid #ebe6dc;
+  padding-top: 8px;
+}
+
+.lab-drawer summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  user-select: none;
+}
+
+.lab-drawer-body {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lab-progress h3 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  margin: 10px 0 4px;
+}
+
+.lab-progress ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 18px;
+}
+
+.lab-progress li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0ece2;
+  font-size: 13px;
+}
+
+.lab-progress li strong {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--accent);
+  padding: 2px 7px;
+  border-radius: 4px;
+}

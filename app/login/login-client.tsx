@@ -11,6 +11,7 @@ import {
   saveUserProfile,
   type UserProfile
 } from "@/lib/user-profile";
+import { useAuxiliaryPageNavigation } from "@/lib/use-study-navigation";
 
 const loginCopy = {
   ru: {
@@ -71,7 +72,7 @@ const loginCopy = {
 
 export function LoginClient({ initialLang = "ru" }: { initialLang?: Language }) {
   const { dark, toggleTheme } = useAniqTheme();
-  const [lang, setLang] = useState<Language>(initialLang);
+  const { lang, changeLanguage: handleLangChange } = useAuxiliaryPageNavigation(initialLang);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [returnHref, setReturnHref] = useState<string>(`/?lang=${initialLang}`);
@@ -81,15 +82,6 @@ export function LoginClient({ initialLang = "ru" }: { initialLang?: Language }) 
   useEffect(() => {
     setReturnHref(resolveReturnHref(lang));
   }, [lang]);
-
-  function handleLangChange(nextLang: Language) {
-    setLang(nextLang);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.set("lang", nextLang);
-      window.history.replaceState({}, "", url.toString());
-    }
-  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -9,6 +9,13 @@ import {
   explain
 } from '../lib/claude.ts';
 import { makeChallenge, buildBaselineRoadmap, progressSchema, resolveVerifiedChallenge } from '../lib/error-lab.ts';
+import {
+  studyStoreReducer,
+  createInitialStudyStoreState,
+  getTopicPracticeSession,
+  buildStudyHref,
+  isValidWorkspaceTab
+} from '../lib/study-store.ts';
 
 test('logarithm, progression and pyramid distractors cannot equal their correct steps', () => {
   for (const lang of ['ru', 'kk', 'uz'])
@@ -201,3 +208,64 @@ test('provider body limit cancels oversized streamed output', async () => {
   );
   assert.equal(cancelled, true);
 });
+
+test('unified studyStoreReducer deterministically manages practice answers, transfer problems, weak topics, and URL href building', () => {
+  let state = createInitialStudyStoreState();
+  assert.equal(state.hydrated, false);
+  assert.deepEqual(state.weakTopics, []);
+
+  // Select and check practice answer for topic "linear"
+  state = studyStoreReducer(state, {
+    type: 'SELECT_OPTION',
+    topic: 'linear',
+    qIdx: 0,
+    value: 'x = 5'
+  });
+  state = studyStoreReducer(state, {
+    type: 'CHECK_QUESTION',
+    topic: 'linear',
+    qIdx: 0
+  });
+
+  const linearSession = getTopicPracticeSession(state, 'linear');
+  assert.equal(linearSession.answers[0], 'x = 5');
+  assert.equal(linearSession.checkedMap[0], true);
+  assert.equal(state.hasInteracted, true);
+
+  // Switching or checking another topic preserves "linear" session independently
+  const quadSession = getTopicPracticeSession(state, 'quadratic');
+  assert.deepEqual(quadSession.answers, {});
+  assert.equal(getTopicPracticeSession(state, 'linear').answers[0], 'x = 5');
+
+  // Verify transfer problem and record lab progress
+  const ch0 = makeChallenge('linear', 0, 'ru');
+  state = studyStoreReducer(state, {
+    type: 'SET_TRANSFER_INPUT',
+    topic: 'linear',
+    value: String(ch0.answer)
+  });
+  state = studyStoreReducer(state, {
+    type: 'CHECK_TRANSFER',
+    topic: 'linear',
+    expectedAnswer: ch0.answer
+  });
+  assert.equal(getTopicPracticeSession(state, 'linear').transferStatus, 'right');
+  assert.equal(state.labProgress.records.length, 1);
+  assert.equal(state.labProgress.records[0].topic, 'linear');
+
+  // Toggle weak topic and reset topic session
+  state = studyStoreReducer(state, { type: 'TOGGLE_WEAK_TOPIC', topic: 'trigonometry' });
+  assert.deepEqual(state.weakTopics, ['trigonometry']);
+  state = studyStoreReducer(state, { type: 'RESET_TOPIC_SESSION', topic: 'linear' });
+  assert.deepEqual(getTopicPracticeSession(state, 'linear').answers, {});
+
+  // Navigation href builder & workspace tab validator
+  assert.equal(isValidWorkspaceTab('lesson'), true);
+  assert.equal(isValidWorkspaceTab('unknown'), false);
+  assert.equal(buildStudyHref({ lang: 'ru', tab: 'today', topic: 'linear', subject: 'math' }), '/?lang=ru');
+  assert.equal(
+    buildStudyHref({ lang: 'kk', tab: 'lesson', topic: 'quadratic', subject: 'physics' }),
+    '/?lang=kk&tab=lesson&topic=quadratic&subject=physics'
+  );
+});
+

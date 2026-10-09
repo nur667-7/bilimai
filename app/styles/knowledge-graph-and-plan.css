@@ -1,0 +1,1160 @@
+/* 12 UNT Subjects, Study Plan, Knowledge Graph & Dark Mode System */
+
+/* ==========================================================================
+   13. Synchronized UI System: Brand Header, Welcome Bar, 12 UNT Subjects,
+       Scientific Pedagogy Engine & Logic Fracture X-Ray
+   ========================================================================== */
+
+.aniq-brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  color: var(--foreground);
+}
+
+.aniq-logo-word {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+
+.text-brand {
+  color: var(--brand);
+}
+
+.aniq-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease;
+}
+
+.aniq-icon-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--brand);
+}
+
+.aniq-btn-primary {
+  background: linear-gradient(135deg, var(--brand), var(--accent-warm));
+  color: #1c1306;
+  font-weight: 700;
+}
+
+.primary-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Compact 1-Line Welcome & All-12-Subjects Command Bar */
+
+/* Welcome Showcase Inner Layout */
+
+/* 12 UNT Subjects & Variants Selector + Reference Cheatsheet */
+
+.unt-combo-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.unt-combo-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.unt-combo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.unt-combo-chip:hover,
+.unt-combo-chip.active {
+  border-color: var(--brand);
+  background: rgba(217, 138, 43, 0.15);
+}
+
+.unt-subject-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.unt-subject-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.unt-subject-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--subj-accent, var(--brand));
+}
+
+.unt-subject-card.active {
+  border-color: var(--subj-accent, var(--brand));
+  background: rgba(217, 138, 43, 0.12);
+  box-shadow: 0 6px 18px rgba(217, 138, 43, 0.15);
+}
+
+.unt-subject-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: rgba(217, 138, 43, 0.14);
+  color: var(--subj-accent, var(--brand-2));
+  flex-shrink: 0;
+}
+
+.unt-subject-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.unt-subject-info strong {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unt-subject-info small {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+
+.unt-variant-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.unt-variant-pill {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.unt-variant-pill:hover,
+.unt-variant-pill.active {
+  border-color: var(--brand);
+  background: linear-gradient(135deg, var(--brand), var(--accent-warm));
+  color: #1c1306;
+}
+
+.unt-cheatsheet-panel {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(217, 138, 43, 0.35);
+  background: rgba(217, 138, 43, 0.06);
+}
+
+.unt-cheatsheet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.unt-cheatsheet-card {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+/* Scientific Learning Methodologies & Telemetry */
+
+/* Synchronized XrayTrapView Classes (app/xray-trap-view.tsx) */
+
+.xray-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.xray-hero-card {
+  padding: 20px 22px;
+  border-radius: 16px;
+  border: 1px solid rgba(217, 138, 43, 0.34);
+  background: linear-gradient(
+    135deg,
+    rgba(217, 138, 43, 0.12),
+    rgba(255, 253, 248, 0.92) 55%,
+    rgba(216, 90, 48, 0.09)
+  );
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+html.dark .xray-hero-card {
+  background: linear-gradient(
+    135deg,
+    rgba(217, 138, 43, 0.16),
+    rgba(28, 22, 12, 0.94) 55%,
+    rgba(216, 90, 48, 0.14)
+  );
+}
+
+.xray-hero-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.xray-title {
+  margin: 4px 0 6px;
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.xray-sub {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  max-width: 720px;
+}
+
+.xray-kpi-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.xray-kpi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 12.5px;
+}
+
+.xray-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.xray-blitz-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.xray-trap-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.xray-case-chip {
+  padding: 6px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.xray-case-chip.active {
+  border-color: var(--brand);
+  background: rgba(217, 138, 43, 0.15);
+  font-weight: 700;
+}
+
+.xray-lines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.xray-line-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+}
+
+.xray-line-row:hover {
+  border-color: var(--brand);
+  transform: translateX(2px);
+}
+
+.xray-line-row.trace-fracture {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.xray-line-row.trace-valid {
+  border-color: #16a34a;
+  background: rgba(22, 163, 74, 0.07);
+}
+
+.xray-line-row.trace-cascade {
+  border-color: #d97706;
+  background: rgba(217, 119, 6, 0.08);
+}
+
+.xray-line-num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted-foreground);
+  min-width: 28px;
+}
+
+.xray-line-code {
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--foreground);
+  flex: 1;
+}
+
+.xray-line-tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  background: var(--muted);
+  color: var(--foreground);
+  white-space: nowrap;
+}
+
+.xray-custom-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 16px;
+}
+
+.xray-draft-textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .unt-subject-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+  .unt-cheatsheet-grid,
+  .xray-custom-split {
+      grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ==========================================================================
+   14. Comprehensive Dark Mode Fixes, WCAG 4.5:1 Contrast, 440px Auth Cards,
+       Standalone /welcome Page, Compact Exam Toolbar & Clean Study Plan
+   ========================================================================== */
+
+/* Dark Mode Overrides for Textbook & Nav Elements (Fixes 1.66:1 dark-on-dark bug) */
+
+html.dark .primary-nav-link {
+  color: #e6dac8;
+}
+
+html.dark .primary-nav-link:hover {
+  background: rgba(255, 228, 185, 0.1);
+  color: #ffffff;
+}
+
+html.dark .primary-nav-link.active {
+  background: rgba(245, 179, 88, 0.18);
+  color: var(--primary);
+  border-color: rgba(245, 179, 88, 0.45);
+}
+
+html.dark .lang-btn.active,
+html.dark .lang-btn[aria-pressed="true"] {
+  background: var(--primary);
+  color: #1c1306;
+}
+
+html.dark .topic {
+  color: #e6dac8;
+}
+
+html.dark .topic:hover:not(.active) {
+  background: rgba(255, 228, 185, 0.08);
+  color: #ffffff;
+}
+
+html.dark .topic.active {
+  background: rgba(245, 179, 88, 0.16);
+  border-left-color: var(--primary);
+  color: var(--primary);
+}
+
+html.dark .num {
+  color: #b8a78e;
+}
+
+html.dark .surface,
+html.dark .document-card,
+html.dark .exam-question-card,
+html.dark .kg-step-card,
+html.dark .kg-mini-stat,
+html.dark .exam-stat-box,
+html.dark .exam-matching-row,
+html.dark .exam-matching-chip {
+  background: var(--card);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+html.dark .lesson-title,
+html.dark .lesson-head h2,
+html.dark .equation,
+html.dark .practice-math-stem,
+html.dark .option-math-text,
+html.dark .step-math-line,
+html.dark .lab-math,
+html.dark .exam-stem,
+html.dark .exam-matching-prompt,
+html.dark .steps-heading,
+html.dark .error-breakdown-solution {
+  color: var(--foreground);
+}
+
+html.dark .lesson-intro,
+html.dark .rule,
+html.dark .rule-body,
+html.dark .checkline,
+html.dark .lab-how-details p,
+html.dark .site-footer-nav a,
+html.dark .footer-link-btn {
+  color: #e6dac8;
+}
+
+html.dark .rule,
+html.dark .math-stage,
+html.dark .practice-math-stem,
+html.dark .response,
+html.dark .exam-spec-banner,
+html.dark .exam-context-box,
+html.dark .exam-matching-ref,
+html.dark .exam-solution-box,
+html.dark .kg-inspector,
+html.dark .lab-progress {
+  background: #2b2114;
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+html.dark .steps li {
+  background: #2b2114;
+  color: var(--foreground);
+}
+
+html.dark .option,
+html.dark .lab-step,
+html.dark .exam-option-btn,
+html.dark .exam-match-num-btn,
+html.dark .kg-link-pill,
+html.dark .quick-pill {
+  background: #241c11;
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+html.dark .option:hover,
+html.dark .lab-step:hover:not(:disabled),
+html.dark .exam-option-btn:hover:not(:disabled) {
+  background: #2e2416;
+  border-color: rgba(245, 179, 88, 0.45);
+}
+
+html.dark .option-badge,
+html.dark .exam-opt-letter,
+html.dark .exam-opt-check,
+html.dark .practice-dot,
+html.dark .exam-nav-cell {
+  background: #2e2416;
+  color: #e6dac8;
+  border-color: var(--border);
+}
+
+html.dark .ai-form textarea,
+html.dark .lab-input,
+html.dark .mobile-topic-select {
+  background: #1d160c;
+  color: var(--foreground);
+  border-color: var(--input);
+}
+
+html.dark .tabsbar {
+  background: #2a2013 !important;
+  border-color: var(--border);
+}
+
+html.dark .tabsbar [data-slot="tabs-trigger"] {
+  color: #cfc0a9;
+}
+
+/* Honest Lesson Status Pill */
+
+.lesson-honest-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+/* Clean 440px Textbook Auth Layout (/login and /register) */
+
+.aniq-auth-topbar {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.aniq-auth-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 40px;
+}
+
+.aniq-auth-container .aniq-auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 26px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 6px 24px rgba(27, 59, 111, 0.06);
+}
+
+.aniq-auth-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.aniq-input,
+.aniq-select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--input);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 14.5px;
+}
+
+.aniq-input:focus,
+.aniq-select:focus {
+  border-color: var(--primary);
+}
+
+.aniq-optional-details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--muted);
+}
+
+.aniq-optional-summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  user-select: none;
+}
+
+.aniq-optional-body {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aniq-auth-footer {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+}
+
+/* Standalone Compact Welcome Page (/welcome) */
+
+.welcome-standalone-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.study-topbar {
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.study-topbar-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.study-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.brand-Sep {
+  color: var(--muted-foreground);
+}
+
+.brand-subtitle {
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+.study-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lang-bar {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 6px;
+  background: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.lang-pill {
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.lang-pill.active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.top-UtilityLink {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  text-decoration: none;
+}
+
+.top-UtilityLink:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 7px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn-ghost,
+.btn-ghost-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.btn-ghost-sm {
+  padding: 5px 11px;
+  font-size: 12.5px;
+}
+
+.welcome-standalone-main {
+  max-width: 1120px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 20px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.welcome-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.95fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.welcome-hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.lesson-kicker {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+}
+
+.welcome-main-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 3.2vw, 36px);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--foreground);
+}
+
+.welcome-main-lead {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  max-width: 62ch;
+}
+
+.welcome-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.welcome-mini-card {
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.welcome-mini-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section-num {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+}
+
+.welcome-mini-Equation {
+  font-family: var(--font-math);
+  font-size: 20px;
+  color: var(--foreground);
+}
+
+.muted-note {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted-foreground);
+}
+
+.welcome-mini-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.welcome-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  text-align: left;
+}
+
+.welcome-step-btn.step-correct {
+  border-color: #15803d;
+  background: rgba(21, 128, 61, 0.1);
+}
+
+.welcome-step-btn.step-wrong {
+  border-color: #d97706;
+  background: rgba(217, 119, 6, 0.1);
+}
+
+.welcome-step-num {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--primary);
+}
+
+.welcome-step-expr {
+  font-family: var(--font-math);
+  font-size: 17px;
+}
+
+.feedback-banner {
+  padding: 11px 14px;
+  border-radius: 7px;
+  font-size: 13.5px;
+}
+
+.feedback-banner.ok {
+  background: rgba(21, 128, 61, 0.1);
+  border-left: 3px solid #15803d;
+}
+
+.feedback-banner.err {
+  background: rgba(217, 119, 6, 0.1);
+  border-left: 3px solid #d97706;
+}
+
+.inline-action-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.section-title {
+  margin: 0 0 8px;
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 2.3vw, 24px);
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.welcome-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.welcome-tool-card {
+  padding: 16px 18px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.welcome-tool-card h3 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 700;
+}
+
+.welcome-tool-card p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted-foreground);
+  flex: 1;
+}
+
+.welcome-group-subtitle {
+  margin: 14px 0 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+}
+
+.welcome-subject-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.welcome-subject-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s ease;
+}
+
+.welcome-subject-card:hover {
+  border-color: var(--primary);
+}
+
+.welcome-subject-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.welcome-subject-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.welcome-subj-badge {
+  font-size: 11.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.welcome-subj-badge.official {
+  background: var(--accent);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.welcome-footer {
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+/* Compact Exam Toolbar & Collapsible Drawers (Question #1 at ~220px) */
+
+.exam-compact-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--muted);
+}
+
+/* Fix truncated subject titles on mobile in UntExamView */
+
+.unt-subject-info strong {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+
+/* Clean 3-Block Study Plan (.plan-*) */
+
+.plan-summary-card,
+.plan-actions-section {
+  padding: 18px 20px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--muted);
+}
+
+.plan-status-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: var(--card);
+  border-left: 3px solid var(--primary);
+}
+
+.plan-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.plan-priority-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plan-priority-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.plan-priority-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-priority-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-collapsible-details {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  background: var(--card);
+}
+
+.plan-collapsible-details summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  user-select: none;
+}
+
+.plan-collapsible-body {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 840px) {
+  .welcome-hero-grid,
+  .welcome-tools-grid,
+  .welcome-subject-grid,
+  .plan-controls-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+}

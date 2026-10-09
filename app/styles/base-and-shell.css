@@ -1,0 +1,542 @@
+/* Base Tokens, Resets, Layout Shell & Top Navigation */
+
+:root {
+  --background: #F5F7FC;
+  --foreground: #172033;
+  --card: #FFFFFF;
+  --card-foreground: #172033;
+  --popover: #FFFFFF;
+  --popover-foreground: #172033;
+  --primary: #355CFF;
+  --primary-foreground: #FFFFFF;
+  --brand: #355CFF;
+  --brand-2: #2447E5;
+  --accent-warm: #755FF8;
+  --ink: #172033;
+  --secondary: #EAEFF8;
+  --secondary-foreground: #172033;
+  --muted: #EDF1FA;
+  --muted-foreground: #4E5D78;
+  --accent: #EBF0FF;
+  --accent-foreground: #355CFF;
+  --destructive: #DC2626;
+  --border: rgba(23, 32, 51, 0.09);
+  --input: rgba(23, 32, 51, 0.18);
+  --ring: #355CFF;
+  --radius: 0.65rem;
+  --font-serif: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-math: "STIX Two Math", "Cambria Math", "Times New Roman", Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+html.dark {
+  --background: #0B111E;
+  --foreground: #F1F5F9;
+  --card: #121B2E;
+  --card-foreground: #F1F5F9;
+  --popover: #121B2E;
+  --popover-foreground: #F1F5F9;
+  --primary: #5273FF;
+  --primary-foreground: #FFFFFF;
+  --brand: #6382FF;
+  --brand-2: #849BFF;
+  --accent-warm: #8B75FF;
+  --ink: #F1F5F9;
+  --secondary: #1A253D;
+  --secondary-foreground: #F1F5F9;
+  --muted: #172136;
+  --muted-foreground: #94A3B8;
+  --accent: rgba(82, 115, 255, 0.16);
+  --accent-foreground: #93ADFF;
+  --destructive: #F87171;
+  --border: rgba(148, 163, 184, 0.16);
+  --input: rgba(148, 163, 184, 0.28);
+  --ring: #5273FF;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  background-color: var(--background);
+  background-image: none;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a,
+select {
+  touch-action: manipulation;
+}
+
+a {
+  color: var(--primary);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+button:focus-visible,
+a:focus-visible,
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 2.5px solid #b45309;
+  outline-offset: 2px;
+}
+
+.beta,
+.num,
+.step-number,
+.option-badge,
+.score,
+.topic-index-label,
+.section-pill,
+.exam-weight-pill,
+.exam-q-number,
+.practice-counter,
+.practice-dot {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   1. Layout & Header: Modern Textbook Navigation
+   ========================================================================== */
+
+.textbook-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.main-container {
+  flex: 1;
+}
+
+.site-header {
+  background: #fdfcfa;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 22px;
+}
+
+.header-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+.header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  color: var(--foreground);
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.brand-sub {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: var(--primary);
+  border: 1px solid #c9d8ec;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.lang-switcher {
+  display: inline-flex;
+  background: var(--muted);
+  padding: 2px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  gap: 2px;
+}
+
+.lang-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  min-height: 28px;
+  border-radius: 4px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.lang-btn.active,
+.lang-btn[aria-pressed="true"] {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.primary-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+}
+
+.primary-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  min-height: 34px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #44403c;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.primary-nav-link:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.primary-nav-link.active {
+  background: var(--accent);
+  color: var(--primary);
+  border-color: #c9d8ec;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Welcome Overview Strip (Collapsible)
+   ========================================================================== */
+
+/* ==========================================================================
+   2. Main Study & Lab Workspace: Unified Left Sidebar + Study Surface
+   ========================================================================== */
+
+.workspace {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.lab-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.mobile-topic-bar {
+  display: none;
+  margin-bottom: 10px;
+}
+
+.mobile-topic-bar label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.mobile-topic-select {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--input);
+  border-radius: 6px;
+  padding: 6px 10px;
+  background: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+/* Topic List: Editorial Table of Contents (Shared across Study and Lab) */
+
+.topics {
+  padding: 2px 0;
+}
+
+.topics-heading,
+.topics h2 {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  margin: 0 0 8px;
+  padding: 0 10px;
+  font-weight: 600;
+}
+
+.topics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.topic {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 7px 10px;
+  min-height: 38px;
+  border: 0;
+  border-left: 2.5px solid transparent;
+  border-radius: 0 6px 6px 0;
+  background: transparent;
+  color: #44403c;
+  text-align: left;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.topic:hover:not(.active) {
+  background: #eeeae0;
+  color: var(--foreground);
+}
+
+.topic.active {
+  background: var(--accent);
+  border-left-color: var(--primary);
+  color: var(--primary);
+}
+
+.num {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #78716c;
+  flex-shrink: 0;
+  min-width: 20px;
+}
+
+.topic.active .num {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.topic-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.28;
+}
+
+.topic.active .topic-title {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.topic-title small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  line-height: 1.2;
+}
+
+/* ==========================================================================
+   3. Single Primary Study Surface & Left-Aligned Lesson Header
+   ========================================================================== */
+
+.surface {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 30px 34px;
+  min-width: 0;
+  box-shadow: 0 1px 4px rgba(24, 24, 27, 0.025);
+}
+
+/* Strictly stacked on a single left axis: Category/Number -> Title -> Intro */
+
+.lesson-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.lesson-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.topic-index-label,
+.section-pill {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+}
+
+.lesson-title,
+.lesson-head h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: normal;
+  font-size: clamp(25px, 2.8vw, 32px);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.lesson-intro {
+  margin: 0;
+  max-width: 70ch;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  color: #44403c;
+}
+
+.small {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+/* Lesson Inner Tabs: Consistent Deep Blue Active Semantics */
+
+.tabsbar {
+  display: inline-flex !important;
+  flex-wrap: wrap;
+  height: auto !important;
+  min-height: 38px;
+  padding: 3px !important;
+  gap: 4px;
+  background: #f5f2eb !important;
+  border: 1px solid var(--border);
+  border-radius: 7px !important;
+  margin-bottom: 22px;
+}
+
+.tabsbar [data-slot="tabs-trigger"] {
+  padding: 6px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  height: auto;
+  border-radius: 5px !important;
+  color: #57534e;
+  border: 1px solid transparent;
+}
+
+.tabsbar [data-slot="tabs-trigger"][data-state="active"] {
+  background: var(--accent) !important;
+  color: var(--primary) !important;
+  border-color: #c9d8ec !important;
+  font-weight: 600;
+  box-shadow: none !important;
+}

@@ -1,0 +1,881 @@
+/* Mobile Ergonomics, 4-Section Architecture & Calm Pixel-Gradient Platform */
+
+/* ==========================================================================
+   16. Clickability, Hit-Testing & Mobile Ergonomics Fixes (390x844 & WCAG 2.2 AA)
+   ========================================================================== */
+
+.aniq-auth-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.aniq-auth-skip-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.aniq-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aniq-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.aniq-role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.aniq-role-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.aniq-role-card.active {
+  border-color: var(--primary);
+  background: var(--accent);
+  color: var(--primary);
+}
+
+.aniq-demo-divider {
+  margin: 16px 0 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.aniq-demo-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Ensure all interactive text links, summary toggles, and range inputs meet WCAG 2.2 AA (>=24px height) */
+
+.top-UtilityLink,
+.inline-action-link,
+.quiet-inline-link,
+.footer-link-btn,
+.site-footer a,
+.welcome-footer a,
+.aniq-auth-inline-link,
+.aniq-auth-footer a,
+.document a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding-block: 3px;
+}
+
+.lab-drawer > summary,
+.plan-collapsible-details > summary,
+.aniq-optional-summary {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+input[type="range"] {
+  min-height: 28px;
+  cursor: pointer;
+}
+
+.lang-pill,
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+}
+
+.prompt-chip {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.exam-compact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .lab-progress ul,
+  .exam-format-breakdown {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+  .lab-progress li {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+}
+
+/* ==========================================================================
+   17. 4-Section Architecture, Mobile Bottom Bar, Inline Inspector & 320px Ergonomics
+   ========================================================================== */
+
+/* Learn Sub-navigation (inside "Учиться") */
+
+.learn-subnav-wrap {
+  width: 100%;
+}
+
+.learn-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.learn-subnav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.learn-subnav-pill:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.learn-subnav-pill.active {
+  background: var(--accent);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Subject Boundary Notice Banner */
+
+.subject-boundary-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--primary);
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.subject-boundary-text {
+  flex: 1 1 280px;
+}
+
+.subject-boundary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Today Section & Subject Picker Grid */
+
+.today-primary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.today-subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.today-subject-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.today-subject-card.active {
+  border-color: var(--primary);
+  background: var(--accent);
+}
+
+.today-subject-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.today-subject-meta {
+  min-width: 0;
+}
+
+.today-subject-meta strong {
+  display: block;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.plan-empty-state-box {
+  padding: 18px 16px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: var(--card);
+}
+
+/* Lesson Subtitle & Practice Summary Card */
+
+.lesson-action-subtitle {
+  margin: 2px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.practice-summary-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--primary);
+  background: var(--accent);
+}
+
+/* Profile Section Cards */
+
+.aniq-primary-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--primary-foreground, #ffffff);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profile-stat-box {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-stat-box strong {
+  font-size: 18px;
+  color: var(--foreground);
+}
+
+.profile-uni-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.profile-uni-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+/* Knowledge Graph Inline Topic Inspector */
+
+.kg-inline-inspector {
+  margin-top: 2px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--primary);
+  border-radius: 9px;
+  padding: 14px;
+  background: var(--card);
+}
+
+/* UNT Exam Early Finish Warning Banner */
+
+/* Compact 1-Line Workspace Footer */
+
+.site-footer.site-footer-compact {
+  margin-top: 24px;
+  padding: 14px 0 20px;
+}
+
+.site-footer-compact-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+}
+
+.site-footer-compact-brand {
+  color: var(--foreground);
+}
+
+/* Mobile 4-Item Fixed Bottom Navigation Bar (hidden on desktop >= 769px) */
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .has-mobile-bottom-nav {
+      padding-bottom: 72px;
+    }
+
+  .site-header .primary-nav {
+      display: none;
+    }
+
+  .hide-on-narrow-mobile {
+      display: none !important;
+    }
+
+  .mobile-bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 60;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 2px;
+      padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+    }
+
+  .mobile-bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      min-height: 48px;
+      padding: 4px 2px;
+      border-radius: 8px;
+      border: 0;
+      background: transparent;
+      color: var(--muted-foreground);
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.15;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+  .mobile-bottom-nav-item.active {
+      color: var(--primary);
+      background: var(--accent);
+    }
+
+  .learn-subnav-pill {
+      min-height: 44px;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      flex: 1 1 calc(50% - 6px);
+      justify-content: center;
+      text-align: center;
+    }
+
+  .mobile-topic-select,
+  .lab-input {
+      min-height: 44px;
+    }
+
+  .today-primary-actions > *,
+  .subject-boundary-actions > * {
+      width: 100%;
+      min-height: 44px;
+      justify-content: center;
+    }
+
+  .profile-stats-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 360px) {
+  .wrap {
+      padding: 0 10px;
+    }
+
+  .header-top-row {
+      gap: 6px;
+    }
+
+  .brand-sub {
+      display: none;
+    }
+
+  .lang-btn {
+      padding: 3px 6px;
+      font-size: 11px;
+    }
+
+  .learn-subnav-pill {
+      flex: 1 1 100%;
+    }
+}
+
+/* ============================================================================
+   SECTION 18: CALM LEARNING PLATFORM & PIXEL-BLOCK GRADIENT SIGNATURE
+   Palette:
+     - Background: #F5F7FC (Dark: #0B111E)
+     - Text:       #172033 (Dark: #F1F5F9)
+     - Primary:    #355CFF (Dark: #5273FF)
+     - Pixel Gradient: #355CFF (Blue) -> #755FF8 (Lilac) -> #14B8A6 (Teal)
+   ============================================================================ */
+
+/* 18.1 Signature Pixel-Block Components (First screen, Logo, Progress Bar ONLY) */
+
+.pixel-brand-mark {
+  flex-shrink: 0;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(53, 92, 255, 0.2);
+}
+
+.pixel-progress-track {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  padding: 2px;
+  border-radius: 6px;
+  background: rgba(23, 32, 51, 0.06);
+}
+
+html.dark .pixel-progress-track {
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.pixel-progress-cell {
+  height: 8px;
+  border-radius: 2px;
+  background: rgba(23, 32, 51, 0.08);
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+
+html.dark .pixel-progress-cell {
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.pixel-progress-cell.filled {
+  box-shadow: 0 1px 2px rgba(53, 92, 255, 0.18);
+}
+
+.today-hero-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.85fr);
+  gap: 24px;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 860px) {
+  .today-hero-layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+}
+
+.pixel-mosaic-banner {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #F8FAFF;
+  border: 1px solid rgba(53, 92, 255, 0.14);
+}
+
+html.dark .pixel-mosaic-banner {
+  background: #152038;
+  border-color: rgba(82, 115, 255, 0.24);
+}
+
+/* 18.2 Single-Row Compact Header on Desktop & Mobile */
+
+.site-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: auto;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.primary-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--secondary);
+  border: 0;
+}
+
+@media (max-width: 768px) {
+  .site-header {
+      padding: 8px 0;
+      margin-bottom: 12px;
+    }
+
+  .site-header .primary-nav {
+      display: none !important;
+    }
+
+  .header-top-row {
+      flex: 1 1 auto;
+    }
+}
+
+/* 18.3 Remove Excess Borders & Nested Cards — Separate via Spacing & Hairlines */
+
+.surface {
+  background: var(--card);
+  border: 1px solid rgba(23, 32, 51, 0.07);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.03);
+  padding: 24px;
+}
+
+@media (max-width: 640px) {
+  .surface {
+      padding: 16px 14px;
+      border-radius: 12px;
+    }
+}
+
+/* Remove nested boxes inside .surface */
+
+.learn-subnav {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  padding: 0 0 12px 0 !important;
+  margin-bottom: 18px !important;
+  box-shadow: none !important;
+}
+
+.learn-subnav-pill {
+  background: var(--secondary);
+  border: 1px solid transparent;
+  color: var(--muted-foreground);
+  font-weight: 600;
+}
+
+.learn-subnav-pill.active {
+  background: var(--accent);
+  color: var(--primary);
+  border-color: rgba(53, 92, 255, 0.22);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.steps li {
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 12px 4px !important;
+}
+
+.steps li:last-child {
+  border-bottom: 0 !important;
+}
+
+.math-stage,
+.practice-stage,
+.ai-stage {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 8px 0 0 0 !important;
+}
+
+.plan-actions-section,
+.plan-summary-card,
+.kg-start-banner {
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 18px 0 4px 0 !important;
+}
+
+.profile-uni-card {
+  border: 0;
+  background: #F5F7FC;
+  border-radius: 10px;
+}
+
+/* 18.4 Tasks: Solid Background, Crisp Formulas, Zero Gradients Under Text */
+
+.math,
+.practice-math-stem,
+.step-expr {
+  background: #F8FAFC;
+  background-image: none !important;
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  border-radius: 10px;
+  color: #172033;
+  font-family: var(--font-math);
+}
+
+.practice-math-stem {
+  font-size: 1.2rem;
+  line-height: 1.55;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.option {
+  background: #FFFFFF;
+  border: 1px solid rgba(23, 32, 51, 0.11);
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.option:hover,
+.option[data-selected="true"] {
+  border-color: var(--primary);
+  background: var(--accent);
+}
+
+/* 18.5 Strong Visual Hierarchy: Dominant #355CFF Primary CTA vs Calm Secondary */
+
+.aniq-primary-link-btn,
+.aniq-btn-primary,
+button[data-slot="button"].bg-primary {
+  background-color: #355CFF !important;
+  background-image: none !important;
+  color: #FFFFFF !important;
+  border-color: #355CFF !important;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(53, 92, 255, 0.22);
+}
+
+.aniq-primary-link-btn:hover,
+.aniq-btn-primary:hover,
+button[data-slot="button"].bg-primary:hover {
+  background-color: #2447E5 !important;
+  border-color: #2447E5 !important;
+}
+
+.btn-ghost-sm {
+  background: transparent;
+  border: 1px solid rgba(23, 32, 51, 0.12);
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.btn-ghost-sm:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+/* 18.6 Compact 16-Row Topic Map (/?tab=graph) */
+
+.kg-compact-rows-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+.kg-step-card.kg-compact-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 10px;
+  margin: 0;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.kg-step-card.kg-compact-row:hover {
+  background: rgba(53, 92, 255, 0.05) !important;
+}
+
+.kg-step-card.kg-compact-row.active,
+.kg-step-card.kg-compact-row.selected {
+  background: rgba(53, 92, 255, 0.06) !important;
+}
+
+.kg-compact-row-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.kg-compact-row-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.kg-step-rank {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  min-width: 24px;
+}
+
+.kg-compact-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.kg-inline-inspector {
+  margin: 6px 0 4px 0;
+  border: 0;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 8px 8px 0;
+  background: #F8FAFF;
+  padding: 12px 14px;
+}
+
+/* 18.7 Cool Dark Mode Overrides (Replacing Legacy Warm Brown Selectors) */
+
+html.dark body {
+  background-color: #0B111E !important;
+  background-image: none !important;
+  color: #F1F5F9 !important;
+}
+
+html.dark .surface,
+html.dark .aniq-auth-card,
+html.dark .mobile-bottom-nav {
+  background-color: #121B2E !important;
+  border-color: rgba(148, 163, 184, 0.16) !important;
+  color: #F1F5F9 !important;
+}
+
+html.dark .math,
+html.dark .practice-math-stem,
+html.dark .step-expr,
+html.dark .profile-uni-card,
+html.dark .kg-inline-inspector {
+  background-color: #17223B !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+  color: #F1F5F9 !important;
+}
+
+html.dark .option {
+  background-color: #152036 !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  color: #F1F5F9 !important;
+}
+
+html.dark .option:hover,
+html.dark .option[data-selected="true"] {
+  background-color: rgba(82, 115, 255, 0.18) !important;
+  border-color: #6382FF !important;
+}

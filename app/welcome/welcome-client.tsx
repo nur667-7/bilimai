@@ -6,6 +6,7 @@ import { UNT_SUBJECTS, type UntSubjectId } from "@/lib/unt-all-subjects";
 import { SubjectIcon } from "@/app/unt-exam-view";
 import { PixelBrandMark, PixelKnowledgeMosaic } from "@/components/pixel-mosaic";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
+import { useAuxiliaryPageNavigation } from "@/lib/use-study-navigation";
 
 const COPY: Record<
   Language,
@@ -201,17 +202,8 @@ export default function WelcomeClient({
   initialLang?: Language;
 }) {
   const { dark, toggleTheme } = useAniqTheme();
-  const [lang, setLang] = useState<Language>(initialLang);
+  const { lang, changeLanguage: handleLangChange } = useAuxiliaryPageNavigation(initialLang);
   const [pickedStep, setPickedStep] = useState<number | null>(null);
-
-  function handleLangChange(next: Language) {
-    setLang(next);
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.set("lang", next);
-      window.history.replaceState({}, "", url.toString());
-    }
-  }
 
   const t = COPY[lang];
   const mandatorySubjects = UNT_SUBJECTS.filter((s) => s.category === "mandatory");
