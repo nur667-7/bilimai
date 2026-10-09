@@ -546,7 +546,7 @@ export const lessons: Record<Language, Lesson[]> = {
       id: "stereometry",
       section: "Geometriya",
       title: "Stereometriya: fazoviy jismlar hajmi",
-      intro: "Piramida va prizma hajmlari формулаларини farqlaymiz.",
+      intro: "Piramida va prizma hajmlari formulalarini farqlaymiz.",
       rule: "Piramida hajmi asos yuzasi va balandlik ko‘paytmasining uchdan biriga teng: V = (1/3) × S_asos × h.",
       example: "Asos tomoni a = 4, balandligi h = 6 bo‘lgan muntazam to‘rtburchakli piramida hajmi",
       steps: [

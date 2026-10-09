@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
-import { BookOpen, CheckCircle2, Compass, FlaskConical, RotateCcw, Sparkles } from "lucide-react";
+import { BookOpen, CheckCircle2, ClipboardCheck, Compass, FlaskConical, GitBranch, RotateCcw, Sparkles } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,17 +17,28 @@ import {
   topicName,
   type Progress
 } from "@/lib/error-lab";
+import {
+  emptyUntStorage,
+  untStorageKey,
+  untStorageSchema,
+  type UntAttemptSummary,
+  type UntStorage
+} from "@/lib/unt-exam";
+import { UntExamView } from "@/app/unt-exam-view";
+import { KnowledgeGraphView } from "@/app/knowledge-graph-view";
 
 const copy = {
   ru: {
     eyebrow: "Математика ЕНТ (ҰБТ) · 10 тем · 18+",
     title: "Понимай каждый шаг решения, а не заучивай ответы.",
-    sub: "Разбери правило и пример, проверь себя в практике или найди ошибку в готовом решении в Лаборатории.",
+    sub: "Разбери правило и пример, сдай пробное ЕНТ, открой граф пробелов «Второй мозг» или найди ошибку в Лаборатории.",
     openLab: "Лаборатория ошибок →",
     topics: "Темы ЕНТ (10)",
     mobileTopicLabel: "Тема урока",
     lesson: "Объяснение",
     practice: "Практика (3)",
+    examTab: "Пробное ЕНТ",
+    graphTab: "Второй мозг",
     ai: "Разобрать вопрос",
     roadmapTab: "Мой план",
     rule: "Ключевое правило и инвариант",
@@ -102,6 +113,8 @@ const copy = {
     mobileTopicLabel: "Сабақ тақырыбы",
     lesson: "Түсіндіру",
     practice: "Жаттығу (3)",
+    examTab: "Байқау ҰБТ",
+    graphTab: "Екінші ми",
     ai: "Сұрақты талдау",
     roadmapTab: "Менің жоспарым",
     rule: "Негізгі ереже мен инвариант",
@@ -170,12 +183,14 @@ const copy = {
   uz: {
     eyebrow: "Matematika · 10 ta mavzu · 18+",
     title: "Javobni yodlama, har bir qadam mantiqini tushunib ol.",
-    sub: "Qoida va namunani tahlil qiling, mashqda o‘zingizni sinang yoki Xatolar laboratoriyasida yechimdagi xatoni toping.",
+    sub: "Qoida va namunani tahlil qiling, sinov UBT topshiring, «Ikkinchi miya» grafini oching yoki Xatolar laboratoriyasida yechimdagi xatoni toping.",
     openLab: "Xatolar laboratoriyasi →",
     topics: "Dastur mavzulari (10)",
     mobileTopicLabel: "Dars mavzusi",
     lesson: "Tushuntirish",
     practice: "Mashq (3)",
+    examTab: "Sinov UBT",
+    graphTab: "Ikkinchi miya",
     ai: "Savolni tahlil qilish",
     roadmapTab: "Mening rejam",
     rule: "Asosiy qoida va invariant",
@@ -191,7 +206,7 @@ const copy = {
     choose: "O‘zingizni tekshirish uchun uchala savolga javob bering.",
     session: "Javoblar faqat ochiq sahifada saqlanadi.",
     transferTitle: "Yangi sonlar bilan qo‘shimcha masala",
-    transferSub: "Mavzu qoidasi asosida masalani yeching (24 хил variant).",
+    transferSub: "Mavzu qoidasi asosida masalani yeching (24 xil variant).",
     transferCheck: "Sonni tekshirish",
     transferNext: "Yangi sonlar →",
     transferRight: "To‘g‘ri! Qoida aniq qo‘llanildi.",
@@ -280,6 +295,7 @@ export default function Study() {
   const [answer, setAnswer] = useState<{ explanation: string; hint: string; source?: string } | null>(null);
 
   const [labProgress, setLabProgress] = useState<Progress>(emptyProgress);
+  const [untStorage, setUntStorage] = useState<UntStorage>(emptyUntStorage);
   const [targetScore, setTargetScore] = useState(42);
   const [weeksLeft, setWeeksLeft] = useState(6);
   const [weakTopics, setWeakTopics] = useState<TopicId[]>(["quadratic", "trigonometry", "derivative", "stereometry"]);
@@ -309,6 +325,22 @@ export default function Study() {
   useEffect(() => {
     queueMicrotask(() => {
       try {
+        const params = new URLSearchParams(window.location.search);
+        const qLang = params.get("lang");
+        if (qLang === "ru" || qLang === "kk" || qLang === "uz") {
+          setLang(qLang);
+        }
+        const qTab = params.get("tab");
+        if (qTab === "lesson" || qTab === "practice" || qTab === "exam" || qTab === "graph" || qTab === "ai" || qTab === "roadmap") {
+          setTab(qTab);
+        }
+        const qTopic = params.get("topic");
+        if (qTopic && (untTopicIds as readonly string[]).includes(qTopic)) {
+          setTopic(qTopic as TopicId);
+        }
+      } catch {}
+
+      try {
         const raw = localStorage.getItem("bilimai-lab-v1");
         if (raw) {
           const parsed = progressSchema.safeParse(JSON.parse(raw));
@@ -316,6 +348,19 @@ export default function Study() {
             setLabProgress(parsed.data);
             const autoBase = buildBaselineRoadmap(parsed.data, 42, 6, "ru");
             setWeakTopics(autoBase.weakTopics);
+          }
+        }
+      } catch {}
+
+      try {
+        const rawUnt = localStorage.getItem(untStorageKey);
+        if (rawUnt) {
+          const parsedUnt = untStorageSchema.safeParse(JSON.parse(rawUnt));
+          if (parsedUnt.success) {
+            setUntStorage(parsedUnt.data);
+            if (parsedUnt.data.lastAttempt && parsedUnt.data.lastAttempt.weakTopics.length > 0) {
+              setWeakTopics(parsedUnt.data.lastAttempt.weakTopics);
+            }
           }
         }
       } catch {}
@@ -397,7 +442,28 @@ export default function Study() {
   function selectTopic(id: TopicId) {
     reset();
     setTopic(id);
-    if (tab === "roadmap") setTab("lesson");
+    if (tab === "roadmap" || tab === "exam") setTab("lesson");
+  }
+
+  function openTopicLesson(id: TopicId) {
+    reset();
+    setTopic(id);
+    setTab("lesson");
+  }
+
+  function handleCompleteUntExam(summary: UntAttemptSummary) {
+    const nextStorage: UntStorage = {
+      version: 1,
+      lastAttempt: summary,
+      history: [summary, ...untStorage.history].slice(0, 20)
+    };
+    setUntStorage(nextStorage);
+    if (summary.weakTopics.length > 0) {
+      setWeakTopics(summary.weakTopics);
+    }
+    try {
+      localStorage.setItem(untStorageKey, JSON.stringify(nextStorage));
+    } catch {}
   }
 
   function selectLanguage(value: Language) {
@@ -607,6 +673,14 @@ export default function Study() {
               <TabsList className="tabsbar h-auto flex-wrap justify-start">
                 <TabsTrigger value="lesson">{t.lesson}</TabsTrigger>
                 <TabsTrigger value="practice">{t.practice}</TabsTrigger>
+                <TabsTrigger value="exam">
+                  <ClipboardCheck size={15} />
+                  {t.examTab}
+                </TabsTrigger>
+                <TabsTrigger value="graph">
+                  <GitBranch size={15} />
+                  {t.graphTab}
+                </TabsTrigger>
                 <TabsTrigger value="ai">
                   <Sparkles size={15} />
                   {t.ai}
@@ -635,11 +709,19 @@ export default function Study() {
                 <div className="callout">{t.hint}</div>
                 <div className="actions">
                   <Button onClick={() => setTab("practice")}>{t.practice}</Button>
+                  <Button variant="outline" onClick={() => setTab("exam")}>
+                    <ClipboardCheck size={15} />
+                    {t.examTab}
+                  </Button>
+                  <Button variant="outline" onClick={() => setTab("graph")}>
+                    <GitBranch size={15} />
+                    {t.graphTab}
+                  </Button>
                   <Button variant="outline" onClick={() => setTab("ai")}>
                     <Sparkles size={15} />
                     {t.ai}
                   </Button>
-                  <Link className="small font-semibold ml-auto" href={`/lab?lang=${lang}`}>
+                  <Link className="small font-semibold ml-auto" href={`/lab?lang=${lang}&topic=${topic}`}>
                     <FlaskConical size={14} className="inline mr-1" />
                     {t.openLab}
                   </Link>
@@ -760,6 +842,34 @@ export default function Study() {
                     </p>
                   )}
                 </div>
+              </TabsContent>
+
+              <TabsContent value="exam">
+                <UntExamView
+                  lang={lang}
+                  lastSavedAttempt={untStorage.lastAttempt}
+                  initialTopic={topic}
+                  onCompleteExam={handleCompleteUntExam}
+                  onOpenGraph={(focusTopic) => {
+                    if (focusTopic) setTopic(focusTopic);
+                    setTab("graph");
+                  }}
+                  onOpenLesson={openTopicLesson}
+                />
+              </TabsContent>
+
+              <TabsContent value="graph">
+                <KnowledgeGraphView
+                  lang={lang}
+                  progress={labProgress}
+                  untAttempt={untStorage.lastAttempt}
+                  weakTopics={weakTopics}
+                  selectedTopic={topic}
+                  onSelectTopic={setTopic}
+                  onOpenLesson={openTopicLesson}
+                  onOpenExam={() => setTab("exam")}
+                  onToggleWeakTopic={toggleWeakTopic}
+                />
               </TabsContent>
 
               <TabsContent value="ai">

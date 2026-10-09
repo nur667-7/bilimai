@@ -253,15 +253,20 @@ export default function ErrorLab() {
 
   useEffect(() => {
     queueMicrotask(() => {
-      const requested = new URLSearchParams(window.location.search).get("lang");
+      const params = new URLSearchParams(window.location.search);
+      const requested = params.get("lang");
       if (requested === "ru" || requested === "kk" || requested === "uz") setLang(requested);
+      const qTopic = params.get("topic");
+      const validTopic: LabTopic =
+        qTopic && (labTopics as readonly string[]).includes(qTopic) ? (qTopic as LabTopic) : "linear";
+      if (validTopic !== "linear") setTopic(validTopic);
       try {
         const raw = localStorage.getItem(storageKey);
         if (raw) {
           const parsed = progressSchema.safeParse(JSON.parse(raw));
           if (parsed.success) {
             setProgress(parsed.data);
-            setSeed(nextSeed(parsed.data, "linear"));
+            setSeed(nextSeed(parsed.data, validTopic));
             setPersist(true);
           } else {
             localStorage.removeItem(storageKey);

@@ -16,6 +16,16 @@ import {
   quotaSQL
 } from '../lib/claude.ts';
 import { lessons, untTopicIds } from '../lib/lessons.ts';
+import {
+  untQuestions,
+  scoreUntQuestion,
+  evaluateUntExam,
+  UNT_OFFICIAL_SPEC
+} from '../lib/unt-exam.ts';
+import {
+  UNT_GRAPH_NODES,
+  buildKnowledgeGraphState
+} from '../lib/knowledge-graph.ts';
 
 const input = { topic: 'linear', language: 'ru', question: 'Почему вычитаем 6?', adult: true, consent: true };
 const config = { key: 'TEST_ONLY_NOT_REAL', model: 'test-model' };
@@ -259,4 +269,78 @@ test('all three languages cover all 10 UNT topics and answer keys match across l
       lessons.kk[i].questions.map((q) => q.correct)
     );
   }
+});
+
+test('UNT exam specification and question bank cover all 10 topics and all 4 official formats with 0/1/2 point scoring', () => {
+  assert.equal(UNT_OFFICIAL_SPEC.mathLiteracy.questions, 10);
+  assert.equal(UNT_OFFICIAL_SPEC.profileMath.questions, 40);
+  assert.equal(UNT_OFFICIAL_SPEC.profileMath.maxPoints, 50);
+
+  assert.equal(untQuestions.length, 12);
+  const coveredTopics = new Set(untQuestions.map((q) => q.topic));
+  for (const t of untTopicIds) {
+    assert.ok(coveredTopics.has(t), `Missing UNT question for topic ${t}`);
+  }
+
+  // Single choice (1 pt)
+  const qSingle = untQuestions.find((q) => q.format === 'single');
+  assert.equal(scoreUntQuestion(qSingle, { format: 'single', selectedIndex: qSingle.correctIndex }).earned, 1);
+  assert.equal(scoreUntQuestion(qSingle, { format: 'single', selectedIndex: (qSingle.correctIndex + 1) % 4 }).earned, 0);
+
+  // Matching (2 pts full, 1 pt partial, 0 pts both wrong)
+  const qMatch = untQuestions.find((q) => q.format === 'matching');
+  assert.equal(
+    scoreUntQuestion(qMatch, { format: 'matching', pairs: [qMatch.correctPairs[0], qMatch.correctPairs[1]] }).earned,
+    2
+  );
+  assert.equal(
+    scoreUntQuestion(qMatch, { format: 'matching', pairs: [qMatch.correctPairs[0], (qMatch.correctPairs[1] + 1) % 4] }).earned,
+    1
+  );
+  assert.equal(
+    scoreUntQuestion(qMatch, { format: 'matching', pairs: [(qMatch.correctPairs[0] + 1) % 4, (qMatch.correctPairs[1] + 1) % 4] }).earned,
+    0
+  );
+
+  // Multiple choice (2 pts exact, 1 pt with 1 mistake, 0 pts with >=2 mistakes)
+  const qMulti = untQuestions.find((q) => q.format === 'multiple');
+  assert.equal(scoreUntQuestion(qMulti, { format: 'multiple', selectedIndices: [...qMulti.correctIndices] }).earned, 2);
+  assert.equal(
+    scoreUntQuestion(qMulti, { format: 'multiple', selectedIndices: qMulti.correctIndices.slice(0, qMulti.correctIndices.length - 1) }).earned,
+    1
+  );
+  assert.equal(scoreUntQuestion(qMulti, { format: 'multiple', selectedIndices: [0, 1, 2, 3] }).earned, 0);
+
+  // Full evaluation
+  const perfectResponses = {};
+  for (const q of untQuestions) {
+    if (q.format === 'single' || q.format === 'context') {
+      perfectResponses[q.id] = { format: q.format, selectedIndex: q.correctIndex };
+    } else if (q.format === 'matching') {
+      perfectResponses[q.id] = { format: 'matching', pairs: [q.correctPairs[0], q.correctPairs[1]] };
+    } else {
+      perfectResponses[q.id] = { format: 'multiple', selectedIndices: [...q.correctIndices] };
+    }
+  }
+  const summary = evaluateUntExam(perfectResponses, untQuestions);
+  assert.equal(summary.earnedPoints, 17);
+  assert.equal(summary.maxPoints, 17);
+  assert.equal(summary.scaledScore50, 50);
+  assert.equal(summary.weakTopics.length, 0);
+});
+
+test('Obsidian knowledge graph distinguishes root_gap from blocked_gap and builds topological study plan', () => {
+  assert.equal(UNT_GRAPH_NODES.length, 10);
+  const emptyProgress = { version: 1, records: [] };
+  // Suppose linear (root) and quadratic (depends on linear) and functions (depends on quadratic) are weak:
+  const state = buildKnowledgeGraphState(emptyProgress, null, ['linear', 'quadratic', 'functions'], 'ru');
+  const linearNode = state.nodes.find((n) => n.id === 'linear');
+  const quadNode = state.nodes.find((n) => n.id === 'quadratic');
+  const funcNode = state.nodes.find((n) => n.id === 'functions');
+
+  assert.equal(linearNode.status, 'root_gap');
+  assert.equal(quadNode.status, 'blocked_gap');
+  assert.equal(funcNode.status, 'blocked_gap');
+  assert.ok(state.studyPlan.length > 0);
+  assert.equal(state.studyPlan[0].topic, 'linear');
 });
