@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter } from "@/components/site-footer";
+import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import {
   makeChallenge,
   checkAnswer,
@@ -231,6 +232,7 @@ const storageKey = "bilimai-lab-v1";
 const initialProgress: Progress = { version: 1, records: [] };
 
 export default function ErrorLab() {
+  const { theme, toggleTheme } = useAniqTheme();
   const [lang, setLang] = useState<Language>("ru");
   const [topic, setTopic] = useState<LabTopic>("linear");
   const [seed, setSeed] = useState(0);
@@ -427,33 +429,20 @@ export default function ErrorLab() {
         <div className="wrap header-inner">
           <div className="header-top-row">
             <a className="brand" href={`/?lang=${lang}&topic=${topic}`}>
-              <span className="brand-mark" aria-hidden="true">
-                <svg viewBox="0 0 28 28" width="24" height="24" fill="none">
-                  <rect width="28" height="28" rx="6" fill="#1B3B6F" />
-                  <path
-                    d="M7.5 8.5H15.5L11.2 14L15.5 19.5H7.5"
-                    stroke="#F7F5F0"
-                    strokeWidth="2.1"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M17.5 14H21.5M19.5 11.8L21.8 14L19.5 16.2"
-                    stroke="#93C5FD"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+              <span className="brand-mark aniq-logo-badge" aria-hidden="true">
+                A
               </span>
-              <span className="brand-name">BilimAI</span>
-              <span className="brand-sub">ЕНТ · ҰБТ</span>
+              <span className="brand-name">Aniq AI</span>
+              <span className="brand-sub">ҰБТ · ЕНТ · X-Ray</span>
             </a>
 
             <div className="header-right">
               <a className="header-quiet-link" href="/about">
                 {t.navAbout}
               </a>
+
+              <ThemeToggleButton theme={theme} onToggle={toggleTheme} />
+
               <div className="lang-switcher" role="group" aria-label="Language">
                 <button
                   type="button"
@@ -480,12 +469,24 @@ export default function ErrorLab() {
                   OʻZB
                 </button>
               </div>
+
+              <div className="aniq-header-auth">
+                <a className="aniq-btn-ghost aniq-btn-sm" href={`/login?lang=${lang}`}>
+                  {lang === "kk" ? "Кіру" : lang === "uz" ? "Kirish" : "Войти"}
+                </a>
+                <a className="aniq-btn aniq-btn-sm" href={`/register?lang=${lang}`}>
+                  {lang === "kk" ? "Тіркелу" : lang === "uz" ? "Boshlash" : "Начать"}
+                </a>
+              </div>
             </div>
           </div>
 
           <nav className="primary-nav" aria-label="Основные разделы">
             <a className="primary-nav-link" href={`/?lang=${lang}&topic=${topic}`}>
               {t.navStudy}
+            </a>
+            <a className="primary-nav-link primary-nav-link-xray" href={`/?lang=${lang}&tab=xray&topic=${topic}`}>
+              {lang === "kk" ? "🔬 Рентген & Грант РК" : lang === "uz" ? "🔬 Rentgen & Grant" : "🔬 Рентген & Грант РК"}
             </a>
             <a className="primary-nav-link" href={`/?lang=${lang}&tab=graph&topic=${topic}`}>
               {t.navGraph}

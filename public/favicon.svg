@@ -1,6 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#1B3B6F"/>
-  <rect x="3" y="3" width="58" height="58" rx="11.5" stroke="#93C5FD" stroke-opacity="0.28" stroke-width="1.5"/>
-  <path d="M16 18H36L25.5 32L36 46H16" stroke="#F7F5F0" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M39 32H49M44.5 26.8L49.8 32L44.5 37.2" stroke="#93C5FD" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="aniqGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#D98A2B"/>
+      <stop offset="100%" stop-color="#D85A30"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#aniqGrad)"/>
+  <rect x="3" y="3" width="58" height="58" rx="13.5" stroke="#FFFDF8" stroke-opacity="0.34" stroke-width="1.5"/>
+  <path d="M32 15L17 48H24.5L27.8 40H36.2L39.5 48H47L32 15ZM30.2 33.8L32 28.8L33.8 33.8H30.2Z" fill="#1C1306"/>
 </svg>

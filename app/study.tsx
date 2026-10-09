@@ -1,12 +1,13 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { ArrowRight, CheckCircle2, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, BrainCircuit, CheckCircle2, Compass, GraduationCap, LogOut, Microscope, RotateCcw, Sparkles, Target, User } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SiteFooter } from "@/components/site-footer";
+import { HeroCanvas, ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import { getOptionFeedback, lessons, untTopicIds, type Language, type TopicId } from "@/lib/lessons";
 import {
   buildBaselineRoadmap,
@@ -25,26 +26,44 @@ import {
   type UntAttemptSummary,
   type UntStorage
 } from "@/lib/unt-exam";
+import {
+  clearUserProfile,
+  kzUniversities,
+  loadUserProfile,
+  saveUserProfile,
+  type UniversityId,
+  type UserProfile
+} from "@/lib/user-profile";
 import { UntExamView } from "@/app/unt-exam-view";
 import { KnowledgeGraphView } from "@/app/knowledge-graph-view";
+import { XrayTrapView } from "@/app/xray-trap-view";
 
 const copy = {
   ru: {
     navStudy: "Занятие",
+    navXray: "🔬 Рентген & Грант РК",
     navGraph: "Карта тем",
     navExam: "Пробное ЕНТ",
     navPlan: "Мой план",
     navLab: "Тренировка ошибок",
     navAbout: "О проекте",
-    welcomeBadge: "Подготовка к ЕНТ по математике · 16 разделов НЦТ",
-    welcomeTitle: "Математический тренажёр с пошаговой диагностикой и ИИ-тьютором",
+    loginBtn: "Войти",
+    registerBtn: "Начать",
+    logoutBtn: "Выйти",
+    welcomeBadge: "Единая ИИ-платформа математики и ЕНТ · 16 разделов НЦТ РК",
+    welcomeTitle: "Понимать логику, находить ловушки и",
+    welcomeHighlight: "брать грант на ЕНТ",
     welcomeDesc:
-      "Разбирай главное правило темы, находи первый неверный переход в решениях и закрывай пробелы с сократическим ИИ-тьютором на базе Claude API без готовых шпаргалок.",
-    welcomeCtaExam: "Пройти диагностику ЕНТ",
-    welcomeCtaGraph: "Открыть карту 16 тем",
+      "Единая платформа точной математической диагностики Aniq AI: построчный Рентген черновика, 1 152 задачи на поиск неверного шага, пробное ЕНТ, граф знаний, сократический ИИ-тьютор Claude API и Радар госгранта ВУЗов РК.",
+    welcomeCtaRegister: "Создать аккаунт",
+    welcomeCtaXray: "🔬 Рентген черновика",
+    welcomeCtaExam: "Пробное ЕНТ",
+    welcomeCtaGraph: "Карта 16 тем",
     welcomeCtaLab: "Тренировка ошибок",
-    welcomeHide: "Скрыть подсказку",
-    welcomeShow: "Как устроен тренажёр",
+    welcomeHide: "Свернуть витрину",
+    welcomeShow: "Витрина Aniq AI",
+    bentoKicker: "ШЕСТЬ МОДУЛЕЙ ANIQ AI",
+    bentoTitle: "Всё для победы на ЕНТ и понимания математики",
     topics: "16 тем ЕНТ",
     mobileTopicLabel: "Тема",
     lesson: "Разбор",
@@ -122,20 +141,29 @@ const copy = {
   },
   kk: {
     navStudy: "Сабақ",
+    navXray: "🔬 Рентген & ҚР Гранты",
     navGraph: "Тақырыптар картасы",
     navExam: "Байқау ҰБТ",
     navPlan: "Менің жоспарым",
     navLab: "Қатемен жұмыс",
     navAbout: "Жоба туралы",
-    welcomeBadge: "ҰБТ математикасына дайындық · ҰТО 16 бөлімі",
-    welcomeTitle: "Қадамдық диагностика және ЖИ-тьюторы бар математикалық тренажер",
+    loginBtn: "Кіру",
+    registerBtn: "Бастау",
+    logoutBtn: "Шығу",
+    welcomeBadge: "Математика және ҰБТ-ға арналған бірыңғай ЖИ-платформа · ҰТО 16 бөлімі",
+    welcomeTitle: "Логиканы түсіну, тұзақты табу және",
+    welcomeHighlight: "ҰБТ грантын жеңіп алу",
     welcomeDesc:
-      "Тақырыптың негізгі ережесін меңгеріп, шешімдегі алғашқы қате қадамды табыңыз және дайын жауапсыз Claude API негізіндегі сократикалық ЖИ-тьютормен олқылықтарды жойыңыз.",
-    welcomeCtaExam: "Байқау ҰБТ тапсыру",
+      "Aniq AI дәл математикалық диагностика платформасы: шешім рентгені, 1 152 қате қадамды табу есебі, байқау ҰБТ, білім графы, Claude API сократикалық тьюторы және ҚР ЖОО грант радары.",
+    welcomeCtaRegister: "Аккаунт ашу",
+    welcomeCtaXray: "🔬 Шешім рентгені",
+    welcomeCtaExam: "Байқау ҰБТ",
     welcomeCtaGraph: "16 тақырып картасы",
     welcomeCtaLab: "Қатемен жұмыс",
-    welcomeHide: "Жасыру",
-    welcomeShow: "Тренажер қалай жұмыс істейді",
+    welcomeHide: "Витринаны жинау",
+    welcomeShow: "Aniq AI витринасы",
+    bentoKicker: "ANIQ AI АЛТЫ МОДУЛІ",
+    bentoTitle: "ҰБТ-ға дайындық пен математиканы түсінуге қажеттінің бәрі",
     topics: "ҰБТ 16 тақырыбы",
     mobileTopicLabel: "Тақырып",
     lesson: "Талдау",
@@ -213,20 +241,29 @@ const copy = {
   },
   uz: {
     navStudy: "Dars",
+    navXray: "🔬 Rentgen & Grant",
     navGraph: "Mavzular xaritasi",
     navExam: "Sinov UBT",
     navPlan: "Mening rejam",
     navLab: "Xatolar ustida ishlash",
     navAbout: "Loyiha haqida",
-    welcomeBadge: "Matematikadan imtihonga tayyorgarlik · 16 ta bo‘lim",
-    welcomeTitle: "Qadam-baqadam diagnostika va SI-tyutorli matematik trenajyor",
+    loginBtn: "Kirish",
+    registerBtn: "Boshlash",
+    logoutBtn: "Chiqish",
+    welcomeBadge: "Matematika va imtihon uchun yagona SI-platforma · 16 ta bo‘lim",
+    welcomeTitle: "Mantiqni tushunish, tuzoqni topish va",
+    welcomeHighlight: "davlat grantini yutish",
     welcomeDesc:
-      "Mavzuning asosiy qoidasini o‘rganing, yechimdagi birinchi xato o‘tishni toping va tayyor javobsiz Claude API asosidagi sokratik SI-tyutor yordamida bo‘shliqlarni yoping.",
-    welcomeCtaExam: "Sinov UBT topshirish",
+      "Aniq AI aniq matematik diagnostika platformasi: qoralama rentgeni, 1 152 ta xato qadamni topish masalasi, sinov UBT, bilimlar grafi, Claude API tyutori va grant radari.",
+    welcomeCtaRegister: "Akkaunt yaratish",
+    welcomeCtaXray: "🔬 Qoralama rentgeni",
+    welcomeCtaExam: "Sinov UBT",
     welcomeCtaGraph: "16 mavzu xaritasi",
     welcomeCtaLab: "Xatolar ustida ishlash",
-    welcomeHide: "Yashirish",
-    welcomeShow: "Trenajyor qanday ishlaydi",
+    welcomeHide: "Vitrinani yopish",
+    welcomeShow: "Aniq AI vitrinasi",
+    bentoKicker: "ANIQ AI OLTI MODULI",
+    bentoTitle: "Imtihonda yuqori ball va matematikani tushunish uchun barchasi",
     topics: "16 ta kurs mavzusi",
     mobileTopicLabel: "Mavzu",
     lesson: "Tahlil",
@@ -323,10 +360,12 @@ const emptyProgress: Progress = { version: 1, records: [] };
 const optionLetters = ["A", "B", "C", "D"];
 
 export default function Study() {
+  const { dark, toggleTheme } = useAniqTheme();
   const [lang, setLang] = useState<Language>("ru");
   const [topic, setTopic] = useState<TopicId>("linear");
   const [tab, setTab] = useState("lesson");
-  const [showWelcome, setShowWelcome] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // Focused step-by-step practice state (questions 0, 1, 2 + transfer task index 3)
   const [activeQ, setActiveQ] = useState<number>(0);
@@ -382,14 +421,32 @@ export default function Study() {
   useEffect(() => {
     queueMicrotask(() => {
       try {
+        const storedProfile = loadUserProfile();
+        if (storedProfile) {
+          setUserProfile(storedProfile);
+          setTargetScore(storedProfile.targetScore);
+          setLang(storedProfile.preferredLanguage);
+        }
+      } catch {}
+
+      try {
         const params = new URLSearchParams(window.location.search);
         const qLang = params.get("lang");
         if (qLang === "ru" || qLang === "kk" || qLang === "uz") {
           setLang(qLang);
         }
         const qTab = params.get("tab");
-        if (qTab === "lesson" || qTab === "practice" || qTab === "exam" || qTab === "graph" || qTab === "ai" || qTab === "roadmap") {
+        if (
+          qTab === "lesson" ||
+          qTab === "practice" ||
+          qTab === "xray" ||
+          qTab === "exam" ||
+          qTab === "graph" ||
+          qTab === "ai" ||
+          qTab === "roadmap"
+        ) {
           setTab(qTab);
+          if (qTab !== "lesson") setShowWelcome(false);
         }
         const qTopic = params.get("topic");
         if (qTopic && (untTopicIds as readonly string[]).includes(qTopic)) {
@@ -676,6 +733,25 @@ export default function Study() {
     }
   }
 
+  function handleUpdateUserStats(streak: number, disarmedTotal: number, targetUni?: UniversityId) {
+    if (!userProfile) return;
+    const updated: UserProfile = {
+      ...userProfile,
+      trapBlitzBestStreak: Math.max(userProfile.trapBlitzBestStreak, streak),
+      disarmedTrapsCount: disarmedTotal,
+      targetUniversity: targetUni ?? userProfile.targetUniversity
+    };
+    setUserProfile(updated);
+    saveUserProfile(updated);
+  }
+
+  function jumpToSection(nextTab: string) {
+    setTab(nextTab);
+    setTimeout(() => {
+      document.getElementById("workspace-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 40);
+  }
+
   const currentQuestionObj = lesson.questions[activeQ] ?? lesson.questions[0];
   const isCurrentChecked = Boolean(checkedMap[activeQ]);
   const selectedVal = answers[activeQ];
@@ -685,40 +761,31 @@ export default function Study() {
       ? getOptionFeedback(topic, activeQ, Number(selectedVal), lang)
       : "";
 
+  const targetUniShort =
+    userProfile
+      ? kzUniversities.find((u) => u.id === userProfile.targetUniversity)?.shortName ?? "KBTU"
+      : null;
+
   return (
     <div className="textbook-shell">
-      {/* 1. Header: Recognizable Brand + Primary Product Sections + Language Switcher */}
+      {/* 1. Header: Aniq AI Brand + Theme Toggle + Language Switcher + Auth Buttons + Primary Nav */}
       <header className="site-header">
         <div className="wrap header-inner">
           <div className="header-top-row">
             <a
-              className="brand"
+              className="aniq-brand-logo"
               href="/"
               onClick={(e) => {
                 e.preventDefault();
                 setTab("lesson");
               }}
             >
-              <span className="brand-mark" aria-hidden="true">
-                <svg viewBox="0 0 28 28" width="24" height="24" fill="none">
-                  <rect width="28" height="28" rx="6" fill="#1B3B6F" />
-                  <path
-                    d="M7.5 8.5H15.5L11.2 14L15.5 19.5H7.5"
-                    stroke="#F7F5F0"
-                    strokeWidth="2.1"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M17.5 14H21.5M19.5 11.8L21.8 14L19.5 16.2"
-                    stroke="#93C5FD"
-                    strokeWidth="1.9"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+              <span className="aniq-logo-badge" aria-hidden="true">
+                A
               </span>
-              <span className="brand-name">BilimAI</span>
+              <span className="aniq-logo-word">
+                Aniq<span className="text-brand">AI</span>
+              </span>
               <span className="brand-sub">ЕНТ · ҰБТ</span>
             </a>
 
@@ -733,6 +800,7 @@ export default function Study() {
               <a className="header-quiet-link" href="/about">
                 {t.navAbout}
               </a>
+
               <div className="lang-switcher" role="group" aria-label="Язык">
                 <button
                   type="button"
@@ -740,7 +808,7 @@ export default function Study() {
                   aria-pressed={lang === "ru"}
                   onClick={() => selectLanguage("ru")}
                 >
-                  RU
+                  РУС
                 </button>
                 <button
                   type="button"
@@ -759,6 +827,44 @@ export default function Study() {
                   OʻZB
                 </button>
               </div>
+
+              <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
+
+              {userProfile ? (
+                <div className="aniq-user-chip">
+                  <button
+                    type="button"
+                    className="aniq-user-btn"
+                    onClick={() => jumpToSection("xray")}
+                    title={userProfile.identifier}
+                  >
+                    <User size={14} />
+                    <span>{userProfile.name}</span>
+                    {targetUniShort && <span className="aniq-user-uni">{targetUniShort}</span>}
+                  </button>
+                  <button
+                    type="button"
+                    className="aniq-logout-btn"
+                    title={t.logoutBtn}
+                    aria-label={t.logoutBtn}
+                    onClick={() => {
+                      clearUserProfile();
+                      setUserProfile(null);
+                    }}
+                  >
+                    <LogOut size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="aniq-auth-btns">
+                  <a className="aniq-btn aniq-btn-ghost" href={`/login?lang=${lang}`}>
+                    {t.loginBtn}
+                  </a>
+                  <a className="aniq-btn aniq-btn-primary" href={`/register?lang=${lang}`}>
+                    {t.registerBtn}
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
@@ -770,6 +876,14 @@ export default function Study() {
               onClick={() => setTab("lesson")}
             >
               {t.navStudy}
+            </button>
+            <button
+              type="button"
+              className={`primary-nav-link xray-nav-highlight ${tab === "xray" ? "active" : ""}`}
+              aria-current={tab === "xray" ? "page" : undefined}
+              onClick={() => setTab("xray")}
+            >
+              {t.navXray}
             </button>
             <button
               type="button"
@@ -802,30 +916,225 @@ export default function Study() {
         </div>
       </header>
 
-      <main className="wrap main-container">
-        {/* Optional Welcome / Overview Banner */}
-        {showWelcome && (
-          <section className="welcome-strip" aria-label={t.welcomeTitle}>
-            <div className="welcome-strip-main">
-              <span className="topic-index-label">{t.welcomeBadge}</span>
-              <h2 className="welcome-strip-title">{t.welcomeTitle}</h2>
-              <p className="welcome-strip-desc">{t.welcomeDesc}</p>
-              <div className="welcome-strip-actions">
-                <Button size="sm" onClick={() => setTab("exam")}>
+      {/* 2. Floating Hero + 3D Fibonacci Sphere Canvas + 6-Card Bento Showcase (inspired by bilim-ai.kz) */}
+      {showWelcome && (
+        <section className="aniq-hero-showcase" aria-label={t.welcomeBadge}>
+          <HeroCanvas />
+          <div className="hero-glow" aria-hidden="true" />
+
+          <div className="wrap aniq-hero-inner">
+            <div className="aniq-hero-center">
+              <div className="aniq-badge-pill">
+                <span className="pulse-dot" />
+                <span>{t.welcomeBadge}</span>
+              </div>
+
+              <h2 className="aniq-hero-h1">
+                {t.welcomeTitle} <br />
+                <span className="gradient-text">{t.welcomeHighlight}</span>
+              </h2>
+
+              <p className="aniq-hero-lead">{t.welcomeDesc}</p>
+
+              <div className="aniq-hero-ctas">
+                <button
+                  type="button"
+                  onClick={() => jumpToSection("xray")}
+                  className="aniq-btn aniq-btn-primary aniq-btn-lg"
+                >
+                  {t.welcomeCtaXray}
+                  <ArrowRight size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => jumpToSection("exam")}
+                  className="aniq-btn aniq-btn-ghost aniq-btn-lg aniq-glass"
+                >
                   {t.welcomeCtaExam}
-                  <ArrowRight size={15} />
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setTab("graph")}>
-                  {t.welcomeCtaGraph}
-                </Button>
-                <a className="quiet-text-action" href={`/lab?lang=${lang}&topic=${topic}`}>
-                  {t.welcomeCtaLab} →
-                </a>
+                </button>
+                {!userProfile && (
+                  <a
+                    href={`/register?lang=${lang}`}
+                    className="aniq-btn aniq-btn-ghost aniq-btn-lg"
+                  >
+                    {t.welcomeCtaRegister}
+                  </a>
+                )}
+              </div>
+
+              {/* 4 Glass Stat Tiles */}
+              <div className="aniq-stat-grid">
+                <div className="aniq-stat-tile aniq-glass">
+                  <div className="aniq-stat-num gradient-text">16 тем</div>
+                  <div className="aniq-stat-lbl">по спецификации НЦТ</div>
+                </div>
+                <div className="aniq-stat-tile aniq-glass">
+                  <div className="aniq-stat-num gradient-text">1 152</div>
+                  <div className="aniq-stat-lbl">задачи-ловушки ЕНТ</div>
+                </div>
+                <div className="aniq-stat-tile aniq-glass">
+                  <div className="aniq-stat-num gradient-text">3 языка</div>
+                  <div className="aniq-stat-lbl">ҚАЗ · РУС · OʻZB</div>
+                </div>
+                <div className="aniq-stat-tile aniq-glass">
+                  <div className="aniq-stat-num gradient-text">Claude AI</div>
+                  <div className="aniq-stat-lbl">+ Радар гранта РК</div>
+                </div>
               </div>
             </div>
-          </section>
-        )}
 
+            {/* 6-Card Bento Grid with Per-Tile RGB Glow */}
+            <div className="aniq-bento-section">
+              <div className="aniq-bento-head">
+                <div className="aniq-bento-kicker">{t.bentoKicker}</div>
+                <h3 className="aniq-bento-title">{t.bentoTitle}</h3>
+              </div>
+
+              <div className="aniq-bento-grid">
+                <button
+                  type="button"
+                  onClick={() => jumpToSection("xray")}
+                  className="bento-wrap text-left"
+                  style={{ ["--tile-rgb" as string]: "216 90 48" }}
+                >
+                  <div className="bento-tile">
+                    <span
+                      className="bento-icon"
+                      style={{
+                        background: "linear-gradient(135deg, #d85a30, #8a2c14)",
+                        boxShadow: "0 6px 16px -6px rgba(216, 90, 48, 0.55)"
+                      }}
+                    >
+                      <Microscope size={22} />
+                    </span>
+                    <div className="bento-badge-tag">ИЗЮМИНКА СТАРТАПА</div>
+                    <h4 className="bento-card-title">Рентген черновика & Блиц ловушек</h4>
+                    <p className="bento-card-desc">
+                      Построчный дебаггер решения и 60-сек поиск точки излома логики (ОДЗ, знак, модуль) без штрафа за усвоенные темы.
+                    </p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => jumpToSection("lesson")}
+                  className="bento-wrap text-left"
+                  style={{ ["--tile-rgb" as string]: "217 138 43" }}
+                >
+                  <div className="bento-tile">
+                    <span
+                      className="bento-icon"
+                      style={{
+                        background: "linear-gradient(135deg, #d98a2b, #7c4a0e)",
+                        boxShadow: "0 6px 16px -6px rgba(217, 138, 43, 0.55)"
+                      }}
+                    >
+                      <BookOpen size={22} />
+                    </span>
+                    <h4 className="bento-card-title">Интерактивный учебник (16 разделов)</h4>
+                    <p className="bento-card-desc">
+                      Главное правило-инвариант, крупная формула, разбор по шагам и перенос навыка на задачи с новыми числами.
+                    </p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => jumpToSection("exam")}
+                  className="bento-wrap text-left"
+                  style={{ ["--tile-rgb" as string]: "255 154 60" }}
+                >
+                  <div className="bento-tile">
+                    <span
+                      className="bento-icon"
+                      style={{
+                        background: "linear-gradient(135deg, #ff9a3c, #994d08)",
+                        boxShadow: "0 6px 16px -6px rgba(255, 154, 60, 0.55)"
+                      }}
+                    >
+                      <Target size={22} />
+                    </span>
+                    <h4 className="bento-card-title">Пробное ЕНТ (4 формата НЦТ РК)</h4>
+                    <p className="bento-card-desc">
+                      Одновыборные (1 б.), контекстные сюжеты, задания на соответствие A/B (2 б.) и множественный выбор из 6 (2 б.).
+                    </p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => jumpToSection("graph")}
+                  className="bento-wrap text-left"
+                  style={{ ["--tile-rgb" as string]: "10 132 216" }}
+                >
+                  <div className="bento-tile">
+                    <span
+                      className="bento-icon"
+                      style={{
+                        background: "linear-gradient(135deg, #0a84d8, #083b66)",
+                        boxShadow: "0 6px 16px -6px rgba(10, 132, 216, 0.55)"
+                      }}
+                    >
+                      <BrainCircuit size={22} />
+                    </span>
+                    <h4 className="bento-card-title">Граф знаний «Второй мозг»</h4>
+                    <p className="bento-card-desc">
+                      Направленный граф зависимостей 16 тем: отделяет корневой пробел в базе от заблокированных сложных разделов.
+                    </p>
+                  </div>
+                </button>
+
+                <a
+                  href={`/lab?lang=${lang}&topic=${topic}`}
+                  className="bento-wrap text-left no-underline"
+                  style={{ ["--tile-rgb" as string]: "21 163 127" }}
+                >
+                  <div className="bento-tile">
+                    <span
+                      className="bento-icon"
+                      style={{
+                        background: "linear-gradient(135deg, #15a37f, #094a3b)",
+                        boxShadow: "0 6px 16px -6px rgba(21, 163, 127, 0.55)"
+                      }}
+                    >
+                      <Compass size={22} />
+                    </span>
+                    <h4 className="bento-card-title">Лаборатория 1 152 ошибок & Claude</h4>
+                    <p className="bento-card-desc">
+                      Тренажёр поиска первого неверного шага и безопасный сократический ИИ-тьютор, который учит думать, а не списывать.
+                    </p>
+                  </div>
+                </a>
+
+                <div className="bento-cta-tile">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider opacity-90 mb-1">
+                    <GraduationCap size={16} />
+                    <span>Радар Гранта РК</span>
+                  </div>
+                  <h4 className="bento-cta-title">Готовы узнать свой шанс на грант?</h4>
+                  <p className="bento-cta-desc">
+                    Создайте паспорт абитуриента (КБТУ, МУИТ, AITU, SDU, Satbayev) и рассчитайте прибавку баллов за минуту.
+                  </p>
+                  <div className="flex gap-2 flex-wrap mt-auto">
+                    <a className="aniq-btn aniq-btn-white" href={`/register?lang=${lang}`}>
+                      {t.welcomeCtaRegister}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => jumpToSection("xray")}
+                      className="aniq-btn aniq-btn-outline-white"
+                    >
+                      Открыть Радар →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <main id="workspace-anchor" className="wrap main-container">
         {isStudySection ? (
           <>
             {/* Mobile Topic Selector (Single compact line above the study page) */}
@@ -1351,6 +1660,22 @@ export default function Study() {
               </article>
             </div>
           </>
+        ) : tab === "xray" ? (
+          <section className="surface section-surface" aria-label={t.navXray}>
+            <XrayTrapView
+              lang={lang}
+              lastUntScaled50={untStorage.lastAttempt?.scaledScore50 ?? null}
+              masteredTopicsCount={baseline.masteredTopics.length}
+              weakTopics={weakTopics}
+              userProfile={userProfile}
+              onUpdateStats={handleUpdateUserStats}
+              onSelectTopic={(tId) => openTopicLesson(tId)}
+              onAskClaude={(tId, promptText) => {
+                setTopic(tId);
+                askWithPrefill(promptText);
+              }}
+            />
+          </section>
         ) : tab === "exam" ? (
           <section className="surface section-surface" aria-label={t.navExam}>
             <UntExamView

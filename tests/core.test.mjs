@@ -26,6 +26,16 @@ import {
   UNT_GRAPH_NODES,
   buildKnowledgeGraphState
 } from '../lib/knowledge-graph.ts';
+import {
+  untTrapCases,
+  analyzeCustomDraft
+} from '../lib/xray-trace.ts';
+import {
+  kzUniversities,
+  calculateGrantRadar,
+  userProfileSchema,
+  createDemoProfile
+} from '../lib/user-profile.ts';
 
 const input = { topic: 'linear', language: 'ru', question: 'Почему вычитаем 6?', adult: true, consent: true };
 const config = { key: 'TEST_ONLY_NOT_REAL', model: 'test-model' };
@@ -356,4 +366,43 @@ test('Obsidian knowledge graph distinguishes root_gap from blocked_gap and build
   assert.equal(funcNode.status, 'blocked_gap');
   assert.ok(state.studyPlan.length > 0);
   assert.equal(state.studyPlan[0].topic, 'linear');
+});
+
+test('Aniq AI Draft X-Ray (untTrapCases & analyzeCustomDraft) and KZ University Grant Radar work across ru, kk, and uz', () => {
+  assert.equal(untTrapCases.length, 6);
+  for (const trap of untTrapCases) {
+    assert.ok(trap.fractureIndex >= 0 && trap.fractureIndex <= 3);
+    for (const lang of ['ru', 'kk', 'uz']) {
+      assert.equal(trap.draftLines[lang].length, 4);
+      assert.ok(trap.trapCategory[lang].length > 5);
+      assert.ok(trap.problem[lang].length > 5);
+      assert.ok(trap.whyFractured[lang].length > 10);
+      assert.ok(trap.correctedLine[lang].length > 5);
+      assert.ok(trap.preservedSkillNote[lang].length > 5);
+    }
+  }
+
+  // Test line-by-line draft analyzer on a logarithmic base < 1 trap
+  const logDraft = [
+    'log_0.5(x - 2) > -3',
+    'x - 2 > 8',
+    'x > 10'
+  ].join('\n');
+  const report = analyzeCustomDraft(logDraft, 'ru');
+  assert.equal(report.lines.length, 3);
+  assert.equal(report.lines[0].status, 'valid');
+  assert.equal(report.lines[1].status, 'fracture');
+  assert.equal(report.lines[2].status, 'cascade');
+  assert.equal(report.savedPointsEstimate, 2);
+
+  // Test Grant Radar calculation across KZ universities
+  assert.equal(kzUniversities.length, 6);
+  assert.equal(userProfileSchema.safeParse(createDemoProfile('student', 'ru')).success, true);
+  assert.equal(userProfileSchema.safeParse(createDemoProfile('teacher', 'kk')).success, true);
+
+  const radar = calculateGrantRadar(32, 6, ['functions', 'trigonometry'], 3, 'ru');
+  assert.ok(radar.currentProjectedScore >= 32);
+  assert.ok(radar.scoreAfterTrapFix > radar.currentProjectedScore);
+  assert.equal(radar.universities.length, 6);
+  assert.ok(radar.universities[0].afterFixChancePercent >= radar.universities[0].currentChancePercent);
 });

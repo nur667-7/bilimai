@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: "#1b3b6f",
+  themeColor: "#d98a2b",
   width: "device-width",
   initialScale: 1
 };
@@ -10,22 +10,23 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://bilimai.dpdns.org"),
   title: {
-    default: "BilimAI — Математика ЕНТ (ҰБТ) · Пошаговый разбор, пробный тест и тренажёр ошибок",
-    template: "%s · BilimAI"
+    default: "Aniq AI (ex-BilimAI) — Математика ЕНТ (ҰБТ) · Рентген черновика, Радар гранта ВУЗов РК и ИИ-тьютор",
+    template: "%s · Aniq AI"
   },
-  applicationName: "BilimAI",
+  applicationName: "Aniq AI",
   description:
-    "Бесплатный интерактивный тренажёр подготовки к ЕНТ (ҰБТ) по математике и математической грамотности на русском, казахском и узбекском языках: все 16 разделов НЦТ РК, 1 152 сценария поиска ошибки, пробное ЕНТ и сократический ИИ-тьютор (Claude API).",
+    "Интерактивная платформа точных наук для подготовки к ЕНТ (ҰБТ) по математике на русском, казахском и узбекском языках: Рентген черновика (Draft X-Ray), Радар гранта ВУЗов РК (КБТУ, IITU, AITU, SDU, КазНУ, Satbayev), 16 разделов НЦТ РК, 1 152 сценария поиска ошибки и сократический ИИ-тьютор Claude API.",
   keywords: [
+    "Aniq AI",
+    "Анық AI",
+    "Aniq fanlar",
     "ЕНТ математика",
     "ҰБТ математика",
+    "рентген черновика ЕНТ",
+    "калькулятор гранта ЕНТ КБТУ IITU AITU SDU",
     "пробное ЕНТ математика",
     "байқау ҰБТ математика",
     "математическая грамотность ЕНТ",
-    "математикалық сауаттылық ҰБТ",
-    "подготовка к ЕНТ по математике бесплатно",
-    "тренажер ЕНТ математика",
-    "разбор задач ЕНТ математика",
     "Sinov UBT matematika",
     "BilimAI"
   ],
@@ -57,11 +58,11 @@ export const metadata: Metadata = {
     apple: "/favicon.svg"
   },
   openGraph: {
-    title: "BilimAI — Диагностическая подготовка к ЕНТ (ҰБТ) по математике",
+    title: "Aniq AI — Точная диагностика излома логики и Радар гранта ЕНТ (ҰБТ)",
     description:
-      "Все 16 разделов спецификации НЦТ РК, тренировка поиска неверного шага (1 152 задачи), пробное ЕНТ и сократический ИИ-тьютор (Claude API) на RU / ҚАЗ / OʻZB.",
+      "Рентген черновика (Draft X-Ray), Радар гранта ВУЗов РК, все 16 разделов спецификации НЦТ РК, 1 152 задачи поиска ошибки и сократический ИИ-тьютор (Claude API) на RU / ҚАЗ / OʻZB.",
     url: "https://bilimai.dpdns.org/",
-    siteName: "BilimAI",
+    siteName: "Aniq AI",
     type: "website",
     locale: "ru_KZ",
     alternateLocale: ["kk_KZ", "uz_UZ"],
@@ -70,15 +71,15 @@ export const metadata: Metadata = {
         url: "/og-cover.svg",
         width: 1200,
         height: 630,
-        alt: "BilimAI — Математика ЕНТ (ҰБТ): 16 разделов, поиск ошибки и ИИ-тьютор"
+        alt: "Aniq AI — Математика ЕНТ (ҰБТ): Рентген черновика, Радар гранта РК и ИИ-тьютор"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "BilimAI — Математика ЕНТ (ҰБТ) · 16 разделов и тренажёр ошибок",
+    title: "Aniq AI — Математика ЕНТ (ҰБТ) · Рентген черновика и Радар гранта РК",
     description:
-      "Пошаговый разбор 16 тем ЕНТ, поиск первого неверного шага (1 152 задачи), пробное ЕНТ и сократический ИИ-тьютор на RU / ҚАЗ / OʻZB.",
+      "Пошаговый разбор 16 тем ЕНТ, Рентген черновика (Draft X-Ray), поиск первого неверного шага (1 152 задачи), пробное ЕНТ и сократический ИИ-тьютор на RU / ҚАЗ / OʻZB.",
     images: ["/og-cover.svg"]
   }
 };
@@ -89,7 +90,8 @@ const structuredData = {
     {
       "@type": "WebApplication",
       "@id": "https://bilimai.dpdns.org/#app",
-      name: "BilimAI",
+      name: "Aniq AI",
+      alternateName: "BilimAI",
       url: "https://bilimai.dpdns.org/",
       applicationCategory: "EducationalApplication",
       operatingSystem: "Any",
@@ -106,7 +108,7 @@ const structuredData = {
         priceCurrency: "KZT"
       },
       description:
-        "Интерактивный учебник и тренажёр подготовки к ЕНТ (ҰБТ) по математике и математической грамотности: 16 разделов НЦТ РК, 1 152 сценария поиска ошибки и сократический ИИ-тьютор."
+        "Интерактивная платформа точных наук Aniq AI для подготовки к ЕНТ (ҰБТ) по математике: Рентген черновика (Draft X-Ray), Радар гранта ВУЗов РК, 16 разделов НЦТ РК, 1 152 сценария поиска ошибки и сократический ИИ-тьютор."
     },
     {
       "@type": "Course",
@@ -116,7 +118,7 @@ const structuredData = {
         "Полный курс подготовки к ЕНТ по математике: линейные уравнения, неравенства, системы, проценты, вероятность, комбинаторика, корни и степени, квадратные уравнения и Виета, прогрессии, логарифмы, тригонометрия, производная, интегралы, планиметрия, векторы и стереометрия.",
       provider: {
         "@type": "Organization",
-        name: "BilimAI",
+        name: "Aniq AI",
         url: "https://bilimai.dpdns.org/"
       },
       inLanguage: ["ru", "kk", "uz"],
