@@ -4,9 +4,9 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
+  Eraser,
   Flame,
-  GraduationCap,
-  Info,
+  FlaskConical,
   Microscope,
   RotateCcw,
   ShieldAlert,
@@ -16,22 +16,22 @@ import {
 import { Button } from "@/components/ui/button";
 import type { Language, TopicId } from "@/lib/curriculum";
 import { topicName } from "@/lib/error-lab";
-import { analyzeCustomDraft, untTrapCases } from "@/lib/xray-trace";
-import { calculateGrantRadar, type UniversityId, type UserProfile } from "@/lib/user-profile";
+import { analyzeCustomDraft, untTrapCases, type CustomDraftAnalysis } from "@/lib/xray-trace";
+import type { UniversityId, UserProfile } from "@/lib/user-profile";
 
 const xrayCopy = {
   ru: {
-    title: "Проверка решения по шагам",
-    sub: "Найдите строку, в которой впервые нарушилось математическое правило или область допустимых значений (ОДЗ). Верные шаги сохраняются, исправляется только причина ошибки.",
-    modeBlitz: "Примеры решений с ошибкой",
+    title: "Проверить черновик решения",
+    sub: "Вставьте шаги своего решения (по одному переходу на строку), чтобы проверить, на какой строке нарушилось правило или область допустимых значений (ОДЗ).",
     modeDraft: "Проверить свой черновик",
-    modeGrant: "Ориентиры грантов РК (справочник)",
+    modeBlitz: "Примеры с ошибками (тренажёр)",
+    exampleBadge: "Пример",
     streakLabel: "Серия верных",
     disarmedLabel: "Найдено ошибок",
     timerEnableBtn: "Режим на время (60 сек)",
     timerRunningLabel: "Осталось времени",
     timerReset: "Выключить таймер",
-    selectTrapPrompt: "Нажмите на строку решения (01–04), в которой впервые допущена ошибка:",
+    selectTrapPrompt: "Пример чужого решения: нажмите на строку (01–04), в которой впервые допущена ошибка:",
     pointsAtStake: "Вес задания на ЕНТ:",
     ptsUnit: "балла",
     statusValid: "Верный шаг",
@@ -42,46 +42,42 @@ const xrayCopy = {
     correctedLabel: "Правильная запись шага:",
     whyLabel: "Причина ошибки:",
     preservedLabel: "Что решено верно:",
-    askClaudeBtn: "Задать вопрос ИИ-тьютору по этому шагу",
-    openTopicBtn: "Открыть тему",
+    askClaudeBtn: "Разобрать этот шаг с ИИ-тьютором",
+    openTopicBtn: "Открыть урок темы",
     nextTrapBtn: "Следующий пример",
-    customDraftTitle: "Построчная проверка вашего черновика",
-    customDraftSub: "Введите шаги решения (по одному переходу на строку) или выберите готовый пример ниже.",
-    presetsLabel: "Примеры черновиков:",
-    preset1: "Логарифм с основанием 0,5",
-    preset2: "Корень из квадрата √((x−5)²)",
-    preset3: "Знак при переносе 3x + 6 = 21",
-    preset4: "Сумма корней Виета x² − 9x + 14 = 0",
-    preset5: "Объём пирамиды без 1/3",
-    claudeDeepCheckBtn: "Разобрать черновик с ИИ-тьютором",
-    grantRadarTitle: "Справочные ориентиры грантов вузов РК по профильной математике",
-    grantRadarSub: "Ориентировочное сопоставление балла по профильной математике (из 50) с порогами групп образовательных программ (ГОП) по открытым данным НЦТ РК (2024–2025).",
-    notAssessedTitle: "Ваш уровень ещё не оценён — ниже показан демонстрационный пример расчёта (22/50)",
-    notAssessedSub: "Решите задачи в разделе «Занятие» или пройдите диагностический вариант в «Пробном ЕНТ», чтобы расчёт опирался на ваши реальные ответы.",
-    currentScoreLabel: "Текущий балл / пример",
-    notAssessedBadge: "Ещё не оценено (пример 22/50)",
-    trapLossLabel: "Потери на ОДЗ и знаках",
-    theoryLossLabel: "Теоретические пробелы",
-    afterFixLabel: "Ориентир без ошибок ОДЗ",
-    uniColThreshold: "Ориентир по профильной мат.",
-    uniColTotal140: "Итоговый ориентир ЕНТ",
-    uniColCurrent: "Соответствие порогу сейчас",
-    uniColAfter: "При устранении ошибок ОДЗ",
-    targetBadge: "Выбранный ориентир",
-    sourceLabel: "Источник данных: НЦТ РК (testcenter.kz)"
+    customDraftTitle: "Введите свои шаги решения",
+    customDraftSub:
+      "Запишите каждый шаг с новой строки (например: 1-я строка — исходное уравнение, 2-я — преобразование, 3-я — ответ) и нажмите «Проверить черновик».",
+    textareaLabel: "Ваше решение (1 строка = 1 шаг):",
+    textareaPlaceholder:
+      "Например:\n3x + 6 = 21\n3x = 27\nx = 9",
+    checkDraftBtn: "Проверить черновик",
+    clearDraftBtn: "Очистить поле",
+    tryExampleBtn: "Заполнить примером",
+    emptyResultTitle: "Результат проверки появится здесь",
+    emptyResultSub:
+      "Введите своё решение слева и нажмите «Проверить черновик», либо выберите один из готовых примеров ниже.",
+    presetsLabel: "Или посмотрите готовый пример:",
+    preset1: "Пример: логарифм с основанием 0,5",
+    preset2: "Пример: корень из квадрата √((x−5)²)",
+    preset3: "Пример: перенос слагаемого 3x + 6 = 21",
+    preset4: "Пример: теорема Виета x² − 9x + 14 = 0",
+    preset5: "Пример: объём пирамиды",
+    claudeDeepCheckBtn: "Задать вопрос ИИ-тьютору по черновику",
+    fullLabLink: "Открыть полную тренировку ошибок (поиск ошибки + своя задача)"
   },
   kk: {
-    title: "Шешімді қадамдап тексеру",
-    sub: "Математикалық ереже немесе анықталу облысы (АОО) алғаш бұзылған жолды табыңыз. Дұрыс қадамдар сақталады, тек қатенің себебі түзетіледі.",
-    modeBlitz: "Қатесі бар шешім үлгілері",
-    modeDraft: "Өз шешіміңді тексеру",
-    modeGrant: "ҚР грант бағдарлары (анықтамалық)",
+    title: "Шешім жазбасын тексеру",
+    sub: "Қай жолда математикалық ереже немесе анықталу облысы (АОО) бұзылғанын тексеру үшін өз шешіміңіздің қадамдарын енгізіңіз.",
+    modeDraft: "Өз жазбамды тексеру",
+    modeBlitz: "Қатесі бар мысалдар (жаттықтырғыш)",
+    exampleBadge: "Мысал",
     streakLabel: "Дұрыс серия",
     disarmedLabel: "Табылған қателер",
     timerEnableBtn: "Уақытпен режим (60 сек)",
     timerRunningLabel: "Қалған уақыт",
     timerReset: "Таймерді өшіру",
-    selectTrapPrompt: "Математикалық ереже алғаш бұзылған шешім жолын (01–04) басыңыз:",
+    selectTrapPrompt: "Дайын мысал: математикалық ереже алғаш бұзылған жолды (01–04) басыңыз:",
     pointsAtStake: "ҰБТ-дағы салмағы:",
     ptsUnit: "балл",
     statusValid: "Дұрыс қадам",
@@ -93,45 +89,41 @@ const xrayCopy = {
     whyLabel: "Қатенің себебі:",
     preservedLabel: "Дұрыс орындалған бөлік:",
     askClaudeBtn: "Осы қадамды ИИ-тьютормен талдау",
-    openTopicBtn: "Тақырыпты ашу",
+    openTopicBtn: "Тақырып сабағын ашу",
     nextTrapBtn: "Келесі мысал",
-    customDraftTitle: "Шешім жазбасын жолдап тексеру",
-    customDraftSub: "Шешім қадамдарын (әр жолға 1 қадам) енгізіңіз немесе төмендегі дайын үлгіні таңдаңыз.",
-    presetsLabel: "Жазба үлгілері:",
-    preset1: "Негізі 0,5 логарифм",
-    preset2: "Квадрат түбір √((x−5)²)",
-    preset3: "3x + 6 = 21 таңба ауыстыру",
-    preset4: "Виет қосындысы x² − 9x + 14 = 0",
-    preset5: "Пирамида көлемі (1/3 коэффициенсіз)",
-    claudeDeepCheckBtn: "Жазбаны ИИ-тьютормен тексеру",
-    grantRadarTitle: "Профильдік математика бойынша ҚР ЖОО грант бағдарлары",
-    grantRadarSub: "Профильдік математика балын (50-ден) ҚР ҰТО (2024–2025) ашық деректері бойынша БББ топтарының шекті балдарымен салыстыру.",
-    notAssessedTitle: "Деңгейіңіз әлі бағаланбаған — төменде есептеудің демонстрациялық мысалы (22/50) көрсетілген",
-    notAssessedSub: "Нақты жауаптарыңыз бойынша есептеу үшін «Сабақ» бөлімінде есеп шығарыңыз немесе «Сынақ ҰБТ» тапсырыңыз.",
-    currentScoreLabel: "Ағымдағы балл / мысал",
-    notAssessedBadge: "Әлі бағаланбаған (мысал 22/50)",
-    trapLossLabel: "АОО және таңба жоғалтулары",
-    theoryLossLabel: "Теориялық олқылық",
-    afterFixLabel: "АОО қатесіз бағдар",
-    uniColThreshold: "Профильдік мат. бағдары",
-    uniColTotal140: "Жалпы ҰБТ бағдары",
-    uniColCurrent: "Қазіргі сәйкестік",
-    uniColAfter: "АОО қателерін түзеткен соң",
-    targetBadge: "Таңдалған бағдар",
-    sourceLabel: "Дереккөз: ҚР ҰТО (testcenter.kz)"
+    customDraftTitle: "Өз шешім қадамдарыңызды енгізіңіз",
+    customDraftSub:
+      "Әр қадамды жаңа жолдан жазып, «Жазбаны тексеру» батырмасын басыңыз.",
+    textareaLabel: "Сіздің шешіміңіз (1 жол = 1 қадам):",
+    textareaPlaceholder:
+      "Мысалы:\n3x + 6 = 21\n3x = 27\nx = 9",
+    checkDraftBtn: "Жазбаны тексеру",
+    clearDraftBtn: "Тазарту",
+    tryExampleBtn: "Мысалмен толтыру",
+    emptyResultTitle: "Тексеру нәтижесі осында шығады",
+    emptyResultSub:
+      "Сол жаққа өз шешіміңізді жазып, «Жазбаны тексеру» батырмасын басыңыз немесе төмендегі дайын мысалды таңдаңыз.",
+    presetsLabel: "Немесе дайын мысалды көріңіз:",
+    preset1: "Мысал: негізі 0,5 логарифм",
+    preset2: "Мысал: квадрат түбір √((x−5)²)",
+    preset3: "Мысал: 3x + 6 = 21 таңба ауыстыру",
+    preset4: "Мысал: Виет теоремасы x² − 9x + 14 = 0",
+    preset5: "Мысал: пирамида көлемі",
+    claudeDeepCheckBtn: "Жазба бойынша ИИ-тьюторға сұрақ қою",
+    fullLabLink: "Қатемен жұмыс тренажерін толық ашу (қатені табу + жаңа есеп)"
   },
   uz: {
-    title: "Yechimni qadam-baqadam tekshirish",
-    sub: "Matematik qoida yoki aniqlanish sohasi birinchi marta buzilgan qatorni toping. To‘g‘ri qadamlar saqlanadi, faqat xato sababi tuzatiladi.",
-    modeBlitz: "Xatoli yechim namunalari",
-    modeDraft: "O‘z qoralamangizni tekshirish",
-    modeGrant: "OTM grant mo‘ljallari (ma’lumotnoma)",
+    title: "Yechim qoralamasini tekshirish",
+    sub: "Qaysi qatorda matematik qoida yoki aniqlanish sohasi buzilganini tekshirish uchun o‘z yechimingiz qadamlarini kiriting.",
+    modeDraft: "O‘z qoralamamni tekshirish",
+    modeBlitz: "Xatoli misollar (trenajyor)",
+    exampleBadge: "Namuna",
     streakLabel: "To‘g‘ri seriya",
     disarmedLabel: "Topilgan xatolar",
     timerEnableBtn: "Vaqt rejimi (60 soniya)",
     timerRunningLabel: "Qolgan vaqt",
     timerReset: "Taymerni o‘chirish",
-    selectTrapPrompt: "Matematik qoida birinchi marta buzilgan yechim qatorini (01–04) bosing:",
+    selectTrapPrompt: "Tayyor namuna: matematik qoida birinchi marta buzilgan qatorni (01–04) bosing:",
     pointsAtStake: "Imtihondagi vazni:",
     ptsUnit: "ball",
     statusValid: "To‘g‘ri qadam",
@@ -143,32 +135,28 @@ const xrayCopy = {
     whyLabel: "Xato sababi:",
     preservedLabel: "To‘g‘ri bajarilgan qism:",
     askClaudeBtn: "Shu qadamni AI-tyutor bilan tahlil qilish",
-    openTopicBtn: "Mavzuni ochish",
+    openTopicBtn: "Mavzu darsini ochish",
     nextTrapBtn: "Keyingi misol",
-    customDraftTitle: "Qoralamani qator-baqator tekshirish",
-    customDraftSub: "Yechim qadamlarini (har bir qatorga 1 tadan) kiriting yoki quyidagi tayyor namunalardan birini tanlang.",
-    presetsLabel: "Qoralama namunalari:",
-    preset1: "Asosi 0,5 bo‘lgan logarifm",
-    preset2: "Kvadrat ildiz √((x−5)²)",
-    preset3: "3x + 6 = 21 ishora ko‘chirish",
-    preset4: "Viyet yig‘indisi x² − 9x + 14 = 0",
-    preset5: "Piramida hajmi (1/3 siz)",
-    claudeDeepCheckBtn: "Qoralamani AI-tyutor bilan tekshirish",
-    grantRadarTitle: "Matematika bo‘yicha OTM grant mo‘ljallari",
-    grantRadarSub: "Matematika ballini (50 dan) 2024–2025 o‘quv yili ochiq ma’lumotlari asosida ta’lim dasturlari guruhlari (TDG) bilan taqqoslash.",
-    notAssessedTitle: "Darajangiz hali baholanmagan — quyida hisoblashning namuna misoli (22/50) ko‘rsatilgan",
-    notAssessedSub: "Haqiqiy javoblaringiz asosida hisoblash uchun «Mashg‘ulot» bo‘limida masalalar yeching yoki «Sinov UBT» topshiring.",
-    currentScoreLabel: "Joriy ball / namuna",
-    notAssessedBadge: "Hali baholanmagan (namuna 22/50)",
-    trapLossLabel: "Ishora va AS yo‘qotishlari",
-    theoryLossLabel: "Nazariy bo‘shliq",
-    afterFixLabel: "Xatolarsiz mo‘ljal",
-    uniColThreshold: "Matematika mo‘ljali",
-    uniColTotal140: "Umumiy UBT mo‘ljali",
-    uniColCurrent: "Hozirgi moslik",
-    uniColAfter: "Xatolar tuzatilgach",
-    targetBadge: "Tanlangan mo‘ljal",
-    sourceLabel: "Manba: testcenter.kz"
+    customDraftTitle: "Yechim qadamlaringizni kiriting",
+    customDraftSub:
+      "Har bir qadamni yangi qatordan yozing va «Qoralamani tekshirish» tugmasini bosing.",
+    textareaLabel: "Sizning yechimingiz (1 qator = 1 qadam):",
+    textareaPlaceholder:
+      "Masalan:\n3x + 6 = 21\n3x = 27\nx = 9",
+    checkDraftBtn: "Qoralamani tekshirish",
+    clearDraftBtn: "Tozalash",
+    tryExampleBtn: "Namuna bilan to‘ldirish",
+    emptyResultTitle: "Tekshiruv natijasi shu yerda chiqadi",
+    emptyResultSub:
+      "Chap tomonga o‘z yechimingizni yozib «Qoralamani tekshirish» tugmasini bosing yoki quyidagi tayyor namunalardan birini tanlang.",
+    presetsLabel: "Yoki tayyor namunani ko‘ring:",
+    preset1: "Namuna: asosi 0,5 bo‘lgan logarifm",
+    preset2: "Namuna: kvadrat ildiz √((x−5)²)",
+    preset3: "Namuna: 3x + 6 = 21 ishora ko‘chirish",
+    preset4: "Namuna: Viyet teoremasi x² − 9x + 14 = 0",
+    preset5: "Namuna: piramida hajmi",
+    claudeDeepCheckBtn: "Qoralama bo‘yicha AI-tyutorga savol berish",
+    fullLabLink: "Xatolar ustida ishlash trenajyorini to‘liq ochish"
   }
 } as const;
 
@@ -186,34 +174,34 @@ function stripDuplicateStepPrefix(text: string): string {
 
 export function XrayTrapView({
   lang,
-  lastUntScaled50,
-  masteredTopicsCount,
-  weakTopics,
   userProfile,
   onUpdateStats,
   onSelectTopic,
   onAskClaude
 }: {
   lang: Language;
-  lastUntScaled50: number | null;
-  masteredTopicsCount: number;
-  weakTopics: TopicId[];
+  lastUntScaled50?: number | null;
+  masteredTopicsCount?: number;
+  weakTopics?: TopicId[];
   userProfile: UserProfile | null;
   onUpdateStats: (streak: number, disarmedTotal: number, targetUni?: UniversityId) => void;
   onSelectTopic: (topic: TopicId) => void;
   onAskClaude: (topic: TopicId, prompt: string) => void;
 }) {
   const c = xrayCopy[lang];
-  const [subMode, setSubMode] = useState<"blitz" | "draft" | "grant">("blitz");
+  // Default to "draft" (Check my own draft) with an empty textarea!
+  const [subMode, setSubMode] = useState<"draft" | "blitz">("draft");
   const [caseIdx, setCaseIdx] = useState(0);
   const [pickedLine, setPickedLine] = useState<number | null>(null);
   const [streak, setStreak] = useState(userProfile?.trapBlitzBestStreak ?? 0);
   const [disarmed, setDisarmed] = useState(userProfile?.disarmedTrapsCount ?? 0);
-  const [selectedUni, setSelectedUni] = useState<UniversityId>(userProfile?.targetUniversity ?? "kbtu");
 
   // Optional 60-second blitz timer — only shown when started
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
-  const [draftText, setDraftText] = useState<string>(customDraftPresets[0]);
+  // Start EMPTY so the user never sees a pre-filled foreign solution or fake "+2 points" before checking
+  const [draftText, setDraftText] = useState<string>("");
+  const [checkedReport, setCheckedReport] = useState<CustomDraftAnalysis | null>(null);
+  const [isPresetExample, setIsPresetExample] = useState<boolean>(false);
 
   const currentTrap = untTrapCases[caseIdx % untTrapCases.length];
   const lines = currentTrap.draftLines[lang];
@@ -234,7 +222,7 @@ export function XrayTrapView({
       const nextDisarmed = disarmed + 1;
       setStreak(nextStreak);
       setDisarmed(nextDisarmed);
-      onUpdateStats(nextStreak, nextDisarmed, selectedUni);
+      onUpdateStats(nextStreak, nextDisarmed);
     } else {
       setStreak(0);
     }
@@ -245,8 +233,23 @@ export function XrayTrapView({
     setCaseIdx((prev) => (prev + 1) % untTrapCases.length);
   }
 
-  const draftAnalysis = analyzeCustomDraft(draftText, lang);
-  const grantRadar = calculateGrantRadar(lastUntScaled50, masteredTopicsCount, weakTopics, disarmed, lang);
+  function handleCheckDraft() {
+    if (!draftText.trim()) return;
+    setCheckedReport(analyzeCustomDraft(draftText, lang));
+  }
+
+  function handleLoadPreset(presetIdx: number) {
+    const sample = customDraftPresets[presetIdx] ?? customDraftPresets[0];
+    setDraftText(sample);
+    setIsPresetExample(true);
+    setCheckedReport(analyzeCustomDraft(sample, lang));
+  }
+
+  function handleClearDraft() {
+    setDraftText("");
+    setCheckedReport(null);
+    setIsPresetExample(false);
+  }
 
   return (
     <section className="xray-shell" aria-label={c.title}>
@@ -277,18 +280,8 @@ export function XrayTrapView({
           )}
         </div>
 
-        {/* Sub-mode switcher */}
+        {/* Sub-mode switcher: 1. Проверить свой черновик (default) | 2. Примеры с ошибками */}
         <div className="xray-mode-tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={subMode === "blitz"}
-            className={`xray-mode-btn ${subMode === "blitz" ? "active" : ""}`}
-            onClick={() => setSubMode("blitz")}
-          >
-            <Zap size={14} />
-            <span>{c.modeBlitz}</span>
-          </button>
           <button
             type="button"
             role="tab"
@@ -302,17 +295,159 @@ export function XrayTrapView({
           <button
             type="button"
             role="tab"
-            aria-selected={subMode === "grant"}
-            className={`xray-mode-btn ${subMode === "grant" ? "active" : ""}`}
-            onClick={() => setSubMode("grant")}
+            aria-selected={subMode === "blitz"}
+            className={`xray-mode-btn ${subMode === "blitz" ? "active" : ""}`}
+            onClick={() => setSubMode("blitz")}
           >
-            <GraduationCap size={14} />
-            <span>{c.modeGrant}</span>
+            <Zap size={14} />
+            <span>{c.modeBlitz}</span>
           </button>
         </div>
       </div>
 
-      {/* MODE 1: STEP VERIFICATION EXAMPLES (+ OPTIONAL 60S TIMER) */}
+      {/* MODE 1 (DEFAULT): CHECK USER'S OWN DRAFT */}
+      {subMode === "draft" && (
+        <div className="xray-stage-card">
+          <div className="xray-custom-head">
+            <h3 className="xray-sub-heading">{c.customDraftTitle}</h3>
+            <p className="small">{c.customDraftSub}</p>
+          </div>
+
+          <div className="xray-custom-split">
+            <div className="xray-editor-col">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <label htmlFor="xray-draft-textarea" className="field-label m-0">
+                  {c.textareaLabel}
+                </label>
+                {isPresetExample && (
+                  <span className="section-pill">{c.exampleBadge}</span>
+                )}
+              </div>
+              <textarea
+                id="xray-draft-textarea"
+                rows={5}
+                value={draftText}
+                placeholder={c.textareaPlaceholder}
+                onChange={(e) => {
+                  setDraftText(e.target.value);
+                  setIsPresetExample(false);
+                }}
+                className="xray-draft-textarea"
+              />
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <Button
+                  type="button"
+                  className="min-h-11"
+                  disabled={!draftText.trim()}
+                  onClick={handleCheckDraft}
+                >
+                  <CheckCircle2 size={15} />
+                  <span>{c.checkDraftBtn}</span>
+                </Button>
+                {draftText.trim() ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={handleClearDraft}
+                  >
+                    <Eraser size={15} />
+                    <span>{c.clearDraftBtn}</span>
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() => handleLoadPreset(0)}
+                  >
+                    <span>{c.tryExampleBtn}</span>
+                  </Button>
+                )}
+                {draftText.trim() && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="min-h-11"
+                    onClick={() =>
+                      onAskClaude(
+                        "functions",
+                        `Проверь по строкам мой черновик решения и укажи первую строку, где нарушена равносильность или потеряно ОДЗ:\n${draftText}`
+                      )
+                    }
+                  >
+                    <Sparkles size={14} />
+                    <span>{c.claudeDeepCheckBtn}</span>
+                  </Button>
+                )}
+              </div>
+
+              {/* Secondary preset examples clearly labeled as "Пример: ..." */}
+              <div className="xray-presets-bar mt-4 pt-3 border-t border-border">
+                <span className="small font-semibold block mb-1.5">{c.presetsLabel}</span>
+                <div className="xray-preset-chips">
+                  {[c.preset1, c.preset2, c.preset3, c.preset4, c.preset5].map((label, i) => (
+                    <button
+                      key={label}
+                      type="button"
+                      className="prompt-chip"
+                      onClick={() => handleLoadPreset(i)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="xray-trace-col">
+              {!checkedReport ? (
+                <div className="callout">
+                  <strong className="block text-sm mb-1">{c.emptyResultTitle}</strong>
+                  <p className="small m-0">{c.emptyResultSub}</p>
+                </div>
+              ) : (
+                <>
+                  <div className="xray-trace-header">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {isPresetExample && (
+                        <span className="section-pill">{c.exampleBadge}</span>
+                      )}
+                      <strong>{checkedReport.detectedTrapTitle}</strong>
+                    </div>
+                  </div>
+                  <p className="small mb-3">{checkedReport.summary}</p>
+                  <div className="xray-trace-items">
+                    {checkedReport.lines.map((line) => (
+                      <div key={line.lineNumber} className={`xray-trace-item trace-${line.status}`}>
+                        <div className="xray-trace-item-top">
+                          <span className="xray-line-num">0{line.lineNumber}</span>
+                          <code className="xray-trace-expr">
+                            {stripDuplicateStepPrefix(line.expression)}
+                          </code>
+                          <span className="xray-line-tag">{line.badge}</span>
+                        </div>
+                        <p className="xray-trace-note">{line.note}</p>
+                        {line.correctedLine && (
+                          <p className="xray-trace-fix inline-flex items-center gap-1">
+                            <CheckCircle2 size={14} />
+                            <span>
+                              {c.correctedLabel}{" "}
+                              <strong>{stripDuplicateStepPrefix(line.correctedLine)}</strong>
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODE 2: EXAMPLE CASES WITH ERRORS (Explicitly badged as Examples) */}
       {subMode === "blitz" && (
         <div className="xray-stage-card">
           <div className="xray-blitz-bar">
@@ -327,7 +462,7 @@ export function XrayTrapView({
                     setPickedLine(null);
                   }}
                 >
-                  #{idx + 1} · {topicName(tc.topic, lang)}
+                  {c.exampleBadge} #{idx + 1} · {topicName(tc.topic, lang)}
                 </button>
               ))}
             </div>
@@ -354,6 +489,7 @@ export function XrayTrapView({
 
           <div className="xray-problem-box">
             <div className="xray-problem-meta">
+              <span className="section-pill">{c.exampleBadge}</span>
               <span className="xray-code-badge">{currentTrap.code}</span>
               <span className="xray-points-badge">
                 {c.pointsAtStake} {currentTrap.pointsAtStake} {c.ptsUnit}
@@ -442,13 +578,14 @@ export function XrayTrapView({
               )}
 
               <div className="xray-diag-actions">
-                <Button size="sm" onClick={handleNextTrap}>
+                <Button size="sm" className="min-h-10" onClick={handleNextTrap}>
                   <span>{c.nextTrapBtn}</span>
                   <ArrowRight size={14} />
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
+                  className="min-h-10"
                   onClick={() => onAskClaude(currentTrap.topic, currentTrap.claudePrompt[lang])}
                 >
                   <Sparkles size={14} />
@@ -467,212 +604,17 @@ export function XrayTrapView({
               </div>
             </div>
           )}
-        </div>
-      )}
 
-      {/* MODE 2: LIVE CUSTOM DRAFT DEBUGGER */}
-      {subMode === "draft" && (
-        <div className="xray-stage-card">
-          <div className="xray-custom-head">
-            <h3 className="xray-sub-heading">{c.customDraftTitle}</h3>
-            <p className="small">{c.customDraftSub}</p>
-          </div>
-
-          <div className="xray-presets-bar">
-            <span className="small font-semibold">{c.presetsLabel}</span>
-            <div className="xray-preset-chips">
-              {[c.preset1, c.preset2, c.preset3, c.preset4, c.preset5].map((label, i) => (
-                <button
-                  key={label}
-                  type="button"
-                  className="prompt-chip"
-                  onClick={() => setDraftText(customDraftPresets[i])}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="xray-custom-split">
-            <div className="xray-editor-col">
-              <label htmlFor="xray-draft-textarea" className="field-label">
-                Черновик по строкам (1 строка = 1 шаг)
-              </label>
-              <textarea
-                id="xray-draft-textarea"
-                rows={5}
-                value={draftText}
-                onChange={(e) => setDraftText(e.target.value)}
-                className="xray-draft-textarea"
-              />
-              <div className="mt-3">
-                <Button
-                  size="sm"
-                  onClick={() =>
-                    onAskClaude(
-                      "functions",
-                      `Проверь по строкам мой черновик решения и укажи первую строку, где нарушена равносильность или потеряно ОДЗ:\n${draftText}`
-                    )
-                  }
-                >
-                  <Sparkles size={14} />
-                  {c.claudeDeepCheckBtn}
-                </Button>
-              </div>
-            </div>
-
-            <div className="xray-trace-col">
-              <div className="xray-trace-header">
-                <strong>{draftAnalysis.detectedTrapTitle}</strong>
-                <span className="xray-points-badge">
-                  +{draftAnalysis.savedPointsEstimate} {c.ptsUnit}
-                </span>
-              </div>
-              <p className="small mb-3">{draftAnalysis.summary}</p>
-              <div className="xray-trace-items">
-                {draftAnalysis.lines.map((line) => (
-                  <div key={line.lineNumber} className={`xray-trace-item trace-${line.status}`}>
-                    <div className="xray-trace-item-top">
-                      <span className="xray-line-num">0{line.lineNumber}</span>
-                      <code className="xray-trace-expr">
-                        {stripDuplicateStepPrefix(line.expression)}
-                      </code>
-                      <span className="xray-line-tag">{line.badge}</span>
-                    </div>
-                    <p className="xray-trace-note">{line.note}</p>
-                    {line.correctedLine && (
-                      <p className="xray-trace-fix inline-flex items-center gap-1">
-                        <CheckCircle2 size={14} />
-                        <span>
-                          {c.correctedLabel}{" "}
-                          <strong>{stripDuplicateStepPrefix(line.correctedLine)}</strong>
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODE 3: KAZAKHSTAN UNIVERSITY GRANT ORIENTATION REFERENCE */}
-      {subMode === "grant" && (
-        <div className="xray-stage-card">
-          <div className="xray-custom-head">
-            <h3 className="xray-sub-heading">{c.grantRadarTitle}</h3>
-            <p className="small">{c.grantRadarSub}</p>
-          </div>
-
-          {!grantRadar.isAssessed && (
-            <div className="callout mb-4">
-              <strong className="flex items-center gap-1.5 text-sm">
-                <Info size={16} />
-                <span>{c.notAssessedTitle}</span>
-              </strong>
-              <p className="small mt-1 mb-0">{c.notAssessedSub}</p>
-            </div>
-          )}
-
-          <div className="grant-metrics-grid">
-            <div className="grant-metric-box">
-              <span className="grant-metric-lbl">{c.currentScoreLabel}</span>
-              <strong className="grant-metric-val">
-                {grantRadar.isAssessed
-                  ? `${grantRadar.currentProjectedScore} / 50`
-                  : c.notAssessedBadge}
-              </strong>
-            </div>
-            <div className="grant-metric-box warn">
-              <span className="grant-metric-lbl">{c.trapLossLabel}</span>
-              <strong className="grant-metric-val">−{grantRadar.lostToCognitiveTraps} б.</strong>
-            </div>
-            <div className="grant-metric-box">
-              <span className="grant-metric-lbl">{c.theoryLossLabel}</span>
-              <strong className="grant-metric-val">−{grantRadar.lostToTheoryGaps} б.</strong>
-            </div>
-            <div className="grant-metric-box ok">
-              <span className="grant-metric-lbl">{c.afterFixLabel}</span>
-              <strong className="grant-metric-val">{grantRadar.scoreAfterTrapFix} / 50</strong>
-            </div>
-          </div>
-
-          <div className="grant-uni-list">
-            {grantRadar.universities.map((u) => {
-              const isTarget = u.id === selectedUni;
-              return (
-                <div
-                  key={u.id}
-                  className={`grant-uni-row ${isTarget ? "target" : ""}`}
-                  onClick={() => {
-                    setSelectedUni(u.id);
-                    onUpdateStats(streak, disarmed, u.id);
-                  }}
-                >
-                  <div className="grant-uni-info">
-                    <div className="grant-uni-title-line">
-                      <GraduationCap size={16} />
-                      <strong>{u.shortName}</strong>
-                      <span className="section-pill">ГОП {u.gopCode}</span>
-                      {isTarget && <span className="grant-target-pill">{c.targetBadge}</span>}
-                    </div>
-                    <span className="small">{u.fullName}</span>
-                    <span className="grant-threshold-note">
-                      {c.uniColThreshold}: <strong>{u.minMathScore}–{u.safeMathScore} / 50</strong> ·{" "}
-                      {c.uniColTotal140}: <strong>{u.totalUntGrantRef140} / 140</strong> ({u.referenceYear})
-                    </span>
-                  </div>
-
-                  <div className="grant-uni-bars">
-                    <div className="grant-bar-group">
-                      <div className="grant-bar-label">
-                        <span>
-                          {c.uniColCurrent} {!grantRadar.isAssessed ? "(пример)" : ""}
-                        </span>
-                        <strong>{u.currentChancePercent}%</strong>
-                      </div>
-                      <div className="grant-bar-track">
-                        <div
-                          className="grant-bar-fill current"
-                          style={{ width: `${u.currentChancePercent}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grant-bar-group">
-                      <div className="grant-bar-label">
-                        <span>{c.uniColAfter}</span>
-                        <strong className="text-emerald-700">
-                          {u.afterFixChancePercent}% (+
-                          {Math.max(0, u.afterFixChancePercent - u.currentChancePercent)}%)
-                        </strong>
-                      </div>
-                      <div className="grant-bar-track">
-                        <div
-                          className="grant-bar-fill after"
-                          style={{ width: `${u.afterFixChancePercent}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <p className="small text-muted-foreground mt-3 mb-0">
-            {grantRadar.methodologyNote}{" "}
+          <div className="mt-4 pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
             <a
-              href="https://testcenter.kz/?page_id=15074&lang=ru"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline font-semibold"
+              href={`/lab?lang=${lang}&topic=${currentTrap.topic}`}
+              className="underline font-semibold text-xs inline-flex items-center gap-1.5 min-h-9"
             >
-              {c.sourceLabel}
+              <FlaskConical size={14} />
+              <span>{c.fullLabLink}</span>
+              <ArrowRight size={13} />
             </a>
-          </p>
+          </div>
         </div>
       )}
     </section>

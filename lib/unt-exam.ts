@@ -105,6 +105,9 @@ export type TopicExamStat = {
   max: number;
   ratio: number;
   questionCount: number;
+  answeredCount: number;
+  unansweredCount: number;
+  answeredWrongCount: number;
   partialCount: number;
   zeroCount: number;
 };
@@ -115,12 +118,17 @@ export type UntExamEvaluation = {
   scaledScore50: number;
   scaledScore60: number;
   answeredCount: number;
+  unansweredCount: number;
+  answeredWrongCount: number;
   totalQuestions: number;
+  isComplete: boolean;
   partialTwoPointCount: number;
   byFormat: Record<UntQuestionFormat, { earned: number; max: number }>;
   byTopic: Record<TopicId, TopicExamStat>;
   questionScores: Record<string, UntQuestionScore>;
   weakTopics: TopicId[];
+  verifiedWeakTopics: TopicId[];
+  unansweredTopics: TopicId[];
   strongTopics: TopicId[];
 };
 
@@ -955,7 +963,18 @@ export function evaluateUntExam(
   const byTopic = Object.fromEntries(
     topicIds.map((id) => [
       id,
-      { topic: id, earned: 0, max: 0, ratio: 0, questionCount: 0, partialCount: 0, zeroCount: 0 }
+      {
+        topic: id,
+        earned: 0,
+        max: 0,
+        ratio: 0,
+        questionCount: 0,
+        answeredCount: 0,
+        unansweredCount: 0,
+        answeredWrongCount: 0,
+        partialCount: 0,
+        zeroCount: 0
+      }
     ])
   ) as Record<TopicId, TopicExamStat>;
 
@@ -976,23 +995,46 @@ export function evaluateUntExam(
     tStat.earned += sc.earned;
     tStat.max += sc.max;
     tStat.questionCount += 1;
-    if (sc.status === "partial") tStat.partialCount += 1;
-    if (sc.status === "zero" || sc.status === "unanswered") tStat.zeroCount += 1;
+    if (sc.status === "unanswered") {
+      tStat.unansweredCount += 1;
+      tStat.zeroCount += 1;
+    } else {
+      tStat.answeredCount += 1;
+      if (sc.status === "partial") tStat.partialCount += 1;
+      if (sc.status === "zero") {
+        tStat.answeredWrongCount += 1;
+        tStat.zeroCount += 1;
+      }
+    }
   }
 
-  const weakTopics: TopicId[] = [];
+  const verifiedWeakTopics: TopicId[] = [];
+  const unansweredTopics: TopicId[] = [];
   const strongTopics: TopicId[] = [];
 
   for (const id of topicIds) {
     const st = byTopic[id];
     st.ratio = st.max > 0 ? Math.round((st.earned / st.max) * 100) / 100 : 0;
-    if (st.max > 0 && st.ratio < 0.75) {
-      weakTopics.push(id);
-    } else if (st.max > 0 && st.ratio >= 0.75) {
-      strongTopics.push(id);
+    if (st.max > 0) {
+      if (st.answeredCount === 0) {
+        unansweredTopics.push(id);
+      } else if (st.ratio < 0.75 || st.answeredWrongCount > 0 || st.partialCount > 0) {
+        if (st.ratio < 0.75) {
+          verifiedWeakTopics.push(id);
+        } else {
+          strongTopics.push(id);
+        }
+      } else {
+        strongTopics.push(id);
+      }
     }
   }
 
+  const unansweredCount = Math.max(0, questions.length - answeredCount);
+  const answeredWrongCount = Object.values(questionScores).filter(
+    (sc) => sc.status === "zero" || sc.status === "partial"
+  ).length;
+  const isComplete = answeredCount === questions.length && questions.length > 0;
   const scaledScore50 = maxPoints > 0 ? Math.round((earnedPoints / maxPoints) * 50) : 0;
   const scaledScore60 = maxPoints > 0 ? Math.round((earnedPoints / maxPoints) * 60) : 0;
 
@@ -1002,12 +1044,17 @@ export function evaluateUntExam(
     scaledScore50,
     scaledScore60,
     answeredCount,
+    unansweredCount,
+    answeredWrongCount,
     totalQuestions: questions.length,
+    isComplete,
     partialTwoPointCount,
     byFormat,
     byTopic,
     questionScores,
-    weakTopics,
+    weakTopics: verifiedWeakTopics,
+    verifiedWeakTopics,
+    unansweredTopics,
     strongTopics
   };
 }

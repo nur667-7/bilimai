@@ -3,6 +3,71 @@ import type { Language, TopicId } from "./curriculum";
 
 export const userProfileStorageKey = "aniq-user-v1";
 export const themeStorageKey = "aniq-theme";
+export const navContextStorageKey = "bilimai-nav-context-v1";
+
+export interface SavedNavContext {
+  tab: string;
+  topic: TopicId;
+  subject: string;
+  lang: Language;
+  practiceIndex?: number;
+  hasStartedSession?: boolean;
+}
+
+export function loadNavContext(): SavedNavContext | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(navContextStorageKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<SavedNavContext>;
+    if (!parsed || typeof parsed !== "object" || !parsed.topic) return null;
+    return {
+      tab: typeof parsed.tab === "string" ? parsed.tab : "lesson",
+      topic: parsed.topic as TopicId,
+      subject: typeof parsed.subject === "string" ? parsed.subject : "math",
+      lang:
+        parsed.lang === "kk" || parsed.lang === "uz" || parsed.lang === "ru"
+          ? parsed.lang
+          : "ru",
+      practiceIndex: typeof parsed.practiceIndex === "number" ? parsed.practiceIndex : 0,
+      hasStartedSession: Boolean(parsed.hasStartedSession)
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function saveNavContext(ctx: SavedNavContext): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(navContextStorageKey, JSON.stringify(ctx));
+  } catch {}
+}
+
+export function resolveReturnHref(lang: Language): string {
+  if (typeof window !== "undefined") {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const returnTo = params.get("returnTo");
+      if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
+        const u = new URL(returnTo, window.location.origin);
+        u.searchParams.set("lang", lang);
+        return `${u.pathname}${u.search}`;
+      }
+    } catch {}
+    const saved = loadNavContext();
+    if (saved) {
+      const p = new URLSearchParams();
+      p.set("lang", lang);
+      if (saved.topic) p.set("topic", saved.topic);
+      if (saved.tab) p.set("tab", saved.tab);
+      if (saved.subject) p.set("subject", saved.subject);
+      return `/?${p.toString()}`;
+    }
+  }
+  return `/?lang=${lang}`;
+}
+
 
 export const kzUniversities = [
   {

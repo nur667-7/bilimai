@@ -20,22 +20,32 @@ import {
 import type { LabTopic, Progress } from "@/lib/error-lab";
 import { lessons, type Language } from "@/lib/lessons";
 
+import { saveNavContext } from "@/lib/user-profile";
+import { Compass, User } from "lucide-react";
+
 const labels = {
   ru: {
-    navStudy: "Занятие",
-    navGraph: "Карта тем",
+    navToday: "Сегодня",
+    navLearn: "Учиться",
     navExam: "Пробное ЕНТ",
-    navPlan: "Мой план",
-    navLab: "Тренировка ошибок",
+    navProfile: "Профиль",
+    navHowItWorks: "Как работает BilimAI",
     navAbout: "О проекте",
-    topicsHeading: "16 тем ЕНТ",
-    mobileTopicLabel: "Тема",
+    subLesson: "Урок и практика",
+    subGraph: "Карта тем (16)",
+    subXray: "Проверить черновик",
+    subLab: "Тренировка ошибок",
+    subAi: "Вопрос по теме",
+    topicsHeading: "16 тем математики ЕНТ",
+    mobileTopicLabel: "Тема математики",
     tag: "Тренировка поиска ошибки",
-    title: "Найди первый неверный шаг",
+    title: "Найди первый неверный шаг и реши задачу",
+    purposeNote:
+      "Двухшаговый тренажёр: 1) найдите строку с первой ошибкой в готовом примере, 2) решите новую задачу с другими числами. Чтобы проверить собственное решение, откройте «Проверить черновик».",
     howItWorksTitle: "Как работает тренировка",
     intro:
       "Выбери шаг (01–03), на котором впервые нарушено математическое правило, изучи исправление и реши задачу для закрепления.",
-    taskLabel: "Условие задачи",
+    taskLabel: "1. Условие задачи и готовый черновик с ошибкой",
     check: "Проверить шаг",
     choose: "Шаги решения задачи",
     selectedBadge: "Выбрано",
@@ -78,20 +88,27 @@ const labels = {
     badgePreview: "Инвариант задачи · Резервный контур"
   },
   kk: {
-    navStudy: "Сабақ",
-    navGraph: "Тақырыптар картасы",
+    navToday: "Бүгін",
+    navLearn: "Оқу",
     navExam: "Байқау ҰБТ",
-    navPlan: "Менің жоспарым",
-    navLab: "Қатемен жұмыс",
+    navProfile: "Профиль",
+    navHowItWorks: "BilimAI қалай жұмыс істейді",
     navAbout: "Жоба туралы",
+    subLesson: "Сабақ және жаттығу",
+    subGraph: "Тақырыптар картасы (16)",
+    subXray: "Жазбаны тексеру",
+    subLab: "Қатемен жұмыс",
+    subAi: "Тақырып сұрағы",
     topicsHeading: "ҰБТ 16 тақырыбы",
-    mobileTopicLabel: "Тақырып",
+    mobileTopicLabel: "Математика тақырыбы",
     tag: "Қатені табу жаттығуы",
-    title: "Алғашқы қате қадамды тап",
+    title: "Алғашқы қате қадамды тап және есеп шығар",
+    purposeNote:
+      "Екі қадамдық жаттығу: 1) дайын үлгідегі бірінші қате жолды табыңыз, 2) жаңа сандармен есеп шығарыңыз. Өз шешіміңізді тексеру үшін «Жазбаны тексеру» бөлімін ашыңыз.",
     howItWorksTitle: "Жаттығу қалай жұмыс істейді",
     intro:
       "Математикалық ереже алғаш бұзылған қадамды (01–03) таңдап, түзетуді оқып шық және бекіту есебін шығар.",
-    taskLabel: "Есеп шарты",
+    taskLabel: "1. Есеп шарты және қатесі бар шешім",
     check: "Қадамды тексеру",
     choose: "Есептің шешу қадамдары",
     selectedBadge: "Таңдалды",
@@ -134,20 +151,27 @@ const labels = {
     badgePreview: "Есеп инварианты · Резервтік контур"
   },
   uz: {
-    navStudy: "Dars",
-    navGraph: "Mavzular xaritasi",
+    navToday: "Bugun",
+    navLearn: "O‘qish",
     navExam: "Sinov UBT",
-    navPlan: "Mening rejam",
-    navLab: "Xatolar ustida ishlash",
+    navProfile: "Profil",
+    navHowItWorks: "BilimAI qanday ishlaydi",
     navAbout: "Loyiha haqida",
+    subLesson: "Dars va mashq",
+    subGraph: "Mavzular xaritasi (16)",
+    subXray: "Qoralamani tekshirish",
+    subLab: "Xatolar ustida ishlash",
+    subAi: "Mavzu savoli",
     topicsHeading: "16 ta kurs mavzusi",
-    mobileTopicLabel: "Mavzu",
+    mobileTopicLabel: "Matematika mavzusi",
     tag: "Xatoni topish mashqi",
-    title: "Birinchi xato qadamni top",
+    title: "Birinchi xato qadamni top va masalani yech",
+    purposeNote:
+      "Ikki bosqichli mashq: 1) tayyor namunadagi birinchi xato qatorni toping, 2) yangi sonlar bilan masalani mustaqil yeching. O‘z yechimingizni tekshirish uchun «Qoralamani tekshirish» bo‘limini oching.",
     howItWorksTitle: "Mashq qanday ishlaydi",
     intro:
       "Matematik qoida birinchi marta buzilgan qadamni (01–03) tanlang, tuzatishni o‘rganing va mustahkamlash masalasini yeching.",
-    taskLabel: "Masala sharti",
+    taskLabel: "1. Masala sharti va xatosi bor yechim",
     check: "Qadamni tekshirish",
     choose: "Masalani yechish qadamlari",
     selectedBadge: "Tanlandi",
@@ -185,7 +209,7 @@ const labels = {
     aiTitle: "O‘tish invariantining tahlili (Claude API)",
     aiStepCheck: "Qadamni tekshirish usuli:",
     aiNextHint: "Masala uchun yo‘nalish:",
-    aiError: "Tahlil olinmadi. Qayta urinib ko‘ring.",
+    aiError: "Tahlil olinmadi. Qayта urinib ko‘ring.",
     badgeLive: "Claude API · Jonli tahlil",
     badgePreview: "Masala invarianti · Zaxira konturi"
   }
@@ -311,15 +335,29 @@ export default function ErrorLab({
   }, []);
 
   useEffect(() => {
+    function onPopState() {
+      const params = new URLSearchParams(window.location.search);
+      const qLang = params.get("lang");
+      if (qLang === "ru" || qLang === "kk" || qLang === "uz") setLang(qLang);
+      const qTopic = params.get("topic");
+      if (qTopic && (labTopics as readonly string[]).includes(qTopic)) {
+        setTopic(qTopic as LabTopic);
+      }
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
     if (!loaded) return;
     try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("lang", lang);
-      url.searchParams.set("topic", topic);
-      window.history.replaceState({}, "", url.toString());
-    } catch {
-      // ignore URL update error
-    }
+      saveNavContext({
+        tab: "lesson",
+        topic,
+        subject: "math",
+        lang
+      });
+    } catch {}
   }, [lang, topic, loaded]);
 
   useEffect(() => {
@@ -354,6 +392,22 @@ export default function ErrorLab({
     reset();
     setTopic(value);
     setSeed(nextSeed(progress, value));
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", lang);
+      url.searchParams.set("topic", value);
+      window.history.pushState({ lang, topic: value }, "", url.toString());
+    } catch {}
+  }
+
+  function changeLang(nextLang: Language) {
+    setLang(nextLang);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", nextLang);
+      url.searchParams.set("topic", topic);
+      window.history.replaceState({ lang: nextLang, topic }, "", url.toString());
+    } catch {}
   }
 
   async function requestAiDiagnosis() {
@@ -444,39 +498,42 @@ export default function ErrorLab({
   const schedule = reviewSchedule(progress, now);
 
   return (
-    <div className="textbook-shell">
+    <div className="textbook-shell has-mobile-bottom-nav">
       <header className="site-header">
         <div className="wrap header-inner">
           <div className="header-top-row">
-            <a className="brand" href={`/?lang=${lang}&topic=${topic}`}>
-              <span className="brand-mark aniq-logo-badge" aria-hidden="true">
+            <a className="aniq-brand-logo" href={`/?lang=${lang}`}>
+              <span className="aniq-logo-badge" aria-hidden="true">
                 B
               </span>
-              <span className="brand-name">BilimAI</span>
+              <span className="aniq-logo-word">
+                Bilim<span className="text-brand">AI</span>
+              </span>
               <span className="brand-sub">ЕНТ · ҰБТ</span>
             </a>
 
             <div className="header-right">
-              <a className="header-quiet-link" href="/about">
+              <a className="header-quiet-link" href={`/welcome?lang=${lang}`}>
+                {t.navHowItWorks}
+              </a>
+              <a className="header-quiet-link hide-on-narrow-mobile" href={`/about?lang=${lang}`}>
                 {t.navAbout}
               </a>
-
-              <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
               <div className="lang-switcher" role="group" aria-label="Language">
                 <button
                   type="button"
                   className={`lang-btn ${lang === "ru" ? "active" : ""}`}
                   aria-pressed={lang === "ru"}
-                  onClick={() => setLang("ru")}
+                  onClick={() => changeLang("ru")}
                 >
-                  RU
+                  РУС
                 </button>
                 <button
                   type="button"
                   className={`lang-btn ${lang === "kk" ? "active" : ""}`}
                   aria-pressed={lang === "kk"}
-                  onClick={() => setLang("kk")}
+                  onClick={() => changeLang("kk")}
                 >
                   ҚАЗ
                 </button>
@@ -484,60 +541,69 @@ export default function ErrorLab({
                   type="button"
                   className={`lang-btn ${lang === "uz" ? "active" : ""}`}
                   aria-pressed={lang === "uz"}
-                  onClick={() => setLang("uz")}
+                  onClick={() => changeLang("uz")}
                 >
                   OʻZB
                 </button>
               </div>
 
-              <div className="aniq-header-auth">
-                <a className="aniq-btn-ghost aniq-btn-sm" href={`/login?lang=${lang}`}>
-                  {lang === "kk"
-                    ? "Профиль / сақтау"
-                    : lang === "uz"
-                      ? "Profil / saqlash"
-                      : "Профиль / сохранить"}
-                </a>
-              </div>
+              <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
+
+              <a className="header-quiet-link" href={`/?lang=${lang}&tab=profile&topic=${topic}`}>
+                {t.navProfile}
+              </a>
             </div>
           </div>
 
+          {/* 4 Goal-Oriented Primary Sections */}
           <nav className="primary-nav" aria-label="Основные разделы">
-            <a className="primary-nav-link" href={`/?lang=${lang}&topic=${topic}`}>
-              <BookOpen size={14} />
-              <span>{t.navStudy}</span>
-            </a>
-            <a className="primary-nav-link primary-nav-link-xray" href={`/?lang=${lang}&tab=xray&topic=${topic}`}>
-              <Microscope size={14} />
-              <span>
-                {lang === "kk"
-                  ? "Шешімді тексеру"
-                  : lang === "uz"
-                    ? "Yechimni tekshirish"
-                    : "Проверка решения"}
-              </span>
-            </a>
-            <a className="primary-nav-link" href={`/?lang=${lang}&tab=graph&topic=${topic}`}>
-              <GitBranch size={14} />
-              <span>{t.navGraph}</span>
-            </a>
-            <a className="primary-nav-link" href={`/?lang=${lang}&tab=exam&topic=${topic}`}>
-              <Target size={14} />
-              <span>{t.navExam}</span>
-            </a>
-            <a className="primary-nav-link" href={`/?lang=${lang}&tab=roadmap&topic=${topic}`}>
-              <Calendar size={14} />
-              <span>{t.navPlan}</span>
+            <a className="primary-nav-link" href={`/?lang=${lang}&tab=today&topic=${topic}`}>
+              <Compass size={15} />
+              <span>{t.navToday}</span>
             </a>
             <a className="primary-nav-link active" aria-current="page" href={`/lab?lang=${lang}&topic=${topic}`}>
-              <FlaskConical size={14} />
-              <span>{t.navLab}</span>
+              <BookOpen size={15} />
+              <span>{t.navLearn}</span>
+            </a>
+            <a className="primary-nav-link" href={`/?lang=${lang}&tab=exam&topic=${topic}`}>
+              <Target size={15} />
+              <span>{t.navExam}</span>
+            </a>
+            <a className="primary-nav-link" href={`/?lang=${lang}&tab=profile&topic=${topic}`}>
+              <User size={15} />
+              <span>{t.navProfile}</span>
             </a>
           </nav>
         </div>
       </header>
 
       <main className="wrap main-container">
+        {/* Sub-navigation inside "Учиться" */}
+        <div className="learn-subnav-wrap mb-4">
+          <nav className="learn-subnav" aria-label={t.navLearn}>
+            <a className="learn-subnav-pill" href={`/?lang=${lang}&tab=lesson&topic=${topic}`}>
+              <BookOpen size={14} />
+              <span>{t.subLesson}</span>
+            </a>
+            <a className="learn-subnav-pill" href={`/?lang=${lang}&tab=graph&topic=${topic}`}>
+              <GitBranch size={14} />
+              <span>{t.subGraph}</span>
+            </a>
+            <a className="learn-subnav-pill" href={`/?lang=${lang}&tab=xray&topic=${topic}`}>
+              <Microscope size={14} />
+              <span>{t.subXray}</span>
+            </a>
+            <a className="learn-subnav-pill active" aria-current="page" href={`/lab?lang=${lang}&topic=${topic}`}>
+              <FlaskConical size={14} />
+              <span>{t.subLab}</span>
+            </a>
+            <a className="learn-subnav-pill" href={`/?lang=${lang}&tab=ai&topic=${topic}`}>
+              <Sparkles size={14} />
+              <span>{t.subAi}</span>
+            </a>
+          </nav>
+        </div>
+
         {/* Single-line mobile topic selector matching the study page */}
         <div className="mobile-topic-bar">
           <label htmlFor="mobile-lab-select">{t.mobileTopicLabel}</label>
@@ -589,7 +655,8 @@ export default function ErrorLab({
                   </span>
                 </div>
                 <h1 className="lesson-title">{t.title}</h1>
-                <details className="lab-how-details">
+                <p className="lesson-intro">{t.purposeNote}</p>
+                <details className="lab-how-details mt-2">
                   <summary>{t.howItWorksTitle}</summary>
                   <p>{t.intro}</p>
                 </details>
@@ -914,7 +981,41 @@ export default function ErrorLab({
           </div>
         </div>
       </main>
-      <SiteFooter lang={lang} topic={topic} />
+
+      {/* Fixed 4-item Mobile Bottom Navigation Bar */}
+      <nav className="mobile-bottom-nav" aria-label="Мобильная навигация">
+        <a
+          className="mobile-bottom-nav-item"
+          href={`/?lang=${lang}&tab=today&topic=${topic}`}
+        >
+          <Compass size={18} />
+          <span>{t.navToday}</span>
+        </a>
+        <a
+          className="mobile-bottom-nav-item active"
+          aria-current="page"
+          href={`/lab?lang=${lang}&topic=${topic}`}
+        >
+          <BookOpen size={18} />
+          <span>{t.navLearn}</span>
+        </a>
+        <a
+          className="mobile-bottom-nav-item"
+          href={`/?lang=${lang}&tab=exam&topic=${topic}`}
+        >
+          <Target size={18} />
+          <span>{t.navExam}</span>
+        </a>
+        <a
+          className="mobile-bottom-nav-item"
+          href={`/?lang=${lang}&tab=profile&topic=${topic}`}
+        >
+          <User size={18} />
+          <span>{t.navProfile}</span>
+        </a>
+      </nav>
+
+      <SiteFooter lang={lang} topic={topic} compact />
     </div>
   );
 }

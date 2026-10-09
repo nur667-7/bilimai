@@ -6018,3 +6018,361 @@ input[type="range"] {
   }
 }
 
+/* ==========================================================================
+   17. 4-Section Architecture, Mobile Bottom Bar, Inline Inspector & 320px Ergonomics
+   ========================================================================== */
+
+/* Learn Sub-navigation (inside "Учиться") */
+.learn-subnav-wrap {
+  width: 100%;
+}
+
+.learn-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.learn-subnav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.learn-subnav-pill:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.learn-subnav-pill.active {
+  background: var(--accent);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Subject Boundary Notice Banner */
+.subject-boundary-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--primary);
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.subject-boundary-text {
+  flex: 1 1 280px;
+}
+
+.subject-boundary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Today Section & Subject Picker Grid */
+.today-primary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.today-subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.today-subject-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.today-subject-card.active {
+  border-color: var(--primary);
+  background: var(--accent);
+}
+
+.today-subject-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.today-subject-meta {
+  min-width: 0;
+}
+
+.today-subject-meta strong {
+  display: block;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.plan-empty-state-box {
+  padding: 18px 16px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: var(--card);
+}
+
+/* Lesson Subtitle & Practice Summary Card */
+.lesson-action-subtitle {
+  margin: 2px 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.practice-summary-card {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--primary);
+  background: var(--accent);
+}
+
+/* Profile Section Cards */
+.aniq-primary-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--primary-foreground, #ffffff);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profile-stat-box {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-stat-box strong {
+  font-size: 18px;
+  color: var(--foreground);
+}
+
+.profile-uni-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.profile-uni-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--background);
+}
+
+/* Knowledge Graph Inline Topic Inspector */
+.kg-top-recommendation-card {
+  border-left: 4px solid var(--primary);
+}
+
+.kg-list-item-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kg-inline-inspector {
+  margin-top: 2px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--primary);
+  border-radius: 9px;
+  padding: 14px;
+  background: var(--card);
+}
+
+.kg-chevron-hint {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-left: 4px;
+}
+
+/* UNT Exam Early Finish Warning Banner */
+.exam-early-finish-banner {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--foreground);
+  font-size: 13.5px;
+}
+
+/* Compact 1-Line Workspace Footer */
+.site-footer.site-footer-compact {
+  margin-top: 24px;
+  padding: 14px 0 20px;
+}
+
+.site-footer-compact-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12.5px;
+}
+
+.site-footer-compact-brand {
+  color: var(--foreground);
+}
+
+/* Mobile 4-Item Fixed Bottom Navigation Bar (hidden on desktop >= 769px) */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .has-mobile-bottom-nav {
+    padding-bottom: 72px;
+  }
+
+  /* Hide top 4-tab bar on mobile because the fixed 4-tab bottom bar handles primary navigation without horizontal overflow */
+  .site-header .primary-nav {
+    display: none;
+  }
+
+  .hide-on-narrow-mobile {
+    display: none !important;
+  }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px;
+    padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+  }
+
+  .mobile-bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 48px;
+    padding: 4px 2px;
+    border-radius: 8px;
+    border: 0;
+    background: transparent;
+    color: var(--muted-foreground);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.15;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-bottom-nav-item.active {
+    color: var(--primary);
+    background: var(--accent);
+  }
+
+  /* Touch targets >= 44px on mobile (320px and 390px) */
+  .learn-subnav-pill {
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    flex: 1 1 calc(50% - 6px);
+    justify-content: center;
+    text-align: center;
+  }
+
+  .mobile-topic-select,
+  .lab-input {
+    min-height: 44px;
+  }
+
+  .today-primary-actions > *,
+  .subject-boundary-actions > * {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .profile-stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 360px) {
+  .wrap {
+    padding: 0 10px;
+  }
+
+  .header-top-row {
+    gap: 6px;
+  }
+
+  .brand-sub {
+    display: none;
+  }
+
+  .lang-btn {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .learn-subnav-pill {
+    flex: 1 1 100%;
+  }
+}
+
+

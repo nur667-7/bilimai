@@ -31,6 +31,7 @@ export type ComputedGraphNode = GraphNodeMeta & {
   soloCount: number;
   assistedCount: number;
   examRatio: number | null;
+  hasEvidence: boolean;
   masteryPercent: number;
   status: GraphNodeStatus;
   isWeakMarked: boolean;
@@ -759,7 +760,8 @@ export function buildKnowledgeGraphState(
     gapFlagMap.set(meta.id, hasGap && mastery < 80);
   }
 
-  // If a child has a gap and a parent has no evidence yet and isn't mastered, check prerequisite readiness
+  // Check prerequisite readiness: only flag a prerequisite as blocking if it has a confirmed gap,
+  // or if the dependent topic itself has a gap while the prerequisite is not yet mastered.
   const isPrerequisiteReady = (id: TopicId): boolean => {
     const m = masteryMap.get(id) ?? 0;
     const g = gapFlagMap.get(id) ?? false;
@@ -771,7 +773,12 @@ export function buildKnowledgeGraphState(
     const masteryPercent = masteryMap.get(meta.id) ?? 45;
     const hasGap = gapFlagMap.get(meta.id) ?? false;
     const unlocks = UNT_GRAPH_NODES.filter((m) => m.prerequisites.includes(meta.id)).map((m) => m.id);
-    const missingPrerequisites = meta.prerequisites.filter((p) => !isPrerequisiteReady(p));
+    const missingPrerequisites = meta.prerequisites.filter((p) => {
+      const pGap = gapFlagMap.get(p) ?? false;
+      if (pGap) return true;
+      if (hasGap && !isPrerequisiteReady(p)) return true;
+      return false;
+    });
 
     let status: GraphNodeStatus;
     if (masteryPercent >= 80 && !hasGap) {
@@ -780,9 +787,11 @@ export function buildKnowledgeGraphState(
       status = "root_gap";
     } else if (hasGap && missingPrerequisites.length > 0) {
       status = "blocked_gap";
-    } else if (masteryPercent >= 60) {
+    } else if (raw.hasEvidence && masteryPercent >= 60) {
       status = "in_progress";
-    } else if (missingPrerequisites.length === 0) {
+    } else if (missingPrerequisites.length === 0 && meta.tier === 0) {
+      status = "ready";
+    } else if (missingPrerequisites.length === 0 && meta.prerequisites.every((p) => isPrerequisiteReady(p))) {
       status = "ready";
     } else {
       status = "locked";
@@ -805,6 +814,7 @@ export function buildKnowledgeGraphState(
       soloCount: raw.soloCount,
       assistedCount: raw.assistedCount,
       examRatio: raw.examRatio,
+      hasEvidence: raw.hasEvidence,
       masteryPercent,
       status,
       isWeakMarked: raw.isWeakMarked,
@@ -852,35 +862,50 @@ export function buildKnowledgeGraphState(
 
   const studyPlan: StudyPlanStep[] = actionableNodes.map((n, index) => {
     const missingNames = n.missingPrerequisites.map((id) => topicName(id, lang)).join(", ");
+    const prereqNames = n.prerequisites.map((id) => topicName(id, lang)).join(", ");
     let reason: string;
     if (n.status === "root_gap") {
       reason =
         lang === "ru"
-          ? `Корневой пробел (база открыта): закрытие темы разблокирует ${n.unlocks.length} след. разд. и сохранит до +${n.untQuestionsWeight} б. ЕНТ.`
+          ? `Обнаружена ошибка в базовой теме: разбор откроет ${n.unlocks.length} след. разд. (до ${n.untQuestionsWeight} заданий ЕНТ).`
           : lang === "kk"
-            ? `Түпкі олқылық (база ашық): осы тақырыпты меңгеру ${n.unlocks.length} келесі бөлімге жол ашады (+${n.untQuestionsWeight} балл).`
-            : `Asosiy bo‘shliq: ushbu mavzuni yopish ${n.unlocks.length} ta keyingi bo‘limni ochadi (+${n.untQuestionsWeight} ball).`;
+            ? `Базалық тақырыпта қате табылды: осы тақырыпты меңгеру ${n.unlocks.length} келесі бөлімге жол ашады.`
+            : `Asosiy mavzuda xato aniqlandi: ushbu mavzuni yopish ${n.unlocks.length} ta keyingi bo‘limni ochadi.`;
     } else if (n.status === "blocked_gap") {
       reason =
         lang === "ru"
-          ? `Заблокировано пробелом в базовой теме (${missingNames}). Сначала закройте фундамент.`
+          ? `Рекомендуется сначала закрыть пробел в опорной теме: ${missingNames}.`
           : lang === "kk"
-            ? `Тірек тақырыптағы (${missingNames}) олқылықпен бұғатталған. Алдымен базаны жабыңыз.`
-            : `Tayanch mavzudagi (${missingNames}) bo‘shliq tufayli bloklangan. Avval bazani yoping.`;
+            ? `Алдымен тірек тақырыптағы олқылықты жабу ұсынылады: ${missingNames}.`
+            : `Avval tayanch mavzudagi bo‘shliqni yopish tavsiya etiladi: ${missingNames}.`;
+    } else if (!n.hasEvidence && n.prerequisites.length === 0) {
+      reason =
+        lang === "ru"
+          ? `Базовая тема курса (не проверено): можно начать разбор без предварительных условий.`
+          : lang === "kk"
+            ? `Курстың базалық тақырыбы (тексерілмеген): бірден бастауға болады.`
+            : `Kursning tayanch mavzusi (tekshirilmagan): darhol boshlash mumkin.`;
+    } else if (!n.hasEvidence) {
+      reason =
+        lang === "ru"
+          ? `Не проверено · опирается на базовые темы: ${prereqNames}.`
+          : lang === "kk"
+            ? `Тексерілмеген · тірек тақырыптар: ${prereqNames}.`
+            : `Tekshirilmagan · tayanch mavzular: ${prereqNames}.`;
     } else if (n.status === "ready") {
       reason =
         lang === "ru"
-          ? `Фронт обучения: все пререквизиты освоены, тема готова к быстрой отработке.`
+          ? `Базовые темы пройдены — тема готова к закреплению.`
           : lang === "kk"
-            ? `Оқу шебі: барлық пререквизиттер меңгерілген, жаттығуға дайын.`
-            : `O‘quv fronti: barcha tayanch mavzular o‘zlashtirilgan, mashqqa tayyor.`;
+            ? `Базалық тақырыптар өтілді — бекітуге дайын.`
+            : `Tayanch mavzular o‘tildi — mustahkamlashga tayyor.`;
     } else {
       reason =
         lang === "ru"
-          ? `Закрепление навыка до ≥2 самостоятельных решений без подсказок.`
+          ? `В работе: решите ещё задачи без подсказок для полного закрепления.`
           : lang === "kk"
-            ? `Көмексіз ≥2 өздік шешімге дейін бекіту.`
-            : `Yordamsiz ≥2 ta mustaqil yechimgacha mustahkamlash.`;
+            ? `Жұмыс үстінде: толық бекіту үшін көмексіз есептер шығарыңыз.`
+            : `Jarayonda: to‘liq mustahkamlash uchun yordamsiz masalalar yeching.`;
     }
 
     return {

@@ -15,13 +15,15 @@ export const metadata: Metadata = {
 };
 
 const VALID_TABS: readonly WorkspaceTab[] = [
+  "today",
   "lesson",
   "practice",
   "ai",
   "xray",
   "exam",
   "graph",
-  "roadmap"
+  "roadmap",
+  "profile"
 ];
 
 export default async function Home({
@@ -41,17 +43,21 @@ export default async function Home({
   const initialLang: Language =
     rawLang === "kk" || rawLang === "uz" || rawLang === "ru" ? rawLang : "ru";
 
+  const rawTopic = resolved?.topic;
+  const hasExplicitTopic = Boolean(
+    rawTopic && (untTopicIds as readonly string[]).includes(rawTopic)
+  );
+  const initialTopic: TopicId = hasExplicitTopic
+    ? (rawTopic as TopicId)
+    : "linear";
+
   const rawTab = resolved?.tab;
   const initialTab: WorkspaceTab =
     rawTab && (VALID_TABS as readonly string[]).includes(rawTab)
       ? (rawTab as WorkspaceTab)
-      : "lesson";
-
-  const rawTopic = resolved?.topic;
-  const initialTopic: TopicId =
-    rawTopic && (untTopicIds as readonly string[]).includes(rawTopic)
-      ? (rawTopic as TopicId)
-      : "linear";
+      : hasExplicitTopic
+        ? "lesson"
+        : "today";
 
   const rawSubject = resolved?.subject;
   const initialSubjectId: UntSubjectId =

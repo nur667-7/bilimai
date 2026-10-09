@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, GraduationCap, UserCheck } from "lucide-react";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import type { Language } from "@/lib/curriculum";
 import {
   kzUniversities,
+  resolveReturnHref,
   saveUserProfile,
   type UniversityId,
   type UserProfile
@@ -14,7 +15,7 @@ const registerCopy = {
   ru: {
     title: "Создать профиль в BilimAI",
     sub: "Профиль сохраняет ваш прогресс по темам и пробным вариантам ЕНТ локально в браузере. Регистрация необязательна.",
-    tryWithoutAuth: "Попробовать без регистрации →",
+    tryWithoutAuth: "Продолжить без регистрации →",
     roleLabel: "Ваша роль",
     roleStudent: "Ученик / Абитуриент ЕНТ",
     roleTeacher: "Учитель математики",
@@ -24,21 +25,21 @@ const registerCopy = {
     idPlaceholder: "student@bilimai.dpdns.org или 1001",
     passLabel: "Пароль (мин. 6 символов)",
     passPlaceholder: "Минимум 6 символов",
-    optionalToggle: "Необязательно: класс и ориентир вуза (можно изменить позже в «Моём плане»)",
+    optionalToggle: "Необязательно: класс и ориентир вуза (можно изменить позже в «Профиле»)",
     gradeLabel: "Класс обучения",
     uniLabel: "Ориентир ВУЗа РК (справочник НЦТ 2024–2025)",
     targetScoreLabel: "Целевой балл по профильной математике (из 50)",
-    submitBtn: "Сохранить профиль и начать",
+    submitBtn: "Сохранить профиль и вернуться",
     hasAccount: "Уже есть профиль?",
     loginLink: "Войти",
-    backHome: "← К занятиям",
+    backHome: "← Вернуться к занятию",
     privacyNote: "Данные хранятся локально в браузере (localStorage). Подробнее в",
     privacyLink: "политике конфиденциальности"
   },
   kk: {
     title: "BilimAI профилін ашу",
     sub: "Профиль тақырыптар мен ҰБТ нұсқалары бойынша прогресті браузерде сақтайды. Тіркелу міндетті емес.",
-    tryWithoutAuth: "Тіркеусіз байқап көру →",
+    tryWithoutAuth: "Тіркеусіз жалғастыру →",
     roleLabel: "Сіздің рөліңіз",
     roleStudent: "Оқушы / ҰБТ талапкері",
     roleTeacher: "Математика мұғалімі",
@@ -48,21 +49,21 @@ const registerCopy = {
     idPlaceholder: "student@bilimai.dpdns.org немесе 1001",
     passLabel: "Құпиясөз (кемінде 6 таңба)",
     passPlaceholder: "Кемінде 6 таңба",
-    optionalToggle: "Міндетті емес: сынып және ЖОО бағдары («Менің жоспарымда» өзгертуге болады)",
+    optionalToggle: "Міндетті емес: сынып және ЖОО бағдары («Профильде» өзгертуге болады)",
     gradeLabel: "Оқу сыныбы",
     uniLabel: "ҚР ЖОО бағдары (ҰТО 2024–2025 анықтамалығы)",
     targetScoreLabel: "Профильдік математикадан мақсатты балл (50-ден)",
-    submitBtn: "Профильді сақтау және бастау",
+    submitBtn: "Профильді сақтау және оралу",
     hasAccount: "Профиліңіз бар ма?",
     loginLink: "Кіру",
-    backHome: "← Сабақтарға",
+    backHome: "← Сабаққа оралу",
     privacyNote: "Деректер браузерде (localStorage) сақталады. Толығырақ:",
     privacyLink: "құпиялылық саясаты"
   },
   uz: {
     title: "BilimAI da profil yaratish",
     sub: "Profil mavzular va sinov variantlari bo‘yicha progressni brauzerda saqlaydi. Ro‘yxatdan o‘tish majburiy emas.",
-    tryWithoutAuth: "Ro‘yxatdan o‘tmasdan sinab ko‘rish →",
+    tryWithoutAuth: "Ro‘yxatdan o‘tmasdan davom etish →",
     roleLabel: "Rolingiz",
     roleStudent: "O‘quvchi / Abituriyent",
     roleTeacher: "Matematika o‘qituvchisi",
@@ -72,14 +73,14 @@ const registerCopy = {
     idPlaceholder: "student@bilimai.dpdns.org yoki 1001",
     passLabel: "Parol (kamida 6 belgi)",
     passPlaceholder: "Kamida 6 belgi",
-    optionalToggle: "Ixtiyoriy: sinf va OTM mo‘ljali (keyinroq «Mening rejam»da o‘zgartirish mumkin)",
+    optionalToggle: "Ixtiyoriy: sinf va OTM mo‘ljali (keyinroq «Profil»da o‘zgartirish mumkin)",
     gradeLabel: "O‘quv sinfi",
     uniLabel: "OTM mo‘ljali (2024–2025 ma’lumotnomasi)",
     targetScoreLabel: "Matematikadan maqsadli ball (50 dan)",
-    submitBtn: "Profilni saqlash va boshlash",
+    submitBtn: "Profilni saqlash va qaytish",
     hasAccount: "Profilingiz bormi?",
     loginLink: "Kirish",
-    backHome: "← Mashg‘ulotlarga",
+    backHome: "← Mashg‘ulotga qaytish",
     privacyNote: "Ma’lumotlar brauzerda (localStorage) saqlanadi. Batafsil:",
     privacyLink: "maxfiylik siyosati"
   }
@@ -95,8 +96,13 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
   const [targetUni, setTargetUni] = useState<UniversityId>("kbtu");
   const [targetScore, setTargetScore] = useState(42);
   const [password, setPassword] = useState("");
+  const [returnHref, setReturnHref] = useState<string>(`/?lang=${initialLang}`);
 
   const c = registerCopy[lang];
+
+  useEffect(() => {
+    setReturnHref(resolveReturnHref(lang));
+  }, [lang]);
 
   function handleLangChange(nextLang: Language) {
     setLang(nextLang);
@@ -123,13 +129,15 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
       createdAt: new Date().toISOString()
     };
     saveUserProfile(profile);
-    window.location.href = `/?lang=${lang}`;
+    window.location.href = resolveReturnHref(lang);
   }
+
+  const loginHref = `/login?lang=${lang}&returnTo=${encodeURIComponent(returnHref)}`;
 
   return (
     <main className="aniq-auth-shell">
       <div className="aniq-auth-topbar">
-        <a href={`/?lang=${lang}`} className="aniq-btn aniq-btn-ghost text-xs">
+        <a href={returnHref} className="aniq-btn aniq-btn-ghost text-xs">
           {c.backHome}
         </a>
         <div className="flex items-center gap-2">
@@ -152,14 +160,14 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
       <div className="aniq-auth-container">
         <div className="aniq-auth-card">
           <div className="aniq-auth-header-row">
-            <a className="aniq-brand-logo" href={`/?lang=${lang}`}>
+            <a className="aniq-brand-logo" href={returnHref}>
               <span className="aniq-logo-badge">B</span>
               <span>
                 Bilim<span className="text-brand">AI</span>
               </span>
               <span className="brand-sub">ЕНТ · ҰБТ</span>
             </a>
-            <a href={`/?lang=${lang}`} className="aniq-auth-skip-link">
+            <a href={returnHref} className="aniq-auth-skip-link">
               {c.tryWithoutAuth}
             </a>
           </div>
@@ -308,7 +316,7 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
           <div className="aniq-auth-footer">
             <div>
               {c.hasAccount}{" "}
-              <a className="aniq-auth-inline-link" href={`/login?lang=${lang}`}>
+              <a className="aniq-auth-inline-link" href={loginHref}>
                 {c.loginLink}
               </a>
             </div>

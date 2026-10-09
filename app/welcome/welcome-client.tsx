@@ -44,7 +44,7 @@ const COPY: Record<
     primaryCta: "Попробовать без регистрации →",
     examCta: "Пробное ЕНТ (формат НЦТ)",
     labCta: "Тренировка ошибок",
-    profileLink: "Профиль / сохранить",
+    profileLink: "Профиль",
     miniTitle: "Быстрый пример прямо здесь",
     miniPrompt: "Решите уравнение: 3(x − 2) = 15",
     miniInstruction: "Нажмите на строку черновика, в которой допущена первая математическая ошибка:",
@@ -61,25 +61,25 @@ const COPY: Record<
     officialBadge: (q, pts) => `Офиц. ЕНТ: ${q} вопр. · ${pts} б.`,
     trainingBadge: "10 вариантов",
     startSubject: "Открыть вариант →",
-    howTitle: "Три рабочих инструмента без лишнего шума",
+    howTitle: "Четыре основных раздела платформы",
     howItems: [
       {
-        title: "1. Занятие и практика по шагам",
-        body: "Формула, пошаговый образец и самостоятельная задача с проверкой каждого перехода.",
+        title: "1. Урок и практика по шагам",
+        body: "Формула, пошаговый образец и 3 задачи для закрепления с проверкой каждого перехода.",
         href: "/?tab=lesson",
-        cta: "Перейти к занятию →"
+        cta: "Перейти к уроку →"
       },
       {
-        title: "2. Проверка решения по шагам",
-        body: "Находите первую неверную строку в готовом решении или вставляйте собственные шаги для проверки.",
+        title: "2. Проверить черновик и тренировка ошибок",
+        body: "Вставляйте собственное решение для построчной проверки или ищите неверный шаг в готовых примерах.",
         href: "/?tab=xray",
-        cta: "Проверить решение →"
+        cta: "Проверить черновик →"
       },
       {
-        title: "3. Карта тем и мой план",
-        body: "Последовательный список из 16 разделов математики ЕНТ и расписание подготовки по неделям.",
-        href: "/?tab=roadmap",
-        cta: "Открыть план →"
+        title: "3. Карта 16 тем и персональный план",
+        body: "Наглядный маршрут по всем 16 разделам математики ЕНТ и приоритеты на сегодня.",
+        href: "/?tab=graph",
+        cta: "Открыть карту тем →"
       }
     ],
     footerAbout: "О проекте, методике и научных источниках",
@@ -94,7 +94,7 @@ const COPY: Record<
     primaryCta: "Тіркеусіз бастау →",
     examCta: "Байқау ҰБТ (ҰТО форматы)",
     labCta: "Қателермен жұмыс",
-    profileLink: "Профиль / сақтау",
+    profileLink: "Профиль",
     miniTitle: "Осы жерде тексеріп көріңіз",
     miniPrompt: "Теңдеуді шешіңіз: 3(x − 2) = 15",
     miniInstruction: "Бірінші математикалық қате жіберілген жолды басыңыз:",
@@ -111,25 +111,25 @@ const COPY: Record<
     officialBadge: (q, pts) => `Ресми ҰБТ: ${q} сұрақ · ${pts} б.`,
     trainingBadge: "10 нұсқа",
     startSubject: "Нұсқаны ашу →",
-    howTitle: "Артық шусыз үш негізгі құрал",
+    howTitle: "Платформаның негізгі құралдары",
     howItems: [
       {
         title: "1. Сабақ және қадамдық практика",
-        body: "Формула, қадамдық үлгі және әр қадамы тексерілетін жаттығу есебі.",
+        body: "Формула, қадамдық үлгі және әр қадамы тексерілетін 3 жаттығу есебі.",
         href: "/?tab=lesson&lang=kk",
         cta: "Сабаққа өту →"
       },
       {
-        title: "2. Шешімді қадамдап тексеру",
-        body: "Дайын шешімдегі алғашқы қате жолды табыңыз немесе өз шешіміңізді тексеріңіз.",
+        title: "2. Жазбаны тексеру және қатемен жұмыс",
+        body: "Өз шешіміңізді жолдап тексеріңіз немесе дайын шешімдегі алғашқы қате жолды табыңыз.",
         href: "/?tab=xray&lang=kk",
-        cta: "Шешімді тексеру →"
+        cta: "Жазбаны тексеру →"
       },
       {
         title: "3. Тақырыптар картасы мен жоспар",
-        body: "ҰБТ математикасының 16 бөлімі және апталық дайындық жоспары.",
-        href: "/?tab=roadmap&lang=kk",
-        cta: "Жоспарды ашу →"
+        body: "ҰБТ математикасының 16 бөлімі және бүгінгі дайындық жоспары.",
+        href: "/?tab=graph&lang=kk",
+        cta: "Картаны ашу →"
       }
     ],
     footerAbout: "Жоба, әдістеме және ғылыми дереккөздер туралы",
@@ -144,7 +144,7 @@ const COPY: Record<
     primaryCta: "Ro‘yxatdan o‘tmasdan boshlash →",
     examCta: "Sinov UBT (rasmiy format)",
     labCta: "Xatolar ustida ishlash",
-    profileLink: "Profil / saqlash",
+    profileLink: "Profil",
     miniTitle: "Shu yerning o‘zida sinab ko‘ring",
     miniPrompt: "Tenglamani yeching: 3(x − 2) = 15",
     miniInstruction: "Birinchi matematik xato qilingan qatorni bosing:",
@@ -161,25 +161,25 @@ const COPY: Record<
     officialBadge: (q, pts) => `Rasmiy UBT: ${q} savol · ${pts} b.`,
     trainingBadge: "10 variant",
     startSubject: "Variantni ochish →",
-    howTitle: "Uchta asosiy ishchi vosita",
+    howTitle: "Asosiy ishchi vositalar",
     howItems: [
       {
         title: "1. Dars va qadamma-qadam amaliyot",
-        body: "Formula, namuna va har bir qadami tekshiriladigan mustaqil masala.",
+        body: "Formula, namuna va har bir qadami tekshiriladigan 3 ta mustaqil masala.",
         href: "/?tab=lesson&lang=uz",
         cta: "Darsga o‘tish →"
       },
       {
-        title: "2. Yechimni qadamma-qadam tekshirish",
-        body: "Yechimdagi birinchi xato qatorni toping yoki o‘z qoralama yechimingizni tekshiring.",
+        title: "2. Qoralamani tekshirish va xatolar ustida ishlash",
+        body: "O‘z qoralama yechimingizni tekshiring yoki yechimdagi birinchi xato qatorni toping.",
         href: "/?tab=xray&lang=uz",
-        cta: "Yechimni tekshirish →"
+        cta: "Qoralamani tekshirish →"
       },
       {
         title: "3. Mavzular xaritasi va reja",
-        body: "UBT matematikasining 16 bo‘limi va haftalik tayyorgarlik rejasi.",
-        href: "/?tab=roadmap&lang=uz",
-        cta: "Rejani ochish →"
+        body: "UBT matematikasining 16 bo‘limi va tayyorgarlik rejasi.",
+        href: "/?tab=graph&lang=uz",
+        cta: "Xaritani ochish →"
       }
     ],
     footerAbout: "Loyiha, metodika va ilmiy manbalar haqida",
@@ -255,11 +255,11 @@ export default function WelcomeClient({
 
             <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
-            <a href={`/login?lang=${lang}`} className="top-UtilityLink">
+            <a href={`/?tab=profile&lang=${lang}`} className="top-UtilityLink">
               {t.profileLink}
             </a>
 
-            <a href={`/?lang=${lang}`} className="btn-primary welcome-top-cta">
+            <a href={`/?tab=lesson&lang=${lang}`} className="btn-primary welcome-top-cta">
               {t.primaryCta}
             </a>
           </div>
@@ -277,7 +277,7 @@ export default function WelcomeClient({
             <p className="welcome-main-lead">{t.subtitle}</p>
 
             <div className="welcome-cta-row">
-              <a href={`/?lang=${lang}`} className="btn-primary">
+              <a href={`/?tab=lesson&lang=${lang}`} className="btn-primary">
                 {t.primaryCta}
               </a>
               <a href={`/?tab=exam&lang=${lang}`} className="btn-ghost">
