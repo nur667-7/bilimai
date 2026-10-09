@@ -19,7 +19,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "linear",
       section: "Алгебра · ҰБТ базасы",
-      title: "Сызықтық теңдеулер мен жүйелер",
+      title: "Сызықтық теңдеулер",
       intro: "Екі жақтың теңдігін сақтап, белгісіз айнымалыны табамыз.",
       rule: "Теңдеудің екі жағына бірдей амал қолданамыз. Тек нөлден өзге санға бөлуге болады.",
       example: "3x + 6 = 21",
@@ -55,7 +55,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "probability",
       section: "Мат. сауаттылық · ҰБТ",
-      title: "Ықтималдық және комбинаторика",
+      title: "Классикалық ықтималдық",
       intro: "Нәтижелердің мүмкіндігі бірдей болғанда ықтималдықты есептейміз.",
       rule: "Ықтималдық = қолайлы нәтижелер саны / барлық тең мүмкіндікті нәтижелер саны. Мәні 0 мен 1 аралығында.",
       example: "Әділ ойын сүйегінде жұп сан түсуі",
@@ -109,7 +109,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "functions",
       section: "Алгебра · ҰБТ",
-      title: "Дәрежелер, түбірлер және логарифмдер",
+      title: "Дәрежелер және логарифмдер",
       intro: "Логарифм анықтамасы мен мүмкін мәндер облысын (ММО) қолданамыз.",
       rule: "log_b(A) = k теңдеуі A = b^k дегенді білдіреді (мұндағы A > 0, b > 0, b ≠ 1).",
       example: "log₂(x − 3) = 4",
@@ -127,7 +127,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "trigonometry",
       section: "Тригонометрия · ҰБТ",
-      title: "Тригонометриялық тепе-теңдіктер",
+      title: "Негізгі тригонометриялық тепе-теңдік",
       intro: "Негізгі тригонометриялық тепе-теңдік арқылы өрнектерді ықшамдаймыз.",
       rule: "Кез келген α бұрышы үшін: sin²α + cos²α = 1. Ортақ көбейткішті жақша сыртына шығару есепті бірден ықшамдайды.",
       example: "5 sin²(25°) + 5 cos²(25°) + 3",
@@ -201,7 +201,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "linear",
       section: "Алгебра · База ЕНТ",
-      title: "Линейные уравнения и системы",
+      title: "Линейные уравнения",
       intro: "Находим неизвестное, сохраняя равенство двух сторон.",
       rule: "С обеими сторонами выполняем одно и то же действие. Делить можно только на ненулевое число.",
       example: "3x + 6 = 21",
@@ -237,7 +237,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "probability",
       section: "Мат. грамотность · ЕНТ",
-      title: "Вероятность и комбинаторика",
+      title: "Классическая вероятность",
       intro: "Считаем шансы, когда исходы равновероятны.",
       rule: "Вероятность = число подходящих исходов / число всех равновероятных исходов. Значение лежит от 0 до 1.",
       example: "Честный кубик: выпадет чётное число",
@@ -291,7 +291,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "functions",
       section: "Алгебра · ЕНТ",
-      title: "Степени, корни и логарифмы",
+      title: "Степени и логарифмы",
       intro: "Решаем показательные и логарифмические уравнения с учётом ОДЗ.",
       rule: "Запись log_b(A) = k означает A = b^k при обязательном условии ОДЗ: A > 0, b > 0, b ≠ 1.",
       example: "log₂(x − 3) = 4",
@@ -309,7 +309,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "trigonometry",
       section: "Тригонометрия · ЕНТ",
-      title: "Тригонометрические тождества и уравнения",
+      title: "Основное тригонометрическое тождество",
       intro: "Упрощаем выражения через основное тригонометрическое тождество.",
       rule: "Для любого угла α выполняется тождество: sin²α + cos²α = 1. Вынесение общего множителя сразу сворачивает сумму квадратов в единицу.",
       example: "5 sin²(25°) + 5 cos²(25°) + 3",
@@ -383,7 +383,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "linear",
       section: "Algebra · Imtihon bazasi",
-      title: "Chiziqli tenglamalar va sistemalar",
+      title: "Chiziqli tenglamalar",
       intro: "Tenglikni saqlagan holda noma’lum sonni topamiz.",
       rule: "Tenglamaning ikkala tomoniga bir xil amal qo‘llaymiz. Faqat noldan farqli songa bo‘lish mumkin.",
       example: "3x + 6 = 21",
@@ -419,7 +419,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "probability",
       section: "Mat. savodxonlik",
-      title: "Ehtimollik va kombinatorika",
+      title: "Klassik ehtimollik",
       intro: "Teng ehtimolli natijalar uchun imkoniyatni hisoblaymiz.",
       rule: "Ehtimollik = mos natijalar soni / barcha teng ehtimolli natijalar soni. Qiymat 0 dan 1 gacha.",
       example: "Adolatli o‘yin kubigida juft son tushishi",
@@ -473,7 +473,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "functions",
       section: "Algebra",
-      title: "Darajalar, ildizlar va logarifmlar",
+      title: "Darajalar va logarifmlar",
       intro: "Aniqlanish sohasini (AS) hisobga olib, logarifmik tenglamalarni yechamiz.",
       rule: "log_b(A) = k ifodasi A = b^k deganidir (bunda A > 0, b > 0, b ≠ 1 bo‘lishi shart).",
       example: "log₂(x − 3) = 4",
@@ -491,7 +491,7 @@ export const lessons: Record<Language, Lesson[]> = {
     {
       id: "trigonometry",
       section: "Trigonometriya",
-      title: "Trigonometrik ayniyatlar",
+      title: "Asosiy trigonometrik ayniyat",
       intro: "Asosiy trigonometrik ayniyat yordamida ifodalarni soddalashtiramiz.",
       rule: "Har qanday α burchak uchun: sin²α + cos²α = 1. Umumiy ko‘paytuvchini qavsdan tashqariga chiqarish hisobni soddalashtiradi.",
       example: "5 sin²(25°) + 5 cos²(25°) + 3",
