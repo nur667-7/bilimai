@@ -107,7 +107,19 @@ BilimAI разделяет ответственность между **симв�
 
 ---
 
-## 6. Структура проекта
+## 6. Как находят сайт (SEO, GEO и Go-To-Market)
+
+1. **Поисковики Google и Яндекс (`robots.txt` + `sitemap.xml` + `Schema.org JSON-LD`):**
+   - [`public/robots.txt`](public/robots.txt) и [`public/sitemap.xml`](public/sitemap.xml) индексируют все разделы сайта, языковые версии (`hreflang="ru"`, `hreflang="kk"`, `hreflang="uz"`) и все 16 тем ЕНТ (`/?topic=linear` … `/?topic=stereometry`).
+   - В [`app/layout.tsx`](app/layout.tsx) встроена микроразметка `WebApplication` и `Course` (`Schema.org`) + целевые ключевые запросы (*«ЕНТ математика», «ҰБТ математика дайындық», «пробное ЕНТ математика бесплатно», «математическая грамотность ЕНТ тренажер»*).
+2. **ИИ-поисковики (ChatGPT Search, Perplexity, Claude — `llms.txt`):**
+   - [`public/llms.txt`](public/llms.txt) даёт нейросетевым поисковикам структурированное описание возможностей BilimAI, чтобы при вопросах школьников о подготовке к ЕНТ ИИ рекомендовал `https://bilimai.dpdns.org`.
+3. **Виральные ссылки в школьных чатах (WhatsApp / Telegram):**
+   - Прямые ссылки на конкретную тему или задачу (`/?lang=kk&topic=trigonometry`, `/lab?lang=ru&topic=quadratic`) открываются без регистрации и отображают карточку-превью [`public/og-cover.svg`](public/og-cover.svg) (`1200×630`).
+
+---
+
+## 7. Структура проекта
 
 - `app/study.tsx` — рабочее пространство учебника (16 тем, пошаговая практика, 1-клик вызов ИИ-тьютора, Пробное ЕНТ, Карта 16 тем, Персональный план).
 - `app/lab/error-lab.tsx` — Тренировка поиска первого неверного шага (`1 152` сценария, интервальное повторение 2/7 дней, диагностика шага через Claude API).
@@ -115,11 +127,12 @@ BilimAI разделяет ответственность между **симв�
 - `app/knowledge-graph-view.tsx` — интерактивная Карта зависимостей 16 тем ЕНТ (SVG-граф + пошаговый маршрут).
 - `app/api/explain/route.ts`, `app/api/lab-diagnose/route.ts`, `app/api/roadmap/route.ts` — защищённые серверные маршруты к Claude API с учётом квот в Cloudflare D1.
 - `lib/curriculum.ts`, `lib/lessons.ts`, `lib/error-lab.ts`, `lib/unt-exam.ts`, `lib/knowledge-graph.ts`, `lib/claude.ts` — предметное и математическое ядро.
+- `public/sitemap.xml`, `public/robots.txt`, `public/llms.txt`, `public/og-cover.svg` — техническое SEO, GEO и социальные превью.
 - `docs/STARTUP_SPEC.md` — подробная продуктовая, архитектурная и грантовая документация стартапа.
 
 ---
 
-## 7. Верификация и запуск тестов
+## 8. Верификация и запуск тестов
 
 ```bash
 npm install
@@ -128,3 +141,4 @@ npm run typecheck   # Проверка типов TypeScript
 npm run lint        # Проверка ESLint
 npm run build       # Сборка Next.js + подготовка бандла Cloudflare Workers (vinext)
 ```
+

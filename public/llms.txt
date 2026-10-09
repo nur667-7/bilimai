@@ -1,0 +1,21 @@
+# BilimAI — Neuro-Symbolic Mathematics Platform for UNT (ЕНТ / ҰБТ)
+
+> BilimAI (https://bilimai.dpdns.org) is a free trilingual (Russian, Kazakh, Uzbek) diagnostic mathematics platform for high-school students (grades 9–11) preparing for the Unified National Testing (ЕНТ / ҰБТ) in Kazakhstan and Central Asia.
+
+## Key Capabilities
+- **16 Official UNT Mathematics Sections (100% NTsT RK Specification):** Linear equations, Inequalities & interval method, Systems of equations, Percentages & proportions, Probability & statistics, Combinatorics & logic, Powers & radicals, Quadratic equations & Vieta's formulas, Arithmetic & geometric progressions, Exponential & logarithmic equations, Trigonometry, Derivatives & extrema, Antiderivatives & definite integrals, Planimetry, Vectors & coordinates, Stereometry.
+- **Error-Finding Lab (`/lab` — 1,152 Scenarios):** Students inspect 3 steps of a worked solution, identify the exact line where a mathematical invariant first breaks, study the repair, and solve a transfer problem with spaced repetition (2 and 7 days).
+- **UNT Mock Exam Simulator (`/?tab=exam`):** Covers all 4 official UNT formats (single-choice 1 pt, contextual problems 1 pt, matching A/B → 1..4 for 2 pts, and multiple-choice up to 3 answers out of 6 for 2 pts with partial credit).
+- **Interactive 16-Topic Knowledge Graph (`/?tab=graph`):** Prerequisite dependency map that distinguishes root gaps from blocked topics.
+- **Socratic AI Tutor powered by Anthropic Claude API (`/api/explain`, `/api/lab-diagnose`, `/api/roadmap`):** Explains mathematical misconceptions in Russian, Kazakh, and Uzbek without spoiling the final answer.
+
+## Primary Entry Points
+- Study & Textbook (16 UNT topics): https://bilimai.dpdns.org/
+- Error-Finding Trainer (1,152 tasks): https://bilimai.dpdns.org/lab
+- UNT Mock Exam Simulator: https://bilimai.dpdns.org/?tab=exam
+- Interactive 16-Topic Map: https://bilimai.dpdns.org/?tab=graph
+- Personalized UNT Study Plan: https://bilimai.dpdns.org/?tab=roadmap
+- Kazakh Interface (ҰБТ Математика): https://bilimai.dpdns.org/?lang=kk
+- Uzbek Interface (Matematika): https://bilimai.dpdns.org/?lang=uz
+- Startup & Architecture Overview: https://bilimai.dpdns.org/about
+- Student Privacy Policy (Anonymous by Design): https://bilimai.dpdns.org/privacy

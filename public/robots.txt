@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://bilimai.dpdns.org/sitemap.xml
+Host: https://bilimai.dpdns.org

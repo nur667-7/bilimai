@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#F7F5F0"/>
+  <rect x="44" y="44" width="1112" height="542" rx="18" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="2"/>
+  <rect x="44" y="44" width="10" height="542" rx="4" fill="#1B3B6F"/>
+
+  <!-- Brand Header -->
+  <g transform="translate(96, 88)">
+    <rect width="56" height="56" rx="12" fill="#1B3B6F"/>
+    <path d="M15 17H31L22.4 28L31 39H15" stroke="#F7F5F0" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M35 28H43M39 23.6L43.6 28L39 32.4" stroke="#93C5FD" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="74" y="37" fill="#0F172A" font-family="Georgia, serif" font-size="34" font-weight="700">BilimAI</text>
+    <rect x="220" y="12" width="168" height="32" rx="6" fill="#EDF2F9" stroke="#C9D8EC"/>
+    <text x="236" y="33" fill="#1B3B6F" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1">ЕНТ · ҰБТ · RU/KK/UZ</text>
+  </g>
+
+  <!-- Main Headline -->
+  <text x="96" y="218" fill="#0F172A" font-family="Georgia, serif" font-size="48" font-weight="700">
+    Математика ЕНТ (ҰБТ): 16 разделов
+  </text>
+  <text x="96" y="276" fill="#1B3B6F" font-family="Georgia, serif" font-size="42" font-weight="600">
+    Пошаговый разбор, поиск ошибки и ИИ-тьютор
+  </text>
+
+  <!-- Centerpiece Math Formula Preview -->
+  <rect x="96" y="314" width="1008" height="118" rx="12" fill="#FAF8F4" stroke="#E2DDD3"/>
+  <text x="126" y="352" fill="#57534E" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.2">
+    § ГЛАВНОЕ ПРАВИЛО · ТРЕНИРОВКА ОШИБОК (1 152 СЦЕНАРИЯ) · ПРОБНОЕ ЕНТ
+  </text>
+  <text x="126" y="404" fill="#0F172A" font-family="Georgia, serif" font-size="36">
+    01 →  2(x − 3) = 10   ⇒   2x − 6 = 10   ⇒   x = 8
+  </text>
+
+  <!-- Footer Pills -->
+  <g transform="translate(96, 474)">
+    <rect width="270" height="54" rx="8" fill="#1B3B6F"/>
+    <text x="26" y="34" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="20" font-weight="700">bilimai.dpdns.org</text>
+
+    <rect x="292" y="0" width="320" height="54" rx="8" fill="#EDF2F9" stroke="#C9D8EC"/>
+    <text x="316" y="34" fill="#1B3B6F" font-family="Arial, sans-serif" font-size="18" font-weight="600">Пробное ЕНТ (4 формата)</text>
+
+    <rect x="634" y="0" width="370" height="54" rx="8" fill="#F0FDF4" stroke="#86EFAC"/>
+    <text x="658" y="34" fill="#166534" font-family="Arial, sans-serif" font-size="18" font-weight="600">Сократический ИИ (Claude API)</text>
+  </g>
+</svg>
