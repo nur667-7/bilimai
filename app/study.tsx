@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { z } from "zod";
 import { BookOpen, CheckCircle2, ClipboardCheck, Compass, FlaskConical, GitBranch, RotateCcw, Sparkles } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -282,6 +281,7 @@ export default function Study() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
   const [showExplanations, setShowExplanations] = useState(false);
+  const [practiceNotice, setPracticeNotice] = useState(false);
 
   const [practiceSeed, setPracticeSeed] = useState(0);
   const [transferInput, setTransferInput] = useState("");
@@ -484,8 +484,20 @@ export default function Study() {
     setShowExplanations(false);
   }
 
+  function handleCheckPractice() {
+    if (Object.keys(answers).length < 3) {
+      setPracticeNotice(true);
+      const firstUnanswered = [0, 1, 2].find((idx) => answers[idx] === undefined) ?? 0;
+      const el = document.getElementById(`q${firstUnanswered}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    setPracticeNotice(false);
+    setChecked(true);
+  }
+
   function checkTransfer() {
-    if (parseNumericAnswer(transferInput) === null) {
+    if (!transferInput.trim() || parseNumericAnswer(transferInput) === null) {
       setTransferStatus("invalid");
       return;
     }
@@ -504,7 +516,11 @@ export default function Study() {
   }
 
   async function ask() {
-    if (busy || !adult || !consent || question.trim().length < 3) return;
+    if (busy) return;
+    if (!adult || !consent || question.trim().length < 3) {
+      setError(errorText("input"));
+      return;
+    }
     const version = generation.current;
     controller.current = new AbortController();
     setBusy(true);
@@ -538,7 +554,11 @@ export default function Study() {
   }
 
   async function askRoadmap() {
-    if (rmBusy || !adult || !consent || goalNote.trim().length < 3) return;
+    if (rmBusy) return;
+    if (!adult || !consent || goalNote.trim().length < 3) {
+      setRmError(errorText("input"));
+      return;
+    }
     setRmBusy(true);
     setRmError("");
     setAiRoadmap(null);
@@ -580,18 +600,40 @@ export default function Study() {
   }
 
   return (
-    <>
-      <header className="wrap top">
-        <Link className="brand" href="/">
-          <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-            <rect width="32" height="32" rx="8" fill="#175cd3" />
-            <path d="M9 10h8.5a4.5 4.5 0 0 1 0 9H9V10zm0 9h9.5a4.5 4.5 0 0 1 0 9H9v-9z" fill="#fff" fillOpacity="0.92" />
+    <div className="agy-shell">
+      <header className="wrap top agy-floating-dock">
+        <a className="brand" href="/">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect width="32" height="32" rx="9" fill="url(#agyBrandGrad)" />
+            <path d="M9 10h8.5a4.5 4.5 0 0 1 0 9H9V10zm0 9h9.5a4.5 4.5 0 0 1 0 9H9v-9z" fill="#fff" fillOpacity="0.95" />
+            <defs>
+              <linearGradient id="agyBrandGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#2563eb" />
+                <stop offset="1" stopColor="#4f46e5" />
+              </linearGradient>
+            </defs>
           </svg>
           BilimAI <span className="beta">ЕНТ · ҰБТ</span>
-        </Link>
+        </a>
         <nav className="topnav" aria-label="Навигация">
-          <Link href={`/lab?lang=${lang}`}>{t.openLab}</Link>
-          <Link href="/about">{t.read}</Link>
+          <button
+            type="button"
+            className={`topnav-pill ${tab === "exam" ? "active" : ""}`}
+            onClick={() => setTab("exam")}
+          >
+            <ClipboardCheck size={14} />
+            {t.examTab}
+          </button>
+          <button
+            type="button"
+            className={`topnav-pill ${tab === "graph" ? "active" : ""}`}
+            onClick={() => setTab("graph")}
+          >
+            <GitBranch size={14} />
+            {t.graphTab}
+          </button>
+          <a href={`/lab?lang=${lang}&topic=${topic}`}>{t.openLab}</a>
+          <a href="/about">{t.read}</a>
           <div className="flex gap-1" aria-label="Язык">
             <Button variant={lang === "ru" ? "default" : "ghost"} size="sm" aria-pressed={lang === "ru"} onClick={() => selectLanguage("ru")}>
               RU
@@ -607,16 +649,34 @@ export default function Study() {
       </header>
 
       <main className="wrap">
-        <section className="compact-hero">
+        <section className="compact-hero agy-floating-island">
           <div className="compact-hero-text">
             <span className="eyebrow">{t.eyebrow}</span>
             <h1>{t.title}</h1>
             <p>{t.sub}</p>
           </div>
-          <Link className="cta-pill" href={`/lab?lang=${lang}`}>
-            <FlaskConical size={16} />
-            {t.openLab}
-          </Link>
+          <div className="hero-actions">
+            <button
+              type="button"
+              className={`cta-pill secondary ${tab === "exam" ? "active" : ""}`}
+              onClick={() => setTab("exam")}
+            >
+              <ClipboardCheck size={16} />
+              {t.examTab}
+            </button>
+            <button
+              type="button"
+              className={`cta-pill secondary ${tab === "graph" ? "active" : ""}`}
+              onClick={() => setTab("graph")}
+            >
+              <GitBranch size={16} />
+              {t.graphTab}
+            </button>
+            <a className="cta-pill" href={`/lab?lang=${lang}&topic=${topic}`}>
+              <FlaskConical size={16} />
+              {t.openLab}
+            </a>
+          </div>
         </section>
 
         <div className="mobile-topic-bar">
@@ -625,6 +685,7 @@ export default function Study() {
           </label>
           <select
             id="mobile-lesson-select"
+            name="mobileLessonSelect"
             className="mobile-topic-select"
             value={topic}
             onChange={(e) => selectTopic(e.target.value as TopicId)}
@@ -638,11 +699,12 @@ export default function Study() {
         </div>
 
         <div className="workspace">
-          <aside className="topics">
+          <aside className="topics agy-floating-island">
             <h2>{t.topics}</h2>
             {lessons[lang].map((l, i) => (
               <button
                 key={l.id}
+                type="button"
                 className={`topic ${topic === l.id ? "active" : ""}`}
                 aria-pressed={topic === l.id}
                 onClick={() => selectTopic(l.id)}
@@ -660,7 +722,7 @@ export default function Study() {
             </div>
           </aside>
 
-          <section className="surface" aria-label={lesson.title}>
+          <section className="surface agy-floating-island" aria-label={lesson.title}>
             <div className="lesson-head">
               <div>
                 <h2>{lesson.title}</h2>
@@ -721,10 +783,10 @@ export default function Study() {
                     <Sparkles size={15} />
                     {t.ai}
                   </Button>
-                  <Link className="small font-semibold ml-auto" href={`/lab?lang=${lang}&topic=${topic}`}>
-                    <FlaskConical size={14} className="inline mr-1" />
+                  <a className="cta-pill secondary text-xs ml-auto" href={`/lab?lang=${lang}&topic=${topic}`}>
+                    <FlaskConical size={14} />
                     {t.openLab}
-                  </Link>
+                  </a>
                 </div>
               </TabsContent>
 
@@ -741,10 +803,23 @@ export default function Study() {
                         aria-labelledby={`q${i}`}
                         value={answers[i] ?? ""}
                         disabled={checked}
-                        onValueChange={(v) => setAnswers((prev) => ({ ...prev, [i]: v }))}
+                        onValueChange={(v) => {
+                          setPracticeNotice(false);
+                          setAnswers((prev) => ({ ...prev, [i]: v }));
+                        }}
                       >
                         {q.options.map((option, j) => (
-                          <label className="option" key={option} data-selected={answers[i] === String(j)}>
+                          <label
+                            className="option"
+                            key={option}
+                            data-selected={answers[i] === String(j)}
+                            onClick={() => {
+                              if (!checked) {
+                                setPracticeNotice(false);
+                                setAnswers((prev) => ({ ...prev, [i]: String(j) }));
+                              }
+                            }}
+                          >
                             <RadioGroupItem value={String(j)} id={`q${i}a${j}`} />
                             <span>{option}</span>
                           </label>
@@ -781,6 +856,7 @@ export default function Study() {
                           setAnswers({});
                           setChecked(false);
                           setShowExplanations(false);
+                          setPracticeNotice(false);
                         }}
                       >
                         <RotateCcw size={16} />
@@ -788,12 +864,17 @@ export default function Study() {
                       </Button>
                     </>
                   ) : (
-                    <Button disabled={Object.keys(answers).length !== 3} onClick={() => setChecked(true)}>
+                    <Button onClick={handleCheckPractice}>
                       <CheckCircle2 size={16} />
-                      {t.check}
+                      {t.check} ({Object.keys(answers).length}/3)
                     </Button>
                   )}
                 </div>
+                {practiceNotice && !checked && Object.keys(answers).length < 3 && (
+                  <p role="status" className="feedback wrong">
+                    {t.choose} ({Object.keys(answers).length}/3)
+                  </p>
+                )}
                 <p className="small mt-2">{checked ? (score === 3 ? t.done : t.next) : t.choose}</p>
 
                 <div className="callout mt-6">
@@ -805,6 +886,8 @@ export default function Study() {
                   <p className="lab-task my-2">{transferChallenge.transfer}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     <input
+                      id="transfer-answer-input"
+                      name="transferAnswer"
                       type="text"
                       className="lab-input"
                       value={transferInput}
@@ -816,7 +899,7 @@ export default function Study() {
                         setTransferStatus("");
                       }}
                     />
-                    <Button type="button" size="sm" disabled={!transferInput.trim()} onClick={checkTransfer}>
+                    <Button type="button" size="sm" onClick={checkTransfer}>
                       {t.transferCheck}
                     </Button>
                     <Button
@@ -886,6 +969,7 @@ export default function Study() {
                         className="quick-pill"
                         onClick={() => {
                           setQuestion(qq);
+                          setError("");
                         }}
                       >
                         {qq}
@@ -896,6 +980,7 @@ export default function Study() {
 
                 <form
                   className="ai-form"
+                  noValidate
                   onSubmit={(e) => {
                     e.preventDefault();
                     void ask();
@@ -906,26 +991,28 @@ export default function Study() {
                   </label>
                   <textarea
                     id="learner-question"
+                    name="learnerQuestion"
                     value={question}
                     maxLength={600}
-                    minLength={3}
-                    required
                     placeholder={t.placeholder}
-                    onChange={(e) => setQuestion(e.target.value)}
+                    onChange={(e) => {
+                      setQuestion(e.target.value);
+                      if (error) setError("");
+                    }}
                   />
                   <span className="small">{question.length}/600</span>
-                  <label className="checkline">
+                  <label className="checkline" onClick={() => setError("")}>
                     <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
                     <span>{t.adult}</span>
                   </label>
-                  <label className="checkline">
+                  <label className="checkline" onClick={() => setError("")}>
                     <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
                     <span>
-                      {t.consent} <Link href="/privacy">{t.privacy}</Link>
+                      {t.consent} <a href="/privacy" onClick={(e) => e.stopPropagation()}>{t.privacy}</a>
                     </span>
                   </label>
                   <div>
-                    <Button type="submit" disabled={busy || !adult || !consent || question.trim().length < 3}>
+                    <Button type="submit" disabled={busy}>
                       <Sparkles size={15} />
                       {busy ? t.loading : t.ask}
                     </Button>
@@ -974,7 +1061,7 @@ export default function Study() {
                       .filter((m) => m.phase === 1)
                       .map((m) => (
                         <li key={m.topic}>
-                          <button type="button" className="underline font-medium" onClick={() => selectTopic(m.topic)}>
+                          <button type="button" className="underline font-medium cursor-pointer" onClick={() => selectTopic(m.topic)}>
                             {m.title}
                           </button>{" "}
                           ({m.soloCount}/2)
@@ -987,7 +1074,7 @@ export default function Study() {
                       .filter((m) => m.phase === 2)
                       .map((m) => (
                         <li key={m.topic}>
-                          <button type="button" className="underline font-medium" onClick={() => selectTopic(m.topic)}>
+                          <button type="button" className="underline font-medium cursor-pointer" onClick={() => selectTopic(m.topic)}>
                             {m.title}
                           </button>{" "}
                           ({m.soloCount}/2)
@@ -998,15 +1085,18 @@ export default function Study() {
 
                 <form
                   className="ai-form"
+                  noValidate
                   onSubmit={(e) => {
                     e.preventDefault();
                     void askRoadmap();
                   }}
                 >
                   <div className="flex flex-wrap gap-4">
-                    <label className="flex flex-col gap-1 text-sm font-semibold">
+                    <label htmlFor="target-score-input" className="flex flex-col gap-1 text-sm font-semibold">
                       <span>{t.rmTarget}</span>
                       <input
+                        id="target-score-input"
+                        name="targetScore"
                         type="number"
                         min={20}
                         max={50}
@@ -1015,9 +1105,11 @@ export default function Study() {
                         onChange={(e) => setTargetScore(Math.max(20, Math.min(50, Number(e.target.value) || 40)))}
                       />
                     </label>
-                    <label className="flex flex-col gap-1 text-sm font-semibold">
+                    <label htmlFor="weeks-left-input" className="flex flex-col gap-1 text-sm font-semibold">
                       <span>{t.rmWeeks}</span>
                       <input
+                        id="weeks-left-input"
+                        name="weeksLeft"
                         type="number"
                         min={1}
                         max={24}
@@ -1056,6 +1148,7 @@ export default function Study() {
                           className="quick-pill"
                           onClick={() => {
                             setGoalNote(preset);
+                            setRmError("");
                           }}
                         >
                           {preset}
@@ -1069,28 +1162,30 @@ export default function Study() {
                   </label>
                   <textarea
                     id="roadmap-goal"
+                    name="roadmapGoal"
                     value={goalNote}
                     maxLength={400}
-                    minLength={3}
-                    required
                     placeholder={t.rmGoalPlaceholder}
-                    onChange={(e) => setGoalNote(e.target.value)}
+                    onChange={(e) => {
+                      setGoalNote(e.target.value);
+                      if (rmError) setRmError("");
+                    }}
                   />
                   <span className="small">{goalNote.length}/400</span>
 
-                  <label className="checkline">
+                  <label className="checkline" onClick={() => setRmError("")}>
                     <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
                     <span>{t.adult}</span>
                   </label>
-                  <label className="checkline">
+                  <label className="checkline" onClick={() => setRmError("")}>
                     <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
                     <span>
-                      {t.consent} <Link href="/privacy">{t.privacy}</Link>
+                      {t.consent} <a href="/privacy" onClick={(e) => e.stopPropagation()}>{t.privacy}</a>
                     </span>
                   </label>
 
                   <div>
-                    <Button type="submit" disabled={rmBusy || !adult || !consent || goalNote.trim().length < 3}>
+                    <Button type="submit" disabled={rmBusy}>
                       <Compass size={15} />
                       {rmBusy ? t.loading : t.rmGenerate}
                     </Button>
@@ -1132,14 +1227,14 @@ export default function Study() {
           </section>
         </div>
       </main>
-      <footer className="wrap foot">
+      <footer className="wrap foot agy-floating-dock">
         <span>{t.foot}</span>
         <div>
-          <Link href={`/lab?lang=${lang}`}>{t.openLab}</Link>
-          <Link href="/about">{t.read}</Link>
-          <Link href="/privacy">{t.privacy}</Link>
+          <a href={`/lab?lang=${lang}&topic=${topic}`}>{t.openLab}</a>
+          <a href="/about">{t.read}</a>
+          <a href="/privacy">{t.privacy}</a>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

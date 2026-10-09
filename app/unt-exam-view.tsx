@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Link from "next/link";
 import {
   AlertTriangle,
   Bookmark,
@@ -614,13 +613,13 @@ export function UntExamView({
                 >
                   {t.openLessonBtn}
                 </Button>
-                <Link
+                <a
                   className="cta-pill text-xs py-1 px-2.5"
                   href={`/lab?lang=${lang}&topic=${currentQuestion.topic}`}
                 >
                   <FlaskConical size={13} />
                   {t.openLabBtn}
-                </Link>
+                </a>
               </div>
             </div>
             <p className="small mb-1.5">

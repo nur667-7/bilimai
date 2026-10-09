@@ -1,10 +1,8 @@
-import Link from "next/link";
-
 export default function Privacy() {
   return (
-    <main className="document">
-      <Link href="/">← BilimAI · к урокам и практике</Link>
-      <div className="document-card">
+    <main className="document agy-shell">
+      <a href="/">← BilimAI · к урокам и практике</a>
+      <div className="document-card agy-floating-island">
         <span className="eyebrow">Приватность и данные · 18+</span>
         <h1>Данные и приватность</h1>
         <p>

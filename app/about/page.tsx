@@ -1,11 +1,9 @@
-import Link from "next/link";
-
 export default function About() {
   return (
-    <main className="document">
-      <Link href="/">← BilimAI · к урокам и практике</Link>
+    <main className="document agy-shell">
+      <a href="/">← BilimAI · к урокам и практике</a>
 
-      <div className="document-card">
+      <div className="document-card agy-floating-island">
         <span className="eyebrow">О проекте · RU / EN</span>
         <h1>BilimAI — диагностическая подготовка к ЕНТ (ҰБТ) по математике</h1>
         <p>
@@ -24,7 +22,7 @@ export default function About() {
           </li>
           <li>
             <strong>
-              Лаборатория ошибок (<Link href="/lab">/lab</Link> — по 24 упражнения в каждой теме):
+              Лаборатория ошибок (<a href="/lab">/lab</a> — по 24 упражнения в каждой теме):
             </strong>{" "}
             ученик анализирует 3 шага готового решения, находит строку, где впервые нарушено правило, изучает корректный переход и
             решает задачу на перенос с интервальным повторением (через 2 и 7 дней).
@@ -56,7 +54,7 @@ export default function About() {
           </li>
           <li>
             <strong>Адрес платформы:</strong> <a href="https://bilimai.dpdns.org">https://bilimai.dpdns.org</a> (Лаборатория:{" "}
-            <Link href="/lab">/lab</Link>)
+            <a href="/lab">/lab</a>)
           </li>
           <li>
             <strong>Открытый репозиторий и тесты:</strong>{" "}

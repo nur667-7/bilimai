@@ -1624,7 +1624,314 @@ summary:focus-visible {
   border-color: #fda29b;
 }
 
+/* ==========================================================================
+   Floating Antigravity Design System ("Летающий Антигравити")
+   Unanchored glassmorphic islands, weightless multi-layer elevation,
+   and spring micro-levitation across all interactive controls.
+   ========================================================================== */
+body {
+  background-color: #f3f7ff;
+  background-image:
+    radial-gradient(920px circle at 10% -5%, rgba(37, 99, 235, 0.13), transparent 60%),
+    radial-gradient(860px circle at 92% 6%, rgba(99, 102, 241, 0.11), transparent 58%),
+    radial-gradient(780px circle at 50% 98%, rgba(14, 165, 233, 0.09), transparent 62%),
+    radial-gradient(rgba(20, 60, 219, 0.065) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 24px 24px;
+  background-attachment: fixed;
+}
+
+.agy-shell {
+  min-height: 100vh;
+  padding-bottom: 24px;
+}
+
+.top.agy-floating-dock {
+  margin: 10px auto 0;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 16px 36px -10px rgba(15, 23, 42, 0.08),
+    0 4px 12px -2px rgba(20, 60, 219, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  position: sticky;
+  top: 8px;
+  z-index: 40;
+  transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.foot.agy-floating-dock {
+  margin: 24px auto 8px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  box-shadow:
+    0 18px 40px -12px rgba(15, 23, 42, 0.075),
+    0 4px 12px -2px rgba(20, 60, 219, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.agy-floating-island,
+.topics,
+.surface,
+.document-card {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(226, 234, 248, 0.92);
+  border-radius: 22px;
+  box-shadow:
+    0 24px 52px -14px rgba(15, 23, 42, 0.085),
+    0 8px 22px -6px rgba(20, 60, 219, 0.055),
+    0 1px 3px rgba(15, 23, 42, 0.035),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s ease;
+}
+
+.compact-hero.agy-floating-island {
+  margin: 8px 0 10px;
+  padding: 11px 18px;
+  border-radius: 20px;
+  gap: 12px;
+}
+
+.compact-hero-text {
+  flex: 1 1 380px;
+  min-width: 0;
+}
+
+.compact-hero.agy-floating-island h1 {
+  font-size: clamp(18px, 1.9vw, 22.5px);
+  line-height: 1.18;
+  margin: 0 0 3px;
+}
+
+.compact-hero.agy-floating-island p {
+  font-size: 13px;
+  line-height: 1.38;
+  max-width: 610px;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.cta-pill {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #175cd3 0%, #2563eb 55%, #3b82f6 100%);
+  color: #ffffff;
+  padding: 7px 13px;
+  min-height: 36px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow:
+    0 10px 24px -6px rgba(23, 92, 211, 0.42),
+    0 2px 6px rgba(23, 92, 211, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.2s ease;
+}
+
+.cta-pill:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px -6px rgba(23, 92, 211, 0.52),
+    0 4px 10px rgba(23, 92, 211, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  filter: brightness(1.03);
+}
+
+.cta-pill:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.cta-pill.secondary {
+  background: rgba(255, 255, 255, 0.92);
+  color: #143cdb;
+  border: 1px solid rgba(197, 214, 251, 0.95);
+  box-shadow:
+    0 8px 20px -6px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.cta-pill.secondary:hover {
+  background: #ffffff;
+  color: #1031b5;
+  border-color: #93c5fd;
+  box-shadow:
+    0 12px 26px -6px rgba(20, 60, 219, 0.16),
+    inset 0 1px 0 #ffffff;
+}
+
+.topnav-pill,
+.topnav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 650;
+  font-size: 13px;
+  text-decoration: none;
+  padding: 6px 12px;
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  background: rgba(241, 245, 249, 0.85);
+  color: #1e293b;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.topnav-pill:hover,
+.topnav a:hover {
+  transform: translateY(-1.5px);
+  background: #ffffff;
+  border-color: #93c5fd;
+  color: #143cdb;
+  box-shadow: 0 6px 16px -4px rgba(20, 60, 219, 0.14);
+}
+
+.topnav-pill.active {
+  background: linear-gradient(135deg, #175cd3 0%, #2563eb 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 6px 16px -3px rgba(23, 92, 211, 0.38);
+}
+
+.topnav-pill.accent {
+  background: rgba(232, 240, 254, 0.95);
+  color: #143cdb;
+  border-color: rgba(147, 197, 253, 0.85);
+}
+
+.tabsbar {
+  background: rgba(238, 242, 249, 0.85) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(203, 213, 225, 0.75);
+  border-radius: 16px !important;
+  padding: 5px !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.tabsbar [data-slot="tabs-trigger"] {
+  border-radius: 11px !important;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.tabsbar [data-slot="tabs-trigger"]:hover:not([data-state="active"]) {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.72);
+  color: #0f172a;
+}
+
+.tabsbar [data-slot="tabs-trigger"][data-state="active"] {
+  background: linear-gradient(135deg, #175cd3 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow:
+    0 8px 18px -4px rgba(23, 92, 211, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.agy-btn,
+.topic,
+.option,
+.lab-step,
+.quick-pill,
+.exam-option-btn,
+.exam-nav-cell,
+.exam-match-num-btn,
+.kg-link-pill,
+.kg-step-card {
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.agy-btn:hover:not(:disabled),
+.option:hover,
+.lab-step:hover:not(:disabled),
+.quick-pill:hover,
+.exam-option-btn:hover:not(:disabled),
+.exam-nav-cell:hover,
+.kg-link-pill:hover,
+.kg-step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -6px rgba(15, 23, 42, 0.1), 0 3px 8px -2px rgba(20, 60, 219, 0.07);
+}
+
+.agy-btn:active:not(:disabled),
+.topic:active,
+.option:active,
+.lab-step:active:not(:disabled),
+.quick-pill:active,
+.exam-option-btn:active:not(:disabled),
+.exam-nav-cell:active,
+.kg-link-pill:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.topic {
+  border-radius: 13px;
+}
+
+.topic:hover:not(.active) {
+  transform: translateX(3px);
+  background: rgba(238, 242, 249, 0.9);
+}
+
+.topic.active {
+  background: linear-gradient(135deg, rgba(232, 240, 254, 0.95) 0%, rgba(219, 234, 254, 0.85) 100%);
+  border-color: rgba(147, 197, 253, 0.9);
+  box-shadow: 0 8px 18px -6px rgba(20, 60, 219, 0.16);
+}
+
+.option,
+.lab-step,
+.exam-question-card,
+.kg-inspector {
+  border-radius: 14px;
+}
+
 @media (max-width: 820px) {
+  .top.agy-floating-dock,
+  .foot.agy-floating-dock {
+    border-radius: 20px;
+    padding: 10px 14px;
+  }
+  .compact-hero.agy-floating-island {
+    padding: 12px 15px;
+    border-radius: 18px;
+  }
   .kg-workspace {
     grid-template-columns: 1fr;
   }
@@ -1646,3 +1953,4 @@ summary:focus-visible {
     transition: none !important;
   }
 }
+

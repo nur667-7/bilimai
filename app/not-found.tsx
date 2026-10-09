@@ -1,9 +1,7 @@
-import Link from "next/link";
-
 export default function NotFound() {
   return (
-    <main className="document">
-      <div className="document-card">
+    <main className="document agy-shell">
+      <div className="document-card agy-floating-island">
         <span className="eyebrow">404 · Страница не найдена / Бет табылмады</span>
         <h1>Такой страницы нет</h1>
         <p>
@@ -13,12 +11,12 @@ export default function NotFound() {
           Бұл бет табылмады. Негізгі сабақтарға немесе қателер зертханасына оралыңыз. · Sahifa topilmadi.
         </p>
         <div className="actions">
-          <Link href="/" className="btn-link primary">
+          <a href="/" className="btn-link primary">
             Перейти к урокам и практике →
-          </Link>
-          <Link href="/lab" className="btn-link outline">
+          </a>
+          <a href="/lab" className="btn-link outline">
             Открыть тренировку ошибок (/lab)
-          </Link>
+          </a>
         </div>
       </div>
     </main>

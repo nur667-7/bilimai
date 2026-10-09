@@ -1,6 +1,5 @@
 "use client";
 import { useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import {
   AlertTriangle,
   BookOpen,
@@ -757,14 +756,14 @@ export function KnowledgeGraphView({
                         <BookOpen size={13} />
                         {t.btnLesson}
                       </Button>
-                      <Link
+                      <a
                         className="cta-pill text-xs py-1 px-2.5"
                         href={`/lab?lang=${lang}&topic=${step.topic}`}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <FlaskConical size={13} />
                         {t.btnLab}
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 );
@@ -918,13 +917,13 @@ export function KnowledgeGraphView({
               <BookOpen size={14} />
               {t.btnLesson}
             </Button>
-            <Link
+            <a
               className="cta-pill text-xs py-1.5 px-3"
               href={`/lab?lang=${lang}&topic=${activeNode.id}`}
             >
               <FlaskConical size={14} />
               {t.btnLab}
-            </Link>
+            </a>
             <Button type="button" size="sm" variant="outline" onClick={onOpenExam}>
               <CheckCircle2 size={14} />
               {t.btnExam}

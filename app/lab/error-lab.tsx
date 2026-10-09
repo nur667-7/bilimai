@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,6 +29,7 @@ const labels = {
     find: "1. Найди первый неверный шаг в решении",
     check: "Проверить выбранный шаг",
     choose: "Шаги решения задачи",
+    selectFirst: "Сначала выберите одну из строк 1–3, где впервые нарушено правило.",
     miss: "Это не первый неверный шаг. Проверь переходы по порядку сверху вниз.",
     reason: "Почему это ошибка",
     repair: "Корректный математический переход",
@@ -63,6 +63,7 @@ const labels = {
     aiNextHint: "Ориентир для задачи:",
     aiAdult: "Мне исполнилось 18 лет.",
     aiConsent: "Согласен отправить условие текущей задачи для получения подсказки.",
+    aiConsentRequired: "Отметьте обе галочки (18+ и согласие на отправку условия задачи), чтобы получить разбор.",
     aiError: "Не удалось получить подсказку. Проверьте галочки согласия или попробуйте снова.",
     privacyLink: "Приватность",
     aboutLink: "О проекте",
@@ -79,6 +80,7 @@ const labels = {
     find: "1. Шешімдегі алғашқы қате қадамды тап",
     check: "Қадамды тексеру",
     choose: "Есептің шешу қадамдары",
+    selectFirst: "Алдымен ереже алғаш бұзылған 1–3 жолдардың бірін таңдаңыз.",
     miss: "Бұл алғашқы қате қадам емес. Қадамдарды жоғарыдан төмен қарай ретімен тексеріңіз.",
     reason: "Бұл неге қате",
     repair: "Дұрыс математикалық жол",
@@ -112,6 +114,7 @@ const labels = {
     aiNextHint: "Есепке бағыт:",
     aiAdult: "Мен 18 жасқа толдым.",
     aiConsent: "Көмек алу үшін ағымдағы есеп шартын жіберуге келісемін.",
+    aiConsentRequired: "Талдау алу үшін екі келісім белгісін де (18+ және шартты жіберу) қойыңыз.",
     aiError: "Көмек алынбады. Келісім белгілерін тексеріңіз немесе қайталап көріңіз.",
     privacyLink: "Құпиялық",
     aboutLink: "Жоба туралы",
@@ -128,6 +131,7 @@ const labels = {
     find: "1. Yechimdagi birinchi xato qadamni top",
     check: "Qadamni tekshirish",
     choose: "Masalani yechish qadamlari",
+    selectFirst: "Avval qoida birinchi marta buzilgan 1–3 qatorlardan birini tanlang.",
     miss: "Bu birinchi xato qadam emas. Qadamlarni yuqoridan pastga tartib bilan tekshiring.",
     reason: "Nega bu xato",
     repair: "To‘g‘ri matematik o‘tish",
@@ -161,6 +165,7 @@ const labels = {
     aiNextHint: "Masala uchun yo‘nalish:",
     aiAdult: "Men 18 yoshga to‘lganman.",
     aiConsent: "Yordam olish uchun joriy masala shartini yuborishga roziman.",
+    aiConsentRequired: "Tahlil olish uchun ikkala rozilik belgisini (18+ va shartni yuborish) belgilang.",
     aiError: "Yordam olinmadi. Rozilik belgilarini tekshiring yoki qayta urinib ko‘ring.",
     privacyLink: "Maxfiylik",
     aboutLink: "Loyiha haqida",
@@ -216,6 +221,7 @@ export default function ErrorLab() {
   const [selection, setSelection] = useState<number | null>(null);
   const [found, setFound] = useState(false);
   const [stepWrong, setStepWrong] = useState(false);
+  const [stepNotice, setStepNotice] = useState(false);
   const [stepMistakes, setStepMistakes] = useState(0);
   const [input, setInput] = useState("");
   const [hints, setHints] = useState(0);
@@ -293,6 +299,7 @@ export default function ErrorLab() {
     setSelection(null);
     setFound(false);
     setStepWrong(false);
+    setStepNotice(false);
     setStepMistakes(0);
     setInput("");
     setHints(0);
@@ -314,7 +321,11 @@ export default function ErrorLab() {
   }
 
   async function requestAiDiagnosis() {
-    if (aiBusy || !adult || !consent) return;
+    if (aiBusy) return;
+    if (!adult || !consent) {
+      setAiError(t.aiConsentRequired);
+      return;
+    }
     setAiBusy(true);
     setAiError("");
     setUsedAi(true);
@@ -401,18 +412,18 @@ export default function ErrorLab() {
   const schedule = reviewSchedule(progress, now);
 
   return (
-    <>
-      <header className="wrap top">
-        <Link className="brand" href="/">
+    <div className="agy-shell">
+      <header className="wrap top agy-floating-dock">
+        <a className="brand" href="/">
           <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
             <rect width="32" height="32" rx="8" fill="#175cd3" />
             <path d="M9 10h8.5a4.5 4.5 0 0 1 0 9H9V10zm0 9h9.5a4.5 4.5 0 0 1 0 9H9v-9z" fill="#fff" fillOpacity="0.92" />
           </svg>
           BilimAI <span className="beta">LAB</span>
-        </Link>
+        </a>
         <nav className="topnav" aria-label="Language">
-          <Link href="/">{t.back}</Link>
-          <Link href="/about">{t.aboutLink}</Link>
+          <a href="/" className="topnav-pill">{t.back}</a>
+          <a href="/about">{t.aboutLink}</a>
           <div className="flex gap-1">
             {(["ru", "kk", "uz"] as Language[]).map((l) => (
               <Button key={l} size="sm" variant={lang === l ? "default" : "ghost"} aria-pressed={lang === l} onClick={() => setLang(l)}>
@@ -424,7 +435,7 @@ export default function ErrorLab() {
       </header>
 
       <main className="wrap">
-        <section className="compact-hero">
+        <section className="compact-hero agy-floating-island">
           <div className="compact-hero-text">
             <span className="eyebrow">{t.tag}</span>
             <h1>{t.title}</h1>
@@ -438,6 +449,7 @@ export default function ErrorLab() {
           </label>
           <select
             id="mobile-lab-select"
+            name="mobileLabTopic"
             className="mobile-topic-select"
             value={topic}
             onChange={(e) => changeTopic(e.target.value as LabTopic)}
@@ -451,7 +463,7 @@ export default function ErrorLab() {
         </div>
 
         <div className="lab-layout">
-          <section className="surface">
+          <section className="surface agy-floating-island">
             <div className="lab-topics lab-topics-desktop">
               {labTopics.map((id) => (
                 <Button key={id} size="sm" variant={id === topic ? "default" : "outline"} aria-pressed={topic === id} onClick={() => changeTopic(id)}>
@@ -471,12 +483,14 @@ export default function ErrorLab() {
               {c.steps.map((step, i) => (
                 <button
                   key={i}
+                  type="button"
                   disabled={found}
                   className={`lab-step ${selection === i ? "selected" : ""}`}
                   aria-pressed={selection === i}
                   onClick={() => {
                     setSelection(i);
                     setStepWrong(false);
+                    setStepNotice(false);
                   }}
                 >
                   <span className="step-number">{i + 1}</span>
@@ -487,8 +501,12 @@ export default function ErrorLab() {
             {!found && (
               <div className="actions">
                 <Button
-                  disabled={selection === null}
                   onClick={() => {
+                    if (selection === null) {
+                      setStepNotice(true);
+                      return;
+                    }
+                    setStepNotice(false);
                     if (selection === c.wrongStep) {
                       setFound(true);
                       setStepWrong(false);
@@ -508,6 +526,11 @@ export default function ErrorLab() {
                 )}
               </div>
             )}
+            {stepNotice && !found && selection === null && (
+              <p className="feedback wrong" role="status">
+                {t.selectFirst}
+              </p>
+            )}
             {stepWrong && (
               <p className="feedback wrong" role="status">
                 {t.miss}
@@ -518,20 +541,32 @@ export default function ErrorLab() {
               <div className="callout mt-3">
                 <strong className="block text-sm mb-2">{t.aiToggle}</strong>
                 <label className="checkline">
-                  <Checkbox checked={adult} onCheckedChange={(v) => setAdult(v === true)} />
+                  <Checkbox
+                    checked={adult}
+                    onCheckedChange={(v) => {
+                      setAdult(v === true);
+                      setAiError("");
+                    }}
+                  />
                   <span>{t.aiAdult}</span>
                 </label>
                 <label className="checkline mt-1">
-                  <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
+                  <Checkbox
+                    checked={consent}
+                    onCheckedChange={(v) => {
+                      setConsent(v === true);
+                      setAiError("");
+                    }}
+                  />
                   <span>
-                    {t.aiConsent} <Link href="/privacy">{t.privacyLink}</Link>
+                    {t.aiConsent} <a href="/privacy">{t.privacyLink}</a>
                   </span>
                 </label>
                 <div className="mt-2">
                   <Button
                     type="button"
                     size="sm"
-                    disabled={aiBusy || !adult || !consent}
+                    disabled={aiBusy}
                     onClick={() => void requestAiDiagnosis()}
                   >
                     <Sparkles size={14} />
@@ -580,6 +615,7 @@ export default function ErrorLab() {
                   </label>
                   <input
                     id="lab-answer"
+                    name="labAnswer"
                     className="lab-input"
                     value={input}
                     maxLength={48}
@@ -595,7 +631,7 @@ export default function ErrorLab() {
                     {t.format}
                   </p>
                   <div className="actions">
-                    <Button type="submit" disabled={!input.trim() || solved || revealed}>
+                    <Button type="submit" disabled={solved || revealed}>
                       {t.verify}
                     </Button>
                     <Button type="button" variant="outline" disabled={hints >= 3 || solved || revealed} onClick={() => setHints((v) => v + 1)}>
@@ -649,7 +685,7 @@ export default function ErrorLab() {
             )}
           </section>
 
-          <aside className="surface lab-progress">
+          <aside className="surface lab-progress agy-floating-island">
             <h2>{t.progress}</h2>
             {progress.records.length === 0 ? (
               <div className="callout my-2">
@@ -707,7 +743,13 @@ export default function ErrorLab() {
 
             <div className="flex flex-col gap-2 mt-3">
               <label className="checkline my-1">
-                <input type="checkbox" checked={persist} onChange={(e) => setPersist(e.target.checked)} />
+                <input
+                  id="persist-checkbox"
+                  name="persistProgress"
+                  type="checkbox"
+                  checked={persist}
+                  onChange={(e) => setPersist(e.target.checked)}
+                />
                 <span>{t.memory}</span>
               </label>
               <p className="small m-0">{t.privacy}</p>
@@ -730,14 +772,14 @@ export default function ErrorLab() {
           </aside>
         </div>
       </main>
-      <footer className="wrap foot">
+      <footer className="wrap foot agy-floating-dock">
         <span>{t.static}</span>
         <div>
-          <Link href="/">{t.back}</Link>
-          <Link href="/about">{t.aboutLink}</Link>
-          <Link href="/privacy">{t.privacyLink}</Link>
+          <a href="/">{t.back}</a>
+          <a href="/about">{t.aboutLink}</a>
+          <a href="/privacy">{t.privacyLink}</a>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

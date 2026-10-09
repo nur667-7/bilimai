@@ -23,6 +23,13 @@ const eslintConfig = defineConfig([
       "react-hooks/set-state-in-effect": "off",
     },
   },
+  {
+    rules: {
+      // vinext's bundled next/link throws `TypeError: f is not a function` on RSC
+      // prefetch/transition in React 19; native <a> tags provide deterministic navigation.
+      "@next/next/no-html-link-for-pages": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
