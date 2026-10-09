@@ -1,12 +1,30 @@
 import type { Metadata } from "next";
-import Study from "@/app/study";
+import type { Language } from "@/lib/curriculum";
+import WelcomeClient from "./welcome-client";
 
 export const metadata: Metadata = {
-  title: "BilimAI — Единая ИИ-экосистема ЕНТ (ҰБТ) · 12 предметов × 10 вариантов",
+  title: "Обзор платформы и выбор предмета ЕНТ (ҰБТ)",
   description:
-    "Все 12 предметов ЕНТ (НЦТ РК): 10 полных вариантов по 40 вопросов (50 баллов) на каждый предмет, построчный Рентген черновика, 1 152 задачи на поиск ошибок, граф знаний и 6 научных методик обучения."
+    "Интерактивный обзор BilimAI: попробуйте найти ошибку в решении без регистрации и выберите любой из 12 официальных предметов ЕНТ (НЦТ РК — 10, 20 или 40 заданий).",
+  alternates: {
+    canonical: "https://bilimai.dpdns.org/welcome",
+    languages: {
+      ru: "https://bilimai.dpdns.org/welcome?lang=ru",
+      kk: "https://bilimai.dpdns.org/welcome?lang=kk",
+      uz: "https://bilimai.dpdns.org/welcome?lang=uz"
+    }
+  }
 };
 
-export default function WelcomePage() {
-  return <Study initialWelcomeOpen={true} />;
+export default async function WelcomePage({
+  searchParams
+}: {
+  searchParams?: Promise<{ lang?: string }>;
+}) {
+  const resolved = searchParams ? await searchParams : {};
+  const rawLang = resolved?.lang;
+  const initialLang: Language =
+    rawLang === "kk" || rawLang === "uz" || rawLang === "ru" ? rawLang : "ru";
+
+  return <WelcomeClient initialLang={initialLang} />;
 }

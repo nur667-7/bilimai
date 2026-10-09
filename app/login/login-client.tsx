@@ -1,0 +1,237 @@
+"use client";
+import { useState } from "react";
+import { ArrowRight, GraduationCap, UserCheck } from "lucide-react";
+import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
+import type { Language } from "@/lib/curriculum";
+import {
+  createDemoProfile,
+  loadUserProfile,
+  saveUserProfile,
+  type UserProfile
+} from "@/lib/user-profile";
+
+const loginCopy = {
+  ru: {
+    title: "Вход в BilimAI",
+    sub: "Локальный профиль сохраняет прогресс по темам, историю пробных вариантов ЕНТ и настройки плана в этом браузере.",
+    tryWithoutAuth: "Попробовать без регистрации →",
+    idLabel: "Email или ID ученика",
+    idPlaceholder: "student@bilimai.dpdns.org или 1001",
+    passLabel: "Пароль",
+    passPlaceholder: "Минимум 6 символов",
+    submitBtn: "Войти в кабинет",
+    demoTitle: "Быстрый демо-профиль (1 клик, без пароля)",
+    demoStudent: "Ученик 11 кл. (ID 1001)",
+    demoTeacher: "Учитель математики",
+    noAccount: "Нет профиля?",
+    registerLink: "Создать профиль",
+    backHome: "← К занятиям",
+    privacyNote: "Тренажёр полностью доступен без входа. Подробнее в",
+    privacyLink: "политике конфиденциальности"
+  },
+  kk: {
+    title: "BilimAI жүйесіне кіру",
+    sub: "Жергілікті профиль тақырыптар бойынша прогресті, ҰБТ нұсқаларының тарихын және жоспар баптауларын осы браузерде сақтайды.",
+    tryWithoutAuth: "Тіркеусіз байқап көру →",
+    idLabel: "Email немесе оқушы ID-і",
+    idPlaceholder: "student@bilimai.dpdns.org немесе 1001",
+    passLabel: "Құпиясөз",
+    passPlaceholder: "Кемінде 6 таңба",
+    submitBtn: "Кабинетке кіру",
+    demoTitle: "Жылдам демо-профиль (1 басу, құпиясөзсіз)",
+    demoStudent: "11-сынып оқушысы (ID 1001)",
+    demoTeacher: "Математика мұғалімі",
+    noAccount: "Профиліңіз жоқ па?",
+    registerLink: "Профиль ашу",
+    backHome: "← Сабақтарға",
+    privacyNote: "Тренажер кірусіз де толық қолжетімді. Толығырақ:",
+    privacyLink: "құпиялылық саясаты"
+  },
+  uz: {
+    title: "BilimAI ga kirish",
+    sub: "Mahalliy profil mavzular bo‘yicha progressni, sinov variantlari tarixini va reja sozlamalarini shu brauzerda saqlaydi.",
+    tryWithoutAuth: "Ro‘yxatdan o‘tmasdan sinab ko‘rish →",
+    idLabel: "Email yoki o‘quvchi ID raqami",
+    idPlaceholder: "student@bilimai.dpdns.org yoki 1001",
+    passLabel: "Parol",
+    passPlaceholder: "Kamida 6 belgi",
+    submitBtn: "Kabinetga kirish",
+    demoTitle: "Tezkor demo-profil (1 bosish, parolsiz)",
+    demoStudent: "11-sinf o‘quvchisi (ID 1001)",
+    demoTeacher: "Matematika o‘qituvchisi",
+    noAccount: "Profilingiz yo‘qmi?",
+    registerLink: "Profil yaratish",
+    backHome: "← Mashg‘ulotlarga",
+    privacyNote: "Trenajyor ro‘yxatdan o‘tmasdan ham to‘liq ishlaydi. Batafsil:",
+    privacyLink: "maxfiylik siyosati"
+  }
+} as const;
+
+export function LoginClient({ initialLang = "ru" }: { initialLang?: Language }) {
+  const { dark, toggleTheme } = useAniqTheme();
+  const [lang, setLang] = useState<Language>(initialLang);
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+
+  const c = loginCopy[lang];
+
+  function handleLangChange(nextLang: Language) {
+    setLang(nextLang);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", nextLang);
+      window.history.replaceState({}, "", url.toString());
+    }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const existing = loadUserProfile();
+    const trimmed = identifier.trim() || "1001";
+    const isTeacher =
+      trimmed.toLowerCase().includes("teacher") || trimmed.toLowerCase().includes("ustaz");
+    const profile: UserProfile =
+      existing && existing.identifier === trimmed
+        ? existing
+        : {
+            ...createDemoProfile(isTeacher ? "teacher" : "student", lang),
+            identifier: trimmed,
+            name: trimmed.includes("@")
+              ? trimmed.split("@")[0]
+              : isTeacher
+                ? "Учитель математики"
+                : `Абитуриент #${trimmed}`
+          };
+    saveUserProfile(profile);
+    window.location.href = `/?lang=${lang}`;
+  }
+
+  function handleDemoLogin(role: "student" | "teacher") {
+    const profile = createDemoProfile(role, lang);
+    saveUserProfile(profile);
+    window.location.href = `/?lang=${lang}`;
+  }
+
+  return (
+    <main className="aniq-auth-shell">
+      <div className="aniq-auth-topbar">
+        <a href={`/?lang=${lang}`} className="aniq-btn aniq-btn-ghost text-xs">
+          {c.backHome}
+        </a>
+        <div className="flex items-center gap-2">
+          <div className="lang-switcher" role="group" aria-label="Язык">
+            {(["ru", "kk", "uz"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                className={`lang-btn ${lang === l ? "active" : ""}`}
+                onClick={() => handleLangChange(l)}
+              >
+                {l === "ru" ? "РУС" : l === "kk" ? "ҚАЗ" : "OʻZB"}
+              </button>
+            ))}
+          </div>
+          <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
+        </div>
+      </div>
+
+      <div className="aniq-auth-container">
+        <div className="aniq-auth-card">
+          <div className="aniq-auth-header-row">
+            <a className="aniq-brand-logo" href={`/?lang=${lang}`}>
+              <span className="aniq-logo-badge">B</span>
+              <span>
+                Bilim<span className="text-brand">AI</span>
+              </span>
+              <span className="brand-sub">ЕНТ · ҰБТ</span>
+            </a>
+            <a href={`/?lang=${lang}`} className="aniq-auth-skip-link">
+              {c.tryWithoutAuth}
+            </a>
+          </div>
+
+          <h1 className="aniq-auth-title">{c.title}</h1>
+          <p className="aniq-auth-sub">{c.sub}</p>
+
+          <form onSubmit={handleSubmit} className="aniq-auth-form">
+            <div className="aniq-field-group">
+              <label htmlFor="login-identifier" className="aniq-label">
+                {c.idLabel}
+              </label>
+              <input
+                id="login-identifier"
+                type="text"
+                required
+                autoComplete="username"
+                placeholder={c.idPlaceholder}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                className="aniq-input"
+              />
+            </div>
+
+            <div className="aniq-field-group">
+              <label htmlFor="login-password" className="aniq-label">
+                {c.passLabel}
+              </label>
+              <input
+                id="login-password"
+                type="password"
+                required
+                autoComplete="current-password"
+                placeholder={c.passPlaceholder}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="aniq-input"
+              />
+            </div>
+
+            <button type="submit" className="aniq-btn aniq-btn-primary w-full justify-center">
+              {c.submitBtn}
+              <ArrowRight size={16} />
+            </button>
+          </form>
+
+          <div className="aniq-demo-divider">
+            <span>{c.demoTitle}</span>
+          </div>
+
+          <div className="aniq-demo-buttons">
+            <button
+              type="button"
+              onClick={() => handleDemoLogin("student")}
+              className="aniq-btn aniq-btn-secondary w-full justify-center text-xs"
+            >
+              <GraduationCap size={15} />
+              {c.demoStudent}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDemoLogin("teacher")}
+              className="aniq-btn aniq-btn-secondary w-full justify-center text-xs"
+            >
+              <UserCheck size={15} />
+              {c.demoTeacher}
+            </button>
+          </div>
+
+          <div className="aniq-auth-footer">
+            <div>
+              {c.noAccount}{" "}
+              <a className="aniq-auth-inline-link" href={`/register?lang=${lang}`}>
+                {c.registerLink}
+              </a>
+            </div>
+            <p className="text-xs text-muted mt-2">
+              {c.privacyNote}{" "}
+              <a className="underline" href="/privacy">
+                {c.privacyLink}
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}

@@ -67,7 +67,10 @@ const GRAPH_UI_COPY = {
     markGapBtn: "Добавить в план повторения",
     unmarkGapBtn: "Убрать из повторения",
     studyPlanTitle: "Рекомендуемый порядок изучения тем",
-    studyPlanSub: "Сначала идут базовые темы, без которых сложнее решать задачи следующего уровня."
+    studyPlanSub: "Сначала идут базовые темы, без которых сложнее решать задачи следующего уровня.",
+    notAssessedLabel: "Ещё не оценено",
+    notAssessedBanner: "Уровень ещё не проверен — решите первую задачу или пройдите диагностику в «Пробном ЕНТ».",
+    startDiagBtn: "Пройти диагностику"
   },
   kk: {
     headerTitle: "Тақырыптар мен байланыстар картасы",
@@ -77,7 +80,7 @@ const GRAPH_UI_COPY = {
     filterLit: "Мат. сауаттылық",
     filterAlg: "Алгебра мен талдау",
     filterGeo: "Геометрия мен триг.",
-    modeGraph: "Байланыс картасы",
+    modeGraph: "Показать граф связей",
     modePath: "Қадамдық тізім",
     themeDark: "Қараңғы фон",
     themeLight: "Ашық парақ",
@@ -109,7 +112,10 @@ const GRAPH_UI_COPY = {
     markGapBtn: "Қайталау тізіміне қосу",
     unmarkGapBtn: "Қайталаудан алу",
     studyPlanTitle: "Ұсынылатын оқу реті",
-    studyPlanSub: "Алдымен келесі деңгейдегі есептерге қажетті базалық тақырыптар беріледі."
+    studyPlanSub: "Алдымен келесі деңгейдегі есептерге қажетті базалық тақырыптар беріледі.",
+    notAssessedLabel: "Әлі бағаланбаған",
+    notAssessedBanner: "Деңгей әлі тексерілмеді — бірінші есепті шығарыңыз немесе «Сынақ ҰБТ» тапсырыңыз.",
+    startDiagBtn: "Диагностикадан өту"
   },
   uz: {
     headerTitle: "Mavzular va bog‘lanishlar xaritasi",
@@ -119,7 +125,7 @@ const GRAPH_UI_COPY = {
     filterLit: "Mat. savodxonlik",
     filterAlg: "Algebra va tahlil",
     filterGeo: "Geometriya va trig.",
-    modeGraph: "Bog‘lanish xaritasi",
+    modeGraph: "Grafni ko‘rsatish",
     modePath: "Qadamlar ro‘yxati",
     themeDark: "Qorong‘i fon",
     themeLight: "Yorug‘ varaq",
@@ -151,7 +157,10 @@ const GRAPH_UI_COPY = {
     markGapBtn: "Takrorlashga qo‘shish",
     unmarkGapBtn: "Takrorlashdan olish",
     studyPlanTitle: "Tavsiya etilgan o‘qish tartibi",
-    studyPlanSub: "Avval keyingi bosqich masalalari uchun zarur bo‘lgan tayanch mavzular beriladi."
+    studyPlanSub: "Avval keyingi bosqich masalalari uchun zarur bo‘lgan tayanch mavzular beriladi.",
+    notAssessedLabel: "Hali baholanmagan",
+    notAssessedBanner: "Daraja hali tekshirilmagan — birinchi masalani yeching yoki «Sinov UBT» topshiring.",
+    startDiagBtn: "Diagnostikadan o‘tish"
   }
 } as const;
 
@@ -228,12 +237,17 @@ export function KnowledgeGraphView({
 }: KnowledgeGraphViewProps) {
   const t = GRAPH_UI_COPY[lang];
   const [filter, setFilter] = useState<GraphFilter>("all");
-  const [displayMode, setDisplayMode] = useState<"graph" | "path">("graph");
+  // Default to sequential path list so mobile screens never suffer from cramped 2D graph nodes
+  const [displayMode, setDisplayMode] = useState<"graph" | "path">("path");
   const [darkCanvas, setDarkCanvas] = useState(false);
   const [hoveredTopic, setHoveredTopic] = useState<TopicId | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [offsets, setOffsets] = useState<Partial<Record<TopicId, { dx: number; dy: number }>>>({});
+
+  const isAssessed = useMemo(() => {
+    return progress.records.length > 0 || untAttempt !== null;
+  }, [progress.records.length, untAttempt]);
 
   const dragState = useRef<{
     kind: "pan" | "node";
@@ -368,7 +382,17 @@ export function KnowledgeGraphView({
 
   return (
     <div className="kg-root">
-      {/* Сводные метрики Второго мозга */}
+      {!isAssessed && (
+        <div className="callout mb-3 flex flex-wrap items-center justify-between gap-2">
+          <span className="small font-semibold">{t.notAssessedBanner}</span>
+          <Button type="button" size="sm" variant="outline" onClick={onOpenExam}>
+            <CheckCircle2 size={14} />
+            <span>{t.startDiagBtn}</span>
+          </Button>
+        </div>
+      )}
+
+      {/* Сводные метрики карты тем */}
       <div className="kg-summary-bar">
         <div className="kg-metric">
           <span className="small">{t.summaryMastered}</span>
@@ -384,7 +408,9 @@ export function KnowledgeGraphView({
         </div>
         <div className="kg-metric">
           <span className="small">{t.summaryAvg}</span>
-          <strong className="tabular-nums">{graphState.summary.averageMastery}%</strong>
+          <strong className="tabular-nums">
+            {isAssessed ? `${graphState.summary.averageMastery}%` : t.notAssessedLabel}
+          </strong>
         </div>
         <div className="kg-metric">
           <span className="small">{t.summaryNext}</span>
@@ -426,20 +452,20 @@ export function KnowledgeGraphView({
           <Button
             type="button"
             size="sm"
-            variant={displayMode === "graph" ? "default" : "outline"}
-            onClick={() => setDisplayMode("graph")}
-          >
-            <GitBranch size={14} />
-            {t.modeGraph}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
             variant={displayMode === "path" ? "default" : "outline"}
             onClick={() => setDisplayMode("path")}
           >
             <Layers size={14} />
             {t.modePath}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={displayMode === "graph" ? "default" : "outline"}
+            onClick={() => setDisplayMode("graph")}
+          >
+            <GitBranch size={14} />
+            {t.modeGraph}
           </Button>
           {displayMode === "graph" && (
             <Button
@@ -473,7 +499,7 @@ export function KnowledgeGraphView({
         ))}
       </div>
 
-      {/* Двухколоночный макет: Холст Графа / Маршрут + Боковой инспектор узла */}
+      {/* Двухколоночный макет: Маршрут / Холст Графа + Боковой инспектор узла */}
       <div className="kg-workspace mt-3">
         <div className="kg-main-col">
           {displayMode === "graph" ? (
@@ -626,6 +652,7 @@ export function KnowledgeGraphView({
                       node.title.length > 22
                         ? `${node.title.slice(0, 20)}…`
                         : node.title;
+                    const nodeAssessed = isAssessed || node.soloCount > 0 || node.examRatio !== null;
 
                     return (
                       <g
@@ -636,7 +663,7 @@ export function KnowledgeGraphView({
                         tabIndex={0}
                         aria-label={`${node.orderNumber}. ${node.title} — ${getStatusLabel(
                           node.status
-                        )} (${node.masteryPercent}%)`}
+                        )} (${nodeAssessed ? `${node.masteryPercent}%` : t.notAssessedLabel})`}
                         aria-pressed={isSelected}
                         style={{ opacity: nodeOpacity, cursor: "pointer" }}
                         onPointerDown={(e) => handleNodePointerDown(e, node.id)}
@@ -649,7 +676,6 @@ export function KnowledgeGraphView({
                           }
                         }}
                       >
-                        {/* Внешнее кольцо выбранного или корневого узла */}
                         {(isSelected || node.status === "root_gap") && (
                           <circle
                             r={33}
@@ -660,7 +686,6 @@ export function KnowledgeGraphView({
                           />
                         )}
 
-                        {/* Основной круг узла */}
                         <circle
                           r={26}
                           fill={darkCanvas ? palette.fillDark : palette.fillLight}
@@ -668,7 +693,6 @@ export function KnowledgeGraphView({
                           strokeWidth={2.5}
                         />
 
-                        {/* Номер темы и процент владения */}
                         <text
                           y={-3}
                           textAnchor="middle"
@@ -685,10 +709,9 @@ export function KnowledgeGraphView({
                           fontSize="10"
                           fontWeight="700"
                         >
-                          {node.masteryPercent}%
+                          {nodeAssessed ? `${node.masteryPercent}%` : "—"}
                         </text>
 
-                        {/* Подпись названия темы под узлом на контрастной плашке */}
                         <rect
                           x={-74}
                           y={31}
@@ -724,6 +747,10 @@ export function KnowledgeGraphView({
               </div>
               {graphState.studyPlan.map((step) => {
                 const palette = NODE_COLORS[step.status];
+                const stepNode = nodeMap.get(step.topic);
+                const stepAssessed =
+                  isAssessed ||
+                  (stepNode && (stepNode.soloCount > 0 || stepNode.examRatio !== null));
                 return (
                   <div
                     key={step.topic}
@@ -739,7 +766,8 @@ export function KnowledgeGraphView({
                         className="kg-status-pill"
                         style={{ borderColor: palette.stroke }}
                       >
-                        {getStatusLabel(step.status)} · {step.masteryPercent}%
+                        {getStatusLabel(step.status)} ·{" "}
+                        {stepAssessed ? `${step.masteryPercent}%` : t.notAssessedLabel}
                       </span>
                     </div>
                     <p className="small mt-1 mb-2">{step.reason}</p>
@@ -756,14 +784,6 @@ export function KnowledgeGraphView({
                         <BookOpen size={13} />
                         {t.btnLesson}
                       </Button>
-                      <a
-                        className="cta-pill text-xs py-1 px-2.5"
-                        href={`/lab?lang=${lang}&topic=${step.topic}`}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <FlaskConical size={13} />
-                        {t.btnLab}
-                      </a>
                     </div>
                   </div>
                 );
@@ -772,7 +792,7 @@ export function KnowledgeGraphView({
           )}
         </div>
 
-        {/* Правая колонка: Инспектор выбранного узла («Второй мозг») */}
+        {/* Правая колонка: Инспектор выбранного узла */}
         <aside className="kg-inspector" aria-live="polite">
           <div className="flex items-start justify-between gap-2">
             <div>
@@ -804,7 +824,11 @@ export function KnowledgeGraphView({
             </div>
             <div className="kg-mini-stat">
               <span className="small">{t.summaryAvg}</span>
-              <strong className="tabular-nums">{activeNode.masteryPercent}%</strong>
+              <strong className="tabular-nums">
+                {isAssessed || activeNode.soloCount > 0 || activeNode.examRatio !== null
+                  ? `${activeNode.masteryPercent}%`
+                  : t.notAssessedLabel}
+              </strong>
             </div>
           </div>
 
@@ -877,7 +901,6 @@ export function KnowledgeGraphView({
                       onClick={() => onSelectTopic(preId)}
                     >
                       <span>← {preNode.title}</span>
-                      <small className="tabular-nums">({preNode.masteryPercent}%)</small>
                     </button>
                   );
                 })}
@@ -903,7 +926,6 @@ export function KnowledgeGraphView({
                       onClick={() => onSelectTopic(depId)}
                     >
                       <span>{depNode.title} →</span>
-                      <small className="tabular-nums">({depNode.masteryPercent}%)</small>
                     </button>
                   );
                 })}
@@ -911,31 +933,33 @@ export function KnowledgeGraphView({
             )}
           </div>
 
-          {/* Целевые кнопки действий */}
-          <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-border">
-            <Button type="button" size="sm" onClick={() => onOpenLesson(activeNode.id)}>
-              <BookOpen size={14} />
-              {t.btnLesson}
-            </Button>
-            <a
-              className="cta-pill text-xs py-1.5 px-3"
-              href={`/lab?lang=${lang}&topic=${activeNode.id}`}
-            >
-              <FlaskConical size={14} />
-              {t.btnLab}
-            </a>
-            <Button type="button" size="sm" variant="outline" onClick={onOpenExam}>
-              <CheckCircle2 size={14} />
-              {t.btnExam}
-            </Button>
+          {/* Одно главное рекомендуемое действие + второстепенные ссылки */}
+          <div className="mt-4 pt-3 border-t border-border">
             <Button
               type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => onToggleWeakTopic(activeNode.id)}
+              className="w-full justify-center"
+              onClick={() => onOpenLesson(activeNode.id)}
             >
-              {activeNode.isWeakMarked ? t.unmarkGapBtn : t.markGapBtn}
+              <BookOpen size={15} />
+              <span>{t.btnLesson}</span>
             </Button>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-2.5 text-xs">
+              <a
+                className="underline font-semibold inline-flex items-center gap-1"
+                href={`/lab?lang=${lang}&topic=${activeNode.id}`}
+              >
+                <FlaskConical size={13} />
+                {t.btnLab}
+              </a>
+              <button
+                type="button"
+                className="underline font-semibold"
+                onClick={() => onToggleWeakTopic(activeNode.id)}
+              >
+                {activeNode.isWeakMarked ? t.unmarkGapBtn : t.markGapBtn}
+              </button>
+            </div>
           </div>
         </aside>
       </div>

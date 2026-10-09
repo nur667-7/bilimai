@@ -231,10 +231,16 @@ type LabAiDiagnosis = {
 const storageKey = "bilimai-lab-v1";
 const initialProgress: Progress = { version: 1, records: [] };
 
-export default function ErrorLab() {
+export default function ErrorLab({
+  initialLang = "ru",
+  initialTopic = "linear"
+}: {
+  initialLang?: Language;
+  initialTopic?: LabTopic;
+} = {}) {
   const { dark, toggleTheme } = useAniqTheme();
-  const [lang, setLang] = useState<Language>("ru");
-  const [topic, setTopic] = useState<LabTopic>("linear");
+  const [lang, setLang] = useState<Language>(initialLang);
+  const [topic, setTopic] = useState<LabTopic>(initialTopic);
   const [seed, setSeed] = useState(0);
   const [selection, setSelection] = useState<number | null>(null);
   const [found, setFound] = useState(false);
@@ -281,8 +287,10 @@ export default function ErrorLab() {
       if (requested === "ru" || requested === "kk" || requested === "uz") setLang(requested);
       const qTopic = params.get("topic");
       const validTopic: LabTopic =
-        qTopic && (labTopics as readonly string[]).includes(qTopic) ? (qTopic as LabTopic) : "linear";
-      if (validTopic !== "linear") setTopic(validTopic);
+        qTopic && (labTopics as readonly string[]).includes(qTopic)
+          ? (qTopic as LabTopic)
+          : initialTopic;
+      if (validTopic !== topic) setTopic(validTopic);
       try {
         const raw = localStorage.getItem(storageKey);
         if (raw) {
@@ -301,6 +309,18 @@ export default function ErrorLab() {
       setLoaded(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", lang);
+      url.searchParams.set("topic", topic);
+      window.history.replaceState({}, "", url.toString());
+    } catch {
+      // ignore URL update error
+    }
+  }, [lang, topic, loaded]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -433,7 +453,7 @@ export default function ErrorLab() {
                 B
               </span>
               <span className="brand-name">BilimAI</span>
-              <span className="brand-sub">ҰБТ · ЕНТ · X-Ray</span>
+              <span className="brand-sub">ЕНТ · ҰБТ</span>
             </a>
 
             <div className="header-right">
@@ -472,10 +492,11 @@ export default function ErrorLab() {
 
               <div className="aniq-header-auth">
                 <a className="aniq-btn-ghost aniq-btn-sm" href={`/login?lang=${lang}`}>
-                  {lang === "kk" ? "Кіру" : lang === "uz" ? "Kirish" : "Войти"}
-                </a>
-                <a className="aniq-btn aniq-btn-sm" href={`/register?lang=${lang}`}>
-                  {lang === "kk" ? "Тіркелу" : lang === "uz" ? "Boshlash" : "Начать"}
+                  {lang === "kk"
+                    ? "Профиль / сақтау"
+                    : lang === "uz"
+                      ? "Profil / saqlash"
+                      : "Профиль / сохранить"}
                 </a>
               </div>
             </div>
@@ -488,7 +509,13 @@ export default function ErrorLab() {
             </a>
             <a className="primary-nav-link primary-nav-link-xray" href={`/?lang=${lang}&tab=xray&topic=${topic}`}>
               <Microscope size={14} />
-              <span>{lang === "kk" ? "Рентген & Грант РК" : lang === "uz" ? "Rentgen & Grant" : "Рентген & Грант РК"}</span>
+              <span>
+                {lang === "kk"
+                  ? "Шешімді тексеру"
+                  : lang === "uz"
+                    ? "Yechimni tekshirish"
+                    : "Проверка решения"}
+              </span>
             </a>
             <a className="primary-nav-link" href={`/?lang=${lang}&tab=graph&topic=${topic}`}>
               <GitBranch size={14} />

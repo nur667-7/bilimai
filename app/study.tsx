@@ -3,25 +3,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import {
   ArrowRight,
-  Award,
   BookOpen,
-  Brain,
-  BrainCircuit,
   Calendar,
   Check,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Compass,
   FlaskConical,
   GitBranch,
-  GraduationCap,
-  Layers,
   LogOut,
   Microscope,
   RotateCcw,
-  Shuffle,
   Sparkles,
   Target,
   User,
@@ -32,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SiteFooter } from "@/components/site-footer";
-import { HeroCanvas, ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
+import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import { getOptionFeedback, lessons, untTopicIds, type Language, type TopicId } from "@/lib/lessons";
 import {
   buildBaselineRoadmap,
@@ -52,17 +42,11 @@ import {
   type UntStorage
 } from "@/lib/unt-exam";
 import {
-  UNT_PROFILE_COMBINATIONS,
   UNT_SUBJECTS,
   type UntSubjectId
 } from "@/lib/unt-all-subjects";
 import {
-  SCIENTIFIC_METHODS,
-  buildBjorkInterleavedList,
-  computeBloomMasteryGate,
-  computeEbbinghausRetention,
-  computeSwellerScaffoldingLevel,
-  type ScientificMethodSpec
+  buildBjorkInterleavedList
 } from "@/lib/scientific-pedagogy";
 import {
   clearUserProfile,
@@ -72,353 +56,297 @@ import {
   type UniversityId,
   type UserProfile
 } from "@/lib/user-profile";
-import { SubjectIcon, UntExamView } from "@/app/unt-exam-view";
+import { UntExamView } from "@/app/unt-exam-view";
 import { KnowledgeGraphView } from "@/app/knowledge-graph-view";
 import { XrayTrapView } from "@/app/xray-trap-view";
 
 const copy = {
   ru: {
     navStudy: "Занятие",
-    navXray: "Рентген & Грант РК",
+    navXray: "Проверка решения",
     navGraph: "Карта тем",
-    navExam: "Пробное ЕНТ · 12 предметов",
-    navPlan: "Научный план",
+    navExam: "Пробное ЕНТ",
+    navPlan: "Мой план",
     navLab: "Тренировка ошибок",
+    navWelcome: "Обзор",
     navAbout: "О проекте",
-    loginBtn: "Войти",
-    registerBtn: "Начать",
+    profileBtn: "Профиль / сохранить",
     logoutBtn: "Выйти",
-    welcomeBadge: "Единая ИИ-экосистема ЕНТ (ҰБТ) · 12 предметов НЦТ РК · 10 вариантов × 40 вопросов",
-    welcomeTitle: "Понимать логику, находить ловушки и",
-    welcomeHighlight: "брать государственный грант на ЕНТ",
-    welcomeDesc:
-      "Платформа точной когнитивной диагностики BilimAI: все 12 предметов ЕНТ (по 10 полных вариантов из 40 вопросов = 50 баллов), построчный Рентген черновика, 1 152 задачи на поиск излома логики, граф знаний и 6 доказательных научных методик обучения.",
-    welcomeCtaRegister: "Создать паспорт абитуриента",
-    welcomeCtaXray: "Рентген черновика",
-    welcomeCtaExam: "Пробное ЕНТ (12 предметов)",
-    welcomeCtaGraph: "Карта 16 тем",
-    welcomeCtaLab: "Тренировка ошибок",
-    welcomeHide: "Свернуть витрину",
-    welcomeShow: "Витрина BilimAI",
-    compactWelcomeLabel: "Быстрый старт ЕНТ (12 предметов × 10 вариантов по 40 вопр.):",
-    allSubjectsTitle: "Все 12 официальных предметов ЕНТ (НЦТ РК) · 4 800 заданий",
-    allSubjectsSub:
-      "Выберите любой профильный или обязательный предмет ЕНТ: внутри каждого доступны 10 полных вариантов по 40 вопросов (50 баллов) всех 4 форматов НЦТ и полный справочник формул, дат и законов.",
-    bentoKicker: "ШЕСТЬ МОДУЛЕЙ BILIMAI",
-    bentoTitle: "Инженерная архитектура подготовки к ЕНТ без «AI-слопа»",
-    scienceKicker: "ДОКАЗАТЕЛЬНАЯ КОГНИТИВНАЯ НАУКА В ЯДРЕ ПЛАТФОРМЫ",
-    scienceTitle: "6 научных методик мировых учёных, встроенных в алгоритмы BilimAI",
-    scienceSub:
-      "Каждое действие на платформе опирается на математические модели когнитивной психологии и педагогических исследований Чикагского университета, ETH Zurich, Carnegie Mellon и UCLA.",
     topics: "16 разделов математики ЕНТ",
     mobileTopicLabel: "Тема",
     lesson: "Разбор",
     practice: "Практика",
     ai: "ИИ-тьютор",
-    rule: "§ Главное правило (инвариант)",
-    exampleLabel: "Разбор эталонного образца НЦТ",
+    statusNotAssessed: "Статус темы: ещё не оценено · решите задачи в «Практике» или проверьте тему в «Тренировке ошибок»",
+    statusAssessed: (solved: number, total: number, solo: number) =>
+      `Освоение по решённым задачам: ${solved}/${total} в уроке · самостоятельно без подсказок: ${solo}`,
+    rule: "§ Главное правило",
+    exampleLabel: "Разбор типового задания ЕНТ",
     exampleSteps: "Пошаговый ход решения",
-    note: "Метод самообъяснения (Chi & Feynman): проговорите каждый переход своими словами — почему равенство или свойство сохраняется на этом шаге.",
-    solveSelf: "Решить самостоятельно",
-    askAboutRule: "Задать вопрос по правилу",
+    note: "Проверьте себя: объясните своими словами, почему на каждом шаге сохраняется верное равенство или свойство.",
+    solveSelf: "Перейти к практике",
+    askAboutRule: "Задать вопрос по теме",
     taskProgress: "Задача",
     ofLabel: "из",
-    extraTaskTab: "Свои числа",
+    extraTaskTab: "Задача с другими числами",
     checkOne: "Проверить ответ",
     chooseOptionPrompt: "Выберите один из вариантов ответа выше, чтобы проверить решение.",
     selectedIndicator: "Выбрано",
     correctTitle: "Верно",
     wrongTitle: "Обратите внимание на переход",
     analyzeErrorBtn: "Показать правило",
-    askAiWhyBtn: "Разобрать с ИИ-тьютором (Claude)",
+    askAiWhyBtn: "Разобрать с ИИ-тьютором",
     tryAgainBtn: "Попробовать ещё раз",
     nextTaskBtn: "Следующая задача",
     ruleBreakdownTitle: "Разбор по правилу темы:",
     openLabForTopic: "Потренировать поиск ошибки в этой теме",
-    allTasksSolved: "Все 3 задачи решены верно. Закрепите правило на задаче с новыми числами или переходите к следующей теме.",
+    allTasksSolved: "Все 3 задачи решены верно. Закрепите правило на задаче с другими числами или переходите к следующей теме.",
     nextTopicBtn: "Следующая тема курса",
-    transferTitle: "Задача с новыми числами",
-    transferSub: "Примените главное правило темы без вариантов ответа (доступно 24 варианта чисел).",
+    transferTitle: "Задача с другими числами",
+    transferSub: "Примените главное правило темы без готовых вариантов ответа (доступно 24 варианта чисел).",
     transferCheck: "Проверить ответ",
-    transferNext: "Другие числа",
+    transferNext: "Новые числа",
     transferRight: "Верно! Правило применено точно.",
     transferWrong: "Ответ пока не совпал. Сверьте вычисления с главным правилом темы.",
     transferInvalid: "Введите целое число, десятичную дробь или обыкновенную дробь вида 3/7.",
-    aiTitle: "Сократический ИИ-тьютор (Claude API)",
+    aiTitle: "ИИ-тьютор по текущей теме",
     aiSub:
-      "В отличие от обычного чат-бота, Claude API анализирует конкретную ошибку в вычислениях, объясняет правило простыми словами на выбранном языке и задаёт проверочный вопрос по методу Фейнмана без спойлера ответа.",
+      "Опишите шаг решения или вопрос по теме. Тьютор разберёт ошибку и задаст проверочный вопрос без готового спойлера.",
     question: "Ваш вопрос или шаг, который вызвал трудность",
-    placeholder: "Например: почему в теореме Виета сумма корней берётся с противоположным знаком?",
-    quickLabel: "Частые вопросы по теме:",
-    quickQuestions: [
-      "Почему при переносе слагаемого через знак равенства меняется знак?",
-      "Как быстро проверить, не перепутаны ли формулы в этой теме?",
-      "На каком шаге чаще всего теряют баллы на ЕНТ в этой теме?"
-    ],
+    quickLabel: "Примеры вопросов по этой теме:",
     schoolPrivacyNote:
-      "Анонимный режим для школьников: регистрация не нужна. Не вводите ФИО, номер телефона или школу.",
-    consent: "Отправить только учебный вопрос по математике для получения разбора (без личных данных).",
-    ask: "Получить разбор ИИ-тьютора",
-    loading: "ИИ-тьютор формирует разбор…",
-    pilot: "Генеративный разбор выполняется через защищённый серверный маршрут /api/explain (Claude API с детерминированным резервным контуром).",
-    privacy: "Приватность",
-    rmTitle: "Научный план подготовки к ЕНТ (Bloom 2σ + Ebbinghaus SM-2 + Bjork Interleaving)",
-    rmSub: "Очерёдность 16 тем строится по кривой забывания Эббингауза R(t) = exp(−t/S), порогу мастерства Блума (80%) и интерливингу Бьорка.",
-    rmTarget: "Целевой балл ЕНТ (из 50)",
+      "Анонимный режим для школьников: регистрация не нужна. Не вводите ФИО, телефон или номер школы.",
+    consent: "Я согласен отправить этот учебный вопрос по математике на сервер для получения разбора (без личных данных).",
+    consentRequiredHint: "Отметьте согласие на отправку учебного вопроса и введите текст (от 3 символов).",
+    ask: "Получить разбор",
+    loading: "Формируем разбор…",
+    pilot: "Если внешний ключ Claude API активен на сервере, ответ генерирует модель Claude; иначе срабатывает локальный разбор по правилу темы.",
+    privacy: "Конфиденциальность",
+    badgeLive: "Разбор ИИ-тьютора (Claude API)",
+    badgePreview: "Локальный разбор по правилу темы (демо-режим)",
+    rmTitle: "Мой план подготовки к ЕНТ",
+    rmSub: "Выберите целевой балл и срок до экзамена — платформа выделит приоритетные темы на сегодня и на неделю.",
+    rmNotAssessedBanner:
+      "Диагностика ещё не пройдена: ниже показан демонстрационный пример маршрута. Пройдите Пробное ЕНТ или решите задачи в Тренировке ошибок, чтобы план перестроился по вашим реальным ответам.",
+    rmAssessedBanner: (mastered: number) =>
+      `План построен по вашим результатам: закреплено тем — ${mastered} из 16.`,
+    rmStartDiagnosticBtn: "Пройти пробное ЕНТ →",
+    rmTarget: "Целевой балл профильной математики (из 50)",
     rmWeeks: "Недель до экзамена",
-    rmWeak: "Темы с потерей баллов (из 16 разделов ЕНТ)",
-    rmConsolidation: "Закреплено по порогу Блума (≥2 самостоятельных решения)",
-    rmConsolidationEmpty: "Пока нет закреплённых тем — решите по 2 задачи без подсказок в разделе «Тренировка ошибок».",
-    rmGoal: "Цель и главная трудность для ИИ-планировщика (Claude API)",
+    rmPaceLabel: (perWeek: number) => `Рекомендуемый темп: ~${perWeek} темы в неделю`,
+    rmTodayTitle: "1. Что делать сегодня и на этой неделе",
+    rmTodaySub: "Начните с базовых тем, от которых зависят более сложные разделы:",
+    rmOpenLesson: "Открыть урок",
+    rmOpenLab: "Найти ошибку",
+    rmInterleavedLabel: "Чередование тем для закрепления (чтобы не путать формулы):",
+    rmWeak: "2. Отметьте темы, которые вызывают трудности",
+    rmHowDetailsSummary: "Как составлен этот план и как работают приоритеты",
+    rmHowDetailsBody:
+      "В первую очередь в план попадают базовые темы (например, линейные уравнения, неравенства и квадратные уравнения), без которых возникают ошибки в логарифмах, тригонометрии и производной. После 2 самостоятельных решений без подсказок тема считается закреплённой и переходит в режим периодического повторения.",
+    rmHowDetailsLink: "Подробнее о методике и научных источниках (/about) →",
+    rmAiDetailsSummary: "Уточнить план по своей цели через ИИ-планировщик",
+    rmGoal: "Опишите вашу цель и главную трудность",
     rmGoalPlaceholder: "Например: путаю знаки в тригонометрии и формулы объёмов пирамиды, нужно набрать 42+ за 6 недель",
     rmPresets: [
-      "Цель 45/50 за 6 недель: путаю знаки в теореме Виета, неравенствах и тригонометрии",
+      "Цель 45/50 за 6 недель: путаю знаки в квадратных уравнениях, неравенствах и тригонометрии",
       "Цель 38/50 за 4 недели: нужно подтянуть производную, первообразную и стереометрию"
     ],
-    rmGenerate: "Составить план с Claude API",
-    rmBaseTitle: "Рекомендуемая очерёдность тем (Матрица Блума + Эббингауза)",
-    rmPhase1: "Этап 1 (недели 1–2): корневые пререквизиты и закрытие пробелов",
-    rmPhase2: "Этап 2 (недели 3+): интерливинг Бьорка и перенос навыка",
+    rmGenerate: "Составить персональный план",
     rmClaudeTitle: "Персональный план по неделям",
     rmMilestones: "Шаги по неделям",
-    rmHabit: "Научный режим занятий",
-    badgeLive: "Claude API · Живой разбор",
-    badgePreview: "Инвариант урока · Резервный контур"
+    rmHabit: "Режим занятий"
   },
   kk: {
     navStudy: "Сабақ",
-    navXray: "Рентген & ҚР Гранты",
+    navXray: "Шешімді тексеру",
     navGraph: "Тақырыптар картасы",
-    navExam: "Байқау ҰБТ · 12 пән",
-    navPlan: "Ғылыми жоспар",
+    navExam: "Байқау ҰБТ",
+    navPlan: "Менің жоспарым",
     navLab: "Қатемен жұмыс",
+    navWelcome: "Шолу",
     navAbout: "Жоба туралы",
-    loginBtn: "Кіру",
-    registerBtn: "Бастау",
+    profileBtn: "Профиль / сақтау",
     logoutBtn: "Шығу",
-    welcomeBadge: "Бірыңғай ҰБТ ЖИ-экожүйесі · ҚР ҰТО 12 пәні · 10 нұсқа × 40 сұрақ",
-    welcomeTitle: "Логиканы түсіну, тұзақты табу және",
-    welcomeHighlight: "ҰБТ мемлекеттік грантын жеңіп алу",
-    welcomeDesc:
-      "BilimAI дәл когнитивті диагностика платформасы: барлық 12 ҰБТ пәні (40 сұрақтан 10 толық нұсқа = 50 балл), шешім рентгені, 1 152 қате қадамды табу есебі, білім графы және 6 ғылыми оқыту әдістемесі.",
-    welcomeCtaRegister: "Талапкер паспортын ашу",
-    welcomeCtaXray: "Шешім рентгені",
-    welcomeCtaExam: "Байқау ҰБТ (12 пән)",
-    welcomeCtaGraph: "16 тақырып картасы",
-    welcomeCtaLab: "Қатемен жұмыс",
-    welcomeHide: "Витринаны жинау",
-    welcomeShow: "BilimAI витринасы",
-    compactWelcomeLabel: "ҰБТ жылдам бастау (12 пән × 40 сұрақтан 10 нұсқа):",
-    allSubjectsTitle: "Барлық 12 ресми ҰБТ пәні (ҚР ҰТО) · 4 800 тапсырма",
-    allSubjectsSub:
-      "Кез келген бейіндік немесе міндетті пәнді таңдаңыз: әр пәнде 40 сұрақтан тұратын 10 толық нұсқа (50 балл) және формулалар, даталар мен заңдар анықтамалығы бар.",
-    bentoKicker: "BILIMAI АЛТЫ МОДУЛІ",
-    bentoTitle: "ҰБТ-ға дайындық пен математиканы түсінудің инженерлік жүйесі",
-    scienceKicker: "ПЛАТФОРМА ЯДРОСЫНДАҒЫ ДӘЛЕЛДІ КОГНИТИВТІ ҒЫЛЫМ",
-    scienceTitle: "BilimAI алгоритмдеріне енгізілген әлем ғалымдарының 6 ғылыми әдістемесі",
-    scienceSub:
-      "Платформадағы әрбір қадам Чикаго университеті, ETH Zurich, Carnegie Mellon және UCLA зерттеулерінің математикалық модельдеріне негізделген.",
     topics: "ҰБТ математикасының 16 бөлімі",
     mobileTopicLabel: "Тақырып",
     lesson: "Талдау",
     practice: "Жаттығу",
     ai: "ЖИ-тьютор",
-    rule: "§ Негізгі ереже (инвариант)",
-    exampleLabel: "ҰТО эталондық үлгісін талдау",
+    statusNotAssessed: "Тақырып мәртебесі: әлі бағаланбаған · «Жаттығу» немесе «Қатемен жұмыс» бөлімінде есеп шығарыңыз",
+    statusAssessed: (solved: number, total: number, solo: number) =>
+      `Шығарылған есептер бойынша: сабақта ${solved}/${total} · көмексіз өз бетінше: ${solo}`,
+    rule: "§ Негізгі ереже",
+    exampleLabel: "ҰБТ типтік есебін талдау",
     exampleSteps: "Қадамдық шешу жолы",
-    note: "Өзіндік түсіндіру әдісі (Chi & Feynman): әр қадамды өз сөзіңізбен түсіндіріп көріңіз — теңдік неліктен сақталады.",
-    solveSelf: "Өз бетінше шығару",
-    askAboutRule: "Ереже бойынша сұрақ қою",
+    note: "Өзіңізді тексеріңіз: әр қадамда теңдік немесе қасиет неліктен сақталатынын өз сөзіңізбен түсіндіріңіз.",
+    solveSelf: "Жаттығуға өту",
+    askAboutRule: "Тақырып бойынша сұрақ қою",
     taskProgress: "Есеп",
     ofLabel: "/",
-    extraTaskTab: "Жаңа сандар",
+    extraTaskTab: "Басқа сандармен есеп",
     checkOne: "Жауапты тексеру",
     chooseOptionPrompt: "Шешімді тексеру үшін жоғарыдағы жауап нұсқаларының бірін таңдаңыз.",
     selectedIndicator: "Таңдалды",
     correctTitle: "Дұрыс",
     wrongTitle: "Амал мен таңбаға назар аударыңыз",
     analyzeErrorBtn: "Ережені көрсету",
-    askAiWhyBtn: "ЖИ-тьютормен талдау (Claude)",
+    askAiWhyBtn: "ЖИ-тьютормен талдау",
     tryAgainBtn: "Қайта көру",
     nextTaskBtn: "Келесі есеп",
     ruleBreakdownTitle: "Тақырып ережесі бойынша талдау:",
     openLabForTopic: "Осы тақырып бойынша қате табуды жаттықтыру",
-    allTasksSolved: "Барлық 3 есеп дұрыс шешілді. Ережені жаңа сандармен бекітіңіз немесе келесі тақырыпқа өтіңіз.",
+    allTasksSolved: "Барлық 3 есеп дұрыс шешілді. Ережені басқа сандармен бекітіңіз немесе келесі тақырыпқа өтіңіз.",
     nextTopicBtn: "Келесі тақырып",
-    transferTitle: "Жаңа сандармен есеп",
+    transferTitle: "Басқа сандармен есеп",
     transferSub: "Тақырыптың негізгі ережесін дайын нұсқаларсыз қолданыңыз (24 нұсқа).",
     transferCheck: "Жауапты тексеру",
-    transferNext: "Басқа сандар",
+    transferNext: "Жаңа сандар",
     transferRight: "Дұрыс! Ереже дәл қолданылды.",
     transferWrong: "Жауап сәйкес келмеді. Есептеуді негізгі ережемен салыстырыңыз.",
     transferInvalid: "Бүтін сан, ондық бөлшек немесе 3/7 түріндегі бөлшек енгізіңіз.",
-    aiTitle: "Сократикалық ЖИ-тьютор (Claude API)",
+    aiTitle: "Тақырып бойынша ЖИ-тьютор",
     aiSub:
-      "Кәдімгі чат-боттан айырмашылығы — Claude API сіздің нақты қатеңізді талдап, ережені түсінікті тілде түсіндіреді және Фейнман әдісі бойынша бағыттаушы сұрақ қояды.",
+      "Қиындық тудырған қадамды немесе сұрақты жазыңыз. Тьютор қатені түсіндіріп, бағыттаушы сұрақ қояды.",
     question: "Сұрағыңыз немесе қиындық тудырған қадам",
-    placeholder: "Мысалы: Виет теоремасында түбірлер қосындысы неге қарама-қарсы таңбамен алынады?",
-    quickLabel: "Жиі қойылатын сұрақтар:",
-    quickQuestions: [
-      "Теңдеудің бір жағынан екінші жағына шығарғанда таңба неге өзгереді?",
-      "Осы бөлімдегі формулаларды шатастырмау үшін нені есте сақтау керек?",
-      "ҰБТ-да осы тақырыпта көбіне қай қадамда ұпай жоғалтады?"
-    ],
+    quickLabel: "Осы тақырып бойынша сұрақ үлгілері:",
     schoolPrivacyNote:
       "Оқушыларға арналған анонимді режим: тіркелу қажет емес. Аты-жөніңізді, телефон немесе мектеп нөмірін жазбаңыз.",
     consent: "Талдау алу үшін тек математикалық оқу сұрағын жіберуге келісемін (жеке деректерсіз).",
-    ask: "ЖИ-тьютор талдауын алу",
+    consentRequiredHint: "Келісім белгісін қойып, оқу сұрағын енгізіңіз (кемінде 3 таңба).",
+    ask: "Талдау алу",
     loading: "Талдау дайындалып жатыр…",
-    pilot: "Генеративті талдау қорғалған /api/explain серверлік маршруты арқылы (Claude API + резервтік контур) орындалады.",
-    privacy: "Құпиялық",
-    rmTitle: "ҰБТ-ға ғылыми дайындық жоспары (Bloom 2σ + Ebbinghaus SM-2 + Bjork Interleaving)",
-    rmSub: "16 тақырыптың реті Эббингауз ұмыту қисығы R(t) = exp(−t/S), Блумның 80% шеберлік шегі және Бьорк интерливингі бойынша құрылады.",
-    rmTarget: "Мақсатты ҰБТ балы (50-ден)",
+    pilot: "Серверде Claude API кілті қосылған болса, жауапты Claude моделі береді; әйтпесе тақырып ережесі бойынша жергілікті талдау көрсетіледі.",
+    privacy: "Құпиялылық",
+    badgeLive: "ЖИ-тьютор талдауы (Claude API)",
+    badgePreview: "Тақырып ережесі бойынша жергілікті талдау (демо-режим)",
+    rmTitle: "Менің ҰБТ-ға дайындық жоспарым",
+    rmSub: "Мақсатты балл мен емтиханға дейінгі апта санын таңдаңыз — бүгінгі және осы аптадағы басым тақырыптарды көресіз.",
+    rmNotAssessedBanner:
+      "Диагностика әлі өтілмеген: төменде дайындық бағытының демонстрациялық үлгісі көрсетілген. Өз нәтижеңіз бойынша жоспар құру үшін Байқау ҰБТ тапсырыңыз.",
+    rmAssessedBanner: (mastered: number) =>
+      `Жоспар сіздің нәтижелеріңіз бойынша құрылды: бекітілген тақырыптар — 16-дан ${mastered}.`,
+    rmStartDiagnosticBtn: "Байқау ҰБТ-ны бастау →",
+    rmTarget: "Бейіндік математика бойынша мақсатты балл (50-ден)",
     rmWeeks: "Емтиханға дейінгі апта саны",
-    rmWeak: "Қайталауды қажет ететін тақырыптар (16 бөлімнен)",
-    rmConsolidation: "Блум шегі бойынша бекітілді (≥2 өздік шешім)",
-    rmConsolidationEmpty: "Әзірше бекітілген тақырып жоқ — «Қатемен жұмыс» бөлімінде көмексіз 2 есептен шығарыңыз.",
-    rmGoal: "ЖИ-жоспарлаушыға (Claude API) арналған мақсат пен қиындық",
+    rmPaceLabel: (perWeek: number) => `Ұсынылатын қарқын: аптасына ~${perWeek} тақырып`,
+    rmTodayTitle: "1. Бүгін және осы аптада не істеу керек",
+    rmTodaySub: "Күрделі тақырыптарға негіз болатын базалық бөлімдерден бастаңыз:",
+    rmOpenLesson: "Сабақты ашу",
+    rmOpenLab: "Қатені табу",
+    rmInterleavedLabel: "Формулаларды шатастырмау үшін тақырыптарды кезектестіру:",
+    rmWeak: "2. Қиындық тудыратын тақырыптарды белгілеңіз",
+    rmHowDetailsSummary: "Бұл жоспар қалай құрылған",
+    rmHowDetailsBody:
+      "Алдымен логарифм, тригонометрия және туындыға негіз болатын базалық тақырыптар (сызықтық, квадрат теңдеулер, теңсіздіктер) ұсынылады. Көмексіз 2 есеп шығарғаннан кейін тақырып бекітілген болып есептеледі.",
+    rmHowDetailsLink: "Әдістеме және ғылыми дереккөздер туралы (/about) →",
+    rmAiDetailsSummary: "ЖИ-жоспарлаушы арқылы жеке мақсат бойынша жоспарды нақтылау",
+    rmGoal: "Мақсатыңыз бен негізгі қиындықты сипаттаңыз",
     rmGoalPlaceholder: "Мысалы: тригонометрия мен пирамида көлемінде қателесемін, 6 аптада 42+ балл жинау керек",
     rmPresets: [
-      "6 аптада 45/50 балл: Виет теоремасы, теңсіздіктер және тригонометрияда таңба қателері",
+      "6 аптада 45/50 балл: квадрат теңдеулер, теңсіздіктер және тригонометрияда таңба қателері",
       "4 аптада 38/50 балл: туынды, интеграл және стереометрия"
     ],
-    rmGenerate: "Claude API арқылы жоспар құру",
-    rmBaseTitle: "Ұсынылатын тақырыптар реті (Блум + Эббингауз матрицасы)",
-    rmPhase1: "1-кезең (1–2 апта): базалық пререквизиттер және олқылықтарды жою",
-    rmPhase2: "2-кезең (3+ апта): Бьорк интерливингі және дағдыны тексеру",
+    rmGenerate: "Жеке жоспар құру",
     rmClaudeTitle: "Апталық жеке жоспар",
     rmMilestones: "Апталық қадамдар",
-    rmHabit: "Ғылыми дайындық тәртібі",
-    badgeLive: "Claude API · Тікелей талдау",
-    badgePreview: "Сабақ инварианты · Резервтік контур"
+    rmHabit: "Дайындық тәртібі"
   },
   uz: {
     navStudy: "Dars",
-    navXray: "Rentgen & Grant",
+    navXray: "Yechimni tekshirish",
     navGraph: "Mavzular xaritasi",
-    navExam: "Sinov UBT · 12 fan",
-    navPlan: "Ilmiy reja",
+    navExam: "Sinov UBT",
+    navPlan: "Mening rejam",
     navLab: "Xatolar ustida ishlash",
+    navWelcome: "Sharh",
     navAbout: "Loyiha haqida",
-    loginBtn: "Kirish",
-    registerBtn: "Boshlash",
+    profileBtn: "Profil / saqlash",
     logoutBtn: "Chiqish",
-    welcomeBadge: "Yagona UBT SI-ekotizimi · 12 ta fan · 10 variant × 40 savol",
-    welcomeTitle: "Mantiqni tushunish, tuzoqni topish va",
-    welcomeHighlight: "davlat grantini yutib olish",
-    welcomeDesc:
-      "BilimAI kognitiv diagnostika platformasi: barcha 12 ta UBT fani (40 savoldan 10 ta to‘liq variant = 50 ball), qoralama rentgeni, 1 152 ta xato qadamni topish masalasi, bilimlar grafi va 6 ta ilmiy o‘qitish metodikasi.",
-    welcomeCtaRegister: "Abituriyent pasportini yaratish",
-    welcomeCtaXray: "Qoralama rentgeni",
-    welcomeCtaExam: "Sinov UBT (12 fan)",
-    welcomeCtaGraph: "16 mavzu xaritasi",
-    welcomeCtaLab: "Xatolar ustida ishlash",
-    welcomeHide: "Vitrinani yopish",
-    welcomeShow: "BilimAI vitrinasi",
-    compactWelcomeLabel: "UBT tezkor start (12 fan × 40 savoldan 10 variant):",
-    allSubjectsTitle: "Barcha 12 ta rasmiy UBT fani · 4 800 ta topshiriq",
-    allSubjectsSub:
-      "Istalgan profil yoki majburiy fanni tanlang: har bir fanda 40 savoldan iborat 10 ta to‘liq variant (50 ball) va formulalar, sanalar hamda qonunlar ma’lumotnomasi mavjud.",
-    bentoKicker: "BILIMAI OLTI MODULI",
-    bentoTitle: "Imtihonda yuqori ball va matematikani tushunish uchun muhandislik tizimi",
-    scienceKicker: "PLATFORMA YADROSIDAGI ISBOTLANGAN KOGNITIV ILM-FAN",
-    scienceTitle: "BilimAI algoritmlariga kiritilgan jahon olimlarining 6 ta ilmiy metodikasi",
-    scienceSub:
-      "Platformadagi har bir qadam Chikago universiteti, ETH Zurich, Carnegie Mellon va UCLA tadqiqotlarining matematik modellariga asoslangan.",
     topics: "16 ta matematika bo‘limi",
     mobileTopicLabel: "Mavzu",
     lesson: "Tahlil",
     practice: "Mashq",
     ai: "SI-tyutor",
-    rule: "§ Asosiy qoida (invariant)",
+    statusNotAssessed: "Mavzu holati: hali baholanmagan · «Mashq» yoki «Xatolar ustida ishlash» bo‘limida masala yeching",
+    statusAssessed: (solved: number, total: number, solo: number) =>
+      `Yechilgan masalalar bo‘yicha: darsda ${solved}/${total} · mustaqil yechilgan: ${solo}`,
+    rule: "§ Asosiy qoida",
     exampleLabel: "Namuna tahlili",
     exampleSteps: "Qadam-baqadam yechim",
-    note: "O‘z-o‘ziga tushuntirish usuli (Chi & Feynman): har bir qadamni o‘z so‘zlaringiz bilan tushuntiring.",
-    solveSelf: "Mustaqil yechish",
-    askAboutRule: "Qoida bo‘yicha savol berish",
+    note: "O‘zingizni tekshiring: har bir qadamda tenglik nima uchun saqlanishini o‘z so‘zlaringiz bilan tushuntiring.",
+    solveSelf: "Mashqqa o‘tish",
+    askAboutRule: "Mavzu bo‘yicha savol berish",
     taskProgress: "Masala",
     ofLabel: "/",
-    extraTaskTab: "Yangi sonlar",
+    extraTaskTab: "Boshqa sonlar bilan masala",
     checkOne: "Javobni tekshirish",
     chooseOptionPrompt: "Yechimni tekshirish uchun yuqoridagi javob variantlaridan birini tanlang.",
     selectedIndicator: "Tanlandi",
     correctTitle: "To‘g‘ri",
     wrongTitle: "Amal va ishoraga e’tibor bering",
     analyzeErrorBtn: "Qoidani ko‘rsatish",
-    askAiWhyBtn: "SI-tyutor bilan tahlil (Claude)",
+    askAiWhyBtn: "SI-tyutor bilan tahlil",
     tryAgainBtn: "Qayta urinib ko‘rish",
     nextTaskBtn: "Keyingi masala",
     ruleBreakdownTitle: "Mavzu qoidasi bo‘yicha tahlil:",
     openLabForTopic: "Shu mavzuda xatoni topishni mashq qilish",
-    allTasksSolved: "Barcha 3 ta masala to‘g‘ri yechildi. Qoidani yangi sonlar bilan mustahkamlang yoki keyingi mavzuga o‘ting.",
+    allTasksSolved: "Barcha 3 ta masala to‘g‘ri yechildi. Qoidani boshqa sonlar bilan mustahkamlang yoki keyingi mavzuga o‘ting.",
     nextTopicBtn: "Keyingi mavzu",
-    transferTitle: "Yangi sonlar bilan masala",
+    transferTitle: "Boshqa sonlar bilan masala",
     transferSub: "Mavzuning asosiy qoidasini tayyor variantlarsiz qo‘llang (24 xil variant).",
     transferCheck: "Javobni tekshirish",
-    transferNext: "Boshqa sonlar",
+    transferNext: "Yangi sonlar",
     transferRight: "To‘g‘ri! Qoida aniq qo‘llanildi.",
     transferWrong: "Javob mos kelmadi. Hisobni asosiy qoida bilan solishtiring.",
     transferInvalid: "Butun son, o‘nli kasr yoki 3/7 shaklidagi kasr kiriting.",
-    aiTitle: "Sokratik SI-tyutor (Claude API)",
+    aiTitle: "Mavzu bo‘yicha SI-tyutor",
     aiSub:
-      "Oddiy chat-botdan farqli o‘laroq, Claude API sizning aniq xatongizni tahlil qiladi, qoidani sodda tilda tushuntiradi va Feynman usulida yo‘naltiruvchi savol beradi.",
+      "Qiyinchilik tug‘dirgan qadamni yoki savolni yozing. Tyutor xatoni tushuntiradi va yo‘naltiruvchi savol beradi.",
     question: "Savolingiz yoki qiyinchilik tug‘dirgan qadam",
-    placeholder: "Masalan: nega Viyet teoremasida ildizlar yig‘indisi qarama-qarshi ishora bilan olinadi?",
-    quickLabel: "Ko‘p beriladigan savollar:",
-    quickQuestions: [
-      "Nega hadni tenglikning boshqa tomoniga o‘tkazganda ishora o‘zgaradi?",
-      "Shu bo‘limdagi formulalarni adashtirmaslik uchun nimaga e’tibor berish kerak?",
-      "Imtihonda bu mavzuda ko‘pincha qaysi qadamda ball yo‘qotiladi?"
-    ],
+    quickLabel: "Shu mavzu bo‘yicha savol namunalari:",
     schoolPrivacyNote:
       "Maktab o‘quvchilari uchun anonim rejim: ro‘yxatdan o‘tish shart emas. Ism-sharif, telefon yoki maktab raqamini kiritmang.",
     consent: "Tahlil olish uchun faqat matematik o‘quv savolini yuborishga roziman (shaxsiy ma’lumotlarsiz).",
-    ask: "SI-tyutor tahlilini olish",
+    consentRequiredHint: "Rozilik belgisini qo‘ying va o‘quv savolini kiriting (kamida 3 ta belgi).",
+    ask: "Tahlil olish",
     loading: "Javob tayyorlanmoqda…",
-    pilot: "Generativ tahlil himoyalangan /api/explain server yo‘nalishi orqali (Claude API + zaxira konturi) bajariladi.",
+    pilot: "Serverda Claude API kaliti faol bo‘lsa, javobni Claude modeli yaratadi; aks holda mavzu qoidasi bo‘yicha mahalliy tahlil ko‘rsatiladi.",
     privacy: "Maxfiylik",
-    rmTitle: "Imtihonga ilmiy tayyorgarlik rejasi (Bloom 2σ + Ebbinghaus SM-2 + Bjork Interleaving)",
-    rmSub: "16 ta mavzu tartibi Ebbingauz unutish egri chizig‘i R(t) = exp(−t/S), Blumning 80% mahorat chegarasi va Byork interlivingi asosida tuziladi.",
-    rmTarget: "Maqsadli ball (50 dan)",
+    badgeLive: "SI-tyutor tahlili (Claude API)",
+    badgePreview: "Mavzu qoidasi bo‘yicha mahalliy tahlil (demo-rejim)",
+    rmTitle: "Mening UBTga tayyorgarlik rejam",
+    rmSub: "Maqsadli ball va imtihongacha qolgan haftalarni tanlang — bugungi va haftalik ustuvor mavzularni ko‘rasiz.",
+    rmNotAssessedBanner:
+      "Diagnostika hali o‘tilmagan: quyida namunaviy yo‘nalish ko‘rsatilgan. O‘z natijangiz bo‘yicha reja tuzish uchun Sinov UBT topshiring.",
+    rmAssessedBanner: (mastered: number) =>
+      `Reja natijalaringiz asosida tuzildi: mustahkamlangan mavzular — 16 tadan ${mastered}.`,
+    rmStartDiagnosticBtn: "Sinov UBTni boshlash →",
+    rmTarget: "Profil matematika bo‘yicha maqsadli ball (50 dan)",
     rmWeeks: "Imtihongacha haftalar soni",
-    rmWeak: "Mustahkamlash kerak bo‘lgan mavzular (16 bo‘limdan)",
-    rmConsolidation: "Blum chegarasi bo‘yicha mustahkamlangan (≥2 mustaqil masala)",
-    rmConsolidationEmpty: "Hozircha mustahkamlangan mavzu yo‘q — «Xatolar ustida ishlash» bo‘limida yordamsiz 2 tadan masala yeching.",
-    rmGoal: "SI-rejalashtiruvchi (Claude API) uchun maqsad va qiyinchilik",
+    rmPaceLabel: (perWeek: number) => `Tavsiya etilgan sur’at: haftasiga ~${perWeek} mavzu`,
+    rmTodayTitle: "1. Bugun va shu haftada nima qilish kerak",
+    rmTodaySub: "Murakkab bo‘limlar uchun asos bo‘ladigan tayanch mavzulardan boshlang:",
+    rmOpenLesson: "Darsni ochish",
+    rmOpenLab: "Xatoni topish",
+    rmInterleavedLabel: "Formulalarni adashtirmaslik uchun mavzularni navbat билан takrorlash:",
+    rmWeak: "2. Qiyinchilik tug‘diradigan mavzularni belgilang",
+    rmHowDetailsSummary: "Bu reja qanday tuzilgan",
+    rmHowDetailsBody:
+      "Avvalo logarifm, trigonometriya va hosila uchun asos bo‘ladigan tayanch mavzular (chiziqli, kvadrat tenglamalar, tengsizliklar) tavsiya etiladi. Yordamsiz 2 ta masala yechilgach, mavzu mustahkamlangan hisoblanadi.",
+    rmHowDetailsLink: "Metodika va ilmiy manbalar haqida (/about) →",
+    rmAiDetailsSummary: "SI-rejalashtiruvchi orqali maqsad bo‘yicha rejani aniqlashtirish",
+    rmGoal: "Maqsadingiz va asosiy qiyinchilikni yozing",
     rmGoalPlaceholder: "Masalan: logarifm va hosilada xato qilaman, 6 haftada 42+ ball yig‘ishim kerak",
     rmPresets: [
-      "6 haftada 45/50 ball: Viyet teoremasi, tengsizliklar va trigonometriyada ishora xatolari",
+      "6 haftada 45/50 ball: kvadrat tenglamalar, tengsizliklar va trigonometriyada ishora xatolari",
       "4 haftada 38/50 ball: hosila, integral va stereometriya"
     ],
-    rmGenerate: "Claude API bilan reja tuzish",
-    rmBaseTitle: "Tavsiya etilgan mavzular tartibi (Blum + Ebbingauz matritsasi)",
-    rmPhase1: "1-bosqich (1–2 hafta): tayanch prerevizitlar va bo‘shliqlarni yopish",
-    rmPhase2: "2-bosqich (3+ hafta): Byork interlivingi va ko‘nikmani tekshirish",
+    rmGenerate: "Shaxsiy reja tuzish",
     rmClaudeTitle: "Haftalik shaxsiy o‘quv rejasi",
     rmMilestones: "Haftalik qadamlar",
-    rmHabit: "Ilmiy tayyorgarlik tartibi",
-    badgeLive: "Claude API · Jonli tahlil",
-    badgePreview: "Dars invarianti · Zaxira konturi"
+    rmHabit: "Tayyorgarlik tartibi"
   }
 };
-
-function ScienceMethodIcon({ icon, size = 18 }: { icon: ScientificMethodSpec["icon"]; size?: number }) {
-  switch (icon) {
-    case "GitBranch":
-      return <GitBranch size={size} aria-hidden="true" />;
-    case "Clock":
-      return <Clock size={size} aria-hidden="true" />;
-    case "Microscope":
-      return <Microscope size={size} aria-hidden="true" />;
-    case "Shuffle":
-      return <Shuffle size={size} aria-hidden="true" />;
-    case "Layers":
-      return <Layers size={size} aria-hidden="true" />;
-    case "Sparkles":
-      return <Sparkles size={size} aria-hidden="true" />;
-  }
-}
 
 type WebContext = {
   registerTool: (
@@ -438,18 +366,29 @@ type ClaudeRoadmap = {
 const emptyProgress: Progress = { version: 1, records: [] };
 const optionLetters = ["A", "B", "C", "D"];
 
+export type WorkspaceTab = "lesson" | "practice" | "ai" | "xray" | "exam" | "graph" | "roadmap";
+
 export interface StudyProps {
-  initialWelcomeOpen?: boolean;
+  initialLang?: Language;
+  initialTab?: WorkspaceTab;
+  initialTopic?: TopicId;
+  initialSubjectId?: UntSubjectId;
+  initialVariantNumber?: number;
 }
 
-export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
+export default function Study({
+  initialLang = "ru",
+  initialTab = "lesson",
+  initialTopic = "linear",
+  initialSubjectId = "math",
+  initialVariantNumber = 1
+}: StudyProps = {}) {
   const { dark, toggleTheme } = useAniqTheme();
-  const [lang, setLang] = useState<Language>("ru");
-  const [topic, setTopic] = useState<TopicId>("linear");
-  const [tab, setTab] = useState("lesson");
-  const [showWelcome, setShowWelcome] = useState(initialWelcomeOpen);
-  const [examSubjectId, setExamSubjectId] = useState<UntSubjectId>("math");
-  const [examVariantNumber, setExamVariantNumber] = useState<number>(1);
+  const [lang, setLang] = useState<Language>(initialLang);
+  const [topic, setTopic] = useState<TopicId>(initialTopic);
+  const [tab, setTab] = useState<string>(initialTab);
+  const [examSubjectId, setExamSubjectId] = useState<UntSubjectId>(initialSubjectId);
+  const [examVariantNumber, setExamVariantNumber] = useState<number>(initialVariantNumber);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // Focused step-by-step practice state (questions 0, 1, 2 + transfer task index 3)
@@ -465,7 +404,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
   const [showTransferRule, setShowTransferRule] = useState(false);
 
   const [question, setQuestion] = useState("");
-  const [consent, setConsent] = useState(true);
+  const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [answer, setAnswer] = useState<{ explanation: string; hint: string; source?: string } | null>(null);
@@ -495,28 +434,49 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
 
   const isStudySection = tab === "lesson" || tab === "practice" || tab === "ai";
 
-  // Scientific Learning Telemetry for the active topic (Bloom + Ebbinghaus + Sweller + Bjork)
-  const topicScientificTelemetry = useMemo(() => {
+  // Topic-specific progress (honest: no fake 45% or 34% before solving tasks)
+  const topicStatusInfo = useMemo(() => {
     const topicRecords = labProgress.records.filter((r) => r.topic === topic);
     const soloReviews = topicRecords.filter((r) => r.independent).length;
     const untRatio = untStorage.lastAttempt?.topicRatios?.[topic];
-    const masteryPercent = Math.min(
-      100,
-      Math.round(
-        (untRatio !== undefined ? untRatio * 60 : 45) +
-          Math.min(40, soloReviews * 20) +
-          (solvedCount * 5)
-      )
-    );
-    const ebbinghaus = computeEbbinghausRetention(
-      soloReviews > 0 ? 1 : 2,
-      soloReviews + (solvedCount === 3 ? 1 : 0),
-      masteryPercent >= 80 ? 5 : 4
-    );
-    const bloomGate = computeBloomMasteryGate([masteryPercent]);
-    const sweller = computeSwellerScaffoldingLevel(masteryPercent, lang);
-    return { masteryPercent, ebbinghaus, bloomGate, sweller, soloReviews };
-  }, [labProgress.records, untStorage.lastAttempt, topic, solvedCount, lang]);
+    const hasActivity = soloReviews > 0 || solvedCount > 0 || untRatio !== undefined;
+    return { hasActivity, soloReviews };
+  }, [labProgress.records, untStorage.lastAttempt, topic, solvedCount]);
+
+  const isPlanAssessed =
+    untStorage.lastAttempt !== null || labProgress.records.length > 0;
+
+  // Dynamic topic-specific prompts for the AI tutor (never show Vieta's theorem inside Linear Equations)
+  const topicAiPrompts = useMemo(() => {
+    if (lang === "kk") {
+      return {
+        placeholder: `Мысалы: «${lesson.title}» тақырыбындағы «${lesson.example}» мысалының бірінші қадамы неге осылай орындалады?`,
+        quick: [
+          `«${lesson.title}» тақырыбындағы «${lesson.example}» үлгісінің әр қадамын түсіндіріп берші.`,
+          `Осы тақырыпта («${lesson.title}») ҰБТ-да оқушылар көбіне қай жерде қателеседі?`,
+          `Тақырыптың негізгі ережесін есеп шығарғанда қалай жылдам тексеруге болады?`
+        ]
+      };
+    }
+    if (lang === "uz") {
+      return {
+        placeholder: `Masalan: «${lesson.title}» mavzusidagi «${lesson.example}» misolining birinchi qadami nega shunday bajariladi?`,
+        quick: [
+          `«${lesson.title}» mavzusidagi «${lesson.example}» namunasining har bir qadamini tushuntirib bering.`,
+          `Shu mavzuda («${lesson.title}») imtihonda ko‘pincha qaysi qadamda xato qilinadi?`,
+          `Mavzuning asosiy qoidasini masalada qanday tez tekshirish mumkin?`
+        ]
+      };
+    }
+    return {
+      placeholder: `Например: почему в теме «${lesson.title}» в примере «${lesson.example}» выполняется именно такой первый переход?`,
+      quick: [
+        `Разбери по шагам образец «${lesson.example}» из темы «${lesson.title}».`,
+        `На каком шаге в теме «${lesson.title}» чаще всего теряют баллы на ЕНТ?`,
+        `Как быстро проверить себя по главному правилу темы «${lesson.title}»?`
+      ]
+    };
+  }, [lang, lesson.title, lesson.example]);
 
   const interleavedQueue = useMemo(() => {
     const items = baseline.priorityModules.map((m) => ({
@@ -525,8 +485,27 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
       phase: m.phase,
       soloCount: m.soloCount
     }));
-    return buildBjorkInterleavedList(items).slice(0, 8);
+    return buildBjorkInterleavedList(items).slice(0, 6);
   }, [baseline.priorityModules]);
+
+  function syncUrl(nextLang: Language, nextTab: string, nextTopic: TopicId) {
+    if (typeof window === "undefined") return;
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("lang", nextLang);
+      if (nextTab && nextTab !== "lesson") {
+        url.searchParams.set("tab", nextTab);
+      } else {
+        url.searchParams.delete("tab");
+      }
+      if (nextTopic && nextTopic !== "linear") {
+        url.searchParams.set("topic", nextTopic);
+      } else {
+        url.searchParams.delete("topic");
+      }
+      window.history.replaceState({}, "", url.toString());
+    } catch {}
+  }
 
   useEffect(() => {
     current.current = { topic, language: lang };
@@ -538,24 +517,24 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
 
   useEffect(() => {
     queueMicrotask(() => {
+      const params = new URLSearchParams(window.location.search);
+      const hasUrlLang = params.has("lang");
+
       try {
         const storedProfile = loadUserProfile();
-        if (storedProfile) {
+        if (storedProfile && storedProfile.name) {
           setUserProfile(storedProfile);
           setTargetScore(storedProfile.targetScore);
-          setLang(storedProfile.preferredLanguage);
+          if (!hasUrlLang) {
+            setLang(storedProfile.preferredLanguage);
+          }
         }
       } catch {}
 
       try {
-        const params = new URLSearchParams(window.location.search);
         const qLang = params.get("lang");
         if (qLang === "ru" || qLang === "kk" || qLang === "uz") {
           setLang(qLang);
-        }
-        const qWelcome = params.get("welcome");
-        if (qWelcome === "1" || qWelcome === "true") {
-          setShowWelcome(true);
         }
         const qSubject = params.get("subject");
         if (qSubject && UNT_SUBJECTS.some((s) => s.id === qSubject)) {
@@ -576,7 +555,6 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
           qTab === "roadmap"
         ) {
           setTab(qTab);
-          if (qWelcome !== "1") setShowWelcome(false);
         }
         const qTopic = params.get("topic");
         if (qTopic && (untTopicIds as readonly string[]).includes(qTopic)) {
@@ -646,18 +624,18 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
         ? {
             quota: "Лимит запросов пилота исчерпан. Продолжите с готовыми материалами.",
             origin: "Неверный источник запроса.",
-            input: "Введите учебный вопрос (от 3 символов) и оставьте отметку согласия."
+            input: t.consentRequiredHint
           }
         : lang === "kk"
           ? {
               quota: "Сынақ лимиті аяқталды. Дайын сабақтарды жалғастырыңыз.",
               origin: "Сұраныс көзі қате.",
-              input: "Оқу сұрағын енгізіп, келісім белгісін тексеріңіз."
+              input: t.consentRequiredHint
             }
           : {
               quota: "Sinov limiti tugadi. Tayyor darslarni davom ettiring.",
               origin: "So‘rov manbasi noto‘g‘ri.",
-              input: "O‘quv savolini kiriting va rozilik belgisini tekshiring."
+              input: t.consentRequiredHint
             };
     return (
       codes[code ?? ""] ??
@@ -689,24 +667,21 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
   function selectTopic(id: TopicId) {
     reset();
     setTopic(id);
+    const nextTab = isStudySection ? tab : "lesson";
     if (!isStudySection) setTab("lesson");
+    syncUrl(lang, nextTab, id);
   }
 
   function openTopicLesson(id: TopicId) {
     reset();
     setTopic(id);
     setTab("lesson");
-    setShowWelcome(false);
+    syncUrl(lang, "lesson", id);
   }
 
-  function launchSubjectExam(subjId: UntSubjectId, variantNum: number = 1) {
-    setExamSubjectId(subjId);
-    setExamVariantNumber(variantNum);
-    setTab("exam");
-    setShowWelcome(false);
-    setTimeout(() => {
-      document.getElementById("workspace-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 40);
+  function handleTabChange(nextTab: string) {
+    setTab(nextTab);
+    syncUrl(lang, nextTab, topic);
   }
 
   function handleCompleteUntExam(summary: UntAttemptSummary) {
@@ -728,6 +703,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
     reset();
     setRmError("");
     setLang(value);
+    syncUrl(value, tab, topic);
   }
 
   function checkCurrentQuestion(qIdx: number) {
@@ -777,9 +753,10 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
     });
   }
 
-  async function runExplainQuery(rawQuestion: string) {
+  async function runExplainQuery(rawQuestion: string, overrideConsent?: boolean) {
     if (busy) return;
-    if (!consent || rawQuestion.trim().length < 3) {
+    const isConsented = overrideConsent ?? consent;
+    if (!isConsented || rawQuestion.trim().length < 3) {
       setError(errorText("input"));
       return;
     }
@@ -824,9 +801,8 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
   function askWithPrefill(prefilled: string) {
     setConsent(true);
     setQuestion(prefilled);
-    setTab("ai");
-    setShowWelcome(false);
-    void runExplainQuery(prefilled);
+    handleTabChange("ai");
+    void runExplainQuery(prefilled, true);
   }
 
   async function askRoadmap() {
@@ -887,14 +863,6 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
     saveUserProfile(updated);
   }
 
-  function jumpToSection(nextTab: string) {
-    setTab(nextTab);
-    setShowWelcome(false);
-    setTimeout(() => {
-      document.getElementById("workspace-anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 40);
-  }
-
   const currentQuestionObj = lesson.questions[activeQ] ?? lesson.questions[0];
   const isCurrentChecked = Boolean(checkedMap[activeQ]);
   const selectedVal = answers[activeQ];
@@ -905,22 +873,22 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
       : "";
 
   const targetUniShort =
-    userProfile
+    userProfile && userProfile.name
       ? kzUniversities.find((u) => u.id === userProfile.targetUniversity)?.shortName ?? "KBTU"
       : null;
 
   return (
     <div className="textbook-shell">
-      {/* 1. Header: BilimAI Brand + Theme Toggle + Language Switcher + Auth Buttons + Primary Nav */}
+      {/* Header: BilimAI Brand + Language Switcher + Theme Toggle + Calm Profile Link + Unified Nav */}
       <header className="site-header">
         <div className="wrap header-inner">
           <div className="header-top-row">
             <a
               className="aniq-brand-logo"
-              href="/"
+              href={`/?lang=${lang}`}
               onClick={(e) => {
                 e.preventDefault();
-                setTab("lesson");
+                handleTabChange("lesson");
               }}
             >
               <span className="aniq-logo-badge" aria-hidden="true">
@@ -929,19 +897,14 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
               <span className="aniq-logo-word">
                 Bilim<span className="text-brand">AI</span>
               </span>
-              <span className="brand-sub">ЕНТ · ҰБТ · 12 пән</span>
+              <span className="brand-sub">ЕНТ · ҰБТ</span>
             </a>
 
             <div className="header-right">
-              <button
-                type="button"
-                className="header-quiet-link inline-flex items-center gap-1"
-                onClick={() => setShowWelcome((v) => !v)}
-              >
-                {showWelcome ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                <span>{showWelcome ? t.welcomeHide : t.welcomeShow}</span>
-              </button>
-              <a className="header-quiet-link" href="/about">
+              <a className="header-quiet-link" href={`/welcome?lang=${lang}`}>
+                {t.navWelcome}
+              </a>
+              <a className="header-quiet-link" href={`/about?lang=${lang}`}>
                 {t.navAbout}
               </a>
 
@@ -974,12 +937,12 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
 
               <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
-              {userProfile ? (
+              {userProfile && userProfile.name ? (
                 <div className="aniq-user-chip">
                   <button
                     type="button"
                     className="aniq-user-btn"
-                    onClick={() => jumpToSection("xray")}
+                    onClick={() => handleTabChange("xray")}
                     title={userProfile.identifier}
                   >
                     <User size={14} />
@@ -1000,14 +963,9 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                   </button>
                 </div>
               ) : (
-                <div className="aniq-auth-btns">
-                  <a className="aniq-btn aniq-btn-ghost" href={`/login?lang=${lang}`}>
-                    {t.loginBtn}
-                  </a>
-                  <a className="aniq-btn aniq-btn-primary" href={`/register?lang=${lang}`}>
-                    {t.registerBtn}
-                  </a>
-                </div>
+                <a className="header-quiet-link" href={`/login?lang=${lang}`}>
+                  {t.profileBtn}
+                </a>
               )}
             </div>
           </div>
@@ -1017,22 +975,16 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
               type="button"
               className={`primary-nav-link ${isStudySection ? "active" : ""}`}
               aria-current={isStudySection ? "page" : undefined}
-              onClick={() => {
-                setTab("lesson");
-                setShowWelcome(false);
-              }}
+              onClick={() => handleTabChange("lesson")}
             >
               <BookOpen size={14} />
               <span>{t.navStudy}</span>
             </button>
             <button
               type="button"
-              className={`primary-nav-link xray-nav-highlight ${tab === "xray" ? "active" : ""}`}
+              className={`primary-nav-link ${tab === "xray" ? "active" : ""}`}
               aria-current={tab === "xray" ? "page" : undefined}
-              onClick={() => {
-                setTab("xray");
-                setShowWelcome(false);
-              }}
+              onClick={() => handleTabChange("xray")}
             >
               <Microscope size={14} />
               <span>{t.navXray}</span>
@@ -1041,10 +993,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
               type="button"
               className={`primary-nav-link ${tab === "graph" ? "active" : ""}`}
               aria-current={tab === "graph" ? "page" : undefined}
-              onClick={() => {
-                setTab("graph");
-                setShowWelcome(false);
-              }}
+              onClick={() => handleTabChange("graph")}
             >
               <GitBranch size={14} />
               <span>{t.navGraph}</span>
@@ -1053,10 +1002,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
               type="button"
               className={`primary-nav-link ${tab === "exam" ? "active" : ""}`}
               aria-current={tab === "exam" ? "page" : undefined}
-              onClick={() => {
-                setTab("exam");
-                setShowWelcome(false);
-              }}
+              onClick={() => handleTabChange("exam")}
             >
               <Target size={14} />
               <span>{t.navExam}</span>
@@ -1065,10 +1011,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
               type="button"
               className={`primary-nav-link ${tab === "roadmap" ? "active" : ""}`}
               aria-current={tab === "roadmap" ? "page" : undefined}
-              onClick={() => {
-                setTab("roadmap");
-                setShowWelcome(false);
-              }}
+              onClick={() => handleTabChange("roadmap")}
             >
               <Calendar size={14} />
               <span>{t.navPlan}</span>
@@ -1081,330 +1024,10 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
         </div>
       </header>
 
-      {/* 2A. Compact 1-Line Welcome & All-12-Subjects Command Bar when inside Workspace */}
-      {!showWelcome && (
-        <div className="wrap">
-          <div className="aniq-compact-welcome-bar">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="aniq-compact-label">
-                <Award size={14} className="text-amber-600 shrink-0" />
-                <span>{t.compactWelcomeLabel}</span>
-              </span>
-              {UNT_SUBJECTS.slice(0, 6).map((subj) => (
-                <button
-                  key={subj.id}
-                  type="button"
-                  className={`aniq-compact-subj-pill ${tab === "exam" && examSubjectId === subj.id ? "active" : ""}`}
-                  onClick={() => launchSubjectExam(subj.id, 1)}
-                >
-                  <SubjectIcon subjectId={subj.id} size={13} />
-                  <span>{subj.shortTitle[lang]}</span>
-                </button>
-              ))}
-              <button
-                type="button"
-                className="aniq-compact-subj-pill highlight"
-                onClick={() => setShowWelcome(true)}
-              >
-                <Sparkles size={13} />
-                <span>{t.welcomeShow} (12 предметов + 6 методик)</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 2B. Full Floating Welcome Page Showcase (3D Fibonacci Sphere + 12 UNT Subjects + Bento + 6 Scientific Methods) */}
-      {showWelcome && (
-        <section className="aniq-hero-showcase" aria-label={t.welcomeBadge}>
-          <HeroCanvas />
-          <div className="hero-glow" aria-hidden="true" />
-
-          <div className="wrap aniq-hero-inner">
-            <div className="aniq-hero-center">
-              <div className="aniq-badge-pill">
-                <span className="pulse-dot" />
-                <span>{t.welcomeBadge}</span>
-              </div>
-
-              <h2 className="aniq-hero-h1">
-                {t.welcomeTitle} <br />
-                <span className="gradient-text">{t.welcomeHighlight}</span>
-              </h2>
-
-              <p className="aniq-hero-lead">{t.welcomeDesc}</p>
-
-              <div className="aniq-hero-ctas">
-                <button
-                  type="button"
-                  onClick={() => jumpToSection("xray")}
-                  className="aniq-btn aniq-btn-primary aniq-btn-lg"
-                >
-                  <Microscope size={18} />
-                  <span>{t.welcomeCtaXray}</span>
-                  <ArrowRight size={18} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => jumpToSection("exam")}
-                  className="aniq-btn aniq-btn-ghost aniq-btn-lg aniq-glass"
-                >
-                  <Target size={18} />
-                  <span>{t.welcomeCtaExam}</span>
-                </button>
-                {!userProfile && (
-                  <a
-                    href={`/register?lang=${lang}`}
-                    className="aniq-btn aniq-btn-ghost aniq-btn-lg"
-                  >
-                    <GraduationCap size={18} />
-                    <span>{t.welcomeCtaRegister}</span>
-                  </a>
-                )}
-              </div>
-
-              {/* 4 Glass Stat Tiles */}
-              <div className="aniq-stat-grid">
-                <div className="aniq-stat-tile aniq-glass">
-                  <div className="aniq-stat-num gradient-text">12 предметов</div>
-                  <div className="aniq-stat-lbl">по спецификации НЦТ РК</div>
-                </div>
-                <div className="aniq-stat-tile aniq-glass">
-                  <div className="aniq-stat-num gradient-text">4 800</div>
-                  <div className="aniq-stat-lbl">заданий в 120 вариантах ЕНТ</div>
-                </div>
-                <div className="aniq-stat-tile aniq-glass">
-                  <div className="aniq-stat-num gradient-text">6 методик</div>
-                  <div className="aniq-stat-lbl">Bloom 2σ · SM-2 · Kapur · Bjork</div>
-                </div>
-                <div className="aniq-stat-tile aniq-glass">
-                  <div className="aniq-stat-num gradient-text">Claude AI</div>
-                  <div className="aniq-stat-lbl">+ Радар гранта ВУЗов РК</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Interactive 12 UNT Subjects & Profile Combination Hub */}
-            <div className="aniq-subjects-showcase mt-8">
-              <div className="aniq-bento-head">
-                <div className="aniq-bento-kicker">ПОЛНЫЙ ОХВАТ НЦТ РК (TESTCENTER.KZ)</div>
-                <h3 className="aniq-bento-title">{t.allSubjectsTitle}</h3>
-                <p className="small max-w-2xl mx-auto mt-1">{t.allSubjectsSub}</p>
-              </div>
-
-              <div className="unt-subject-grid mt-4">
-                {UNT_SUBJECTS.map((subj) => (
-                  <button
-                    key={subj.id}
-                    type="button"
-                    className="unt-subject-card"
-                    style={{ "--subj-accent": `rgb(${subj.accentRgb})` } as React.CSSProperties}
-                    onClick={() => launchSubjectExam(subj.id, 1)}
-                  >
-                    <span className="unt-subject-icon">
-                      <SubjectIcon subjectId={subj.id} size={18} />
-                    </span>
-                    <span className="unt-subject-info">
-                      <strong>{subj.title[lang]}</strong>
-                      <small>10 вариантов × 40 вопр. (50 б.)</small>
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-2 mt-3">
-                {UNT_PROFILE_COMBINATIONS.map((combo) => (
-                  <button
-                    key={combo.id}
-                    type="button"
-                    className="unt-combo-chip"
-                    onClick={() => launchSubjectExam(combo.subjects[0], 1)}
-                  >
-                    <GraduationCap size={13} />
-                    <span>{combo.title[lang]}</span>
-                    <small className="opacity-75">· {combo.careers[lang]}</small>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 6-Card Bento Grid with Per-Tile RGB Glow */}
-            <div className="aniq-bento-section">
-              <div className="aniq-bento-head">
-                <div className="aniq-bento-kicker">{t.bentoKicker}</div>
-                <h3 className="aniq-bento-title">{t.bentoTitle}</h3>
-              </div>
-
-              <div className="aniq-bento-grid">
-                <button
-                  type="button"
-                  onClick={() => jumpToSection("xray")}
-                  className="bento-tile text-left"
-                  style={{ ["--tile-rgb" as string]: "216, 90, 48" }}
-                >
-                  <span
-                    className="bento-icon"
-                    style={{
-                      background: "linear-gradient(135deg, #d85a30, #8a2c14)",
-                      boxShadow: "0 6px 16px -6px rgba(216, 90, 48, 0.55)"
-                    }}
-                  >
-                    <Microscope size={22} />
-                  </span>
-                  <div className="bento-badge-tag">ИЗЮМИНКА СТАРТАПА</div>
-                  <h4 className="bento-card-title">Рентген черновика & Блиц ловушек</h4>
-                  <p className="bento-card-desc">
-                    Построчный дебаггер решения и 60-сек поиск точки излома логики (ОДЗ, знак, модуль) без штрафа за усвоенные темы.
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => jumpToSection("lesson")}
-                  className="bento-tile text-left"
-                  style={{ ["--tile-rgb" as string]: "217, 138, 43" }}
-                >
-                  <span
-                    className="bento-icon"
-                    style={{
-                      background: "linear-gradient(135deg, #d98a2b, #7c4a0e)",
-                      boxShadow: "0 6px 16px -6px rgba(217, 138, 43, 0.55)"
-                    }}
-                  >
-                    <BookOpen size={22} />
-                  </span>
-                  <h4 className="bento-card-title">Интерактивный учебник (16 разделов)</h4>
-                  <p className="bento-card-desc">
-                    Главное правило-инвариант, крупная формула, разбор по шагам Свеллера и перенос навыка на задачи с новыми числами.
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => jumpToSection("exam")}
-                  className="bento-tile text-left"
-                  style={{ ["--tile-rgb" as string]: "255, 154, 60" }}
-                >
-                  <span
-                    className="bento-icon"
-                    style={{
-                      background: "linear-gradient(135deg, #ff9a3c, #994d08)",
-                      boxShadow: "0 6px 16px -6px rgba(255, 154, 60, 0.55)"
-                    }}
-                  >
-                    <Target size={22} />
-                  </span>
-                  <h4 className="bento-card-title">Пробное ЕНТ · 12 предметов × 10 вариантов</h4>
-                  <p className="bento-card-desc">
-                    По 40 вопросов (50 баллов) на каждый вариант: одновыборные, контекст, соответствие A/B (2 б.) и мультивыбор из 6 (2 б.).
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => jumpToSection("graph")}
-                  className="bento-tile text-left"
-                  style={{ ["--tile-rgb" as string]: "10, 132, 216" }}
-                >
-                  <span
-                    className="bento-icon"
-                    style={{
-                      background: "linear-gradient(135deg, #0a84d8, #083b66)",
-                      boxShadow: "0 6px 16px -6px rgba(10, 132, 216, 0.55)"
-                    }}
-                  >
-                    <BrainCircuit size={22} />
-                  </span>
-                  <h4 className="bento-card-title">Граф знаний «Второй мозг» (Bloom 2σ)</h4>
-                  <p className="bento-card-desc">
-                    Направленный граф пререквизитов с порогом мастерства 80%: отделяет корневой пробел в базе от зависимых разделов.
-                  </p>
-                </button>
-
-                <a
-                  href={`/lab?lang=${lang}&topic=${topic}`}
-                  className="bento-tile text-left no-underline"
-                  style={{ ["--tile-rgb" as string]: "21, 163, 127" }}
-                >
-                  <span
-                    className="bento-icon"
-                    style={{
-                      background: "linear-gradient(135deg, #15a37f, #094a3b)",
-                      boxShadow: "0 6px 16px -6px rgba(21, 163, 127, 0.55)"
-                    }}
-                  >
-                    <Compass size={22} />
-                  </span>
-                  <h4 className="bento-card-title">Лаборатория 1 152 ошибок & Claude</h4>
-                  <p className="bento-card-desc">
-                    Метод продуктивной неудачи Ману Капура (ETH Zurich): поиск первого неверного шага даёт 2× перенос навыка на ЕНТ.
-                  </p>
-                </a>
-
-                <div className="bento-cta-tile">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider opacity-90 mb-1">
-                    <GraduationCap size={16} />
-                    <span>Радар Гранта РК</span>
-                  </div>
-                  <h4 className="bento-cta-title">Готовы узнать свой шанс на грант?</h4>
-                  <p className="bento-cta-desc">
-                    Создайте паспорт абитуриента (КБТУ, МУИТ, AITU, SDU, Satbayev) и рассчитайте прибавку баллов за минуту.
-                  </p>
-                  <div className="flex gap-2 flex-wrap mt-auto">
-                    <a className="aniq-btn aniq-btn-white" href={`/register?lang=${lang}`}>
-                      {t.welcomeCtaRegister}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => jumpToSection("xray")}
-                      className="aniq-btn aniq-btn-outline-white"
-                    >
-                      <span>Открыть Радар</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 6 Scientific Learning Methodologies Showcase */}
-            <div className="aniq-science-showcase mt-8">
-              <div className="aniq-bento-head">
-                <div className="aniq-bento-kicker">{t.scienceKicker}</div>
-                <h3 className="aniq-bento-title">{t.scienceTitle}</h3>
-                <p className="small max-w-2xl mx-auto mt-1">{t.scienceSub}</p>
-              </div>
-
-              <div className="science-methods-grid mt-4">
-                {SCIENTIFIC_METHODS.map((m) => (
-                  <div key={m.id} className="science-method-card">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="science-method-icon">
-                        <ScienceMethodIcon icon={m.icon} size={17} />
-                      </span>
-                      <span className="science-effect-pill">{m.effectMetric}</span>
-                    </div>
-                    <h4 className="science-method-title">{m.title[lang]}</h4>
-                    <p className="science-method-meta">
-                      {m.scientist} · {m.institution} ({m.year})
-                    </p>
-                    <code className="science-formula-box">{m.formula}</code>
-                    <p className="small mt-2 mb-1.5">{m.evidenceSummary[lang]}</p>
-                    <p className="small m-0 font-medium text-amber-800 dark:text-amber-300">
-                      {m.platformMechanism[lang]}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
       <main id="workspace-anchor" className="wrap main-container">
         {isStudySection ? (
           <>
-            {/* Mobile Topic Selector (Single compact line above the study page) */}
+            {/* Mobile Topic Selector */}
             <div className="mobile-topic-bar">
               <label htmlFor="mobile-lesson-select">{t.mobileTopicLabel}</label>
               <select
@@ -1423,7 +1046,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
             </div>
 
             <div className="workspace">
-              {/* 2. Topic List: Unboxed Textbook Table of Contents (All 16 UNT Sections) */}
+              {/* Topic List: Unboxed Textbook Table of Contents (All 16 UNT Sections) */}
               <aside className="topics" aria-label={t.topics}>
                 <h2 className="topics-heading">{t.topics}</h2>
                 <div className="topics-list">
@@ -1445,48 +1068,32 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                 </div>
               </aside>
 
-              {/* 3. Single Main Study Surface (Strict Left-Aligned Header Composition) */}
+              {/* Single Main Study Surface (Strict Left-Aligned Header Composition) */}
               <article className="surface" aria-label={lesson.title}>
                 <header className="lesson-head">
                   <div className="lesson-meta-line">
                     <span className="topic-index-label">
                       {String(topicIndex + 1).padStart(2, "0")} · {lesson.section}
                     </span>
+                    <span className="lesson-honest-status">
+                      {topicStatusInfo.hasActivity
+                        ? t.statusAssessed(solvedCount, lesson.questions.length, topicStatusInfo.soloReviews)
+                        : t.statusNotAssessed}
+                    </span>
                   </div>
                   <h1 className="lesson-title">{lesson.title}</h1>
                   <p className="lesson-intro">{lesson.intro}</p>
-
-                  {/* Live Scientific Pedagogy Telemetry Strip for Active Topic */}
-                  <div className="science-telemetry-strip mt-3">
-                    <span className="science-telemetry-pill">
-                      <GitBranch size={13} />
-                      <span>
-                        Bloom 2σ: <strong>{topicScientificTelemetry.masteryPercent}%</strong> (порог 80%)
-                      </span>
-                    </span>
-                    <span className="science-telemetry-pill">
-                      <Clock size={13} />
-                      <span>
-                        Эббингауз R(t): <strong>{topicScientificTelemetry.ebbinghaus.retentionPercent}%</strong> · повтор через{" "}
-                        <strong>{topicScientificTelemetry.ebbinghaus.nextIntervalDays} дн.</strong>
-                      </span>
-                    </span>
-                    <span className="science-telemetry-pill">
-                      <Brain size={13} />
-                      <span>{topicScientificTelemetry.sweller.label}</span>
-                    </span>
-                  </div>
                 </header>
 
                 {/* Inside the lesson: 3 calm modes for the current topic */}
-                <Tabs value={tab} onValueChange={setTab}>
+                <Tabs value={tab} onValueChange={handleTabChange}>
                   <TabsList className="tabsbar">
                     <TabsTrigger value="lesson">{t.lesson}</TabsTrigger>
                     <TabsTrigger value="practice">{t.practice}</TabsTrigger>
                     <TabsTrigger value="ai">{t.ai}</TabsTrigger>
                   </TabsList>
 
-                  {/* TAB 1: РАЗБОР (Rule -> Centerpiece Formula -> Numbered Steps -> Single Next Step) */}
+                  {/* TAB 1: РАЗБОР */}
                   <TabsContent value="lesson">
                     <div className="rule">
                       <span className="rule-label">{t.rule}</span>
@@ -1517,7 +1124,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                     <div className="lesson-footer-action">
                       <Button
                         onClick={() => {
-                          setTab("practice");
+                          handleTabChange("practice");
                           setActiveQ(0);
                         }}
                       >
@@ -1527,14 +1134,14 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                       <button
                         type="button"
                         className="quiet-text-action"
-                        onClick={() => setTab("ai")}
+                        onClick={() => handleTabChange("ai")}
                       >
                         {t.askAboutRule}
                       </button>
                     </div>
                   </TabsContent>
 
-                  {/* TAB 2: ПРАКТИКА (Step-by-step solving -> Contextual Feedback + 1-click Claude Tutor) */}
+                  {/* TAB 2: ПРАКТИКА */}
                   <TabsContent value="practice">
                     <div className="practice-header-bar">
                       <span className="practice-counter">
@@ -1644,7 +1251,6 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                           </div>
                         )}
 
-                        {/* Contextual feedback right next to the answer */}
                         {isCurrentChecked && (
                           <div role="status" className={`feedback ${isCurrentCorrect ? "correct" : "wrong"}`}>
                             <strong className="feedback-heading">
@@ -1666,7 +1272,6 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                           </div>
                         )}
 
-                        {/* Primary & Secondary Actions with clear visual separation */}
                         <div className="practice-actions">
                           {!isCurrentChecked ? (
                             <Button onClick={() => checkCurrentQuestion(activeQ)}>
@@ -1853,7 +1458,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                     )}
                   </TabsContent>
 
-                  {/* TAB 3: ИИ-ТЬЮТОР (CLAUDE API) */}
+                  {/* TAB 3: ИИ-ТЬЮТОР */}
                   <TabsContent value="ai">
                     <div className="ai-stage">
                       <h2 className="steps-heading">{t.aiTitle}</h2>
@@ -1862,13 +1467,14 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                       <div className="quick-prompts-block">
                         <span className="rule-label">{t.quickLabel}</span>
                         <div className="quick-prompts">
-                          {t.quickQuestions.map((qq) => (
+                          {topicAiPrompts.quick.map((qq) => (
                             <button
                               key={qq}
                               type="button"
                               className="quick-pill"
                               onClick={() => {
                                 setQuestion(qq);
+                                setConsent(true);
                                 setError("");
                               }}
                             >
@@ -1894,7 +1500,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                           name="learnerQuestion"
                           value={question}
                           maxLength={600}
-                          placeholder={t.placeholder}
+                          placeholder={topicAiPrompts.placeholder}
                           onChange={(e) => {
                             setQuestion(e.target.value);
                             if (error) setError("");
@@ -1909,7 +1515,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                           <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
                           <span>
                             {t.consent}{" "}
-                            <a href="/privacy" onClick={(e) => e.stopPropagation()}>
+                            <a href={`/privacy?lang=${lang}`} onClick={(e) => e.stopPropagation()}>
                               {t.privacy}
                             </a>
                           </span>
@@ -1977,7 +1583,7 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
               onCompleteExam={handleCompleteUntExam}
               onOpenGraph={(focusTopic) => {
                 if (focusTopic) setTopic(focusTopic);
-                setTab("graph");
+                handleTabChange("graph");
               }}
               onOpenLesson={openTopicLesson}
             />
@@ -1992,98 +1598,38 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
               selectedTopic={topic}
               onSelectTopic={setTopic}
               onOpenLesson={openTopicLesson}
-              onOpenExam={() => setTab("exam")}
+              onOpenExam={() => handleTabChange("exam")}
               onToggleWeakTopic={toggleWeakTopic}
             />
           </section>
         ) : (
+          /* TAB: МОЙ ПЛАН (Clean 3-block structure: 1. Goal & Level -> 2. Today/Week Actions -> 3. How it works / Optional AI) */
           <section className="surface section-surface" aria-label={t.navPlan}>
             <header className="lesson-head">
               <h1 className="lesson-title">{t.rmTitle}</h1>
               <p className="lesson-intro">{t.rmSub}</p>
             </header>
 
-            <div className="rule mb-6">
-              <span className="rule-label">{t.rmBaseTitle}</span>
-              <p className="small mt-1 mb-2">
-                {lang === "ru"
-                  ? `Цель: ${targetScore}/50 баллов · Срок: ${weeksLeft} нед. · Тем в неделю: ~${baseline.topicsPerWeek}`
-                  : lang === "kk"
-                    ? `Мақсат: ${targetScore}/50 балл · Мерзімі: ${weeksLeft} апта · Аптасына: ~${baseline.topicsPerWeek} тақырып`
-                    : `Maqsad: ${targetScore}/50 ball · Muddat: ${weeksLeft} hafta · Haftasiga: ~${baseline.topicsPerWeek} mavzu`}
-              </p>
-              <p className="small font-medium mt-2">{t.rmConsolidation}:</p>
-              {baseline.masteredTopics.length === 0 ? (
-                <p className="small m-0">{t.rmConsolidationEmpty}</p>
-              ) : (
-                <p className="small m-0">{baseline.masteredTopics.map((id) => topicName(id, lang)).join(", ")}</p>
-              )}
-              <p className="small font-medium mt-3">{t.rmPhase1}:</p>
-              <ul className="small list-disc pl-5">
-                {baseline.priorityModules
-                  .filter((m) => m.phase === 1)
-                  .map((m) => {
-                    const ret = computeEbbinghausRetention(m.soloCount > 0 ? 1 : 2, m.soloCount, 4);
-                    return (
-                      <li key={m.topic}>
-                        <button type="button" className="quiet-inline-link" onClick={() => selectTopic(m.topic)}>
-                          {m.title}
-                        </button>{" "}
-                        ({m.soloCount}/2 · Эббингауз R(t) = {ret.retentionPercent}%, повтор: {ret.nextIntervalDays} дн.)
-                      </li>
-                    );
-                  })}
-              </ul>
-              <p className="small font-medium mt-3">{t.rmPhase2} (Очередь Бьорка без смежных повторов):</p>
-              <div className="flex flex-wrap gap-1.5 mt-1.5">
-                {interleavedQueue.map((item, idx) => (
+            {/* Block 1: Honest Assessment Status + Goal & Weeks Settings */}
+            <div className="plan-summary-card mb-6">
+              <div className="plan-status-banner">
+                <p className="small m-0">
+                  {isPlanAssessed
+                    ? t.rmAssessedBanner(baseline.masteredTopics.length)
+                    : t.rmNotAssessedBanner}
+                </p>
+                {!isPlanAssessed && (
                   <button
-                    key={`${item.topic}-${idx}`}
                     type="button"
-                    className="unt-combo-chip"
-                    onClick={() => selectTopic(item.topic)}
+                    className="quiet-inline-link"
+                    onClick={() => handleTabChange("exam")}
                   >
-                    <Shuffle size={12} />
-                    <span>
-                      {idx + 1}. {item.title}
-                    </span>
+                    {t.rmStartDiagnosticBtn}
                   </button>
-                ))}
+                )}
               </div>
-            </div>
 
-            {/* 6 Scientific Methodologies Reference Panel inside Roadmap */}
-            <div className="mb-6">
-              <span className="rule-label block mb-2">{t.scienceTitle}</span>
-              <div className="science-methods-grid">
-                {SCIENTIFIC_METHODS.map((m) => (
-                  <div key={m.id} className="science-method-card">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="science-method-icon">
-                        <ScienceMethodIcon icon={m.icon} size={16} />
-                      </span>
-                      <span className="science-effect-pill">{m.effectMetric}</span>
-                    </div>
-                    <h3 className="science-method-title">{m.title[lang]}</h3>
-                    <p className="science-method-meta">
-                      {m.scientist} · {m.institution} ({m.year})
-                    </p>
-                    <code className="science-formula-box">{m.formula}</code>
-                    <p className="small mt-1.5 mb-0">{m.evidenceSummary[lang]}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <form
-              className="ai-form"
-              noValidate
-              onSubmit={(e) => {
-                e.preventDefault();
-                void askRoadmap();
-              }}
-            >
-              <div className="flex flex-wrap gap-4">
+              <div className="plan-controls-grid mt-4">
                 <label htmlFor="target-score-input" className="flex flex-col gap-1 text-sm font-medium">
                   <span>{t.rmTarget}</span>
                   <input
@@ -2110,116 +1656,200 @@ export default function Study({ initialWelcomeOpen = false }: StudyProps = {}) {
                     onChange={(e) => setWeeksLeft(Math.max(1, Math.min(24, Number(e.target.value) || 6)))}
                   />
                 </label>
-              </div>
-
-              <div>
-                <span className="block font-medium text-sm mb-2">{t.rmWeak}</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {untTopicIds.map((id) => (
-                    <Button
-                      key={id}
-                      type="button"
-                      size="sm"
-                      variant={weakTopics.includes(id) ? "default" : "outline"}
-                      aria-pressed={weakTopics.includes(id)}
-                      onClick={() => toggleWeakTopic(id)}
-                    >
-                      {topicName(id, lang)}
-                    </Button>
-                  ))}
+                <div className="flex flex-col justify-end pb-1">
+                  <span className="small font-medium">{t.rmPaceLabel(baseline.topicsPerWeek)}</span>
                 </div>
               </div>
+            </div>
 
-              <div>
-                <span className="rule-label block mb-1.5">{t.quickLabel}</span>
-                <div className="quick-prompts">
-                  {t.rmPresets.map((preset) => (
+            {/* Block 2: Concrete Actions for Today and This Week */}
+            <div className="plan-actions-section mb-6">
+              <h2 className="steps-heading">{t.rmTodayTitle}</h2>
+              <p className="small mb-3">{t.rmTodaySub}</p>
+
+              <div className="plan-priority-list">
+                {baseline.priorityModules
+                  .filter((m) => m.phase === 1)
+                  .slice(0, 4)
+                  .map((m, idx) => (
+                    <div key={m.topic} className="plan-priority-row">
+                      <div className="plan-priority-info">
+                        <span className="step-number">{String(idx + 1).padStart(2, "0")}</span>
+                        <div>
+                          <strong>{m.title}</strong>
+                          <span className="small block">
+                            {m.soloCount > 0 ? `${m.soloCount}/2` : "0/2"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="plan-priority-btns">
+                        <Button size="sm" onClick={() => openTopicLesson(m.topic)}>
+                          {t.rmOpenLesson}
+                        </Button>
+                        <a
+                          href={`/lab?lang=${lang}&topic=${m.topic}`}
+                          className="btn-ghost-sm"
+                        >
+                          {t.rmOpenLab}
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              <div className="mt-4">
+                <span className="small font-medium block mb-1.5">{t.rmInterleavedLabel}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {interleavedQueue.map((item, idx) => (
                     <button
-                      key={preset}
+                      key={`${item.topic}-${idx}`}
                       type="button"
-                      className="quick-pill"
-                      onClick={() => {
-                        setGoalNote(preset);
-                        setRmError("");
-                      }}
+                      className="unt-combo-chip"
+                      onClick={() => openTopicLesson(item.topic)}
                     >
-                      {preset}
+                      <span>
+                        {idx + 1}. {item.title}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <label htmlFor="roadmap-goal" className="form-label">
-                {t.rmGoal}
-              </label>
-              <textarea
-                id="roadmap-goal"
-                name="roadmapGoal"
-                value={goalNote}
-                maxLength={400}
-                placeholder={t.rmGoalPlaceholder}
-                onChange={(e) => {
-                  setGoalNote(e.target.value);
-                  if (rmError) setRmError("");
-                }}
-              />
-              <div className="ai-meta-row">
-                <span className="small">{t.schoolPrivacyNote}</span>
-                <span className="small">{goalNote.length}/400</span>
+            {/* Weak Topics Selector */}
+            <div className="mb-6">
+              <h2 className="steps-heading mb-2">{t.rmWeak}</h2>
+              <div className="flex flex-wrap gap-1.5">
+                {untTopicIds.map((id) => (
+                  <Button
+                    key={id}
+                    type="button"
+                    size="sm"
+                    variant={weakTopics.includes(id) ? "default" : "outline"}
+                    aria-pressed={weakTopics.includes(id)}
+                    onClick={() => toggleWeakTopic(id)}
+                  >
+                    {topicName(id, lang)}
+                  </Button>
+                ))}
               </div>
+            </div>
 
-              <label className="checkline" onClick={() => setRmError("")}>
-                <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
-                <span>
-                  {t.consent}{" "}
-                  <a href="/privacy" onClick={(e) => e.stopPropagation()}>
-                    {t.privacy}
-                  </a>
-                </span>
-              </label>
-
-              <div className="practice-actions">
-                <Button type="submit" disabled={rmBusy}>
-                  <Sparkles size={15} />
-                  {rmBusy ? t.loading : t.rmGenerate}
-                </Button>
+            {/* Block 3A: Collapsible "How this plan works" */}
+            <details className="plan-collapsible-details mb-4">
+              <summary>{t.rmHowDetailsSummary}</summary>
+              <div className="plan-collapsible-body">
+                <p className="small mb-2">{t.rmHowDetailsBody}</p>
+                <a href={`/about?lang=${lang}`} className="quiet-inline-link">
+                  {t.rmHowDetailsLink}
+                </a>
               </div>
-            </form>
+            </details>
 
-            {rmError && (
-              <p role="alert" className="feedback wrong mt-3">
-                {rmError}
-              </p>
-            )}
+            {/* Block 3B: Collapsible AI Roadmap Customizer */}
+            <details className="plan-collapsible-details" open={Boolean(aiRoadmap)}>
+              <summary>{t.rmAiDetailsSummary}</summary>
+              <div className="plan-collapsible-body">
+                <form
+                  className="ai-form"
+                  noValidate
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void askRoadmap();
+                  }}
+                >
+                  <div>
+                    <div className="quick-prompts">
+                      {t.rmPresets.map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          className="quick-pill"
+                          onClick={() => {
+                            setGoalNote(preset);
+                            setConsent(true);
+                            setRmError("");
+                          }}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-            {aiRoadmap && (
-              <section aria-live="polite" className="response mt-4">
-                <span className="rule-label">
-                  {aiRoadmap.source === "claude" ? t.badgeLive : t.badgePreview}
-                </span>
-                <h2 className="steps-heading mt-1 mb-2">{t.rmClaudeTitle}</h2>
-                <p className="mt-1 mb-3">{aiRoadmap.summary}</p>
-                <ul className="list-disc pl-5 my-2 space-y-1">
-                  {aiRoadmap.priorityModules.map((pm) => (
-                    <li key={pm.topic}>
-                      <strong>{topicName(pm.topic, lang)}:</strong> {pm.reason} → <em>{pm.recommendedAction}</em>
-                    </li>
-                  ))}
-                </ul>
-                <strong className="block mt-3">{t.rmMilestones}</strong>
-                <ol className="list-decimal pl-5 my-2 space-y-1">
-                  {aiRoadmap.weeklyMilestones.map((m, idx) => (
-                    <li key={idx}>{m}</li>
-                  ))}
-                </ol>
-                <strong className="block mt-3">{t.rmHabit}</strong>
-                <p className="mt-1 mb-0">{aiRoadmap.dailyHabit}</p>
-              </section>
-            )}
+                  <label htmlFor="roadmap-goal" className="form-label">
+                    {t.rmGoal}
+                  </label>
+                  <textarea
+                    id="roadmap-goal"
+                    name="roadmapGoal"
+                    value={goalNote}
+                    maxLength={400}
+                    placeholder={t.rmGoalPlaceholder}
+                    onChange={(e) => {
+                      setGoalNote(e.target.value);
+                      if (rmError) setRmError("");
+                    }}
+                  />
+                  <div className="ai-meta-row">
+                    <span className="small">{t.schoolPrivacyNote}</span>
+                    <span className="small">{goalNote.length}/400</span>
+                  </div>
+
+                  <label className="checkline" onClick={() => setRmError("")}>
+                    <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
+                    <span>
+                      {t.consent}{" "}
+                      <a href={`/privacy?lang=${lang}`} onClick={(e) => e.stopPropagation()}>
+                        {t.privacy}
+                      </a>
+                    </span>
+                  </label>
+
+                  <div className="practice-actions">
+                    <Button type="submit" disabled={rmBusy}>
+                      <Sparkles size={15} />
+                      {rmBusy ? t.loading : t.rmGenerate}
+                    </Button>
+                  </div>
+                </form>
+
+                {rmError && (
+                  <p role="alert" className="feedback wrong mt-3">
+                    {rmError}
+                  </p>
+                )}
+
+                {aiRoadmap && (
+                  <section aria-live="polite" className="response mt-4">
+                    <span className="rule-label">
+                      {aiRoadmap.source === "claude" ? t.badgeLive : t.badgePreview}
+                    </span>
+                    <h3 className="steps-heading mt-1 mb-2">{t.rmClaudeTitle}</h3>
+                    <p className="mt-1 mb-3">{aiRoadmap.summary}</p>
+                    <ul className="list-disc pl-5 my-2 space-y-1">
+                      {aiRoadmap.priorityModules.map((pm) => (
+                        <li key={pm.topic}>
+                          <strong>{topicName(pm.topic, lang)}:</strong> {pm.reason} → <em>{pm.recommendedAction}</em>
+                        </li>
+                      ))}
+                    </ul>
+                    <strong className="block mt-3">{t.rmMilestones}</strong>
+                    <ol className="list-decimal pl-5 my-2 space-y-1">
+                      {aiRoadmap.weeklyMilestones.map((m, idx) => (
+                        <li key={idx}>{m}</li>
+                      ))}
+                    </ol>
+                    <strong className="block mt-3">{t.rmHabit}</strong>
+                    <p className="mt-1 mb-0">{aiRoadmap.dailyHabit}</p>
+                  </section>
+                )}
+              </div>
+            </details>
           </section>
         )}
       </main>
-      <SiteFooter lang={lang} topic={topic} onSelectTab={setTab} />
+      <SiteFooter lang={lang} topic={topic} onSelectTab={handleTabChange} />
     </div>
   );
 }

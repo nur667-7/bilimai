@@ -14,6 +14,8 @@ export interface ScientificMethodSpec {
   institution: string;
   year: string;
   effectMetric: string;
+  sourceCitation: string;
+  sourceUrl: string;
   formula: string;
   icon: "GitBranch" | "Clock" | "Microscope" | "Shuffle" | "Layers" | "Sparkles";
   title: Record<Language, string>;
@@ -28,28 +30,30 @@ export const SCIENTIFIC_METHODS: ScientificMethodSpec[] = [
     scientist: "Benjamin S. Bloom",
     institution: "University of Chicago",
     year: "1984",
-    effectMetric: "+2.0σ (50% → 98%)",
+    effectMetric: "Ориентир исследования (1984): до +2.0σ при 1-на-1 обучении до мастерства",
+    sourceCitation: "Bloom, B. S. (1984). The 2 Sigma Problem. Educational Researcher, 13(6), 4–16.",
+    sourceUrl: "https://doi.org/10.3102/0013189X013006004",
     formula: "P(Success_k) = ∏ p_i,  Unlock(v) ⇔ ∀u ∈ Parents(v): M(u) ≥ 80%",
     icon: "GitBranch",
     title: {
-      ru: "Феномен 2 сигм Блума и Порог мастерства 80%",
-      kk: "Блумның 2 сигма феномені және 80% шеберлік шегі",
-      uz: "Blumning 2 sigma fenomeni va 80% mahorat chegarasi"
+      ru: "Обучение до мастерства (Блум, 1984) и порог пререквизитов 80%",
+      kk: "Шеберлікке дейін оқыту (Блум, 1984) және 80% пререквизит шегі",
+      uz: "Mahoratgacha o‘qitish (Blum, 1984) va 80% prerevizit chegarasi"
     },
     subtitle: {
-      ru: "Mastery Learning + 1-on-1 Diagnostic Backtracking",
-      kk: "Mastery Learning + пререквизиттер диагностикасы",
-      uz: "Mastery Learning + prerevizitlar diagnostikasi"
+      ru: "Исследовательское основание: Mastery Learning",
+      kk: "Зерттеу негізі: Mastery Learning",
+      uz: "Tadqiqot asosi: Mastery Learning"
     },
     evidenceSummary: {
-      ru: "Индивидуальная диагностика с блокировкой перехода без 80% усвоения базы сдвигает результат ученика на +2σ (с 50-го на 98-й перцентиль). Без базы вероятность решения на 3-м уровне падает до 0.6³ = 21.6%.",
-      kk: "Базалық тақырыпты 80% меңгермей келесіге өтпеу оқушы нәтижесін +2σ-ға (98-перцентильге) көтереді. Іргетассыз 3-деңгейде есеп шығару ықтималдығы 0.6³ = 21.6%-ға дейін құлдырайды.",
-      uz: "Bazaviy mavzuni 80% o‘zlashtirmasdan keyingi bosqichga o‘tmaslik natijani +2σ ga (98-persentilga) oshiradi. Poydevorsiz 3-darajada yechish ehtimoli 0.6³ = 21.6% ga tushadi."
+      ru: "По данным работы Б. Блума (1984), индивидуальная диагностика пробелов с проверкой усвоения базовой темы перед переходом к зависимой в учебных выборках давала прирост до 2 стандартных отклонений относительно поточного класса.",
+      kk: "Б. Блум (1984) зерттеуі бойынша, базалық тақырыпты меңгермей келесіге өтпеу және жеке диагностика оқу нәтижесін дәстүрлі сыныппен салыстырғанда айтарлықтай арттырады.",
+      uz: "B. Blum (1984) tadqiqotiga ko‘ra, bazaviy mavzuni o‘zlashtirmasdan keyingi bosqichga o‘tmaslik o‘quv natijasini sezilarli oshiradi."
     },
     platformMechanism: {
-      ru: "Граф знаний блокирует зависимые темы до 80% владения пререквизитом и автоматически спускает ученика к корневому пробелу (Root Gap).",
-      kk: "Білім графы пререквизит 80% меңгерілгенше тәуелді тақырыптарды құлыптап, түпкі олқылықты (Root Gap) бірінші жабады.",
-      uz: "Bilim grafi prerevizit 80% o‘zlashtirilmaguncha bog‘liq mavzularni bloklaydi va asosiy bo‘shliqni (Root Gap) birinchi bo‘lib yopadi."
+      ru: "Как реализовано в BilimAI: граф из 16 разделов ЕНТ выделяет корневые пререквизиты (Root Gap) и рекомендует сначала закрыть базовую тему до уровня 80%.",
+      kk: "BilimAI-де іске асырылуы: 16 бөлімнен тұратын граф түпкі олқылықты (Root Gap) анықтап, алдымен базалық тақырыпты 80% деңгейінде бекітуді ұсынады.",
+      uz: "BilimAI da qo‘llanilishi: 16 bo‘limli graf asosiy bo‘shliqni (Root Gap) topib, avval bazaviy mavzuni 80% darajada mustahkamlashni tavsiya qiladi."
     }
   },
   {
@@ -57,57 +61,61 @@ export const SCIENTIFIC_METHODS: ScientificMethodSpec[] = [
     scientist: "Hermann Ebbinghaus & Piotr Woźniak",
     institution: "Univ. of Berlin / SuperMemo Lab",
     year: "1885 / 1990",
-    effectMetric: "+28% удержания к ЕНТ",
+    effectMetric: "Модель кривой забывания R(t) = exp(−t / S) и интервалов SM-2",
+    sourceCitation: "Ebbinghaus, H. (1885). Über das Gedächtnis; Woźniak, P. A. (1990). Optimization of learning.",
+    sourceUrl: "https://super-memory.com/english/ol.htm",
     formula: "R(t) = 100% · exp(−t / S_n),  I_n = round(I_{n−1} · EF)",
     icon: "Clock",
     title: {
-      ru: "Кривая забывания Эббингауза и алгоритм SM-2",
-      kk: "Эббингауз ұмыту қисығы және SM-2 интервалдық алгоритмі",
-      uz: "Ebbingauz unutish egri chizig‘i va SM-2 algoritmi"
+      ru: "Кривая забывания Эббингауза и интервальное повторение SM-2",
+      kk: "Эббингауз ұмыту қисығы және SM-2 интервалдық қайталауы",
+      uz: "Ebbingauz unutish egri chizig‘i va SM-2 intervalli takrorlash"
     },
     subtitle: {
-      ru: "Spaced Repetition & Memory Stability Tracking",
-      kk: "Интервалдық қайталау және жад тұрақтылығы",
-      uz: "Intervalli takrorlash va xotira barqarorligi"
+      ru: "Исследовательское основание: Spaced Repetition",
+      kk: "Зерттеу негізі: Интервалдық қайталау",
+      uz: "Tadqiqot asosi: Intervalli takrorlash"
     },
     evidenceSummary: {
-      ru: "Без повторения через 24 часа в памяти остаётся 33% формул, через месяц — 21%. Повторение в точке R(t) ≈ 85% увеличивает стабильность памяти S в 2.5–3 раза при том же времени учёбы.",
-      kk: "Қайталаусыз 24 сағаттан соң жадта 33%, бір айдан соң 21% ғана қалады. R(t) ≈ 85% нүктесінде қайталау жад тұрақтылығын S 2.5–3 есе арттырады.",
-      uz: "Takrorlashsiz 24 soatdan keyin xotirada 33%, bir oydan so‘ng 21% qoladi. R(t) ≈ 85% nuqtasida takrorlash xotira barqarorligini 2.5–3 barobar oshiradi."
+      ru: "Согласно классической модели Г. Эббингауза и алгоритму SM-2 П. Возняка, без распределённого повторения доля удерживаемого материала экспоненциально снижается со временем.",
+      kk: "Г. Эббингауз моделі мен П. Возняктың SM-2 алгоритмі бойынша, уақытылы қайталаусыз есте сақталған материал үлесі уақыт өте кемиді.",
+      uz: "G. Ebbingauz modeli va SM-2 algoritmiga ko‘ra, taqsimlangan takrorlashsiz xotiradagi material ulushi kamayib boradi."
     },
     platformMechanism: {
-      ru: "Живой индикатор удержания памяти R(t)% по каждой теме и очередь оптимального повторения (1 → 6 → 15 → 38 дней).",
-      kk: "Әр тақырып бойынша R(t)% жад индикаторы және оңтайлы қайталау кезегі (1 → 6 → 15 → 38 күн).",
-      uz: "Har bir mavzu bo‘yicha R(t)% xotira ko‘rsatkichi va optimal takrorlash navbati (1 → 6 → 15 → 38 kun)."
+      ru: "Как реализовано в BilimAI: после решения задач в тренажёре система рассчитывает ориентировочный срок следующего повторения темы (через 1, 2 и 7+ дней).",
+      kk: "BilimAI-де іске асырылуы: есептерді шығарған соң жүйе тақырыпты келесі қайталау мерзімін (1, 2 және 7+ күн) есептейді.",
+      uz: "BilimAI da qo‘llanilishi: masalalar yechilgach, tizim mavzuni keyingi takrorlash muddatini (1, 2 va 7+ kun) hisoblaydi."
     }
   },
   {
     id: "kapur_vanlehn",
-    scientist: "Manu Kapur & Kurt VanLehn",
+    scientist: "Manu Kapur, Tanmay Sinha & Kurt VanLehn",
     institution: "ETH Zurich & Carnegie Mellon Univ.",
-    year: "1988 / 2016",
-    effectMetric: "d = 0.84 (2× перенос навыка)",
+    year: "1988 / 2021",
+    effectMetric: "Метаанализ Sinha & Kapur (2021): Hedges' g = 0.36..0.58 в пользу поиска сбоя",
+    sourceCitation: "Sinha, T., & Kapur, M. (2021). When Problem Solving Followed by Instruction Works. Review of Educational Research, 91(5), 761–798.",
+    sourceUrl: "https://journals.sagepub.com/doi/10.3102/00346543211019105",
     formula: "k* = min { k | Valid(s_{k−1} → s_k) = False }",
     icon: "Microscope",
     title: {
-      ru: "Продуктивная неудача Капура и Buggy Rules ВанЛена",
-      kk: "Капурдың өнімді қатесі және ВанЛеннің Buggy Rules теориясы",
-      uz: "Kapurning samarali xatosi va VanLenning Buggy Rules nazariyasi"
+      ru: "Продуктивная неудача (Kapur & Sinha, 2021) и диагностика неверного шага",
+      kk: "Өнімді қате (Kapur & Sinha, 2021) және қате қадамды диагностикалау",
+      uz: "Samarali xato (Kapur & Sinha, 2021) va xato qadam diagnostikasi"
     },
     subtitle: {
-      ru: "Impasse-Driven Learning & First-Fracture Isolation",
-      kk: "Алғашқы қате қадамды оқшаулау және түзету",
-      uz: "Birinchi xato qadamni ajratish va tuzatish"
+      ru: "Исследовательское основание: Productive Failure & Buggy Rules",
+      kk: "Зерттеу негізі: Productive Failure & Buggy Rules",
+      uz: "Tadqiqot asosi: Productive Failure & Buggy Rules"
     },
     evidenceSummary: {
-      ru: "Мета-анализ 53 исследований (N > 12 000): поиск первой сломанной строки в решении до чтения ответа даёт в 2 раза более глубокий перенос навыка (d = 0.84), чем пассивный просмотр ГДЗ.",
-      kk: "53 зерттеудің мета-талдауы (N > 12 000): дайын жауапты оқығанша алғашқы қате жолды өз бетінше табу дағдыны 2 есе тереңірек бекітеді (d = 0.84).",
-      uz: "53 ta tadqiqot meta-tahlili (N > 12 000): tayyor javobni o‘qishdan ko‘ra birinchi xato qatorni topish ko‘nikmani 2 barobar chuqurroq mustahkamlaydi (d = 0.84)."
+      ru: "Метаанализ Sinha & Kapur (2021, 53 исследования) показывает, что анализ проблемного перехода до получения готовой инструкции в изученных учебных условиях улучшает понятийное понимание и перенос навыка по сравнению с пассивным чтением решения.",
+      kk: "Sinha & Kapur (2021, 53 зерттеу) мета-талдауы дайын шешімді оқығанша қате қадамды талдау ұғымдық түсінікті жақсартатынын көрсетеді.",
+      uz: "Sinha & Kapur (2021, 53 tadqiqot) meta-tahlili tayyor javobni o‘qishdan avval xato qadamni tahlil qilish tushunishni yaxshilashini ko‘rsatadi."
     },
     platformMechanism: {
-      ru: "Модули «Рентген черновика» и «Тренировка ошибок (/lab)» изолируют строку излома k*, не штрафуя верные шаги ученика.",
-      kk: "«Черновик рентгені» мен «Қатемен жұмыс (/lab)» дұрыс қадамдарды сақтап, тек k* үзілу жолын табады.",
-      uz: "«Qoralama rentgeni» va «Xatolar ustida ishlash (/lab)» to‘g‘ri qadamlarni saqlab, faqat k* uzilish qatorini topadi."
+      ru: "Как реализовано в BilimAI: в разделах «Проверка решения» и «Тренировка ошибок (/lab)» ученик сначала находит строку с нарушением правила, а затем решает задачу самостоятельно.",
+      kk: "BilimAI-де іске асырылуы: «Шешімді тексеру» және «Қатемен жұмыс (/lab)» бөлімдерінде оқушы алдымен ереже бұзылған жолды тауып, содан кейін есепті өз бетінше шығарады.",
+      uz: "BilimAI da qo‘llanilishi: «Yechimni tekshirish» va «Xatolar ustida ishlash (/lab)» bo‘limlarida o‘quvchi avval qoida buzilgan qatorni topadi."
     }
   },
   {
@@ -115,28 +123,30 @@ export const SCIENTIFIC_METHODS: ScientificMethodSpec[] = [
     scientist: "Robert A. Bjork & Doug Rohrer",
     institution: "UCLA Learning & Forgetting Lab",
     year: "1994 / 2015",
-    effectMetric: "77% vs 38% на экзамене (d = 1.05)",
-    formula: "ΔS_storage = η · (1 − S_retrieval),  Topic(q_i) ≠ Topic(q_{i−1})",
+    effectMetric: "Исследование Rohrer et al. (2015): чередование тем улучшает выбор метода решения",
+    sourceCitation: "Rohrer, D., Dedrick, R. F., & Stershic, S. (2015). Interleaved practice improves mathematics learning. Journal of Educational Psychology, 107(3), 900–908.",
+    sourceUrl: "https://doi.org/10.1037/edu0000001",
+    formula: "Topic(q_i) ≠ Topic(q_{i−1})",
     icon: "Shuffle",
     title: {
-      ru: "Желательные трудности Бьорка и Интерливинг",
-      kk: "Бьорктың қажетті қиындықтары және Интерливинг",
-      uz: "Byorkning zarur qiyinchiliklari va Interliving"
+      ru: "Чередование тем (Интерливинг, Bjork & Rohrer)",
+      kk: "Тақырыптарды кезектестіру (Интерливинг, Bjork & Rohrer)",
+      uz: "Mavzularni navbatlashtirish (Interliving, Bjork & Rohrer)"
     },
     subtitle: {
-      ru: "Interleaved Practice & Confuser Discrimination",
-      kk: "Тақырыптар мен форматтарды араластырып жаттығу",
-      uz: "Mavzular va formatlarni aralashtirib mashq qilish"
+      ru: "Исследовательское основание: Interleaved Practice",
+      kk: "Зерттеу негізі: Interleaved Practice",
+      uz: "Tadqiqot asosi: Interleaved Practice"
     },
     evidenceSummary: {
-      ru: "Нарешивание 20 однотипных задач подряд создаёт иллюзию знания, но на реальном экзамене точность падает до 38%. Чередование разных тем и 4 форматов ЕНТ удерживает точность на уровне 77%.",
-      kk: "Бір тақырыпты ғана қатарынан шығару білім елесін береді (емтиханда дәлдік 38%-ға түседі). Әртүрлі тақырыптар мен 4 форматты араластыру дәлдікті 77% деңгейінде сақтайды.",
-      uz: "Bir xil masalalarni ketma-ket yechish bilim illyuziyasini beradi (imtihonda aniqlik 38% ga tushadi). Mavzu va 4 formatni aralashtirish aniqlikni 77% da saqlaydi."
+      ru: "В экспериментах Д. Рорера и Р. Бьорка чередование задач из разных разделов математики помогало школьникам точнее выбирать нужную формулу на отложенном тесте, чем решение однотипных блоков подряд.",
+      kk: "Д. Рорер мен Р. Бьорк зерттеулерінде әртүрлі математикалық бөлімдерді араластырып жаттығу емтиханда қажетті формуланы таңдауды жақсартты.",
+      uz: "D. Rorer va R. Byork tadqiqotlarida turli bo‘limlarni aralashtirib mashq qilish imtihonda to‘g‘ri formulani tanlashga yordam bergan."
     },
     platformMechanism: {
-      ru: "Все 10 вариантов ЕНТ по 40 вопросов перемешивают разделы и форматы (1 ответ, контекст, соответствие, мультивыбор) без смежных повторов.",
-      kk: "40 сұрақтық барлық 10 ҰБТ нұсқасы бөлімдер мен 4 форматты көршілес қайталаусыз араластырады.",
-      uz: "40 savollik barcha 10 ta UBT varianti bo‘limlar va 4 formatni ketma-ket takrorlashsiz aralashtiradi."
+      ru: "Как реализовано в BilimAI: тренировочные варианты чередуют разные разделы программы и форматы вопросов, чтобы тренировать распознавание типа задачи.",
+      kk: "BilimAI-де іске асырылуы: жаттығу нұсқалары есеп түрін тануды жаттықтыру үшін әртүрлі бөлімдер мен сұрақ форматтарын кезектестіреді.",
+      uz: "BilimAI da qo‘llanilishi: mashq variantlari masala turini tanib olish uchun turli bo‘limlar va savol formatlarini navbatlashtiradi."
     }
   },
   {
@@ -144,28 +154,30 @@ export const SCIENTIFIC_METHODS: ScientificMethodSpec[] = [
     scientist: "John Sweller",
     institution: "University of New South Wales",
     year: "1988 / 2019",
-    effectMetric: "−42% времени на освоение (d = 0.72)",
-    formula: "CL_total = CL_intrinsic + CL_extraneous + CL_germane ≤ 4 ± 1 chunks",
+    effectMetric: "Теория когнитивной нагрузки (Sweller, 1988; 2019): снижение лишнего визуального шума",
+    sourceCitation: "Sweller, J. (1988). Cognitive load during problem solving. Cognitive Science, 12(2), 257–285.",
+    sourceUrl: "https://doi.org/10.1207/s15516709cog1202_4",
+    formula: "CL_total = CL_intrinsic + CL_extraneous + CL_germane",
     icon: "Layers",
     title: {
-      ru: "Теория когнитивной нагрузки Свеллера",
-      kk: "Свеллердің когнитивтік жүктеме теориясы",
-      uz: "Svellerning kognitiv yuklama nazariyasi"
+      ru: "Теория когнитивной нагрузки и разбор по шагам (Sweller)",
+      kk: "Когнитивтік жүктеме теориясы және қадамдық талдау (Sweller)",
+      uz: "Kognitiv yuklama nazariyasi va qadamma-qadam tahlil (Sweller)"
     },
     subtitle: {
-      ru: "Worked-Example Effect & Adaptive Guidance Fading",
-      kk: "Атомарлық қадамдар және көмекті біртіндеп азайту",
-      uz: "Atomar qadamlar va yordamni bosqichma-bosqich kamaytirish"
+      ru: "Исследовательское основание: Worked-Example Effect",
+      kk: "Зерттеу негізі: Worked-Example Effect",
+      uz: "Tadqiqot asosi: Worked-Example Effect"
     },
     evidenceSummary: {
-      ru: "Рабочая память удерживает одновременно только 4±1 элемента. Разбиение вывода на нумерованные шаги с выделением одного инварианта снижает когнитивный перегруз и ускоряет обучение на 42%.",
-      kk: "Жұмыс жады бір мезетте тек 4±1 элементті ұстай алады. Шешімді нөмірленген атомарлық қадамдарға бөлу оқу уақытын 42%-ға қысқартады.",
-      uz: "Ishchi xotira bir vaqtda faqat 4±1 elementni ushlab turadi. Yechimni raqamlangan qadamlarga bo‘lish o‘rganish vaqtini 42% ga qisqartiradi."
+      ru: "Работы Дж. Свеллера показывают, что на начальном этапе изучения темы пошагово разобранный образец с явным правилом перехода снижает перегрузку рабочей памяти по сравнению с методом проб и ошибок.",
+      kk: "Дж. Свеллер еңбектері жаңа тақырыпты бастағанда ережесі көрсетілген қадамдық үлгі жұмыс жадының шамадан тыс жүктелуін азайтатынын көрсетеді.",
+      uz: "J. Sveller tadqiqotlari yangi mavzuni o‘rganishda qadamma-qadam tahlil qilingan namuna ishchi xotira yuklamasini kamaytirishini ko‘rsatadi."
     },
     platformMechanism: {
-      ru: "4 уровня адаптивной детализации (от полного разбора с подсветкой инварианта до экзаменационного режима без подсказок).",
-      kk: "Шеберлік деңгейіне қарай 4 сатылы бейімделу (толық талдаудан бастап көмексіз емтихан режиміне дейін).",
-      uz: "Mahorat darajasiga qarab 4 bosqichli moslashuv (to‘liq tahlildan yordamsiz imtihon rejimidagacha)."
+      ru: "Как реализовано в BilimAI: каждое занятие строится по схеме «Правило → Разобранный образец в 3 шага → Самостоятельная практика».",
+      kk: "BilimAI-де іске асырылуы: әр сабақ «Ереже → 3 қадамдық үлгі → Өз бетінше жаттығу» ретімен құрылған.",
+      uz: "BilimAI da qo‘llanilishi: har bir dars «Qoida → 3 qadamli namuna → Mustaqil mashq» tartibida tuzilgan."
     }
   },
   {
@@ -173,28 +185,30 @@ export const SCIENTIFIC_METHODS: ScientificMethodSpec[] = [
     scientist: "Michelene Chi & Richard Feynman",
     institution: "Arizona State Univ. & Caltech",
     year: "1989 / 1965",
-    effectMetric: "86% vs 43% на сложных задачах (d = 0.95)",
-    formula: "Transfer(SelfExplain) = 2.0 × Transfer(PassiveRead)",
+    effectMetric: "Исследование Chi et al. (1989): самообъяснение шагов помогает выявлять пробелы",
+    sourceCitation: "Chi, M. T. H., Bassok, M., Lewis, M. W., Reimann, P., & Glaser, R. (1989). Self-explanations. Cognitive Science, 13(2), 145–182.",
+    sourceUrl: "https://doi.org/10.1207/s15516709cog1302_1",
+    formula: "Self-Explanation → Invariant Check",
     icon: "Sparkles",
     title: {
-      ru: "Эффект самообъяснения Чи и Метод Фейнмана",
-      kk: "Мишелин Чи өзіндік түсіндіру эффектісі және Фейнман әдісі",
-      uz: "Mishelin Chi o‘z-o‘ziga tushuntirish effekti va Feynman usuli"
+      ru: "Эффект самообъяснения (Chi, 1989) и проверочный вопрос",
+      kk: "Өзіндік түсіндіру эффектісі (Chi, 1989) және тексеру сұрағы",
+      uz: "O‘z-o‘ziga tushuntirish effekti (Chi, 1989) va tekshiruv savoli"
     },
     subtitle: {
-      ru: "Socratic Invariant Verification via Claude API",
-      kk: "Claude API арқылы сократтық тексеру сұрағы",
-      uz: "Claude API orqali sokratik tekshiruv savoli"
+      ru: "Исследовательское основание: Self-Explanation Effect",
+      kk: "Зерттеу негізі: Self-Explanation Effect",
+      uz: "Tadqiqot asosi: Self-Explanation Effect"
     },
     evidenceSummary: {
-      ru: "Ученики, которые объясняют своими словами «почему работает переход», решают сложные задачи переноса с точностью 86% против 43% у тех, кто просто перечитывает теорию.",
-      kk: "Әр қадамның «неліктен жұмыс істейтінін» өз сөзімен түсіндірген оқушылар күрделі есептерді 86% дәлдікпен шығарады (жай оқығандарда — 43%).",
-      uz: "Har bir qadam «nega ishlashini» o‘z so‘zi bilan tushuntirgan o‘quvchilar murakkab masalalarni 86% aniqlikda yechadi (oddiy o‘qiganlarda — 43%)."
+      ru: "В исследовании М. Чи (1989) учащиеся, которые формулировали причину каждого алгебраического перехода при разборе примера, успешнее справлялись с новыми вариациями задач, чем те, кто перечитывал решение пассивно.",
+      kk: "М. Чи (1989) зерттеуінде әрбір алгебралық ауысудың себебін түсіндірген оқушылар жаңа есептерді пассивті оқығандарға қарағанда жақсырақ шығарған.",
+      uz: "M. Chi (1989) tadqiqotida har bir algebraik o‘tish sababini tushuntirgan o‘quvchilar yangi masalalarni muvaffaqiyatliroq yechgan."
     },
     platformMechanism: {
-      ru: "Сократический ИИ-тьютор (Claude API) не выдаёт готовый ответ, а задаёт точечный вопрос на понимание главного правила задачи.",
-      kk: "Сократтық ЖИ-тьютор (Claude API) дайын жауапты бермей, негізгі ережені түсінуге бағытталған сұрақ қояды.",
-      uz: "Sokratik SI-tyutor (Claude API) tayyor javobni bermasdan, asosiy qoidani tushunishga yo‘naltirilgan savol beradi."
+      ru: "Как реализовано в BilimAI: ИИ-тьютор (Claude API) поясняет нарушенное правило и задаёт короткий встречный вопрос на понимание перехода.",
+      kk: "BilimAI-де іске асырылуы: ЖИ-тьютор (Claude API) бұзылған ережені түсіндіріп, ауысуды тексеруге арналған қысқа сұрақ қояды.",
+      uz: "BilimAI da qo‘llanilishi: SI-tyutor (Claude API) buzilgan qoidani tushuntiradi va tekshiruv savolini beradi."
     }
   }
 ];

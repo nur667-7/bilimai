@@ -1,9 +1,8 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Atom,
-  Award,
   BarChart3,
   BookOpen,
   BookOpenText,
@@ -20,17 +19,18 @@ import {
   FlaskConical,
   GitBranch,
   Globe2,
+  Grid,
   History,
   Landmark,
   Languages,
   Layers,
   RotateCcw,
   Scale,
+  Settings2,
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  UNT_OFFICIAL_SPEC,
   evaluateUntExam,
   scoreUntQuestion,
   untQuestions,
@@ -44,29 +44,35 @@ import {
   UNT_SUBJECTS,
   generateSubjectUntVariant,
   getUntSubjectMeta,
-  type UntSubjectId
+  type UntSubjectId,
+  type UntVariantMode
 } from "@/lib/unt-all-subjects";
 import { topicName } from "@/lib/error-lab";
 import type { Language, TopicId } from "@/lib/lessons";
 
 const EXAM_COPY = {
   ru: {
-    specBadge: "Официальный стандарт НЦТ РК (testcenter.kz) · 12 предметов ЕНТ · 10 полных вариантов по 40 вопросов",
-    specSub:
-      "Каждый вариант профильного и базового предмета содержит 40 заданий (50 баллов): №1–25 (1 ответ из 4, 1 б.), №26–30 (контекст, 1 б.), №31–35 (соответствие А/Б → 1..4, 2 б.), №36–40 (множественный выбор 1–3 из 6, 2 б.).",
-    comboLabel: "Профильная комбинация гранта:",
+    changeSetupBtn: "Сменить предмет / вариант",
+    hideSetupBtn: "Свернуть настройки и перейти к вопросу №1",
+    startExamBtn: "Начать вариант",
+    modeLabel: "Режим набора:",
+    modeOfficial: "Официальный формат НЦТ",
+    modeExtended: "Тренировочный набор (40 вопр.)",
+    officialFormatNote:
+      "Формат НЦТ РК (testcenter.kz): Мат. грамотность — 10 вопр. (10 б.), Грамотность чтения — 10 вопр. (10 б.), История Казахстана — 20 вопр. (20 б.), профильные предметы — 40 вопр. (50 б.).",
+    comboLabel: "Профильная комбинация:",
     allSubjectsBtn: "Все 12 предметов ЕНТ",
-    subjectSelectLabel: "Предмет ЕНТ:",
-    variantSelectLabel: "Вариант НЦТ (40 вопросов = 50 баллов):",
+    subjectSelectLabel: "Предмет ЕНТ",
+    variantSelectLabel: "Вариант",
     variantPrefix: "Вариант №",
-    quickDiagBtn: "Экспресс-диагностика (18 вопр.)",
-    cheatsheetToggleOpen: "Свернуть справочник формул, дат и законов НЦТ",
-    cheatsheetToggleClosed: "Открыть полный справочник формул, дат и законов по предмету",
-    sectionsLabel: "Охватываемые разделы спецификации НЦТ:",
+    quickDiagBtn: "Диагностика (18 вопр.)",
+    cheatsheetBtn: "Справочник формул и правил",
+    gridBtn: "Номера заданий",
+    sectionsLabel: "Разделы спецификации НЦТ:",
     filterAll: "Все",
     filterFlagged: "Отмеченные",
     filterTwoPt: "2 балла",
-    filterMistakes: "Ошибки и потери",
+    filterMistakes: "Ошибки",
     questionLabel: "Задание",
     ofLabel: "из",
     points1: "1 балл",
@@ -79,45 +85,50 @@ const EXAM_COPY = {
     formatMultiple: "Множественный выбор: от 1 до 3 верных из 6 (2 балла: 1 ошибка = 1 б.)",
     selectedCount: "Выбрано вариантов",
     maxThreeHint: "Максимум 3 ответа по правилам НЦТ РК",
-    matchingColItem: "Условие",
-    matchingColChoice: "Выбор соответствия (1–4)",
     matchingOptionsRef: "Варианты для сопоставления:",
     prevBtn: "Предыдущая",
     nextBtn: "Следующая задача",
-    submitExam: "Завершить и проверить вариант",
+    submitExam: "Завершить и проверить",
     resetExam: "Пройти заново",
     answeredStat: "Отвечено",
     reportTitle: "Результат варианта ЕНТ",
-    scaledScoreLabel: "Итоговый балл по шкале 50",
+    scaledScoreLabel: "По шкале 50",
     rawScoreLabel: "Первичный балл",
     partialNote: "Частичный балл (1 из 2 б.) в двухбалльных заданиях",
     partialTip: "Резерв быстрого роста: вы знаете тему, но потеряли по 1 баллу на полноте ответа или ОДЗ.",
     weakTopicsTitle: "Разделы с потерей баллов (отмечены на Карте тем)",
     noWeakTopics: "Все разделы варианта решены без потери баллов!",
     openGraphBtn: "Открыть Карту тем",
-    openLessonBtn: "Открыть разбор темы",
-    openLabBtn: "Тренировка ошибок по теме",
+    openLessonBtn: "Разбор темы",
+    openLabBtn: "Тренировка ошибок",
     statusFull: "Полный балл",
     statusPartial: "Частично верно (1 из 2 б.)",
     statusZero: "0 баллов — рекомендуется повторить раздел",
     ruleTitle: "Опорное правило / закон НЦТ:",
     solutionTitle: "Пошаговый разбор:",
     trapTitle: "Типичная ловушка ЕНТ:",
-    lastAttemptBanner: "Последний сохранённый результат:"
+    lastAttemptBanner: "Последний сохранённый результат:",
+    qShort: "вопр.",
+    ptShort: "б."
   },
   kk: {
-    specBadge: "ҚР ҰТО ресми стандарты (testcenter.kz) · 12 ҰБТ пәні · 40 сұрақтан 10 толық нұсқа",
-    specSub:
-      "Әр пән нұсқасы 40 тапсырмадан (50 балл) тұрады: №1–25 (4-тен 1 жауап, 1 б.), №26–30 (контекст, 1 б.), №31–35 (сәйкестендіру А/Б → 1..4, 2 б.), №36–40 (көп таңдаулы 6-дан 1–3, 2 б.).",
-    comboLabel: "Грант бейіндік комбинациясы:",
+    changeSetupBtn: "Пән / нұсқаны ауыстыру",
+    hideSetupBtn: "Баптауды жауып, №1 сұраққа өту",
+    startExamBtn: "Нұсқаны бастау",
+    modeLabel: "Жинақ режимі:",
+    modeOfficial: "ҚР ҰТО ресми форматы",
+    modeExtended: "Жаттығу жинағы (40 сұрақ)",
+    officialFormatNote:
+      "ҚР ҰТО форматы (testcenter.kz): Мат. сауаттылық — 10 сұрақ (10 б.), Оқу сауаттылығы — 10 сұрақ (10 б.), Қазақстан тарихы — 20 сұрақ (20 б.), бейіндік пәндер — 40 сұрақ (50 б.).",
+    comboLabel: "Бейіндік комбинация:",
     allSubjectsBtn: "Барлық 12 ҰБТ пәні",
-    subjectSelectLabel: "ҰБТ пәні:",
-    variantSelectLabel: "ҰТО нұсқасы (40 сұрақ = 50 балл):",
+    subjectSelectLabel: "ҰБТ пәні",
+    variantSelectLabel: "Нұсқа",
     variantPrefix: "Нұсқа №",
-    quickDiagBtn: "Экспресс-диагностика (18 сұрақ)",
-    cheatsheetToggleOpen: "Формулалар мен заңдар анықтамалығын жабу",
-    cheatsheetToggleClosed: "Пән бойынша ҰТО формулалар, даталар мен заңдар анықтамалығын ашу",
-    sectionsLabel: "Қамтылған ҰТО спецификация бөлімдері:",
+    quickDiagBtn: "Диагностика (18 сұрақ)",
+    cheatsheetBtn: "Формулалар анықтамалығы",
+    gridBtn: "Тапсырма нөмірлері",
+    sectionsLabel: "ҰТО спецификация бөлімдері:",
     filterAll: "Барлығы",
     filterFlagged: "Белгіленген",
     filterTwoPt: "2 балдық",
@@ -134,23 +145,21 @@ const EXAM_COPY = {
     formatMultiple: "Көп таңдаулы: 6-дан 1–3 дұрыс жауап (2 балл: 1 қате = 1 б.)",
     selectedCount: "Таңдалды",
     maxThreeHint: "ҰБТ ережесі бойынша ең көбі 3 жауап",
-    matchingColItem: "Шарт",
-    matchingColChoice: "Сәйкес нұсқа (1–4)",
     matchingOptionsRef: "Сәйкестендіру нұсқалары:",
     prevBtn: "Алдыңғы",
     nextBtn: "Келесі есеп",
-    submitExam: "Нұсқаны аяқтап, тексеру",
+    submitExam: "Аяқтап, тексеру",
     resetExam: "Қайта тапсыру",
     answeredStat: "Жауап берілді",
     reportTitle: "ҰБТ нұсқасының нәтижесі",
-    scaledScoreLabel: "50 балдық шкала бойынша қорытынды",
+    scaledScoreLabel: "50 балдық шкала",
     rawScoreLabel: "Бастапқы балл",
     partialNote: "2 балдық тапсырмалардағы ішінара балл (2-ден 1 б.)",
     partialTip: "Жылдам өсу резерві: тақырыпты білесіз, бірақ ММО немесе толық жауапта 1 балл жоғалттыңыз.",
     weakTopicsTitle: "Балл жоғалған тақырыптар (Тақырыптар картасында белгіленді)",
     noWeakTopics: "Барлық тақырыптар қатесіз орындалды!",
     openGraphBtn: "Тақырыптар картасын ашу",
-    openLessonBtn: "Сабақ талдауын ашу",
+    openLessonBtn: "Сабақ талдауы",
     openLabBtn: "Қатемен жұмыс",
     statusFull: "Толық балл",
     statusPartial: "Ішінара дұрыс (2-ден 1 б.)",
@@ -158,21 +167,28 @@ const EXAM_COPY = {
     ruleTitle: "Негізгі ереже / ҰТО заңы:",
     solutionTitle: "Қадамдық талдау:",
     trapTitle: "Жиі кездесетін ҰБТ тұзағы:",
-    lastAttemptBanner: "Соңғы сақталған нәтиже:"
+    lastAttemptBanner: "Соңғы сақталған нәтиже:",
+    qShort: "сұрақ",
+    ptShort: "б."
   },
   uz: {
-    specBadge: "Rasmiy UBT standarti (testcenter.kz) · 12 ta fan · 40 savoldan 10 ta to‘liq variant",
-    specSub:
-      "Har bir fan varianti 40 ta topshiriqdan (50 ball) iborat: №1–25 (4 tadan 1 javob, 1 b.), №26–30 (kontekst, 1 b.), №31–35 (moslik A/B → 1..4, 2 b.), №36–40 (ko‘p tanlovli 6 tadan 1–3, 2 b.).",
-    comboLabel: "Grant profil kombinatsiyasi:",
+    changeSetupBtn: "Fan / variantni o‘zgartirish",
+    hideSetupBtn: "Sozlamani yopib, №1 savolga o‘tish",
+    startExamBtn: "Variantni boshlash",
+    modeLabel: "To‘plam rejimi:",
+    modeOfficial: "Rasmiy UBT formati",
+    modeExtended: "Mashq to‘plami (40 savol)",
+    officialFormatNote:
+      "Rasmiy UBT formati (testcenter.kz): Mat. savodxonlik — 10 savol (10 b.), O‘qish savodxonligi — 10 savol (10 b.), Qozog‘iston tarixi — 20 savol (20 b.), profil fanlar — 40 savol (50 b.).",
+    comboLabel: "Profil kombinatsiyasi:",
     allSubjectsBtn: "Barcha 12 ta fan",
-    subjectSelectLabel: "Imtihon fani:",
-    variantSelectLabel: "Variant (40 savol = 50 ball):",
+    subjectSelectLabel: "Imtihon fani",
+    variantSelectLabel: "Variant",
     variantPrefix: "Variant №",
-    quickDiagBtn: "Ekspress-diagnostika (18 savol)",
-    cheatsheetToggleOpen: "Formulalar va qoidalar ma’lumotnomasini yopish",
-    cheatsheetToggleClosed: "Fan bo‘yicha to‘liq formulalar, sanalar va qonunlar ma’lumotnomasini ochish",
-    sectionsLabel: "Qamrab olingan spetsifikatsiya bo‘limlari:",
+    quickDiagBtn: "Diagnostika (18 savol)",
+    cheatsheetBtn: "Formulalar ma’lumotnomasi",
+    gridBtn: "Topshiriq raqamlari",
+    sectionsLabel: "Spetsifikatsiya bo‘limlari:",
     filterAll: "Barchasi",
     filterFlagged: "Belgilangan",
     filterTwoPt: "2 balli",
@@ -189,23 +205,21 @@ const EXAM_COPY = {
     formatMultiple: "Ko‘p tanlovli: 6 tadan 1–3 to‘g‘ri javob (2 ball: 1 xato = 1 b.)",
     selectedCount: "Tanlandi",
     maxThreeHint: "Qoida bo‘yicha ko‘pi bilan 3 ta javob",
-    matchingColItem: "Shart",
-    matchingColChoice: "Mos javob (1–4)",
     matchingOptionsRef: "Moslashtirish variantlari:",
     prevBtn: "Oldingi",
     nextBtn: "Keyingi masala",
-    submitExam: "Sinovni yakunlash va tekshirish",
+    submitExam: "Yakunlash va tekshirish",
     resetExam: "Qayta boshlash",
     answeredStat: "Javob berildi",
     reportTitle: "Sinov UBT natijasi",
-    scaledScoreLabel: "50 ballik shkala bo‘yicha natija",
+    scaledScoreLabel: "50 ballik shkala",
     rawScoreLabel: "Birlamchi ball",
     partialNote: "2 balli topshiriqlarda qisman ball (2 dan 1 b.)",
     partialTip: "Tez o‘sish zaxirasi: mavzuni bilasiz, lekin AS yoki to‘liq javobda 1 ball yo‘qotdingiz.",
     weakTopicsTitle: "Ball yo‘qotilgan mavzular (Mavzular xaritasida belgilandi)",
     noWeakTopics: "Barcha mavzular xatosiz yechildi!",
     openGraphBtn: "Mavzular xaritasini ochish",
-    openLessonBtn: "Dars tahlilini ochish",
+    openLessonBtn: "Dars tahlili",
     openLabBtn: "Xatolar ustida ishlash",
     statusFull: "To‘liq ball",
     statusPartial: "Qisman to‘g‘ri (2 dan 1 b.)",
@@ -213,7 +227,9 @@ const EXAM_COPY = {
     ruleTitle: "Asosiy qoida / qonun:",
     solutionTitle: "Qadam-baqadam yechim:",
     trapTitle: "Ko‘p uchraydigan tuzoq:",
-    lastAttemptBanner: "Oxirgi saqlangan natija:"
+    lastAttemptBanner: "Oxirgi saqlangan natija:",
+    qShort: "savol",
+    ptShort: "b."
   }
 } as const;
 
@@ -269,13 +285,18 @@ export function UntExamView({
   const t = EXAM_COPY[lang];
   const [selectedComboId, setSelectedComboId] = useState<string>("all");
   const [subjectId, setSubjectId] = useState<UntSubjectId>(initialSubjectId);
-  const [variantNumber, setVariantNumber] = useState<number>(initialVariantNumber); // 1..10 = 40 questions, 0 = 18-q quick math diagnostic
+  const [variantNumber, setVariantNumber] = useState<number>(initialVariantNumber);
+  const [variantMode, setVariantMode] = useState<UntVariantMode>("official");
+  // Setup drawer is collapsed by default so Question #1 is immediately visible in the active viewport
+  const [showSetupDrawer, setShowSetupDrawer] = useState<boolean>(false);
   const [showCheatsheet, setShowCheatsheet] = useState<boolean>(false);
+  const [showQuestionGrid, setShowQuestionGrid] = useState<boolean>(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [navFilter, setNavFilter] = useState<"all" | "flagged" | "twopt" | "mistakes">("all");
   const [flagged, setFlagged] = useState<Record<string, boolean>>({});
   const [answers, setAnswers] = useState<Record<string, UntUserAnswer>>({});
   const [submittedEval, setSubmittedEval] = useState<UntExamEvaluation | null>(null);
+  const subjectTabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
     setSubjectId(initialSubjectId);
@@ -292,8 +313,13 @@ export function UntExamView({
       return untQuestions;
     }
     const vNum = variantNumber >= 1 && variantNumber <= 10 ? variantNumber : 1;
-    return generateSubjectUntVariant(subjectId, vNum);
-  }, [subjectId, variantNumber]);
+    return generateSubjectUntVariant(subjectId, vNum, variantMode);
+  }, [subjectId, variantNumber, variantMode]);
+
+  const activeMaxPoints = useMemo(
+    () => activeQuestions.reduce((acc, q) => acc + q.maxPoints, 0),
+    [activeQuestions]
+  );
 
   const visibleSubjects = useMemo(() => {
     if (selectedComboId === "all") return UNT_SUBJECTS;
@@ -327,6 +353,29 @@ export function UntExamView({
     setSubmittedEval(null);
     setNavFilter("all");
     setActiveIdx(0);
+  }
+
+  function handleSubjectKeyDown(e: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (visibleSubjects.length === 0) return;
+    let nextIndex: number | null = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      nextIndex = (index + 1) % visibleSubjects.length;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      nextIndex = (index - 1 + visibleSubjects.length) % visibleSubjects.length;
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      e.preventDefault();
+      nextIndex = visibleSubjects.length - 1;
+    }
+    if (nextIndex !== null) {
+      const targetSubject = visibleSubjects[nextIndex];
+      handleSelectSubject(targetSubject.id);
+      subjectTabRefs.current[nextIndex]?.focus();
+    }
   }
 
   const currentQuestion: UntQuestion = activeQuestions[activeIdx] ?? activeQuestions[0];
@@ -397,6 +446,7 @@ export function UntExamView({
   function handleSubmitExam() {
     const evaluation = evaluateUntExam(answers, activeQuestions);
     setSubmittedEval(evaluation);
+    setShowQuestionGrid(true);
 
     const topicRatios = Object.fromEntries(
       Object.entries(evaluation.byTopic).map(([k, v]) => [k, v.ratio])
@@ -442,255 +492,330 @@ export function UntExamView({
 
   return (
     <div className="unt-exam-root">
-      {/* Справка по официальной спецификации ЕНТ + выбор комбинации, предмета и варианта */}
-      <div className="exam-spec-banner">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <strong className="text-xs sm:text-sm flex items-center gap-1.5">
-            <Award size={15} className="text-amber-600 shrink-0" />
-            <span>{t.specBadge}</span>
-          </strong>
-          <span className="section-pill">
-            {UNT_OFFICIAL_SPEC.profileMath.blocks.map((b) => `${b.range}: ${b.totalPoints}б`).join(" · ")}
+      {/* Компактная строка активного варианта — вопрос №1 сразу на первом экране */}
+      <div className="exam-compact-toolbar">
+        <div className="exam-compact-summary">
+          <span className="unt-subject-icon">
+            <SubjectIcon subjectId={subjectMeta.id} size={16} />
           </span>
-        </div>
-        <p className="small mt-1 mb-0">{t.specSub}</p>
-
-        {/* Фильтр профильных комбинаций гранта РК */}
-        <div className="unt-combo-bar mt-3">
-          <span className="small font-semibold">{t.comboLabel}</span>
-          <div className="unt-combo-pills">
-            <button
-              type="button"
-              className={`unt-combo-chip ${selectedComboId === "all" ? "active" : ""}`}
-              onClick={() => setSelectedComboId("all")}
-            >
-              <Layers size={13} />
-              <span>{t.allSubjectsBtn}</span>
-            </button>
-            {UNT_PROFILE_COMBINATIONS.map((combo) => (
-              <button
-                key={combo.id}
-                type="button"
-                className={`unt-combo-chip ${selectedComboId === combo.id ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedComboId(combo.id);
-                  if (!combo.subjects.includes(subjectId)) {
-                    handleSelectSubject(combo.subjects[0]);
-                  }
-                }}
-              >
-                <span>{combo.title[lang]}</span>
-                <small className="opacity-75">({combo.minGrantScore140}+ б.)</small>
-              </button>
-            ))}
+          <div>
+            <strong className="text-sm">{subjectMeta.title[lang]}</strong>
+            <span className="exam-compact-meta">
+              {" · "}
+              {variantNumber > 0 ? `${t.variantPrefix}${variantNumber}` : t.quickDiagBtn}
+              {" · "}
+              {activeQuestions.length} {t.qShort} ({activeMaxPoints} {t.ptShort})
+              {" · "}
+              {t.answeredStat}: {answeredCount}/{activeQuestions.length}
+            </span>
           </div>
         </div>
 
-        {/* Выбор одного из 12 предметов ЕНТ */}
-        <div className="unt-subject-bar mt-3">
-          <div className="unt-subject-grid" role="tablist" aria-label={t.subjectSelectLabel}>
-            {visibleSubjects.map((subj) => {
-              const active = subj.id === subjectId;
+        <div className="exam-compact-actions">
+          <Button
+            type="button"
+            size="sm"
+            variant={showSetupDrawer ? "default" : "outline"}
+            onClick={() => setShowSetupDrawer((prev) => !prev)}
+          >
+            <Settings2 size={14} />
+            <span>{showSetupDrawer ? t.hideSetupBtn : t.changeSetupBtn}</span>
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={showQuestionGrid ? "default" : "outline"}
+            onClick={() => setShowQuestionGrid((prev) => !prev)}
+          >
+            <Grid size={14} />
+            <span>
+              {t.gridBtn} ({activeIdx + 1}/{activeQuestions.length})
+            </span>
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={showCheatsheet ? "default" : "outline"}
+            onClick={() => setShowCheatsheet((prev) => !prev)}
+          >
+            <BookOpen size={14} />
+            <span>{t.cheatsheetBtn}</span>
+            {showCheatsheet ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Панель выбора предмета, режима НЦТ и варианта (сворачивается после выбора) */}
+      {showSetupDrawer && (
+        <div className="exam-spec-banner">
+          <p className="small m-0">{t.officialFormatNote}</p>
+
+          {/* Переключатель: Официальный формат НЦТ (10/20/40) vs Расширенный тренировочный набор (40) */}
+          <div className="unt-mode-row mt-3">
+            <span className="small font-semibold">{t.modeLabel}</span>
+            <div className="unt-combo-pills" role="group" aria-label={t.modeLabel}>
+              <button
+                type="button"
+                className={`unt-combo-chip ${variantMode === "official" ? "active" : ""}`}
+                onClick={() => {
+                  setVariantMode("official");
+                  setActiveIdx(0);
+                }}
+              >
+                <span>{t.modeOfficial} (10 / 20 / 40 {t.qShort})</span>
+              </button>
+              <button
+                type="button"
+                className={`unt-combo-chip ${variantMode === "extended40" ? "active" : ""}`}
+                onClick={() => {
+                  setVariantMode("extended40");
+                  setActiveIdx(0);
+                }}
+              >
+                <span>{t.modeExtended}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Фильтр профильных комбинаций гранта РК */}
+          <div className="unt-combo-bar mt-3">
+            <span className="small font-semibold">{t.comboLabel}</span>
+            <div className="unt-combo-pills">
+              <button
+                type="button"
+                className={`unt-combo-chip ${selectedComboId === "all" ? "active" : ""}`}
+                onClick={() => setSelectedComboId("all")}
+              >
+                <Layers size={13} />
+                <span>{t.allSubjectsBtn}</span>
+              </button>
+              {UNT_PROFILE_COMBINATIONS.map((combo) => (
+                <button
+                  key={combo.id}
+                  type="button"
+                  className={`unt-combo-chip ${selectedComboId === combo.id ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedComboId(combo.id);
+                    if (!combo.subjects.includes(subjectId)) {
+                      handleSelectSubject(combo.subjects[0]);
+                    }
+                  }}
+                >
+                  <span>{combo.title[lang]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Выбор одного из 12 предметов ЕНТ с клавиатурной навигацией ArrowLeft/ArrowRight */}
+          <div className="unt-subject-bar mt-3">
+            <div className="unt-subject-grid" role="tablist" aria-label={t.subjectSelectLabel}>
+              {visibleSubjects.map((subj, idx) => {
+                const active = subj.id === subjectId;
+                const qCount = variantMode === "official" ? subj.officialQuestions : subj.variantQuestionsCount;
+                const ptCount = variantMode === "official" ? subj.officialMaxPoints : subj.variantMaxPoints;
+                return (
+                  <button
+                    key={subj.id}
+                    ref={(el) => {
+                      subjectTabRefs.current[idx] = el;
+                    }}
+                    type="button"
+                    role="tab"
+                    tabIndex={active ? 0 : -1}
+                    aria-selected={active}
+                    className={`unt-subject-card ${active ? "active" : ""}`}
+                    style={{ "--subj-accent": `rgb(${subj.accentRgb})` } as React.CSSProperties}
+                    onClick={() => handleSelectSubject(subj.id)}
+                    onKeyDown={(e) => handleSubjectKeyDown(e, idx)}
+                  >
+                    <span className="unt-subject-icon">
+                      <SubjectIcon subjectId={subj.id} size={16} />
+                    </span>
+                    <span className="unt-subject-info">
+                      <strong>{subj.title[lang]}</strong>
+                      <small>
+                        {qCount} {t.qShort} · {ptCount} {t.ptShort}
+                      </small>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Выбор варианта 1..10 */}
+          <div className="unt-variant-row mt-3">
+            <div className="unt-variant-pills" role="group" aria-label={t.variantSelectLabel}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((vNum) => (
+                <button
+                  key={vNum}
+                  type="button"
+                  className={`unt-variant-pill ${variantNumber === vNum ? "active" : ""}`}
+                  onClick={() => handleSelectVariant(vNum)}
+                >
+                  {t.variantPrefix}
+                  {vNum}
+                </button>
+              ))}
+              {subjectId === "math" && (
+                <button
+                  type="button"
+                  className={`unt-variant-pill ${variantNumber === 0 ? "active" : ""}`}
+                  onClick={() => handleSelectVariant(0)}
+                >
+                  {t.quickDiagBtn}
+                </button>
+              )}
+            </div>
+
+            <Button type="button" size="sm" onClick={() => setShowSetupDrawer(false)}>
+              <span>{t.startExamBtn}</span>
+              <ChevronRight size={14} />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Справочник формул, дат и законов по выбранному предмету (открывается отдельно) */}
+      {showCheatsheet && (
+        <div className="unt-cheatsheet-panel">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <strong className="text-sm flex items-center gap-1.5">
+              <SubjectIcon subjectId={subjectMeta.id} size={15} />
+              <span>
+                {subjectMeta.title[lang]} — {t.sectionsLabel}
+              </span>
+            </strong>
+            <div className="flex flex-wrap gap-1.5">
+              {subjectMeta.sections[lang].map((sec) => (
+                <span key={sec} className="section-pill">
+                  {sec}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="unt-cheatsheet-grid">
+            {subjectMeta.referenceCheatsheet.map((item) => (
+              <div key={item.tag} className="unt-cheatsheet-card">
+                <strong className="text-xs uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                  {item.tag}
+                </strong>
+                <code className="block text-xs sm:text-sm font-mono mt-1 font-semibold">
+                  {item.formulaOrFact}
+                </code>
+                <p className="small mt-1 mb-0">{item.note[lang]}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Матрица номеров заданий 01..N (открывается по кнопке или после завершения) */}
+      {showQuestionGrid && (
+        <div className="exam-hud-bar">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Фильтр вопросов ЕНТ">
+              <Button
+                type="button"
+                size="sm"
+                variant={navFilter === "all" ? "default" : "outline"}
+                onClick={() => setNavFilter("all")}
+              >
+                {t.filterAll} ({activeQuestions.length})
+              </Button>
+              {twoPtCount > 0 && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={navFilter === "twopt" ? "default" : "outline"}
+                  onClick={() => setNavFilter("twopt")}
+                >
+                  {t.filterTwoPt} ({twoPtCount})
+                </Button>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant={navFilter === "flagged" ? "default" : "outline"}
+                onClick={() => setNavFilter("flagged")}
+              >
+                <Bookmark size={13} />
+                {t.filterFlagged} ({Object.values(flagged).filter(Boolean).length})
+              </Button>
+              {submittedEval && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={navFilter === "mistakes" ? "default" : "outline"}
+                  onClick={() => setNavFilter("mistakes")}
+                >
+                  <AlertTriangle size={13} />
+                  {t.filterMistakes}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="exam-nav-grid" role="navigation" aria-label="Навигация по заданиям ЕНТ">
+            {(filteredQuestions.length > 0 ? filteredQuestions : activeQuestions).map((q) => {
+              const idx = activeQuestions.findIndex((item) => item.id === q.id);
+              const isCurrent = idx === activeIdx;
+              const sc = scoreUntQuestion(q, answers[q.id]);
+              const isAnswered = sc.status !== "unanswered";
+              const isFlag = Boolean(flagged[q.id]);
+
+              let statusClass = "";
+              if (submittedEval) {
+                const evalScore = submittedEval.questionScores[q.id];
+                if (evalScore?.status === "full") statusClass = "exam-cell-full";
+                else if (evalScore?.status === "partial") statusClass = "exam-cell-partial";
+                else statusClass = "exam-cell-zero";
+              } else if (isAnswered) {
+                statusClass = "exam-cell-answered";
+              }
+
               return (
                 <button
-                  key={subj.id}
+                  key={q.id}
                   type="button"
-                  role="tab"
-                  aria-selected={active}
-                  className={`unt-subject-card ${active ? "active" : ""}`}
-                  style={{ "--subj-accent": `rgb(${subj.accentRgb})` } as React.CSSProperties}
-                  onClick={() => handleSelectSubject(subj.id)}
+                  className={`exam-nav-cell ${isCurrent ? "current" : ""} ${statusClass}`}
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-label={`${t.questionLabel} ${q.order} (${q.maxPoints === 2 ? t.points2 : t.points1})`}
+                  onClick={() => setActiveIdx(idx)}
                 >
-                  <span className="unt-subject-icon">
-                    <SubjectIcon subjectId={subj.id} size={16} />
-                  </span>
-                  <span className="unt-subject-info">
-                    <strong>{subj.title[lang]}</strong>
-                    <small>10 × 40 вопр. · 50 б.</small>
-                  </span>
+                  <span className="tabular-nums">{String(q.order).padStart(2, "0")}</span>
+                  {q.maxPoints === 2 && <small className="exam-cell-2pt">2б</small>}
+                  {isFlag && (
+                    <span className="exam-cell-flag" aria-hidden="true">
+                      <Bookmark size={9} />
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
         </div>
+      )}
 
-        {/* Выбор варианта 1..10 (по 40 вопросов) + Справочник формул/дат НЦТ */}
-        <div className="unt-variant-row mt-3">
-          <div className="unt-variant-pills" role="group" aria-label={t.variantSelectLabel}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((vNum) => (
-              <button
-                key={vNum}
-                type="button"
-                className={`unt-variant-pill ${variantNumber === vNum ? "active" : ""}`}
-                onClick={() => handleSelectVariant(vNum)}
-              >
-                {t.variantPrefix}
-                {vNum} <small>(40)</small>
-              </button>
-            ))}
-            {subjectId === "math" && (
-              <button
-                type="button"
-                className={`unt-variant-pill ${variantNumber === 0 ? "active" : ""}`}
-                onClick={() => handleSelectVariant(0)}
-              >
-                {t.quickDiagBtn}
-              </button>
-            )}
-          </div>
-
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setShowCheatsheet((prev) => !prev)}
-          >
-            <BookOpen size={14} />
-            <span>{showCheatsheet ? t.cheatsheetToggleOpen : t.cheatsheetToggleClosed}</span>
-            {showCheatsheet ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-          </Button>
-        </div>
-
-        {/* Полный справочник охватывающих данных, формул, дат и законов по выбранному предмету */}
-        {showCheatsheet && (
-          <div className="unt-cheatsheet-panel mt-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <strong className="text-sm flex items-center gap-1.5">
-                <SubjectIcon subjectId={subjectMeta.id} size={15} />
-                <span>
-                  {subjectMeta.title[lang]} — {t.sectionsLabel}
-                </span>
-              </strong>
-              <div className="flex flex-wrap gap-1.5">
-                {subjectMeta.sections[lang].map((sec) => (
-                  <span key={sec} className="section-pill">
-                    {sec}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="unt-cheatsheet-grid">
-              {subjectMeta.referenceCheatsheet.map((item) => (
-                <div key={item.tag} className="unt-cheatsheet-card">
-                  <strong className="text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
-                    {item.tag}
-                  </strong>
-                  <code className="block text-xs sm:text-sm font-mono mt-1 font-semibold">
-                    {item.formulaOrFact}
-                  </code>
-                  <p className="small mt-1 mb-0">{item.note[lang]}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {lastSavedAttempt && !submittedEval && (
-          <div className="exam-saved-strip mt-2">
-            <span>
-              {t.lastAttemptBanner}{" "}
-              <strong>
-                {lastSavedAttempt.scaledScore50}/50 ({lastSavedAttempt.earnedPoints}/{lastSavedAttempt.maxPoints})
-              </strong>
-            </span>
-            <button
-              type="button"
-              className="underline font-semibold text-xs inline-flex items-center gap-1"
-              onClick={() => onOpenGraph(lastSavedAttempt.weakTopics[0])}
-            >
-              <span>{t.openGraphBtn}</span>
-              <ChevronRight size={13} />
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Панель фильтров и матрицы номеров заданий 01..40 */}
-      <div className="exam-hud-bar">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Фильтр вопросов ЕНТ">
-            <Button
-              type="button"
-              size="sm"
-              variant={navFilter === "all" ? "default" : "outline"}
-              onClick={() => setNavFilter("all")}
-            >
-              {t.filterAll} ({activeQuestions.length})
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={navFilter === "twopt" ? "default" : "outline"}
-              onClick={() => setNavFilter("twopt")}
-            >
-              {t.filterTwoPt} ({twoPtCount})
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={navFilter === "flagged" ? "default" : "outline"}
-              onClick={() => setNavFilter("flagged")}
-            >
-              <Bookmark size={13} />
-              {t.filterFlagged} ({Object.values(flagged).filter(Boolean).length})
-            </Button>
-            {submittedEval && (
-              <Button
-                type="button"
-                size="sm"
-                variant={navFilter === "mistakes" ? "default" : "outline"}
-                onClick={() => setNavFilter("mistakes")}
-              >
-                <AlertTriangle size={13} />
-                {t.filterMistakes}
-              </Button>
-            )}
-          </div>
-          <span className="small font-semibold tabular-nums">
-            {subjectMeta.shortTitle[lang]} · {variantNumber > 0 ? `${t.variantPrefix}${variantNumber}` : t.quickDiagBtn} ·{" "}
-            {t.answeredStat}: {answeredCount}/{activeQuestions.length}
+      {lastSavedAttempt && !submittedEval && (
+        <div className="exam-saved-strip">
+          <span>
+            {t.lastAttemptBanner}{" "}
+            <strong>
+              {lastSavedAttempt.scaledScore50}/50 ({lastSavedAttempt.earnedPoints}/{lastSavedAttempt.maxPoints})
+            </strong>
           </span>
+          <button
+            type="button"
+            className="underline font-semibold text-xs inline-flex items-center gap-1"
+            onClick={() => onOpenGraph(lastSavedAttempt.weakTopics[0])}
+          >
+            <span>{t.openGraphBtn}</span>
+            <ChevronRight size={13} />
+          </button>
         </div>
-
-        <div className="exam-nav-grid" role="navigation" aria-label="Навигация по заданиям ЕНТ">
-          {(filteredQuestions.length > 0 ? filteredQuestions : activeQuestions).map((q) => {
-            const idx = activeQuestions.findIndex((item) => item.id === q.id);
-            const isCurrent = idx === activeIdx;
-            const sc = scoreUntQuestion(q, answers[q.id]);
-            const isAnswered = sc.status !== "unanswered";
-            const isFlag = Boolean(flagged[q.id]);
-
-            let statusClass = "";
-            if (submittedEval) {
-              const evalScore = submittedEval.questionScores[q.id];
-              if (evalScore?.status === "full") statusClass = "exam-cell-full";
-              else if (evalScore?.status === "partial") statusClass = "exam-cell-partial";
-              else statusClass = "exam-cell-zero";
-            } else if (isAnswered) {
-              statusClass = "exam-cell-answered";
-            }
-
-            return (
-              <button
-                key={q.id}
-                type="button"
-                className={`exam-nav-cell ${isCurrent ? "current" : ""} ${statusClass}`}
-                aria-current={isCurrent ? "step" : undefined}
-                aria-label={`${t.questionLabel} ${q.order} (${q.maxPoints === 2 ? t.points2 : t.points1})`}
-                onClick={() => setActiveIdx(idx)}
-              >
-                <span className="tabular-nums">{String(q.order).padStart(2, "0")}</span>
-                {q.maxPoints === 2 && <small className="exam-cell-2pt">2б</small>}
-                {isFlag && (
-                  <span className="exam-cell-flag" aria-hidden="true">
-                    <Bookmark size={9} />
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      )}
 
       {/* Карточка текущего вопроса ЕНТ */}
       <div className="exam-question-card" aria-live="polite">
@@ -921,7 +1046,7 @@ export function UntExamView({
 
         {/* Навигация Вперёд / Назад и Завершение */}
         <div className="exam-footer-actions">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
@@ -988,29 +1113,35 @@ export function UntExamView({
 
           <div className="exam-format-breakdown mt-3">
             <div className="exam-stat-box">
-              <span className="small">№1–25 (1 б.)</span>
+              <span className="small">1 {t.ptShort} (A–D)</span>
               <strong className="tabular-nums">
                 {submittedEval.byFormat.single.earned}/{submittedEval.byFormat.single.max}
               </strong>
             </div>
-            <div className="exam-stat-box">
-              <span className="small">№26–30 Контекст</span>
-              <strong className="tabular-nums">
-                {submittedEval.byFormat.context.earned}/{submittedEval.byFormat.context.max}
-              </strong>
-            </div>
-            <div className="exam-stat-box">
-              <span className="small">№31–35 Соотв. (2 б.)</span>
-              <strong className="tabular-nums">
-                {submittedEval.byFormat.matching.earned}/{submittedEval.byFormat.matching.max}
-              </strong>
-            </div>
-            <div className="exam-stat-box">
-              <span className="small">№36–40 Множ. (2 б.)</span>
-              <strong className="tabular-nums">
-                {submittedEval.byFormat.multiple.earned}/{submittedEval.byFormat.multiple.max}
-              </strong>
-            </div>
+            {submittedEval.byFormat.context.max > 0 && (
+              <div className="exam-stat-box">
+                <span className="small">Контекст (1 {t.ptShort})</span>
+                <strong className="tabular-nums">
+                  {submittedEval.byFormat.context.earned}/{submittedEval.byFormat.context.max}
+                </strong>
+              </div>
+            )}
+            {submittedEval.byFormat.matching.max > 0 && (
+              <div className="exam-stat-box">
+                <span className="small">Соотв. (2 {t.ptShort})</span>
+                <strong className="tabular-nums">
+                  {submittedEval.byFormat.matching.earned}/{submittedEval.byFormat.matching.max}
+                </strong>
+              </div>
+            )}
+            {submittedEval.byFormat.multiple.max > 0 && (
+              <div className="exam-stat-box">
+                <span className="small">Множ. (2 {t.ptShort})</span>
+                <strong className="tabular-nums">
+                  {submittedEval.byFormat.multiple.earned}/{submittedEval.byFormat.multiple.max}
+                </strong>
+              </div>
+            )}
           </div>
 
           {submittedEval.partialTwoPointCount > 0 && (
@@ -1040,7 +1171,7 @@ export function UntExamView({
                     >
                       <span>{topicName(topicId, lang)}</span>
                       <strong className="tabular-nums">
-                        {st.earned}/{st.max} б.
+                        {st.earned}/{st.max} {t.ptShort}
                       </strong>
                     </button>
                   );

@@ -1,153 +1,174 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2, Flame, GraduationCap, Microscope, RotateCcw, ShieldAlert, Sparkles, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Flame,
+  GraduationCap,
+  Info,
+  Microscope,
+  RotateCcw,
+  ShieldAlert,
+  Sparkles,
+  Zap
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Language, TopicId } from "@/lib/curriculum";
 import { topicName } from "@/lib/error-lab";
 import { analyzeCustomDraft, untTrapCases } from "@/lib/xray-trace";
-import { calculateGrantRadar, kzUniversities, type UniversityId, type UserProfile } from "@/lib/user-profile";
+import { calculateGrantRadar, type UniversityId, type UserProfile } from "@/lib/user-profile";
 
 const xrayCopy = {
   ru: {
-    kicker: "УНИКАЛЬНАЯ ТЕХНОЛОГИЯ BILIMAI · LOGIC FRACTURE X-RAY",
-    title: "Рентген черновика, 60-сек детектор ловушек и Радар гранта РК",
-    sub: "Обычные тесты ставят 0 баллов за всю задачу из-за одной забытой скобки ОДЗ. BilimAI находит точную строку излома логики, не штрафует усвоенные темы и считает прирост шансов на госгрант в вузы Казахстана.",
-    modeBlitz: "Блиц «Детектор ловушки за 60 сек»",
-    modeDraft: "Рентген своего черновика",
-    modeGrant: "Радар гранта ВУЗов РК",
-    streakLabel: "Серия без ошибок",
-    disarmedLabel: "Обезврежено ловушек",
-    timerLabel: "Таймер блица",
-    timerStart: "Запустить 60 сек",
-    timerReset: "Сбросить",
-    selectTrapPrompt: "Кликни прямо на строку решения (1–4), в которой впервые сломалась математическая логика:",
-    pointsAtStake: "Цена ловушки на ЕНТ:",
+    title: "Проверка решения по шагам",
+    sub: "Найдите строку, в которой впервые нарушилось математическое правило или область допустимых значений (ОДЗ). Верные шаги сохраняются, исправляется только причина ошибки.",
+    modeBlitz: "Примеры решений с ошибкой",
+    modeDraft: "Проверить свой черновик",
+    modeGrant: "Ориентиры грантов РК (справочник)",
+    streakLabel: "Серия верных",
+    disarmedLabel: "Найдено ошибок",
+    timerEnableBtn: "Режим на время (60 сек)",
+    timerRunningLabel: "Осталось времени",
+    timerReset: "Выключить таймер",
+    selectTrapPrompt: "Нажмите на строку решения (01–04), в которой впервые допущена ошибка:",
+    pointsAtStake: "Вес задания на ЕНТ:",
     ptsUnit: "балла",
-    statusValid: "ВЕРНЫЙ ШАГ · НАВЫК ЗАСЧИТАН",
-    statusFracture: "ТОЧКА ИЗЛОМА ЛОГИКИ",
-    statusCascade: "КАСКАДНОЕ СЛЕДСТВИЕ (НЕ ШТРАФУЕТСЯ)",
-    foundCorrectTitle: "Точное попадание! Ловушка ЕНТ обезврежена.",
-    foundWrongTitle: "На этой строке переход корректен или является следствием. Ищи первопричину!",
-    correctedLabel: "Правильная запись этой строки:",
-    whyLabel: "Почему здесь теряют баллы:",
-    preservedLabel: "Сохранённый навык (не требует переучивания):",
-    askClaudeBtn: "Разобрать эту ловушку с Claude API",
-    openTopicBtn: "Открыть урок по теме",
-    nextTrapBtn: "Следующая ловушка",
-    customDraftTitle: "Построчный дебаггер твоего черновика решения",
-    customDraftSub: "Вставь шаги своего решения (по 1 переходу на строку) или выбери частый черновик абитуриента ниже. Движок отделит верные шаги от точки излома.",
-    presetsLabel: "Примеры черновиков с ловушками ЕНТ:",
+    statusValid: "Верный шаг",
+    statusFracture: "Первая ошибка",
+    statusCascade: "Следствие предыдущей ошибки",
+    foundCorrectTitle: "Верно! Найдена строка, где нарушено правило.",
+    foundWrongTitle: "На этой строке переход корректен или является следствием более ранней ошибки.",
+    correctedLabel: "Правильная запись шага:",
+    whyLabel: "Причина ошибки:",
+    preservedLabel: "Что решено верно:",
+    askClaudeBtn: "Задать вопрос ИИ-тьютору по этому шагу",
+    openTopicBtn: "Открыть тему",
+    nextTrapBtn: "Следующий пример",
+    customDraftTitle: "Построчная проверка вашего черновика",
+    customDraftSub: "Введите шаги решения (по одному переходу на строку) или выберите готовый пример ниже.",
+    presetsLabel: "Примеры черновиков:",
     preset1: "Логарифм с основанием 0,5",
     preset2: "Корень из квадрата √((x−5)²)",
     preset3: "Знак при переносе 3x + 6 = 21",
     preset4: "Сумма корней Виета x² − 9x + 14 = 0",
     preset5: "Объём пирамиды без 1/3",
-    claudeDeepCheckBtn: "Глубокая проверка черновика через Claude API",
-    grantRadarTitle: "Радар государственного гранта РК по профильной математике",
-    grantRadarSub: "Декомпозиция твоего прогнозного балла ЕНТ (из 50): сколько баллов теряется из-за незнания формул, а сколько — из-за когнитивных ловушек (ОДЗ, знак, модуль), которые закрываются за 3 вечера.",
-    currentScoreLabel: "Текущий прогноз ЕНТ",
-    trapLossLabel: "Потери на ловушках (ОДЗ/знак)",
+    claudeDeepCheckBtn: "Разобрать черновик с ИИ-тьютором",
+    grantRadarTitle: "Справочные ориентиры грантов вузов РК по профильной математике",
+    grantRadarSub: "Ориентировочное сопоставление балла по профильной математике (из 50) с порогами групп образовательных программ (ГОП) по открытым данным НЦТ РК (2024–2025).",
+    notAssessedTitle: "Ваш уровень ещё не оценён — ниже показан демонстрационный пример расчёта (22/50)",
+    notAssessedSub: "Решите задачи в разделе «Занятие» или пройдите диагностический вариант в «Пробном ЕНТ», чтобы расчёт опирался на ваши реальные ответы.",
+    currentScoreLabel: "Текущий балл / пример",
+    notAssessedBadge: "Ещё не оценено (пример 22/50)",
+    trapLossLabel: "Потери на ОДЗ и знаках",
     theoryLossLabel: "Теоретические пробелы",
-    afterFixLabel: "Прогноз без ловушек",
-    uniColName: "ВУЗ и образовательная программа РК",
-    uniColThreshold: "Порог / Грант по мат.",
-    uniColCurrent: "Шанс сейчас",
-    uniColAfter: "После закрытия ловушек",
-    targetBadge: "Твоя цель"
+    afterFixLabel: "Ориентир без ошибок ОДЗ",
+    uniColThreshold: "Ориентир по профильной мат.",
+    uniColTotal140: "Итоговый ориентир ЕНТ",
+    uniColCurrent: "Соответствие порогу сейчас",
+    uniColAfter: "При устранении ошибок ОДЗ",
+    targetBadge: "Выбранный ориентир",
+    sourceLabel: "Источник данных: НЦТ РК (testcenter.kz)"
   },
   kk: {
-    kicker: "BILIMAI БІРЕГЕЙ ТЕХНОЛОГИЯСЫ · LOGIC FRACTURE X-RAY",
-    title: "Шешім рентгені, 60-сек тұзақ детекторы және ҚР грант радары",
-    sub: "Кәдімгі тесттер бір ғана АОО (ОДЗ) жақшасы үшін бүкіл есепке 0 балл қояды. BilimAI логика үзілген нақты жолды табады, меңгерілген тақырыптарды айыппұлсыз сақтайды және ҚР ЖОО грантына түсу мүмкіндігін есептейді.",
-    modeBlitz: "60 сек «ҰБТ тұзағын тап» блиці",
-    modeDraft: "Өз шешіміңнің рентгені",
-    modeGrant: "ҚР ЖОО грант радары",
-    streakLabel: "Қатесіз серия",
-    disarmedLabel: "Залалсызданған тұзақ",
-    timerLabel: "Блиц таймері",
-    timerStart: "60 сек бастау",
-    timerReset: "Қайтару",
-    selectTrapPrompt: "Математикалық логика алғаш бұзылған шешім жолын (1–4) тікелей басыңыз:",
+    title: "Шешімді қадамдап тексеру",
+    sub: "Математикалық ереже немесе анықталу облысы (АОО) алғаш бұзылған жолды табыңыз. Дұрыс қадамдар сақталады, тек қатенің себебі түзетіледі.",
+    modeBlitz: "Қатесі бар шешім үлгілері",
+    modeDraft: "Өз шешіміңді тексеру",
+    modeGrant: "ҚР грант бағдарлары (анықтамалық)",
+    streakLabel: "Дұрыс серия",
+    disarmedLabel: "Табылған қателер",
+    timerEnableBtn: "Уақытпен режим (60 сек)",
+    timerRunningLabel: "Қалған уақыт",
+    timerReset: "Таймерді өшіру",
+    selectTrapPrompt: "Математикалық ереже алғаш бұзылған шешім жолын (01–04) басыңыз:",
     pointsAtStake: "ҰБТ-дағы салмағы:",
     ptsUnit: "балл",
-    statusValid: "ДҰРЫС ҚАДАМ · ДАҒДЫ ЕСЕПТЕЛДІ",
-    statusFracture: "ЛОГИКАЛЫҚ СЫНУ НҮКТЕСІ",
-    statusCascade: "КАСКАДТЫҚ САЛДАР (АЙЫППҰЛ ЖОҚ)",
-    foundCorrectTitle: "Дәл таптыңыз! ҰБТ тұзағы залалсыздандырылды.",
-    foundWrongTitle: "Бұл жолдағы амал дұрыс немесе алдыңғы жолдың салдары. Түпкі себепті іздеңіз!",
-    correctedLabel: "Осы жолдың дұрыс жазылуы:",
-    whyLabel: "Неліктен мұнда балл жоғалады:",
-    preservedLabel: "Сақталған дағды (қайта оқуды қажет етпейді):",
-    askClaudeBtn: "Осы тұзақты Claude API-мен талдау",
-    openTopicBtn: "Тақырып сабағын ашу",
-    nextTrapBtn: "Келесі тұзақ",
-    customDraftTitle: "Шешім жазбасының жолдық дебаггері",
+    statusValid: "Дұрыс қадам",
+    statusFracture: "Бірінші қате",
+    statusCascade: "Алдыңғы қатенің салдары",
+    foundCorrectTitle: "Дұрыс! Ереже бұзылған жол табылды.",
+    foundWrongTitle: "Бұл жолдағы амал дұрыс немесе алдыңғы жолдың салдары.",
+    correctedLabel: "Қадамның дұрыс жазылуы:",
+    whyLabel: "Қатенің себебі:",
+    preservedLabel: "Дұрыс орындалған бөлік:",
+    askClaudeBtn: "Осы қадамды ИИ-тьютормен талдау",
+    openTopicBtn: "Тақырыпты ашу",
+    nextTrapBtn: "Келесі мысал",
+    customDraftTitle: "Шешім жазбасын жолдап тексеру",
     customDraftSub: "Шешім қадамдарын (әр жолға 1 қадам) енгізіңіз немесе төмендегі дайын үлгіні таңдаңыз.",
-    presetsLabel: "ҰБТ тұзақтары бар жазба үлгілері:",
+    presetsLabel: "Жазба үлгілері:",
     preset1: "Негізі 0,5 логарифм",
     preset2: "Квадрат түбір √((x−5)²)",
     preset3: "3x + 6 = 21 таңба ауыстыру",
     preset4: "Виет қосындысы x² − 9x + 14 = 0",
     preset5: "Пирамида көлемі (1/3 коэффициенсіз)",
-    claudeDeepCheckBtn: "Claude API арқылы терең тексеру",
-    grantRadarTitle: "Профильдік математика бойынша ҚР мемлекеттік грант радары",
-    grantRadarSub: "50 балдық ҰБТ болжамының жіктелуі: қанша балл теориялық олқылықтан, ал қаншасы 3 кеште түзетілетін когнитивтік тұзақтардан (АОО, таңба, модуль) жоғалады.",
-    currentScoreLabel: "Қазіргі ҰБТ болжамы",
-    trapLossLabel: "Тұзақтардағы жоғалту",
+    claudeDeepCheckBtn: "Жазбаны ИИ-тьютормен тексеру",
+    grantRadarTitle: "Профильдік математика бойынша ҚР ЖОО грант бағдарлары",
+    grantRadarSub: "Профильдік математика балын (50-ден) ҚР ҰТО (2024–2025) ашық деректері бойынша БББ топтарының шекті балдарымен салыстыру.",
+    notAssessedTitle: "Деңгейіңіз әлі бағаланбаған — төменде есептеудің демонстрациялық мысалы (22/50) көрсетілген",
+    notAssessedSub: "Нақты жауаптарыңыз бойынша есептеу үшін «Сабақ» бөлімінде есеп шығарыңыз немесе «Сынақ ҰБТ» тапсырыңыз.",
+    currentScoreLabel: "Ағымдағы балл / мысал",
+    notAssessedBadge: "Әлі бағаланбаған (мысал 22/50)",
+    trapLossLabel: "АОО және таңба жоғалтулары",
     theoryLossLabel: "Теориялық олқылық",
-    afterFixLabel: "Тұзақсыз болжам",
-    uniColName: "ҚР ЖОО және білім беру бағдарламасы",
-    uniColThreshold: "Шекті / Грант балы",
-    uniColCurrent: "Қазіргі мүмкіндік",
-    uniColAfter: "Тұзақтарды жойған соң",
-    targetBadge: "Таңдалған ЖОО"
+    afterFixLabel: "АОО қатесіз бағдар",
+    uniColThreshold: "Профильдік мат. бағдары",
+    uniColTotal140: "Жалпы ҰБТ бағдары",
+    uniColCurrent: "Қазіргі сәйкестік",
+    uniColAfter: "АОО қателерін түзеткен соң",
+    targetBadge: "Таңдалған бағдар",
+    sourceLabel: "Дереккөз: ҚР ҰТО (testcenter.kz)"
   },
   uz: {
-    kicker: "BILIMAI NOYOB TEXNOLOGIYASI · LOGIC FRACTURE X-RAY",
-    title: "Qoralama rentgeni, 60-soniya tuzoq detektori va Grant radari",
-    sub: "Oddiy testlar bitta unutilgan qavs uchun butun masalaga 0 ball qo‘yadi. BilimAI mantiq buzilgan aniq qatorni topadi, o‘zlashtirilgan mavzularni jarimasiz saqlaydi va grant imkoniyatini hisoblaydi.",
-    modeBlitz: "60 soniya «Tuzoqni top» blitsi",
-    modeDraft: "O‘z qoralamangiz rentgeni",
-    modeGrant: "OTM grant radari",
-    streakLabel: "Xatosiz seriya",
-    disarmedLabel: "Topilgan tuzoqlar",
-    timerLabel: "Blits taymeri",
-    timerStart: "60 soniya boshlash",
-    timerReset: "Tiklash",
-    selectTrapPrompt: "Matematik mantiq birinchi marta buzilgan yechim qatorini (1–4) bosing:",
+    title: "Yechimni qadam-baqadam tekshirish",
+    sub: "Matematik qoida yoki aniqlanish sohasi birinchi marta buzilgan qatorni toping. To‘g‘ri qadamlar saqlanadi, faqat xato sababi tuzatiladi.",
+    modeBlitz: "Xatoli yechim namunalari",
+    modeDraft: "O‘z qoralamangizni tekshirish",
+    modeGrant: "OTM grant mo‘ljallari (ma’lumotnoma)",
+    streakLabel: "To‘g‘ri seriya",
+    disarmedLabel: "Topilgan xatolar",
+    timerEnableBtn: "Vaqt rejimi (60 soniya)",
+    timerRunningLabel: "Qolgan vaqt",
+    timerReset: "Taymerni o‘chirish",
+    selectTrapPrompt: "Matematik qoida birinchi marta buzilgan yechim qatorini (01–04) bosing:",
     pointsAtStake: "Imtihondagi vazni:",
     ptsUnit: "ball",
-    statusValid: "TO‘G‘RI QADAM · KO‘NIKMA TASDIQLANDI",
-    statusFracture: "MANTIQIY SINISH NUQTASI",
-    statusCascade: "KASKADLI OQIBAT (JARIMA YO‘Q)",
-    foundCorrectTitle: "Aniq topdingiz! Imtihon tuzog‘i zararsizlantirildi.",
-    foundWrongTitle: "Bu qatordagi amal to‘g‘ri yoki oldingi qator oqibati. Asosiy sababni toping!",
-    correctedLabel: "Ushbu qatorning to‘g‘ri yozilishi:",
-    whyLabel: "Nega bu yerda ball yo‘qotiladi:",
-    preservedLabel: "Saqlangan ko‘nikma (qayta o‘qish shart emas):",
-    askClaudeBtn: "Claude API bilan tahlil qilish",
-    openTopicBtn: "Mavzu darsini ochish",
-    nextTrapBtn: "Keyingi tuzoq",
-    customDraftTitle: "Yechim qoralamasining qator-baqator debaggeri",
+    statusValid: "To‘g‘ri qadam",
+    statusFracture: "Birinchi xato",
+    statusCascade: "Oldingi xato oqibati",
+    foundCorrectTitle: "To‘g‘ri! Qoida buzilgan qator topildi.",
+    foundWrongTitle: "Bu qatordagi amal to‘g‘ri yoki oldingi qator oqibati.",
+    correctedLabel: "Qadamning to‘g‘ri yozilishi:",
+    whyLabel: "Xato sababi:",
+    preservedLabel: "To‘g‘ri bajarilgan qism:",
+    askClaudeBtn: "Shu qadamni AI-tyutor bilan tahlil qilish",
+    openTopicBtn: "Mavzuni ochish",
+    nextTrapBtn: "Keyingi misol",
+    customDraftTitle: "Qoralamani qator-baqator tekshirish",
     customDraftSub: "Yechim qadamlarini (har bir qatorga 1 tadan) kiriting yoki quyidagi tayyor namunalardan birini tanlang.",
-    presetsLabel: "Tuzoqli qoralama namunalari:",
+    presetsLabel: "Qoralama namunalari:",
     preset1: "Asosi 0,5 bo‘lgan logarifm",
     preset2: "Kvadrat ildiz √((x−5)²)",
     preset3: "3x + 6 = 21 ishora ko‘chirish",
     preset4: "Viyet yig‘indisi x² − 9x + 14 = 0",
     preset5: "Piramida hajmi (1/3 siz)",
-    claudeDeepCheckBtn: "Claude API orqali chuqur tekshirish",
-    grantRadarTitle: "Matematika bo‘yicha davlat granti radari",
-    grantRadarSub: "50 ballik prognoz tahlili: qancha ball nazariy bo‘shliqdan, qanchasi esa kognitiv tuzoqlardan (aniqlanish sohasi, ishora, modul) yo‘qotiladi.",
-    currentScoreLabel: "Joriy prognoz",
-    trapLossLabel: "Tuzoqlardagi yo‘qotish",
+    claudeDeepCheckBtn: "Qoralamani AI-tyutor bilan tekshirish",
+    grantRadarTitle: "Matematika bo‘yicha OTM grant mo‘ljallari",
+    grantRadarSub: "Matematika ballini (50 dan) 2024–2025 o‘quv yili ochiq ma’lumotlari asosida ta’lim dasturlari guruhlari (TDG) bilan taqqoslash.",
+    notAssessedTitle: "Darajangiz hali baholanmagan — quyida hisoblashning namuna misoli (22/50) ko‘rsatilgan",
+    notAssessedSub: "Haqiqiy javoblaringiz asosida hisoblash uchun «Mashg‘ulot» bo‘limida masalalar yeching yoki «Sinov UBT» topshiring.",
+    currentScoreLabel: "Joriy ball / namuna",
+    notAssessedBadge: "Hali baholanmagan (namuna 22/50)",
+    trapLossLabel: "Ishora va AS yo‘qotishlari",
     theoryLossLabel: "Nazariy bo‘shliq",
-    afterFixLabel: "Tuzoqlarsiz prognoz",
-    uniColName: "OTM va ta’lim dasturi",
-    uniColThreshold: "Min / Grant bali",
-    uniColCurrent: "Hozirgi imkoniyat",
-    uniColAfter: "Tuzoqlar yopilgach",
-    targetBadge: "Maqsadli OTM"
+    afterFixLabel: "Xatolarsiz mo‘ljal",
+    uniColThreshold: "Matematika mo‘ljali",
+    uniColTotal140: "Umumiy UBT mo‘ljali",
+    uniColCurrent: "Hozirgi moslik",
+    uniColAfter: "Xatolar tuzatilgach",
+    targetBadge: "Tanlangan mo‘ljal",
+    sourceLabel: "Manba: testcenter.kz"
   }
 } as const;
 
@@ -158,6 +179,10 @@ const customDraftPresets = [
   "x² - 9x + 14 = 0\nx₁ + x₂ = -9\nx₁ · x₂ = 14",
   "a = 6, h = 5 (правильная пирамида)\nS_осн = 6² = 36\nV = S_осн · h = 36 · 5 = 180"
 ];
+
+function stripDuplicateStepPrefix(text: string): string {
+  return text.replace(/^\s*\d+[\)\.]\s*/, "");
+}
 
 export function XrayTrapView({
   lang,
@@ -186,7 +211,7 @@ export function XrayTrapView({
   const [disarmed, setDisarmed] = useState(userProfile?.disarmedTrapsCount ?? 0);
   const [selectedUni, setSelectedUni] = useState<UniversityId>(userProfile?.targetUniversity ?? "kbtu");
 
-  // 60-second blitz timer
+  // Optional 60-second blitz timer — only shown when started
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [draftText, setDraftText] = useState<string>(customDraftPresets[0]);
 
@@ -229,29 +254,27 @@ export function XrayTrapView({
       <div className="xray-hero-card">
         <div className="xray-hero-top">
           <div>
-            <span className="xray-kicker">
-              <Microscope size={14} />
-              {c.kicker}
-            </span>
-            <h1 className="xray-title">{c.title}</h1>
+            <h2 className="xray-title">{c.title}</h2>
             <p className="xray-sub">{c.sub}</p>
           </div>
-          <div className="xray-kpi-row">
-            <div className="xray-kpi-pill">
-              <Flame size={16} className="text-amber-600" />
-              <div>
-                <div className="xray-kpi-val">{streak}</div>
-                <div className="xray-kpi-lbl">{c.streakLabel}</div>
+          {(streak > 0 || disarmed > 0) && (
+            <div className="xray-kpi-row">
+              <div className="xray-kpi-pill">
+                <Flame size={16} className="text-amber-700" />
+                <div>
+                  <div className="xray-kpi-val">{streak}</div>
+                  <div className="xray-kpi-lbl">{c.streakLabel}</div>
+                </div>
+              </div>
+              <div className="xray-kpi-pill">
+                <Zap size={16} className="text-emerald-700" />
+                <div>
+                  <div className="xray-kpi-val">{disarmed}</div>
+                  <div className="xray-kpi-lbl">{c.disarmedLabel}</div>
+                </div>
               </div>
             </div>
-            <div className="xray-kpi-pill">
-              <Zap size={16} className="text-emerald-600" />
-              <div>
-                <div className="xray-kpi-val">{disarmed}</div>
-                <div className="xray-kpi-lbl">{c.disarmedLabel}</div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Sub-mode switcher */}
@@ -289,7 +312,7 @@ export function XrayTrapView({
         </div>
       </div>
 
-      {/* MODE 1: 60-SECOND UNT TRAP BLITZ */}
+      {/* MODE 1: STEP VERIFICATION EXAMPLES (+ OPTIONAL 60S TIMER) */}
       {subMode === "blitz" && (
         <div className="xray-stage-card">
           <div className="xray-blitz-bar">
@@ -310,18 +333,21 @@ export function XrayTrapView({
             </div>
 
             <div className="xray-timer-box">
-              <span className="xray-timer-text">
-                {c.timerLabel}: <strong>{secondsLeft !== null ? `${secondsLeft}s` : "60s"}</strong>
-              </span>
-              {secondsLeft === null || secondsLeft === 0 ? (
+              {secondsLeft === null ? (
                 <Button size="sm" variant="outline" onClick={() => setSecondsLeft(60)}>
-                  {c.timerStart}
+                  <Clock size={14} />
+                  <span>{c.timerEnableBtn}</span>
                 </Button>
               ) : (
-                <Button size="sm" variant="ghost" onClick={() => setSecondsLeft(null)}>
-                  <RotateCcw size={14} />
-                  {c.timerReset}
-                </Button>
+                <>
+                  <span className="xray-timer-text tabular-nums">
+                    {c.timerRunningLabel}: <strong>{secondsLeft}s</strong>
+                  </span>
+                  <Button size="sm" variant="ghost" onClick={() => setSecondsLeft(null)}>
+                    <RotateCcw size={14} />
+                    <span>{c.timerReset}</span>
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -330,7 +356,7 @@ export function XrayTrapView({
             <div className="xray-problem-meta">
               <span className="xray-code-badge">{currentTrap.code}</span>
               <span className="xray-points-badge">
-                {c.pointsAtStake} +{currentTrap.pointsAtStake} {c.ptsUnit}
+                {c.pointsAtStake} {currentTrap.pointsAtStake} {c.ptsUnit}
               </span>
             </div>
             <p className="xray-problem-math">{currentTrap.problem[lang]}</p>
@@ -338,7 +364,8 @@ export function XrayTrapView({
           </div>
 
           <div className="xray-lines-list" role="group" aria-label={c.selectTrapPrompt}>
-            {lines.map((lineText, idx) => {
+            {lines.map((rawLineText, idx) => {
+              const lineText = stripDuplicateStepPrefix(rawLineText);
               const isSelected = pickedLine === idx;
               const showFullXray = isFractureFound;
               let statusClass = "";
@@ -389,7 +416,7 @@ export function XrayTrapView({
                   </>
                 ) : (
                   <>
-                    <ShieldAlert size={18} className="text-amber-700" />
+                    <ShieldAlert size={18} className="text-amber-800" />
                     <strong>{c.foundWrongTitle}</strong>
                   </>
                 )}
@@ -399,7 +426,9 @@ export function XrayTrapView({
                 <div className="xray-diag-grid">
                   <div className="xray-diag-block">
                     <span className="xray-diag-lbl">{c.correctedLabel}</span>
-                    <p className="xray-diag-math">{currentTrap.correctedLine[lang]}</p>
+                    <p className="xray-diag-math">
+                      {stripDuplicateStepPrefix(currentTrap.correctedLine[lang])}
+                    </p>
                   </div>
                   <div className="xray-diag-block">
                     <span className="xray-diag-lbl">{c.whyLabel}</span>
@@ -441,11 +470,11 @@ export function XrayTrapView({
         </div>
       )}
 
-      {/* MODE 2: LIVE CUSTOM DRAFT X-RAY DEBUGGER */}
+      {/* MODE 2: LIVE CUSTOM DRAFT DEBUGGER */}
       {subMode === "draft" && (
         <div className="xray-stage-card">
           <div className="xray-custom-head">
-            <h2 className="xray-sub-heading">{c.customDraftTitle}</h2>
+            <h3 className="xray-sub-heading">{c.customDraftTitle}</h3>
             <p className="small">{c.customDraftSub}</p>
           </div>
 
@@ -496,7 +525,9 @@ export function XrayTrapView({
             <div className="xray-trace-col">
               <div className="xray-trace-header">
                 <strong>{draftAnalysis.detectedTrapTitle}</strong>
-                <span className="xray-points-badge">+{draftAnalysis.savedPointsEstimate} {c.ptsUnit}</span>
+                <span className="xray-points-badge">
+                  +{draftAnalysis.savedPointsEstimate} {c.ptsUnit}
+                </span>
               </div>
               <p className="small mb-3">{draftAnalysis.summary}</p>
               <div className="xray-trace-items">
@@ -504,7 +535,9 @@ export function XrayTrapView({
                   <div key={line.lineNumber} className={`xray-trace-item trace-${line.status}`}>
                     <div className="xray-trace-item-top">
                       <span className="xray-line-num">0{line.lineNumber}</span>
-                      <code className="xray-trace-expr">{line.expression}</code>
+                      <code className="xray-trace-expr">
+                        {stripDuplicateStepPrefix(line.expression)}
+                      </code>
                       <span className="xray-line-tag">{line.badge}</span>
                     </div>
                     <p className="xray-trace-note">{line.note}</p>
@@ -512,7 +545,8 @@ export function XrayTrapView({
                       <p className="xray-trace-fix inline-flex items-center gap-1">
                         <CheckCircle2 size={14} />
                         <span>
-                          {c.correctedLabel} <strong>{line.correctedLine}</strong>
+                          {c.correctedLabel}{" "}
+                          <strong>{stripDuplicateStepPrefix(line.correctedLine)}</strong>
                         </span>
                       </p>
                     )}
@@ -524,18 +558,32 @@ export function XrayTrapView({
         </div>
       )}
 
-      {/* MODE 3: KAZAKHSTAN UNIVERSITY GRANT RADAR */}
+      {/* MODE 3: KAZAKHSTAN UNIVERSITY GRANT ORIENTATION REFERENCE */}
       {subMode === "grant" && (
         <div className="xray-stage-card">
           <div className="xray-custom-head">
-            <h2 className="xray-sub-heading">{c.grantRadarTitle}</h2>
+            <h3 className="xray-sub-heading">{c.grantRadarTitle}</h3>
             <p className="small">{c.grantRadarSub}</p>
           </div>
+
+          {!grantRadar.isAssessed && (
+            <div className="callout mb-4">
+              <strong className="flex items-center gap-1.5 text-sm">
+                <Info size={16} />
+                <span>{c.notAssessedTitle}</span>
+              </strong>
+              <p className="small mt-1 mb-0">{c.notAssessedSub}</p>
+            </div>
+          )}
 
           <div className="grant-metrics-grid">
             <div className="grant-metric-box">
               <span className="grant-metric-lbl">{c.currentScoreLabel}</span>
-              <strong className="grant-metric-val">{grantRadar.currentProjectedScore} / 50</strong>
+              <strong className="grant-metric-val">
+                {grantRadar.isAssessed
+                  ? `${grantRadar.currentProjectedScore} / 50`
+                  : c.notAssessedBadge}
+              </strong>
             </div>
             <div className="grant-metric-box warn">
               <span className="grant-metric-lbl">{c.trapLossLabel}</span>
@@ -567,22 +615,29 @@ export function XrayTrapView({
                     <div className="grant-uni-title-line">
                       <GraduationCap size={16} />
                       <strong>{u.shortName}</strong>
+                      <span className="section-pill">ГОП {u.gopCode}</span>
                       {isTarget && <span className="grant-target-pill">{c.targetBadge}</span>}
                     </div>
                     <span className="small">{u.fullName}</span>
                     <span className="grant-threshold-note">
-                      {c.uniColThreshold}: <strong>{u.minMathScore}–{u.safeMathScore} / 50</strong>
+                      {c.uniColThreshold}: <strong>{u.minMathScore}–{u.safeMathScore} / 50</strong> ·{" "}
+                      {c.uniColTotal140}: <strong>{u.totalUntGrantRef140} / 140</strong> ({u.referenceYear})
                     </span>
                   </div>
 
                   <div className="grant-uni-bars">
                     <div className="grant-bar-group">
                       <div className="grant-bar-label">
-                        <span>{c.uniColCurrent}</span>
+                        <span>
+                          {c.uniColCurrent} {!grantRadar.isAssessed ? "(пример)" : ""}
+                        </span>
                         <strong>{u.currentChancePercent}%</strong>
                       </div>
                       <div className="grant-bar-track">
-                        <div className="grant-bar-fill current" style={{ width: `${u.currentChancePercent}%` }} />
+                        <div
+                          className="grant-bar-fill current"
+                          style={{ width: `${u.currentChancePercent}%` }}
+                        />
                       </div>
                     </div>
 
@@ -590,11 +645,15 @@ export function XrayTrapView({
                       <div className="grant-bar-label">
                         <span>{c.uniColAfter}</span>
                         <strong className="text-emerald-700">
-                          {u.afterFixChancePercent}% (+{Math.max(0, u.afterFixChancePercent - u.currentChancePercent)}%)
+                          {u.afterFixChancePercent}% (+
+                          {Math.max(0, u.afterFixChancePercent - u.currentChancePercent)}%)
                         </strong>
                       </div>
                       <div className="grant-bar-track">
-                        <div className="grant-bar-fill after" style={{ width: `${u.afterFixChancePercent}%` }} />
+                        <div
+                          className="grant-bar-fill after"
+                          style={{ width: `${u.afterFixChancePercent}%` }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -602,6 +661,18 @@ export function XrayTrapView({
               );
             })}
           </div>
+
+          <p className="small text-muted-foreground mt-3 mb-0">
+            {grantRadar.methodologyNote}{" "}
+            <a
+              href="https://testcenter.kz/?page_id=15074&lang=ru"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-semibold"
+            >
+              {c.sourceLabel}
+            </a>
+          </p>
         </div>
       )}
     </section>

@@ -8,10 +8,11 @@ export const kzUniversities = [
   {
     id: "kbtu",
     shortName: "KBTU (КБТУ)",
+    gopCode: "B057 Информационные технологии (2024–2025)",
     name: {
-      ru: "КБТУ · Информационные технологии и мат. моделирование",
-      kk: "ҚБТУ · Ақпараттық технологиялар және мат. модельдеу",
-      uz: "QBTU · Axborot texnologiyalari va mat. modellashtirish"
+      ru: "КБТУ · B057 Информационные технологии и мат. моделирование",
+      kk: "ҚБТУ · B057 Ақпараттық технологиялар және мат. модельдеу",
+      uz: "QBTU · B057 Axborot texnologiyalari va mat. modellashtirish"
     },
     minMathScore: 41,
     safeMathScore: 46
@@ -19,10 +20,11 @@ export const kzUniversities = [
   {
     id: "iitu",
     shortName: "IITU (МУИТ)",
+    gopCode: "B057 / B059 Информационные технологии и ИБ (2024–2025)",
     name: {
-      ru: "МУИТ · Computer Science и кибербезопасность",
-      kk: "ХATУ (IITU) · Computer Science және киберқауіпсіздік",
-      uz: "IITU · Computer Science va kiberxavfsizlik"
+      ru: "МУИТ · B057 Computer Science и B059 Кибербезопасность",
+      kk: "ХATУ (IITU) · B057 Computer Science және B059 Киберқауіпсіздік",
+      uz: "IITU · B057 Computer Science va B059 Kiberxavfsizlik"
     },
     minMathScore: 39,
     safeMathScore: 44
@@ -30,10 +32,11 @@ export const kzUniversities = [
   {
     id: "aitu",
     shortName: "Astana IT (AITU)",
+    gopCode: "B057 Информационные технологии (2024–2025)",
     name: {
-      ru: "Astana IT University · Software Engineering & AI",
-      kk: "Astana IT University · Software Engineering & AI",
-      uz: "Astana IT University · Software Engineering & AI"
+      ru: "Astana IT University · B057 Software Engineering & AI",
+      kk: "Astana IT University · B057 Software Engineering & AI",
+      uz: "Astana IT University · B057 Software Engineering & AI"
     },
     minMathScore: 38,
     safeMathScore: 43
@@ -41,10 +44,11 @@ export const kzUniversities = [
   {
     id: "sdu",
     shortName: "SDU University",
+    gopCode: "B055 Математика и статистика / B057 IT (2024–2025)",
     name: {
-      ru: "SDU University · Прикладная математика и Data Science",
-      kk: "SDU University · Қолданбалы математика және Data Science",
-      uz: "SDU University · Amaliy matematika va Data Science"
+      ru: "SDU University · B055 Математика и B057 Data Science",
+      kk: "SDU University · B055 Математика және B057 Data Science",
+      uz: "SDU University · B055 Matematika va B057 Data Science"
     },
     minMathScore: 40,
     safeMathScore: 45
@@ -52,10 +56,11 @@ export const kzUniversities = [
   {
     id: "satbayev",
     shortName: "Satbayev University",
+    gopCode: "B062 Электротехника и автоматизация / B057 IT (2024–2025)",
     name: {
-      ru: "Satbayev University · Инженерия, автоматизация и IT",
-      kk: "Satbayev University · Инженерия, автоматтандыру және IT",
-      uz: "Satbayev University · Muhandislik va IT"
+      ru: "Satbayev University · B062 Инженерия, автоматизация и IT",
+      kk: "Satbayev University · B062 Инженерия, автоматтандыру және IT",
+      uz: "Satbayev University · B062 Muhandislik va IT"
     },
     minMathScore: 34,
     safeMathScore: 40
@@ -63,10 +68,11 @@ export const kzUniversities = [
   {
     id: "kaznu",
     shortName: "КазНУ им. аль-Фараби",
+    gopCode: "B055 Математика и статистика / B057 IT (2024–2025)",
     name: {
-      ru: "КазНУ им. аль-Фараби · Мехмат и ИИ",
-      kk: "Әл-Фараби ат. ҚазҰУ · Мехмат және ЖИ",
-      uz: "Al-Farobiy nomidagi QozMU · Mexmat va SI"
+      ru: "КазНУ им. аль-Фараби · B055 Мехмат и B057 ИИ",
+      kk: "Әл-Фараби ат. ҚазҰУ · B055 Мехмат және B057 ЖИ",
+      uz: "Al-Farobiy nomidagi QozMU · B055 Mexmat va B057 SI"
     },
     minMathScore: 35,
     safeMathScore: 41
@@ -149,6 +155,10 @@ export function createDemoProfile(role: "student" | "teacher", lang: Language = 
 }
 
 export interface GrantRadarEstimate {
+  isAssessed: boolean;
+  referenceYear: string;
+  sourceUrl: string;
+  methodologyNote: string;
   currentProjectedScore: number;
   scoreAfterTrapFix: number;
   lostToTheoryGaps: number;
@@ -156,9 +166,12 @@ export interface GrantRadarEstimate {
   universities: {
     id: UniversityId;
     shortName: string;
+    gopCode: string;
     fullName: string;
     minMathScore: number;
     safeMathScore: number;
+    totalUntGrantRef140: number;
+    referenceYear: string;
     currentChancePercent: number;
     afterFixChancePercent: number;
   }[];
@@ -171,13 +184,13 @@ export function calculateGrantRadar(
   disarmedTrapsCount: number,
   lang: Language
 ): GrantRadarEstimate {
+  const isAssessed = lastUntScaled50 !== null || masteredTopicsCount > 0 || disarmedTrapsCount > 0;
   const baseFromMastery = 22 + Math.round((masteredTopicsCount / 16) * 20);
   const rawBase = lastUntScaled50 !== null ? Math.max(18, lastUntScaled50) : baseFromMastery;
   const trapBonus = Math.min(4, Math.floor(disarmedTrapsCount / 3));
   const currentProjectedScore = Math.min(50, Math.max(18, rawBase + trapBonus));
 
   const totalMissing = Math.max(0, 50 - currentProjectedScore);
-  // On UNT, ~45% of lost points in profile math come from cognitive traps (ODZ, sign flips, |x|, extraneous roots)
   const lostToCognitiveTraps = Math.min(totalMissing, Math.max(2, Math.round(totalMissing * 0.45)));
   const lostToTheoryGaps = Math.max(0, totalMissing - lostToCognitiveTraps);
   const scoreAfterTrapFix = Math.min(50, currentProjectedScore + lostToCognitiveTraps);
@@ -196,14 +209,28 @@ export function calculateGrantRadar(
   const universities = kzUniversities.map((u) => ({
     id: u.id,
     shortName: u.shortName,
+    gopCode: u.gopCode,
     fullName: u.name[lang],
     minMathScore: u.minMathScore,
     safeMathScore: u.safeMathScore,
+    totalUntGrantRef140: Math.min(132, Math.round(u.minMathScore * 2.55)),
+    referenceYear: "2024–2025",
     currentChancePercent: computeChance(currentProjectedScore, u.minMathScore, u.safeMathScore),
     afterFixChancePercent: computeChance(scoreAfterTrapFix, u.minMathScore, u.safeMathScore)
   }));
 
+  const methodologyNote =
+    lang === "kk"
+      ? "Ескертпе: бағалау 2024–2025 оқу жылындағы жалпы конкурс гранттарының (B057 АТ, B059 Коммуникациялар, B055 Математика, B062 Электр техникасы) бағдарлы математика шектеріне негізделген индикативті модель болып табылады."
+      : lang === "uz"
+        ? "Izoh: hisob-kitob 2024–2025 o‘quv yilidagi davlat grantlari (B057 AT, B059, B055, B062) umumiy tanlov chegaralariga asoslangan indikativ modeldir."
+        : "Примечание: расчёт является индикативной моделью по ориентирам профильной математики (из 50 баллов) и общего конкурса государственного образовательного заказа МНВО РК за 2024–2025 уч. год (ГОП B057 Информационные технологии, B059 Коммуникации, B055 Математика, B062 Электротехника).";
+
   return {
+    isAssessed,
+    referenceYear: "2024–2025",
+    sourceUrl: "https://testcenter.kz/?page_id=15074&lang=ru",
+    methodologyNote,
     currentProjectedScore,
     scoreAfterTrapFix,
     lostToTheoryGaps,

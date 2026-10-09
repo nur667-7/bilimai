@@ -10,42 +10,45 @@ type SiteFooterProps = {
 const FOOTER_COPY = {
   ru: {
     summary:
-      "BilimAI — единая ИИ-экосистема подготовки ко всем 12 предметам ЕНТ (ҰБТ): 10 вариантов × 40 вопросов (4 800 заданий), Рентген черновика, 1 152 сценария поиска ошибки, Радар гранта РК, 6 научных методик и сократический ИИ-тьютор (Claude API).",
-    navLesson: "Учебник и практика",
-    navXray: "Рентген & Грант РК",
-    navGraph: "Карта 16 тем",
+      "BilimAI — интерактивный тренажёр подготовки к ЕНТ (ҰБТ) по всем 12 официальным предметам НЦТ РК: пошаговый разбор задач, проверка черновика решения, 1 152 задачи на поиск первой ошибки, пробное ЕНТ (формат НЦТ 10 / 20 / 40 заданий и тренировочные наборы по 40 вопросов) и ИИ-тьютор (Claude API).",
+    navLesson: "Занятие",
+    navXray: "Проверка решения",
+    navGraph: "Карта тем",
     navExam: "Пробное ЕНТ",
     navPlan: "Мой план",
     navLab: "Тренировка ошибок",
-    navAbout: "О стартапе и архитектуре",
-    navPrivacy: "Приватность",
+    navWelcome: "Обзор",
+    navAbout: "О проекте и методике",
+    navPrivacy: "Конфиденциальность",
     contactLabel: "Обратная связь:",
     location: "Алматы, Казахстан"
   },
   kk: {
     summary:
-      "BilimAI — орыс, қазақ және өзбек тілдеріндегі барлық 12 ҰБТ пәніне (10 нұсқа × 40 сұрақ = 4 800 тапсырма) дайындыққа арналған дәл диагностикалық ЖИ-платформа: шешім рентгені, 1 152 қате табу есебі және ҚР грант радары.",
-    navLesson: "Оқулық пен жаттығу",
-    navXray: "Рентген & ҚР Гранты",
-    navGraph: "16 тақырып картасы",
+      "BilimAI — ҚР ҰТО-ның барлық 12 ресми пәні бойынша ҰБТ-ға дайындық тренажері: қадамдық талдау, шешімді тексеру, 1 152 қате табу есебі, байқау ҰБТ (10 / 20 / 40 тапсырма) және ЖИ-тьютор (Claude API).",
+    navLesson: "Сабақ",
+    navXray: "Шешімді тексеру",
+    navGraph: "Тақырыптар картасы",
     navExam: "Байқау ҰБТ",
     navPlan: "Менің жоспарым",
     navLab: "Қатемен жұмыс",
-    navAbout: "Жоба және архитектура",
-    navPrivacy: "Құпиялық",
+    navWelcome: "Шолу",
+    navAbout: "Жоба және әдістеме",
+    navPrivacy: "Құпиялылық",
     contactLabel: "Байланыс:",
     location: "Алматы, Қазақстан"
   },
   uz: {
     summary:
-      "BilimAI — rus, qozoq va o‘zbek tillarida barcha 12 ta UBT fani (10 variant × 40 savol = 4 800 topshiriq) bo‘yicha aniq diagnostik SI-platforma: qoralama rentgeni, 1 152 ta xato topish masalasi va grant radari.",
-    navLesson: "Darslik va mashq",
-    navXray: "Rentgen & Grant",
-    navGraph: "16 mavzu xaritasi",
-    navExam: "Sinov imtihoni",
+      "BilimAI — barcha 12 ta rasmiy UBT fani bo‘yicha tayyorgarlik trenajyori: qadamma-qadam tahlil, yechimni tekshirish, 1 152 ta xato topish masalasi, sinov UBT (10 / 20 / 40 topshiriq) va SI-tyutor (Claude API).",
+    navLesson: "Dars",
+    navXray: "Yechimni tekshirish",
+    navGraph: "Mavzular xaritasi",
+    navExam: "Sinov UBT",
     navPlan: "Mening rejam",
     navLab: "Xatolar ustida ishlash",
-    navAbout: "Loyiha va arxitektura",
+    navWelcome: "Sharh",
+    navAbout: "Loyiha va metodika",
     navPrivacy: "Maxfiylik",
     contactLabel: "Aloqa:",
     location: "Olmaota, Qozog‘iston"
@@ -103,8 +106,9 @@ export function SiteFooter({ lang, topic = "linear", onSelectTab }: SiteFooterPr
             </>
           )}
           <a href={`/lab?lang=${lang}&topic=${topic}`}>{c.navLab}</a>
-          <a href="/about">{c.navAbout}</a>
-          <a href="/privacy">{c.navPrivacy}</a>
+          <a href={`/welcome?lang=${lang}`}>{c.navWelcome}</a>
+          <a href={`/about?lang=${lang}`}>{c.navAbout}</a>
+          <a href={`/privacy?lang=${lang}`}>{c.navPrivacy}</a>
         </nav>
 
         <div className="site-footer-meta-row">

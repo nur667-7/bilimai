@@ -412,14 +412,18 @@ test('BilimAI Draft X-Ray (untTrapCases & analyzeCustomDraft) and KZ University 
   assert.equal(userProfileSchema.safeParse(createDemoProfile('student', 'ru')).success, true);
   assert.equal(userProfileSchema.safeParse(createDemoProfile('teacher', 'kk')).success, true);
 
+  const radarUnassessed = calculateGrantRadar(null, 0, ['functions'], 0, 'ru');
+  assert.equal(radarUnassessed.isAssessed, false);
+
   const radar = calculateGrantRadar(32, 6, ['functions', 'trigonometry'], 3, 'ru');
+  assert.equal(radar.isAssessed, true);
   assert.ok(radar.currentProjectedScore >= 32);
   assert.ok(radar.scoreAfterTrapFix > radar.currentProjectedScore);
   assert.equal(radar.universities.length, 6);
   assert.ok(radar.universities[0].afterFixChancePercent >= radar.universities[0].currentChancePercent);
 });
 
-test('All 12 official UNT subjects provide reference cheatsheets and 10 full 40-question (50-point) variants', () => {
+test('All 12 official UNT subjects support both Official NCT format (10 / 20 / 40 questions) and Extended 40-question training bank', () => {
   assert.equal(UNT_SUBJECTS.length, 12);
   assert.equal(UNT_PROFILE_COMBINATIONS.length, 6);
 
@@ -427,8 +431,14 @@ test('All 12 official UNT subjects provide reference cheatsheets and 10 full 40-
     assert.ok(subj.referenceCheatsheet.length >= 2, `Missing cheatsheet for ${subj.id}`);
     assert.ok(subj.sections.ru.length >= 4, `Missing sections for ${subj.id}`);
 
+    // Official NCT RK format check (10 for math_lit/reading_lit, 20 for history_kz, 40 for profile)
+    const officialQs = generateSubjectUntVariant(subj.id, 1, 'official');
+    assert.equal(officialQs.length, subj.officialQuestions, `Expected ${subj.officialQuestions} official questions for ${subj.id}`);
+    const officialMaxPts = officialQs.reduce((sum, q) => sum + q.maxPoints, 0);
+    assert.equal(officialMaxPts, subj.officialMaxPoints, `Expected ${subj.officialMaxPoints} official maxPoints for ${subj.id}`);
+
     for (let v = 1; v <= 10; v++) {
-      const qs = generateSubjectUntVariant(subj.id, v);
+      const qs = generateSubjectUntVariant(subj.id, v, 'extended40');
       assert.equal(qs.length, 40, `Expected 40 questions in ${subj.id} variant #${v}`);
 
       const singleCount = qs.filter((q) => q.format === 'single').length;
@@ -464,8 +474,12 @@ test('All 12 official UNT subjects provide reference cheatsheets and 10 full 40-
   }
 });
 
-test('Scientific Pedagogy Engine implements Bloom 2σ Mastery Gate, Ebbinghaus SM-2 Retention, Sweller CLT, and Bjork Interleaving', () => {
+test('Scientific Pedagogy Engine implements Bloom 2σ Mastery Gate, Ebbinghaus SM-2 Retention, Sweller CLT, and Bjork Interleaving with peer-reviewed citations', () => {
   assert.equal(SCIENTIFIC_METHODS.length, 6);
+  for (const m of SCIENTIFIC_METHODS) {
+    assert.ok(m.sourceCitation && m.sourceCitation.length > 10);
+    assert.ok(m.sourceUrl && m.sourceUrl.startsWith('https://'));
+  }
 
   const retFresh = computeEbbinghausRetention(0, 3, 5);
   assert.equal(retFresh.retentionPercent, 100);

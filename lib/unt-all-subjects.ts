@@ -1103,24 +1103,48 @@ const TOPIC_CYCLE: TopicId[] = [
   "stereometry"
 ];
 
+export type UntVariantMode = "official" | "extended40";
+
 /**
- * Generates an authentic, deterministic 40-question / 50-point UNT variant (v = 1..10)
- * for any of the 12 official UNT subjects:
- * - Questions 1..25: Single Choice (4 options, 1 pt each = 25 pts)
- * - Questions 26..30: Context Block (5 questions on a shared NCT passage/table, 1 pt each = 5 pts)
- * - Questions 31..35: Matching A, B -> 1..4 (2 pts each = 10 pts)
- * - Questions 36..40: Multiple Choice 1..3 of 6 (2 pts each = 10 pts)
- * Total: 40 questions, 50 points.
+ * Generates a deterministic UNT variant (v = 1..10) for any of the 12 official UNT subjects.
+ * - In "official" mode (per NCT RK https://testcenter.kz/?page_id=15074&lang=ru):
+ *   • Profile subjects (9 subjects): 40 questions = 50 points (Q1..25 1pt, Q26..30 context 1pt, Q31..35 matching 2pt, Q36..40 multiple 2pt)
+ *   • History of Kazakhstan (mandatory): 20 questions = 20 points (Q1..15 single 1pt + Q16..20 context 1pt)
+ *   • Mathematical Literacy & Reading Literacy (mandatory): 10 questions = 10 points (1pt each)
+ * - In "extended40" mode (default for full 40-question training bank):
+ *   • Returns all 40 training questions (50 points) across all 4 question formats.
  */
 export function generateSubjectUntVariant(
   subjectId: UntSubjectId,
-  variantNumber: number
+  variantNumber: number,
+  mode: UntVariantMode = "extended40"
 ): UntQuestion[] {
   const v = Math.min(10, Math.max(1, Math.floor(variantNumber)));
-  if (subjectId === "math") {
-    return generateMath40Variant(v);
+  const full40 =
+    subjectId === "math"
+      ? generateMath40Variant(v)
+      : generateSubjectSpecific40Variant(subjectId, v);
+
+  if (mode === "official") {
+    const spec = getUntSubjectMeta(subjectId);
+    if (spec.officialQuestions === 10) {
+      return full40.slice(0, 10).map((q, idx) => ({
+        ...q,
+        order: idx + 1,
+        untNumberRange: `Офиц. ЕНТ · Вариант #${v} · №${idx + 1} из 10`
+      }));
+    }
+    if (spec.officialQuestions === 20) {
+      const first15 = full40.slice(0, 15);
+      const context5 = full40.slice(25, 30);
+      return [...first15, ...context5].map((q, idx) => ({
+        ...q,
+        order: idx + 1,
+        untNumberRange: `Офиц. ЕНТ · Вариант #${v} · №${idx + 1} из 20`
+      }));
+    }
   }
-  return generateSubjectSpecific40Variant(subjectId, v);
+  return full40;
 }
 
 function generateMath40Variant(v: number): UntQuestion[] {
