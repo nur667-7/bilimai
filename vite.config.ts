@@ -19,6 +19,9 @@ const localBindingConfig = {
     { pattern: "bilimai.dpdns.org", custom_domain: true },
     { pattern: "www.bilimai.dpdns.org", custom_domain: true },
   ],
+  assets: {
+    html_handling: "none" as const,
+  },
   d1_databases: d1
     ? [
         {
