@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { analyzeCustomDraft } from "../lib/xray-trace.ts";
 import {
   evaluateUniversalQuestion,
+  evaluateFormulaEquivalence,
   advanceLessonQuestionIndex,
   universalQuestionTypes
 } from "../lib/question-engine.ts";
@@ -12,6 +13,10 @@ import {
   getSubjectCurriculum,
   registerSubjectCurriculum,
   buildUniversalSubjectGraph,
+  findSubjectLessonByIdOrSlug,
+  computeRecommendedLessonForSubject,
+  formatLessonsCountLabel,
+  formatQuestionsCountLabel,
   WELCOME_DEMO_ITEMS
 } from "../lib/universal-curriculum.ts";
 import {
@@ -24,6 +29,10 @@ import {
   recordSubjectErrorLabCompletion,
   saveOnboardingSelection
 } from "../lib/universal-progress.ts";
+import {
+  resolveServerSessionFromHeaders,
+  authorizeTeacherClassAccess
+} from "../lib/rbac.ts";
 
 test("CASE A: Xray false positive — wrong arithmetic is flagged incorrect and unrecognized steps are unverified (never valid)", () => {
   // 1) Wrong linear transition: 2x + 3 = 11 -> 2x = 5 -> x = 2.5
@@ -334,6 +343,7 @@ test("CASE F: Universal Question Engine supports all 13 question formats and hon
 
 test("CASE G & All 12 Subjects: every subject has complete lessons, worked examples, multi-format practice, error lab, and knowledge graph", () => {
   const all = getAllSubjectCurricula();
+  assert.ok(all.length >= 12);
   const expectedIds = [
     "math",
     "physics",
@@ -356,7 +366,7 @@ test("CASE G & All 12 Subjects: every subject has complete lessons, worked examp
       subj.lessons.length >= 3,
       `Subject "${id}" must have at least 3 lessons (found ${subj.lessons.length})`
     );
-    assert.ok(subj.errorLabCases.length >= 1, `Subject "${id}" must have at least 1 Error Lab case`);
+    assert.ok(subj.errorLabCases.length >= 2, `Subject "${id}" must have at least 2 Error Lab cases`);
 
     for (const lesson of subj.lessons) {
       assert.ok(lesson.title.ru.length > 0);
@@ -367,9 +377,25 @@ test("CASE G & All 12 Subjects: every subject has complete lessons, worked examp
       assert.ok(lesson.questions.length >= 1);
     }
 
-    const graph = buildUniversalSubjectGraph(id, [subj.lessons[0].id], {});
-    assert.equal(graph.length, subj.topics.length);
-    assert.equal(graph[0].status, "mastered");
+    // P0-001: Completing a lesson without verified answers sets lessonCompleted=true, NOT mastered
+    const graphWithoutAnswers = buildUniversalSubjectGraph(id, [subj.lessons[0].id], {});
+    assert.equal(graphWithoutAnswers.length, subj.topics.length);
+    assert.equal(graphWithoutAnswers[0].lessonCompleted, true);
+    assert.equal(graphWithoutAnswers[0].masteryScore, 0);
+    assert.notEqual(graphWithoutAnswers[0].status, "mastered");
+
+    // With verified answers (earned/max >= 0.8), status becomes mastered
+    const firstTopicId = subj.topics[0].id;
+    const graphWithAnswers = buildUniversalSubjectGraph(id, [subj.lessons[0].id], {
+      [firstTopicId]: {
+        earned: 1,
+        max: 1,
+        attempts: 1,
+        lastVerificationState: "verified_correct"
+      }
+    });
+    assert.equal(graphWithAnswers[0].status, "mastered");
+    assert.equal(graphWithAnswers[0].masteryScore, 100);
   }
 
   assert.equal(getSubjectCurriculum("math").lessons.length, 16);
@@ -477,3 +503,226 @@ test("5-Step Onboarding saves learner role, goal, subjects, and level", () => {
   assert.deepEqual(updated.onboarding.selectedSubjects, ["informatics", "english"]);
   assert.equal(updated.activeSubjectId, "informatics");
 });
+
+test("P0-001: Lesson completion never fabricates question accuracy or fake verified_correct attempts", () => {
+  let state = createDefaultUniversalProgressState();
+  state = recordSubjectLessonCompletion(
+    state,
+    "physics",
+    "physics-lesson-phys_kinematics",
+    "phys_kinematics"
+  );
+
+  const metrics = getSubjectSummaryMetrics(state, "physics", 3);
+  assert.equal(metrics.completedLessons, 1);
+  assert.equal(metrics.completionPercent, 33);
+  assert.equal(
+    metrics.averageAccuracyPercent,
+    null,
+    "Completing a lesson without answering questions must keep averageAccuracyPercent === null"
+  );
+  assert.equal(
+    metrics.totalAttempts,
+    0,
+    "Completing a lesson without answering questions must keep totalAttempts === 0"
+  );
+
+  const physProg = getSubjectProgress(state, "physics");
+  assert.equal(physProg.lessonStates["physics-lesson-phys_kinematics"]?.status, "completed");
+  assert.equal(physProg.topicStats["phys_kinematics"], undefined);
+  assert.ok(physProg.events.some((e) => e.type === "lesson_completed"));
+});
+
+test("P0-002 & E2E-011: Legacy bilimai-lab-v1 migration is 100% idempotent across 20 reloads and skips corrupted records safely", () => {
+  const legacyRaw = JSON.stringify({
+    records: [
+      { id: "rec-1", topic: "linear", correct: true, date: "2026-01-10T08:00:00.000Z" },
+      { id: "rec-2", topic: "linear", correct: false, errorReason: "sign_flip", date: "2026-01-11T09:00:00.000Z" },
+      { id: "rec-3", topic: "quadratic", correct: true, date: "2026-01-12T10:00:00.000Z" },
+      null,
+      "corrupted-entry",
+      { topic: "", correct: "not-a-boolean" }
+    ]
+  });
+
+  let state = migrateUniversalProgressState(null, legacyRaw);
+  for (let i = 0; i < 20; i++) {
+    state = migrateUniversalProgressState(JSON.stringify(state), legacyRaw);
+  }
+
+  const mathMetrics = getSubjectSummaryMetrics(state, "math", 16);
+  assert.equal(
+    mathMetrics.totalAttempts,
+    3,
+    "20 repeated migrations must never multiply legacy attempts beyond 3"
+  );
+  assert.equal(mathMetrics.averageAccuracyPercent, 67);
+  const mathProg = getSubjectProgress(state, "math");
+  assert.equal(state.legacyV1Migrated, true);
+  assert.equal(mathProg.errorCauses.sign_flip.count, 1);
+  assert.equal(mathProg.lastStudiedAt, "2026-01-12T10:00:00.000Z");
+});
+
+test("P0-003 & E2E-012: Server-side RBAC rejects guest/localStorage-only (401), student role (403), cross-teacher class (403), and permits verified teacher owner (200)", () => {
+  // 1) Guest / no headers (even if client localStorage claims role=teacher) -> 401
+  const guestSession = resolveServerSessionFromHeaders(new Headers());
+  assert.equal(guestSession.authenticated, false);
+  const guestAuth = authorizeTeacherClassAccess(guestSession, "class-phys-10a");
+  assert.equal(guestAuth.allowed, false);
+  assert.equal(guestAuth.status, 401);
+
+  // 2) Forged header without valid server token -> 401
+  const forgedHeaders = new Headers({
+    Authorization: "Bearer forged-token-without-signature"
+  });
+  const forgedSession = resolveServerSessionFromHeaders(forgedHeaders);
+  assert.equal(forgedSession.authenticated, false);
+  assert.equal(authorizeTeacherClassAccess(forgedSession, "class-phys-10a").status, 401);
+
+  // 3) Verified student session -> 403 Forbidden
+  const studentSession = resolveServerSessionFromHeaders(
+    new Headers({ Authorization: "Bearer bilimai-student-token-1" })
+  );
+  assert.equal(studentSession.authenticated, true);
+  assert.equal(studentSession.role, "student");
+  const studentAuth = authorizeTeacherClassAccess(studentSession, "class-phys-10a");
+  assert.equal(studentAuth.allowed, false);
+  assert.equal(studentAuth.status, 403);
+
+  // 4) Verified teacher accessing another teacher's class -> 403 Forbidden
+  const teacherSession = resolveServerSessionFromHeaders(
+    new Headers({ Authorization: "Bearer bilimai-teacher-token-1" })
+  );
+  const crossClassAuth = authorizeTeacherClassAccess(teacherSession, "class-hist-10c");
+  assert.equal(crossClassAuth.allowed, false);
+  assert.equal(crossClassAuth.status, 403);
+
+  // 5) Verified teacher accessing their own class -> 200 OK
+  const validClassAuth = authorizeTeacherClassAccess(teacherSession, "class-phys-10a");
+  assert.equal(validClassAuth.allowed, true);
+  assert.equal(validClassAuth.status, 200);
+});
+
+test("E2E-010: Formula Equivalence Parser accepts algebraic rearrangements and marks invalid syntax as unverified", () => {
+  const expected = ["F = m * a"];
+
+  assert.equal(evaluateFormulaEquivalence("F = m * a", expected), "verified_correct");
+  assert.equal(evaluateFormulaEquivalence("a * m = F", expected), "verified_correct");
+  assert.equal(evaluateFormulaEquivalence("m = F / a", expected), "verified_correct");
+  assert.equal(evaluateFormulaEquivalence("a = F / m", expected), "verified_correct");
+  assert.equal(evaluateFormulaEquivalence("F = m / a", expected), "incorrect");
+  assert.equal(evaluateFormulaEquivalence("F = m * (", expected), "unverified");
+
+  const tr = (s) => ({ ru: s, kk: s, uz: s });
+  const qNewton = {
+    id: "q-newton",
+    subjectId: "physics",
+    topicId: "phys_dynamics",
+    lessonId: "l2",
+    type: "formula",
+    difficulty: "basic",
+    maxPoints: 1,
+    prompt: tr("Запишите формулу второго закона Ньютона"),
+    acceptedTexts: { ru: ["F = m * a"], kk: ["F = m * a"], uz: ["F = m * a"] },
+    explanation: tr("F = m * a"),
+    hint: tr("Сила равна произведению массы на ускорение"),
+    errorCategory: "newton"
+  };
+
+  assert.equal(
+    evaluateUniversalQuestion(qNewton, { textValue: "a * m = F" }, "ru").verificationState,
+    "verified_correct"
+  );
+  assert.equal(
+    evaluateUniversalQuestion(qNewton, { textValue: "m = F / a" }, "ru").verificationState,
+    "verified_correct"
+  );
+  assert.equal(
+    evaluateUniversalQuestion(qNewton, { textValue: "F = m / a" }, "ru").verificationState,
+    "incorrect"
+  );
+  assert.equal(
+    evaluateUniversalQuestion(qNewton, { textValue: "F = m * (" }, "ru").verificationState,
+    "unverified"
+  );
+});
+
+test("E2E-014: Double-submit protection deduplicates identical attemptId in progress engine", () => {
+  let state = createDefaultUniversalProgressState();
+  state = recordSubjectQuestionAttempt(state, {
+    subjectId: "physics",
+    topicId: "phys_kinematics",
+    earnedPoints: 1,
+    maxPoints: 1,
+    verificationState: "verified_correct",
+    attemptId: "phys-q1:sel:0"
+  });
+  // Rapid duplicate submission with same attemptId
+  state = recordSubjectQuestionAttempt(state, {
+    subjectId: "physics",
+    topicId: "phys_kinematics",
+    earnedPoints: 1,
+    maxPoints: 1,
+    verificationState: "verified_correct",
+    attemptId: "phys-q1:sel:0"
+  });
+
+  const metrics = getSubjectSummaryMetrics(state, "physics", 3);
+  assert.equal(metrics.totalAttempts, 1, "Duplicate attemptId must be recorded only once");
+});
+
+test("P1-003, P1-004 & Pluralization: Lesson slug lookup, dynamic recommendation, and Russian/Kazakh/Uzbek pluralization", () => {
+  const phys = getSubjectCurriculum("physics");
+  assert.ok(phys);
+
+  // Lookup by full lesson ID, topicId, and hyphenated slug
+  const byFullId = findSubjectLessonByIdOrSlug(phys, "physics-lesson-phys_kinematics");
+  const byTopicId = findSubjectLessonByIdOrSlug(phys, "phys_kinematics");
+  const bySlug = findSubjectLessonByIdOrSlug(phys, "phys-kinematics");
+  assert.ok(byFullId && byTopicId && bySlug);
+  assert.equal(byFullId.index, 0);
+  assert.equal(byTopicId.index, 0);
+  assert.equal(bySlug.index, 0);
+
+  // Dynamic recommendation targets gap lesson instead of hardcoded index 0
+  let state = createDefaultUniversalProgressState();
+  state = recordSubjectLessonCompletion(
+    state,
+    "physics",
+    phys.lessons[0].id,
+    phys.lessons[0].topicId
+  );
+  state = recordSubjectQuestionAttempt(state, {
+    subjectId: "physics",
+    topicId: phys.lessons[0].topicId,
+    earnedPoints: 1,
+    maxPoints: 1,
+    verificationState: "verified_correct"
+  });
+  // Create a gap on lesson 2 (index 1)
+  state = recordSubjectQuestionAttempt(state, {
+    subjectId: "physics",
+    topicId: phys.lessons[1].topicId,
+    earnedPoints: 0,
+    maxPoints: 1,
+    verificationState: "incorrect"
+  });
+
+  const physProg = getSubjectProgress(state, "physics");
+  const rec = computeRecommendedLessonForSubject(
+    phys,
+    physProg.completedLessonIds,
+    physProg.topicStats
+  );
+  assert.equal(rec.index, 1, "Recommendation must point to lesson index 1 where gap/uncompleted topic exists");
+  assert.equal(rec.lesson.id, phys.lessons[1].id);
+
+  // Pluralization check
+  assert.equal(formatLessonsCountLabel(1, "ru"), "1 урок");
+  assert.equal(formatLessonsCountLabel(3, "ru"), "3 урока");
+  assert.equal(formatLessonsCountLabel(16, "ru"), "16 уроков");
+  assert.equal(formatQuestionsCountLabel(1, "ru"), "1 задание");
+  assert.equal(formatQuestionsCountLabel(4, "ru"), "4 задания");
+  assert.equal(formatQuestionsCountLabel(15, "ru"), "15 заданий");
+});
+

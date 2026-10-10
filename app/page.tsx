@@ -32,6 +32,7 @@ export default async function Home({
   searchParams?: Promise<{
     lang?: string;
     tab?: string;
+    mode?: string;
     topic?: string;
     subject?: string;
     variant?: string;
@@ -51,7 +52,7 @@ export default async function Home({
     ? (rawTopic as TopicId)
     : "linear";
 
-  const rawTab = resolved?.tab;
+  const rawTab = resolved?.tab ?? (resolved?.mode === "exam" ? "exam" : undefined);
   const initialTab: WorkspaceTab =
     rawTab && (VALID_TABS as readonly string[]).includes(rawTab)
       ? (rawTab as WorkspaceTab)

@@ -158,7 +158,7 @@ export function useStudyNavigation({
       if (qTopic && (untTopicIds as readonly string[]).includes(qTopic)) {
         setTopic(qTopic as TopicId);
       }
-      const qTab = params.get("tab");
+      const qTab = params.get("tab") ?? (params.get("mode") === "exam" ? "exam" : null);
       if (isValidWorkspaceTab(qTab)) {
         setTab(qTab);
       } else if (hasUrlTopic) {
@@ -192,7 +192,7 @@ export function useStudyNavigation({
         setTopic("linear");
       }
 
-      const qTab = params.get("tab");
+      const qTab = params.get("tab") ?? (params.get("mode") === "exam" ? "exam" : null);
       if (isValidWorkspaceTab(qTab)) {
         setTab(qTab);
       } else if (qTopic && (untTopicIds as readonly string[]).includes(qTopic)) {

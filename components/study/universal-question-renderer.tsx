@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Locale } from "@/lib/curriculum";
 import {
   evaluateUniversalQuestion,
@@ -12,7 +12,11 @@ import {
 interface UniversalQuestionRendererProps {
   question: UniversalQuestion;
   locale: Locale;
-  onEvaluated?: (evaluation: UniversalQuestionEvaluation, question: UniversalQuestion) => void;
+  onEvaluated?: (
+    evaluation: UniversalQuestionEvaluation,
+    question: UniversalQuestion,
+    attemptId: string
+  ) => void;
   onNextQuestion?: () => void;
   nextButtonLabel?: string;
 }
@@ -155,6 +159,7 @@ export function UniversalQuestionRenderer({
   const [sequenceOrder, setSequenceOrder] = useState<number[]>([]);
   const [showHint, setShowHint] = useState(false);
   const [evaluation, setEvaluation] = useState<UniversalQuestionEvaluation | null>(null);
+  const lastSubmittedSignatureRef = useRef<string | null>(null);
 
   useEffect(() => {
     setSelectedIndex(undefined);
@@ -175,6 +180,7 @@ export function UniversalQuestionRenderer({
     }
     setShowHint(false);
     setEvaluation(null);
+    lastSubmittedSignatureRef.current = null;
   }, [question.id, locale, question.sequenceItems]);
 
   const handleToggleMulti = (idx: number) => {
@@ -201,9 +207,14 @@ export function UniversalQuestionRenderer({
       matchingSelection,
       sequenceOrder
     };
+    const attemptId = `${question.id}::${JSON.stringify(input)}`;
     const result = evaluateUniversalQuestion(question, input, locale);
     setEvaluation(result);
-    onEvaluated?.(result, question);
+    if (lastSubmittedSignatureRef.current === attemptId) {
+      return;
+    }
+    lastSubmittedSignatureRef.current = attemptId;
+    onEvaluated?.(result, question, attemptId);
   };
 
   const options = question.options ? question.options[locale] ?? question.options.ru : [];

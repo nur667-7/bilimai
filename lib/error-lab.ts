@@ -1218,20 +1218,20 @@ export function buildSmartDailySession(
   const dominantCause = unverifiedCauses[0] ?? causes[0] ?? null;
 
   // Pick Topic 1: Review (due topic or assisted topic, avoiding fatigue topic if possible)
-  let reviewTopic: LabTopic =
+  const reviewTopic: LabTopic =
     dueTopics.find((t) => t !== lastTwoSameTopic) ??
     dueTopics[0] ??
     unverifiedCauses.find((c) => c.topic !== lastTwoSameTopic)?.topic ??
     recommendTopic(progress);
 
   // Pick Topic 2: Error repair (unverified cause topic or next weak topic)
-  let errorTopic: LabTopic =
+  const errorTopic: LabTopic =
     dominantCause?.topic ??
     labTopics.find((t) => t !== reviewTopic) ??
     'inequalities';
 
   // Pick Topic 3: New independent challenge (a different topic to interleave)
-  let newTopic: LabTopic =
+  const newTopic: LabTopic =
     labTopics.find(
       (t) =>
         t !== reviewTopic &&

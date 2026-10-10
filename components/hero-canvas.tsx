@@ -126,7 +126,7 @@ export function HeroCanvas() {
     window.addEventListener("mousemove", onMouseMove, { passive: true });
 
     let angleY = 0.3;
-    let angleX = 0.18;
+    const angleX = 0.18;
     let rafId = 0;
 
     const renderFrame = () => {

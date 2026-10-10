@@ -10,7 +10,9 @@ import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import { useAuxiliaryPageNavigation } from "@/lib/use-study-navigation";
 import {
   WELCOME_DEMO_ITEMS,
-  getAllSubjectCurricula
+  getAllSubjectCurricula,
+  formatLessonsCountLabel,
+  formatQuestionsCountLabel
 } from "@/lib/universal-curriculum";
 import { UniversalQuestionRenderer } from "@/components/study/universal-question-renderer";
 import {
@@ -22,6 +24,144 @@ import {
   type UserLearningGoal,
   type UserInitialLevel
 } from "@/lib/universal-progress";
+
+const ONBOARDING_COPY: Record<
+  Language,
+  {
+    ruleLabel: string;
+    stepWord: string;
+    backBtn: string;
+    nextBtn: string;
+    skipBtn: string;
+    step1Title: string;
+    roles: Array<{ id: UserLearnerRole; label: string }>;
+    step2Title: string;
+    goals: Array<{ id: UserLearningGoal; label: string }>;
+    step3Title: string;
+    step3Next: string;
+    step4Title: string;
+    levels: Array<{ id: UserInitialLevel; label: string }>;
+    step5Title: string;
+    step5SelectedLabel: string;
+    step5Lead: string;
+    startLessonBtn: string;
+    startDiagnosticBtn: string;
+    startPracticeBtn: string;
+    startMapBtn: string;
+  }
+> = {
+  ru: {
+    ruleLabel: "Правило урока:",
+    stepWord: "ШАГ",
+    backBtn: "← Назад",
+    nextBtn: "Далее →",
+    skipBtn: "Пропустить",
+    step1Title: "Шаг 1 из 5. Кто ты?",
+    roles: [
+      { id: "student", label: "Школьник (5–11 класс)" },
+      { id: "applicant", label: "Абитуриент (подготовка к ЕНТ)" },
+      { id: "self_learner", label: "Самостоятельно изучаю предмет" },
+      { id: "teacher", label: "Преподаватель / репетитор" }
+    ],
+    step2Title: "Шаг 2 из 5. Какая у тебя цель?",
+    goals: [
+      { id: "school", label: "Подтянуть школьный предмет" },
+      { id: "exam", label: "Подготовиться к экзамену / ЕНТ" },
+      { id: "from_scratch", label: "Изучить тему с нуля" },
+      { id: "practice_gaps", label: "Практиковаться и разбирать ошибки" }
+    ],
+    step3Title: "Шаг 3 из 5. Выбери один или несколько предметов:",
+    step3Next: "Далее: выбрать уровень →",
+    step4Title: "Шаг 4 из 5. Выбери стартовый уровень:",
+    levels: [
+      { id: "beginner", label: "Начальный — объяснять с самых азов" },
+      { id: "intermediate", label: "Средний — знаю базу, нужна практика" },
+      { id: "advanced", label: "Продвинутый — сложные задачи и ловушки" },
+      { id: "check_level", label: "Проверить мой уровень за 5 минут" }
+    ],
+    step5Title: "Шаг 5 из 5. Твой персональный маршрут готов!",
+    step5SelectedLabel: "Выбранные предметы:",
+    step5Lead: "Начни с первого интерактивного урока, пройди 5-минутную проверку уровня или открой карту тем:",
+    startLessonBtn: "Начать первый урок →",
+    startDiagnosticBtn: "Пройти проверку уровня (5 мин)",
+    startPracticeBtn: "Перейти к практике",
+    startMapBtn: "Открыть карту знаний"
+  },
+  kk: {
+    ruleLabel: "Сабақ ережесі:",
+    stepWord: "ҚАДАМ",
+    backBtn: "← Артқа",
+    nextBtn: "Келесі →",
+    skipBtn: "Өткізіп жіберу",
+    step1Title: "5-тен 1-қадам. Сен кімсің?",
+    roles: [
+      { id: "student", label: "Оқушы (5–11 сынып)" },
+      { id: "applicant", label: "Талапкер (ҰБТ-ға дайындық)" },
+      { id: "self_learner", label: "Пәнді өз бетімше оқимын" },
+      { id: "teacher", label: "Оқытушы / репетитор" }
+    ],
+    step2Title: "5-тен 2-қадам. Мақсатың қандай?",
+    goals: [
+      { id: "school", label: "Мектеп пәнін жақсарту" },
+      { id: "exam", label: "Емтиханға / ҰБТ-ға дайындалу" },
+      { id: "from_scratch", label: "Тақырыпты нөлден бастап үйрену" },
+      { id: "practice_gaps", label: "Жаттығу және қателерді талдау" }
+    ],
+    step3Title: "5-тен 3-қадам. Бір немесе бірнеше пәнді таңда:",
+    step3Next: "Келесі: деңгейді таңдау →",
+    step4Title: "5-тен 4-қадам. Бастапқы деңгейді таңда:",
+    levels: [
+      { id: "beginner", label: "Бастапқы — негізінен бастап түсіндіру" },
+      { id: "intermediate", label: "Орташа — базаны білемін, практика керек" },
+      { id: "advanced", label: "Жоғары — күрделі есептер мен тұзақтар" },
+      { id: "check_level", label: "Деңгейімді 5 минутта тексеру" }
+    ],
+    step5Title: "5-тен 5-қадам. Жеке оқу маршрутың дайын!",
+    step5SelectedLabel: "Таңдалған пәндер:",
+    step5Lead: "Алғашқы интерактивті сабақтан баста немесе 5 минуттық деңгей тексеруінен өт:",
+    startLessonBtn: "Бірінші сабақты бастау →",
+    startDiagnosticBtn: "Деңгейді тексеру (5 мин)",
+    startPracticeBtn: "Практикаға өту",
+    startMapBtn: "Білім картасын ашу"
+  },
+  uz: {
+    ruleLabel: "Dars qoidasi:",
+    stepWord: "QADAM",
+    backBtn: "← Orqaga",
+    nextBtn: "Keyingi →",
+    skipBtn: "O‘tkazib yuborish",
+    step1Title: "5 dan 1-qadam. Siz kimsiz?",
+    roles: [
+      { id: "student", label: "Maktab o‘quvchisi (5–11 sinf)" },
+      { id: "applicant", label: "Abituriyent (imtihonga tayyorgarlik)" },
+      { id: "self_learner", label: "Fanni mustaqil o‘rganaman" },
+      { id: "teacher", label: "O‘qituvchi / repetitor" }
+    ],
+    step2Title: "5 dan 2-qadam. Maqsadingiz nima?",
+    goals: [
+      { id: "school", label: "Maktab fanini o‘zlashtirish" },
+      { id: "exam", label: "Imtihon / UBTga tayyorlanish" },
+      { id: "from_scratch", label: "Mavzuni noldan o‘rganish" },
+      { id: "practice_gaps", label: "Mashq qilish va xatolarni tahlil qilish" }
+    ],
+    step3Title: "5 dan 3-qadam. Bitta yoki bir nechta fanni tanlang:",
+    step3Next: "Keyingi: darajani tanlash →",
+    step4Title: "5 dan 4-qadam. Boshlang‘ich darajani tanlang:",
+    levels: [
+      { id: "beginner", label: "Boshlang‘ich — eng asosidan tushuntirish" },
+      { id: "intermediate", label: "O‘rta — bazani bilaman, amaliyot kerak" },
+      { id: "advanced", label: "Yuqori — murakkab masalalar va tuzoqlar" },
+      { id: "check_level", label: "Darajamni 5 daqiqada tekshirish" }
+    ],
+    step5Title: "5 dan 5-qadam. Shaxsiy o‘quv yo‘nalishingiz tayyor!",
+    step5SelectedLabel: "Tanlangan fanlar:",
+    step5Lead: "Birinchi interaktiv darsdan boshlang yoki 5 daqiqalik daraja tekshiruvidan o‘ting:",
+    startLessonBtn: "Birinchi darsni boshlash →",
+    startDiagnosticBtn: "Darajani tekshirish (5 daq)",
+    startPracticeBtn: "Amaliyotga o‘tish",
+    startMapBtn: "Bilimlar xaritasini ochish"
+  }
+};
 
 const COPY: Record<
   Language,
@@ -245,6 +385,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
   const { lang, changeLanguage: handleLangChange } = useAuxiliaryPageNavigation(initialLang ?? "ru");
   const { dark, toggleTheme } = useAniqTheme();
   const t = COPY[lang];
+  const ob = ONBOARDING_COPY[lang];
 
   const [demoSubjectIndex, setDemoSubjectIndex] = useState(0);
   const allCurricula = getAllSubjectCurricula();
@@ -253,7 +394,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
   const [onboardingStep, setOnboardingStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [role, setRole] = useState<UserLearnerRole>("student");
   const [goal, setGoal] = useState<UserLearningGoal>("school");
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(["math", "physics"]);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(["math"]);
   const [level, setLevel] = useState<UserInitialLevel>("beginner");
 
   useEffect(() => {
@@ -276,13 +417,18 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
   const toggleOnboardingSubject = (subjId: string) => {
     setSelectedSubjects((prev) => {
       if (prev.includes(subjId)) {
+        if (prev[0] !== subjId) {
+          return [subjId, ...prev.filter((id) => id !== subjId)];
+        }
         return prev.length > 1 ? prev.filter((id) => id !== subjId) : prev;
       }
-      return [...prev, subjId];
+      return [subjId, ...prev];
     });
   };
 
-  const finishOnboardingAndNavigate = (targetMode: "lesson" | "diagnostic") => {
+  const finishOnboardingAndNavigate = (
+    targetMode: "lesson" | "diagnostic" | "practice" | "map"
+  ) => {
     const primarySubject = selectedSubjects[0] ?? "math";
     try {
       const raw = window.localStorage.getItem(UNIVERSAL_PROGRESS_STORAGE_KEY);
@@ -297,7 +443,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
     } catch {
       // ignore
     }
-    window.location.href = `/subjects/${primarySubject}${targetMode === "diagnostic" ? "?start=diagnostic" : ""}`;
+    window.location.href = `/subjects/${primarySubject}?start=${targetMode}&lang=${lang}`;
   };
 
   const activeDemo = WELCOME_DEMO_ITEMS[demoSubjectIndex] ?? WELCOME_DEMO_ITEMS[0];
@@ -339,7 +485,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
 
             <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
-            <Link href="/subjects" className="top-UtilityLink hide-on-narrow-mobile">
+            <Link href={`/subjects?lang=${lang}`} className="top-UtilityLink hide-on-narrow-mobile">
               {t.catalogLink}
             </Link>
 
@@ -396,7 +542,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
             {/* 5 Subject Switcher Pills */}
             <div
               role="tablist"
-              aria-label="Демо-предметы"
+              aria-label={t.demoSectionTitle}
               style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
             >
               {WELCOME_DEMO_ITEMS.map((item, idx) => {
@@ -437,14 +583,14 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                 lineHeight: 1.45
               }}
             >
-              💡 <strong>Правило урока:</strong> {activeDemo.contextNote[lang]}
+              💡 <strong>{ob.ruleLabel}</strong> {activeDemo.contextNote[lang]}
             </div>
 
             <UniversalQuestionRenderer question={activeDemo.question} locale={lang} />
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
               <Link
-                href={`/subjects/${activeDemo.subjectId}`}
+                href={`/subjects/${activeDemo.subjectId}?lang=${lang}`}
                 className="inline-action-link"
                 data-testid="welcome-demo-open-subject-link"
               >
@@ -481,6 +627,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                 <button
                   key={stepNum}
                   type="button"
+                  data-testid={`onboarding-step-btn-${stepNum}`}
                   onClick={() => setOnboardingStep(stepNum)}
                   style={{
                     width: 32,
@@ -506,19 +653,13 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
 
           {onboardingStep === 1 && (
             <div style={{ display: "grid", gap: 12 }}>
-              <strong style={{ fontSize: 16 }}>Шаг 1 из 5. Кто ты?</strong>
+              <strong style={{ fontSize: 16 }}>{ob.step1Title}</strong>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
-                {(
-                  [
-                    { id: "student", label: "Школьник (5–11 класс)" },
-                    { id: "applicant", label: "Абитуриент (подготовка к ЕНТ)" },
-                    { id: "self_learner", label: "Самостоятельно изучаю предмет" },
-                    { id: "teacher", label: "Преподаватель / репетитор" }
-                  ] as Array<{ id: UserLearnerRole; label: string }>
-                ).map((item) => (
+                {ob.roles.map((item) => (
                   <button
                     key={item.id}
                     type="button"
+                    data-testid={`onboarding-role-${item.id}`}
                     onClick={() => {
                       setRole(item.id);
                       setOnboardingStep(2);
@@ -540,24 +681,36 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                   </button>
                 ))}
               </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-skip"
+                  onClick={() => setOnboardingStep(5)}
+                >
+                  {ob.skipBtn}
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-next"
+                  onClick={() => setOnboardingStep(2)}
+                >
+                  {ob.nextBtn}
+                </button>
+              </div>
             </div>
           )}
 
           {onboardingStep === 2 && (
             <div style={{ display: "grid", gap: 12 }}>
-              <strong style={{ fontSize: 16 }}>Шаг 2 из 5. Какая у тебя цель?</strong>
+              <strong style={{ fontSize: 16 }}>{ob.step2Title}</strong>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
-                {(
-                  [
-                    { id: "school", label: "Подтянуть школьный предмет" },
-                    { id: "exam", label: "Подготовиться к экзамену / ЕНТ" },
-                    { id: "from_scratch", label: "Изучить тему с нуля" },
-                    { id: "practice_gaps", label: "Практиковаться и разбирать ошибки" }
-                  ] as Array<{ id: UserLearningGoal; label: string }>
-                ).map((item) => (
+                {ob.goals.map((item) => (
                   <button
                     key={item.id}
                     type="button"
+                    data-testid={`onboarding-goal-${item.id}`}
                     onClick={() => {
                       setGoal(item.id);
                       setOnboardingStep(3);
@@ -579,12 +732,30 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                   </button>
                 ))}
               </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-back"
+                  onClick={() => setOnboardingStep(1)}
+                >
+                  {ob.backBtn}
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-next"
+                  onClick={() => setOnboardingStep(3)}
+                >
+                  {ob.nextBtn}
+                </button>
+              </div>
             </div>
           )}
 
           {onboardingStep === 3 && (
             <div style={{ display: "grid", gap: 12 }}>
-              <strong style={{ fontSize: 16 }}>Шаг 3 из 5. Выбери один или несколько предметов:</strong>
+              <strong style={{ fontSize: 16 }}>{ob.step3Title}</strong>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {UNT_SUBJECTS.map((s) => {
                   const picked = selectedSubjects.includes(s.id);
@@ -592,6 +763,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                     <button
                       key={s.id}
                       type="button"
+                      data-testid={`onboarding-subject-${s.id}`}
                       onClick={() => toggleOnboardingSubject(s.id)}
                       style={{
                         padding: "9px 13px",
@@ -611,14 +783,23 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                   );
                 })}
               </div>
-              <div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-back"
+                  onClick={() => setOnboardingStep(2)}
+                >
+                  {ob.backBtn}
+                </button>
                 <button
                   type="button"
                   className="btn-primary"
+                  data-testid="onboarding-next"
                   onClick={() => setOnboardingStep(4)}
                   style={{ cursor: "pointer" }}
                 >
-                  Далее: выбрать уровень →
+                  {ob.step3Next}
                 </button>
               </div>
             </div>
@@ -626,19 +807,13 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
 
           {onboardingStep === 4 && (
             <div style={{ display: "grid", gap: 12 }}>
-              <strong style={{ fontSize: 16 }}>Шаг 4 из 5. Выбери стартовый уровень:</strong>
+              <strong style={{ fontSize: 16 }}>{ob.step4Title}</strong>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
-                {(
-                  [
-                    { id: "beginner", label: "Начальный — объяснять с самых азов" },
-                    { id: "intermediate", label: "Средний — знаю базу, нужна практика" },
-                    { id: "advanced", label: "Продвинутый — сложные задачи и ловушки" },
-                    { id: "check_level", label: "Проверить мой уровень за 5 минут" }
-                  ] as Array<{ id: UserInitialLevel; label: string }>
-                ).map((item) => (
+                {ob.levels.map((item) => (
                   <button
                     key={item.id}
                     type="button"
+                    data-testid={`onboarding-level-${item.id}`}
                     onClick={() => {
                       setLevel(item.id);
                       setOnboardingStep(5);
@@ -660,6 +835,24 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                   </button>
                 ))}
               </div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-back"
+                  onClick={() => setOnboardingStep(3)}
+                >
+                  {ob.backBtn}
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-next"
+                  onClick={() => setOnboardingStep(5)}
+                >
+                  {ob.nextBtn}
+                </button>
+              </div>
             </div>
           )}
 
@@ -674,34 +867,62 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                 gap: 12
               }}
             >
-              <strong style={{ fontSize: 17 }}>
-                Шаг 5 из 5. Твой персональный маршрут готов!
-              </strong>
+              <strong style={{ fontSize: 17 }}>{ob.step5Title}</strong>
               <p style={{ margin: 0, fontSize: 14.5 }}>
-                Выбранные предметы:{" "}
+                {ob.step5SelectedLabel}{" "}
                 <strong>
                   {selectedSubjects
                     .map((id) => UNT_SUBJECTS.find((s) => s.id === id)?.title[lang] ?? id)
                     .join(", ")}
                 </strong>
-                . Начни с первого интерактивного урока или пройди 5-минутную проверку уровня:
+                . {ob.step5Lead}
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 <button
                   type="button"
                   className="btn-primary"
+                  data-testid="onboarding-finish-lesson"
                   onClick={() => finishOnboardingAndNavigate("lesson")}
                   style={{ cursor: "pointer" }}
                 >
-                  Начать первый урок →
+                  {ob.startLessonBtn}
                 </button>
                 <button
                   type="button"
                   className="btn-ghost"
+                  data-testid="onboarding-finish-diagnostic"
                   onClick={() => finishOnboardingAndNavigate("diagnostic")}
                   style={{ cursor: "pointer" }}
                 >
-                  Пройти проверку уровня (5 мин)
+                  {ob.startDiagnosticBtn}
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-finish-practice"
+                  onClick={() => finishOnboardingAndNavigate("practice")}
+                  style={{ cursor: "pointer" }}
+                >
+                  {ob.startPracticeBtn}
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-finish-map"
+                  onClick={() => finishOnboardingAndNavigate("map")}
+                  style={{ cursor: "pointer" }}
+                >
+                  {ob.startMapBtn}
+                </button>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  data-testid="onboarding-back"
+                  onClick={() => setOnboardingStep(4)}
+                >
+                  {ob.backBtn}
                 </button>
               </div>
             </div>
@@ -727,7 +948,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
               return (
                 <Link
                   key={subj.id}
-                  href={`/subjects/${subj.id}`}
+                  href={`/subjects/${subj.id}?lang=${lang}`}
                   data-testid={`welcome-subject-card-${subj.id}`}
                   className="welcome-subject-card"
                 >
@@ -747,7 +968,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                   </p>
                   <div className="welcome-subject-badges">
                     <span className="welcome-subj-badge official">
-                      {t.lessonsBadge(subj.lessons.length)} · {totalQuestions} заданий
+                      {formatLessonsCountLabel(subj.lessons.length, lang)} · {formatQuestionsCountLabel(totalQuestions, lang)}
                     </span>
                     <span className="welcome-subj-badge">{t.openSubjectOverview}</span>
                   </div>
@@ -763,7 +984,9 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
           <div className="welcome-tools-grid">
             {t.howSteps.map((step) => (
               <article key={step.num} className="welcome-tool-card">
-                <span className="section-num">ШАГ {step.num}</span>
+                <span className="section-num">
+                  {ob.stepWord} {step.num}
+                </span>
                 <h3>{step.title}</h3>
                 <p>{step.body}</p>
               </article>

@@ -332,6 +332,45 @@ function buildMathUniversalCurriculum(): UniversalSubjectCurriculum {
         hint: tr("Не забудьте развернуть знак неравенства при делении на −3.", "−3-ке бөлгенде таңбаны өзгертуді ұмытпаңыз.", "−3 ga bo‘lganda ishorani o‘zgartirishni unutmang."),
         errorCategory: "sign_flip"
       }
+    },
+    {
+      id: "math-err-vieta",
+      subjectId: "math",
+      topicId: "quadratic",
+      title: tr("Знак суммы корней по теореме Виета", "Виет теоремасы бойынша түбірлер қосындысының таңбасы", "Viyet teoremasi bo‘yicha ildizlar yig‘indisi ishorasi"),
+      taskPrompt: tr("Найдите корни уравнения: x² − 7x + 12 = 0", "Теңдеудің түбірлерін табыңыз: x² − 7x + 12 = 0", "Tenglamaning ildizlarini toping: x² − 7x + 12 = 0"),
+      steps: {
+        ru: ["1) Приведённое квадратное уравнение: p = −7, q = 12", "2) По теореме Виета: x₁ + x₂ = −7, x₁ · x₂ = 12", "3) Подбираем корни: x₁ = −3, x₂ = −4"],
+        kk: ["1) Келтірілген квадрат теңдеу: p = −7, q = 12", "2) Виет теоремасы бойынша: x₁ + x₂ = −7, x₁ · x₂ = 12", "3) Түбірлері: x₁ = −3, x₂ = −4"],
+        uz: ["1) Keltirilgan kvadrat tenglama: p = −7, q = 12", "2) Viyet teoremasi bo‘yicha: x₁ + x₂ = −7, x₁ · x₂ = 12", "3) Ildizlari: x₁ = −3, x₂ = −4"]
+      },
+      brokenStepIndex: 1,
+      errorCategory: "vieta_sign",
+      whyBroken: tr(
+        "По теореме Виета сумма корней приведённого уравнения x² + px + q = 0 равна противоположному коэффициенту −p, то есть x₁ + x₂ = 7, а не −7.",
+        "Виет теоремасы бойынша түбірлердің қосындысы −p-ға тең, яғни x₁ + x₂ = 7 (−7 емес).",
+        "Viyet teoremasiga ko‘ra ildizlar yig‘indisi −p ga teng, ya’ni x₁ + x₂ = 7 (−7 emas)."
+      ),
+      correctedStep: tr("2) По теореме Виета: x₁ + x₂ = 7, x₁ · x₂ = 12 ⇒ x₁ = 3, x₂ = 4", "2) Виет теоремасы: x₁ + x₂ = 7, x₁ · x₂ = 12 ⇒ x₁ = 3, x₂ = 4", "2) Viyet teoremasi: x₁ + x₂ = 7, x₁ · x₂ = 12 ⇒ x₁ = 3, x₂ = 4"),
+      transferQuestion: {
+        id: "math-err-vieta-transfer",
+        subjectId: "math",
+        topicId: "quadratic",
+        lessonId: "math-lesson-quadratic",
+        type: "single_choice",
+        difficulty: "basic",
+        maxPoints: 1,
+        prompt: tr("Чему равна сумма корней уравнения x² − 9x + 20 = 0?", "x² − 9x + 20 = 0 теңдеуі түбірлерінің қосындысы неге тең?", "x² − 9x + 20 = 0 tenglama ildizlari yig‘indisi nimaga teng?"),
+        options: {
+          ru: ["9", "−9", "20", "−20"],
+          kk: ["9", "−9", "20", "−20"],
+          uz: ["9", "−9", "20", "−20"]
+        },
+        correctIndex: 0,
+        explanation: tr("По теореме Виета x₁ + x₂ = −(−9) = 9.", "Виет теоремасы бойынша x₁ + x₂ = −(−9) = 9.", "Viyet teoremasiga ko‘ra x₁ + x₂ = −(−9) = 9."),
+        hint: tr("Сумма корней равна второму коэффициенту с противоположным знаком.", "Түбірлер қосындысы қарама-қарсы таңбамен алынған екінші коэффициентке тең.", "Ildizlar yig‘indisi qarama-qarshi ishorali ikkinchi koeffitsiyentga teng."),
+        errorCategory: "vieta_sign"
+      }
     }
   ];
 
@@ -348,10 +387,10 @@ function buildMathUniversalCurriculum(): UniversalSubjectCurriculum {
     badge: "MATH",
     accentColor: "#2563eb",
     iconName: "Calculator",
-    version: "2.0.0",
+    version: "3.0.0",
     updatedAt: "2026-10-10",
     readinessStatus: "full_course",
-    readinessLabel: tr("Полный курс · 16 модулей и 1 152 варианта", "Толық курс · 16 бөлім және 1 152 нұсқа", "To‘liq kurs · 16 bo‘lim va 1 152 variant"),
+    readinessLabel: tr("Расширенный курс · 16 уроков + практика + Лаборатория ошибок", "Кеңейтілген курс · 16 сабақ + практика + Қателер зертханасы", "Kengaytirilgan kurs · 16 dars + amaliyot + Xatolar laboratoriyasi"),
     title: tr("Математика (Алгебра и Геометрия)", "Математика (Алгебра және Геометрия)", "Matematika (Algebra va Geometriya)"),
     subtitle: shortDesc,
     description: shortDesc,
@@ -3019,6 +3058,49 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
 
   const diagnosticQuestionIds = lessons.flatMap((l) => l.questions.map((q) => q.id));
 
+  const errorLabCases: UniversalErrorLabCase[] = [bp.errorLab];
+  if (lessons.length >= 2 && lessons[1].questions.length >= 1) {
+    const secondLesson = lessons[1];
+    const transferQ = secondLesson.questions[0];
+    errorLabCases.push({
+      id: `${bp.id}-err-${secondLesson.topicId}`,
+      subjectId: bp.id,
+      topicId: secondLesson.topicId,
+      title: {
+        ru: `Типичная ловушка: ${secondLesson.title.ru}`,
+        kk: `Типтік қате: ${secondLesson.title.kk}`,
+        uz: `Tipik xato: ${secondLesson.title.uz}`
+      },
+      taskPrompt: secondLesson.workedExample.problem,
+      steps: {
+        ru: [
+          secondLesson.workedExample.steps.ru[0] ?? "1) Запишем исходное условие и правило темы",
+          `2) Ошибочный шаг: пропущено ключевое ограничение правила (${secondLesson.learningGoal.ru})`,
+          secondLesson.workedExample.steps.ru[1] ?? "3) Итоговый вывод без проверки условия"
+        ],
+        kk: [
+          secondLesson.workedExample.steps.kk[0] ?? "1) Бастапқы шарт пен ережені жазамыз",
+          `2) Қате қадам: негізгі шектеу ескерілмеді (${secondLesson.learningGoal.kk})`,
+          secondLesson.workedExample.steps.kk[1] ?? "3) Шартты тексерусіз қорытынды"
+        ],
+        uz: [
+          secondLesson.workedExample.steps.uz[0] ?? "1) Dastlabki shart va qoidani yozamiz",
+          `2) Xato qadam: asosiy cheklov hisobga olinmadi (${secondLesson.learningGoal.uz})`,
+          secondLesson.workedExample.steps.uz[1] ?? "3) Shartni tekshirmasdan xulosa"
+        ]
+      },
+      brokenStepIndex: 1,
+      errorCategory: transferQ.errorCategory || `${bp.id}_rule_trap`,
+      whyBroken: secondLesson.workedExample.takeaway,
+      correctedStep: {
+        ru: secondLesson.workedExample.steps.ru[1] ?? secondLesson.summary.ru,
+        kk: secondLesson.workedExample.steps.kk[1] ?? secondLesson.summary.kk,
+        uz: secondLesson.workedExample.steps.uz[1] ?? secondLesson.summary.uz
+      },
+      transferQuestion: transferQ
+    });
+  }
+
   return {
     id: bp.id,
     slug: bp.id,
@@ -3026,13 +3108,13 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
     badge,
     accentColor,
     iconName: bp.iconName,
-    version: "2.0.0",
+    version: "3.0.0",
     updatedAt: "2026-10-10",
     readinessStatus: "starter_course",
     readinessLabel: tr(
-      "Интерактивный курс · 3 урока + мультиформатная практика + Лаборатория ошибок",
-      "Интерактивті курс · 3 сабақ + практика + Қателер зертханасы",
-      "Interaktiv kurs · 3 dars + amaliyot + Xatolar laboratoriyasi"
+      "Стартовый курс · 3 урока + мультиформатная практика + Лаборатория ошибок",
+      "Бастапқы курс · 3 сабақ + практика + Қателер зертханасы",
+      "Boshlang‘ich kurs · 3 dars + amaliyot + Xatolar laboratoriyasi"
     ),
     title,
     subtitle,
@@ -3042,7 +3124,7 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
     modules,
     topics,
     lessons,
-    errorLabCases: [bp.errorLab],
+    errorLabCases,
     diagnosticQuestionIds
   };
 }
@@ -3077,6 +3159,37 @@ export function getAllSubjectCurricula(): UniversalSubjectCurriculum[] {
   return Array.from(DYNAMIC_SUBJECT_REGISTRY.values());
 }
 
+/**
+ * Resolves a lesson within a subject curriculum by full lesson ID (e.g. `physics-lesson-phys_kinematics`),
+ * topicId (`phys_kinematics`), or hyphen/underscore-normalized slug (`phys-kinematics`) (P1-004 & E2E-013).
+ */
+export function findSubjectLessonByIdOrSlug(
+  curriculum: UniversalSubjectCurriculum,
+  lessonIdOrSlug: string | null | undefined
+): { lesson: UniversalLesson; index: number } | null {
+  if (!lessonIdOrSlug || typeof lessonIdOrSlug !== "string") return null;
+  const raw = decodeURIComponent(lessonIdOrSlug).trim().toLowerCase();
+  if (!raw) return null;
+  const norm = raw.replace(/[-_]+/g, "_");
+
+  for (let i = 0; i < curriculum.lessons.length; i++) {
+    const l = curriculum.lessons[i];
+    const lid = l.id.toLowerCase();
+    const tid = l.topicId.toLowerCase();
+    if (
+      lid === raw ||
+      tid === raw ||
+      lid.replace(/[-_]+/g, "_") === norm ||
+      tid.replace(/[-_]+/g, "_") === norm ||
+      lid.endsWith(`_${norm}`) ||
+      lid.endsWith(`-${raw}`)
+    ) {
+      return { lesson: l, index: i };
+    }
+  }
+  return null;
+}
+
 export interface UniversalGraphNodeView {
   id: string;
   subjectId: string;
@@ -3086,11 +3199,17 @@ export interface UniversalGraphNodeView {
   prerequisites: string[];
   unlocks: string[];
   lessonId: string;
+  lessonCompleted: boolean;
   masteryScore: number;
   status: "unassessed" | "mastered" | "review" | "gap" | "recommended";
   attemptsCount: number;
 }
 
+/**
+ * P0-001 FIX: Builds the subject knowledge graph strictly separating `lessonCompleted` (theory read)
+ * from verified question mastery (`stat.max > 0`). Completing a lesson without verified answers
+ * NEVER sets `status = "mastered"` or inflates `masteryScore`.
+ */
 export function buildUniversalSubjectGraph(
   subjectId: string,
   completedLessonIds: string[] = [],
@@ -3104,20 +3223,11 @@ export function buildUniversalSubjectGraph(
     const stat = topicAccuracyMap[topic.id];
     const lessonDone = completedSet.has(topic.lessonId);
     let masteryScore = 0;
-    let attemptsCount = stat?.attempts ?? 0;
-
-    if (stat && stat.max > 0) {
-      masteryScore = Math.round((stat.earned / stat.max) * 100);
-      if (lessonDone) {
-        masteryScore = Math.min(100, Math.max(masteryScore, 75));
-      }
-    } else if (lessonDone) {
-      masteryScore = 85;
-      attemptsCount = Math.max(1, attemptsCount);
-    }
+    const attemptsCount = stat?.attempts ?? 0;
 
     let status: UniversalGraphNodeView["status"] = "unassessed";
-    if (attemptsCount > 0 || lessonDone) {
+    if (stat && stat.max > 0) {
+      masteryScore = Math.round((stat.earned / stat.max) * 100);
       if (masteryScore >= 80) status = "mastered";
       else if (masteryScore >= 50) status = "review";
       else status = "gap";
@@ -3132,18 +3242,31 @@ export function buildUniversalSubjectGraph(
       prerequisites: topic.prerequisites,
       unlocks: topic.unlocks,
       lessonId: topic.lessonId,
+      lessonCompleted: lessonDone,
       masteryScore,
       status,
       attemptsCount
     };
   });
 
-  // Mark the first unassessed node whose prerequisites are mastered (or empty) as "recommended"
-  const masteredIds = new Set(rawNodes.filter((n) => n.status === "mastered").map((n) => n.id));
+  // Mark the first unassessed node whose prerequisites are mastered (or completed/empty) as "recommended"
+  const readyPrereqIds = new Set(
+    rawNodes.filter((n) => n.status === "mastered" || n.lessonCompleted).map((n) => n.id)
+  );
+  let assignedRecommended = false;
   for (const node of rawNodes) {
-    if (node.status === "unassessed") {
-      const prereqsMet = node.prerequisites.every((p) => masteredIds.has(p));
+    if (node.status === "unassessed" && !node.lessonCompleted) {
+      const prereqsMet = node.prerequisites.every((p) => readyPrereqIds.has(p));
       if (prereqsMet) {
+        node.status = "recommended";
+        assignedRecommended = true;
+        break;
+      }
+    }
+  }
+  if (!assignedRecommended) {
+    for (const node of rawNodes) {
+      if (node.status === "unassessed") {
         node.status = "recommended";
         break;
       }
@@ -3151,6 +3274,107 @@ export function buildUniversalSubjectGraph(
   }
 
   return rawNodes;
+}
+
+/**
+ * Computes the exact recommended next lesson for a subject based on diagnostic results,
+ * topic gaps, or uncompleted lessons (P1-003 & Section 10).
+ */
+export function computeRecommendedLessonForSubject(
+  curriculum: UniversalSubjectCurriculum,
+  completedLessonIds: string[] = [],
+  topicAccuracyMap: Record<string, { earned: number; max: number; attempts: number }> = {},
+  preferredLessonId?: string
+): {
+  lesson: UniversalLesson;
+  index: number;
+  reason: Record<Language, string>;
+} {
+  if (preferredLessonId) {
+    const matched = findSubjectLessonByIdOrSlug(curriculum, preferredLessonId);
+    if (matched) {
+      return {
+        lesson: matched.lesson,
+        index: matched.index,
+        reason: tr(
+          `Рекомендовано по итогам входной диагностики: «${matched.lesson.title.ru}».`,
+          `Бастапқы диагностика нәтижесі бойынша ұсынылды: «${matched.lesson.title.kk}».`,
+          `Boshlang‘ich diagnostika natijasiga ko‘ra tavsiya etildi: «${matched.lesson.title.uz}».`
+        )
+      };
+    }
+  }
+
+  const graph = buildUniversalSubjectGraph(curriculum.id, completedLessonIds, topicAccuracyMap);
+  const gapNode = graph.find((n) => n.status === "gap") ?? graph.find((n) => n.status === "review");
+  if (gapNode) {
+    const matched = findSubjectLessonByIdOrSlug(curriculum, gapNode.lessonId);
+    if (matched) {
+      return {
+        lesson: matched.lesson,
+        index: matched.index,
+        reason: tr(
+          `Обнаружен пробел в теме «${matched.lesson.title.ru}» (точность ${gapNode.masteryScore}%) — закройте базовое правило перед переходом далее.`,
+          `«${matched.lesson.title.kk}» тақырыбында олқылық анықталды (дәлдік ${gapNode.masteryScore}%) — келесі тақырыпқа өтпес бұрын ережені бекітіңіз.`,
+          `«${matched.lesson.title.uz}» mavzusida bo‘shliq aniqlandi (aniqlik ${gapNode.masteryScore}%) — keyingi mavzuga o‘tishdan oldin qoidani mustahkamlang.`
+        )
+      };
+    }
+  }
+
+  const recNode = graph.find((n) => n.status === "recommended");
+  if (recNode) {
+    const matched = findSubjectLessonByIdOrSlug(curriculum, recNode.lessonId);
+    if (matched) {
+      return {
+        lesson: matched.lesson,
+        index: matched.index,
+        reason: tr(
+          `Следующий шаг учебной траектории: «${matched.lesson.title.ru}».`,
+          `Оқу траекториясының келесі қадамы: «${matched.lesson.title.kk}».`,
+          `O‘quv trayektoriyasining keyingi qadami: «${matched.lesson.title.uz}».`
+        )
+      };
+    }
+  }
+
+  const fallback = curriculum.lessons[0];
+  return {
+    lesson: fallback,
+    index: 0,
+    reason: tr(
+      `Стартовый урок курса: «${fallback.title.ru}».`,
+      `Курстың бастапқы сабағы: «${fallback.title.kk}».`,
+      `Kursning boshlang‘ich darsi: «${fallback.title.uz}».`
+    )
+  };
+}
+
+export function formatCountRu(count: number, one: string, few: string, many: string): string {
+  const n = Math.abs(count) % 100;
+  const n1 = n % 10;
+  if (n > 10 && n < 20) return `${count} ${many}`;
+  if (n1 > 1 && n1 < 5) return `${count} ${few}`;
+  if (n1 === 1) return `${count} ${one}`;
+  return `${count} ${many}`;
+}
+
+export function formatLessonsCountLabel(count: number, lang: Language): string {
+  if (lang === "kk") return `${count} сабақ`;
+  if (lang === "uz") return `${count} ta dars`;
+  return formatCountRu(count, "урок", "урока", "уроков");
+}
+
+export function formatQuestionsCountLabel(count: number, lang: Language): string {
+  if (lang === "kk") return `${count} тапсырма`;
+  if (lang === "uz") return `${count} ta topshiriq`;
+  return formatCountRu(count, "задание", "задания", "заданий");
+}
+
+export function formatModulesCountLabel(count: number, lang: Language): string {
+  if (lang === "kk") return `${count} модуль`;
+  if (lang === "uz") return `${count} ta modul`;
+  return formatCountRu(count, "модуль", "модуля", "модулей");
 }
 
 export interface WelcomeSubjectDemoItem {

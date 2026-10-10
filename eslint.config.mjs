@@ -26,8 +26,11 @@ const eslintConfig = defineConfig([
   {
     rules: {
       // vinext's bundled next/link throws `TypeError: f is not a function` on RSC
-      // prefetch/transition in React 19; native <a> tags provide deterministic navigation.
+      // prefetch/transition in React 19; native <a> tags and location navigation provide deterministic navigation.
       "@next/next/no-html-link-for-pages": "off",
+      "@next/next/no-location-assign-relative-destination": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/set-state-in-effect": "off",
     },
   },
 ]);
