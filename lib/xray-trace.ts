@@ -1,14 +1,17 @@
 import type { Language, TopicId } from "./curriculum";
 
-export type StepTraceStatus = "valid" | "fracture" | "cascade";
+export type VerificationState = "verified_correct" | "incorrect" | "unverified" | "unsupported";
+export type StepTraceStatus = "valid" | "fracture" | "cascade" | "unverified" | "unsupported";
 
 export interface TraceLineDiagnostic {
   lineNumber: number;
   expression: string;
   status: StepTraceStatus;
+  verificationState: VerificationState;
   badge: string;
   note: string;
   correctedLine?: string;
+  trapCategory?: string;
 }
 
 export interface UntTrapCase {
@@ -376,6 +379,86 @@ export interface CustomDraftAnalysis {
   detectedTrapTitle: string;
   summary: string;
   savedPointsEstimate: number;
+  overallVerificationState: VerificationState;
+  limitationsNote: string;
+}
+
+interface ParsedLinearEq {
+  a: number;
+  b: number;
+  c: number;
+  root: number;
+}
+
+/**
+ * Deterministically parses single-variable linear equations of the form:
+ *   a*x + b = c, a*x - b = c, a*x = c, x + b = c, x - b = c, x = c
+ */
+function parseLinearEquation(rawLine: string): ParsedLinearEq | null {
+  const cleaned = rawLine
+    .replace(/^\s*\d+[\)\.]\s*/, "")
+    .replace(/−/g, "-")
+    .replace(/,/g, ".")
+    .trim();
+
+  // Match: [a]x [± b] = c
+  const m = cleaned.match(/^([+-]?\s*\d*(?:\.\d+)?)?\s*x\s*(?:([+-])\s*(\d+(?:\.\d+)?))?\s*=\s*([+-]?\s*\d+(?:\.\d+)?)$/i);
+  if (!m) return null;
+
+  const rawA = (m[1] ?? "").replace(/\s+/g, "");
+  let a = 1;
+  if (rawA === "-" || rawA === "+") {
+    a = rawA === "-" ? -1 : 1;
+  } else if (rawA.length > 0) {
+    a = Number(rawA);
+  }
+  if (!Number.isFinite(a) || a === 0) return null;
+
+  const signB = m[2] === "-" ? -1 : 1;
+  const valB = m[3] ? Number(m[3]) : 0;
+  const b = m[2] ? signB * valB : 0;
+  const c = Number((m[4] ?? "").replace(/\s+/g, ""));
+  if (!Number.isFinite(b) || !Number.isFinite(c)) return null;
+
+  return {
+    a,
+    b,
+    c,
+    root: (c - b) / a
+  };
+}
+
+/**
+ * Deterministically checks simple numeric equalities like "2 + 3 = 6" or "4 * 5 = 20"
+ */
+function evaluateSimpleNumericEquality(rawLine: string): boolean | null {
+  const cleaned = rawLine
+    .replace(/^\s*\d+[\)\.]\s*/, "")
+    .replace(/−/g, "-")
+    .replace(/·/g, "*")
+    .replace(/,/g, ".")
+    .trim();
+  const m = cleaned.match(/^([+-]?\d+(?:\.\d+)?)\s*([+\-*/])\s*([+-]?\d+(?:\.\d+)?)\s*=\s*([+-]?\d+(?:\.\d+)?)$/);
+  if (!m) return null;
+  const leftA = Number(m[1]);
+  const op = m[2];
+  const leftB = Number(m[3]);
+  const rhs = Number(m[4]);
+  if (!Number.isFinite(leftA) || !Number.isFinite(leftB) || !Number.isFinite(rhs)) return null;
+  if (op === "/" && leftB === 0) return false;
+  const expected =
+    op === "+"
+      ? leftA + leftB
+      : op === "-"
+        ? leftA - leftB
+        : op === "*"
+          ? leftA * leftB
+          : leftA / leftB;
+  return Math.abs(expected - rhs) < 1e-6;
+}
+
+function hasMathTokens(rawLine: string): boolean {
+  return /[=<>≤≥+\-−*·/^²³√\d]|log|sin|cos|tg|tan/i.test(rawLine);
 }
 
 export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraftAnalysis {
@@ -384,6 +467,13 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
     .slice(0, 8);
+
+  const limitationsNote =
+    lang === "kk"
+      ? "Автоматты тексеру тек детерминирленген теңдеулер мен белгілі ережелерді растайды. Танылмаған түрлендірулер «Тексерілмеген» ретінде белгіленеді."
+      : lang === "uz"
+        ? "Avtomatik tekshiruv faqat deterministik tenglamalar va ma’lum qoidalarni tasdiqlaydi. Tanilmagan o‘tishlar «Tekshirilmagan» deb belgilanadi."
+        : "Детерминированный анализатор подтверждает правильность только там, где шаг математически вычислен. Нераспознанные переходы помечаются как «Не проверено автоматически» (Unverified), а не как верные.";
 
   if (splitLines.length === 0) {
     return {
@@ -395,7 +485,9 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
             ? "Yechim qatorlarini kiriting"
             : "Введите шаги черновика (по одному на строку)",
       summary: "",
-      savedPointsEstimate: 0
+      savedPointsEstimate: 0,
+      overallVerificationState: "unverified",
+      limitationsNote
     };
   }
 
@@ -408,8 +500,9 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
         : "Проверка равносильности переходов";
   let fractureReason = "";
   let correctedSuggestion = "";
+  let fractureTrapCategory = "arithmetic_error";
 
-  // Check each line for known mathematical fracture patterns
+  // Check each line for known mathematical fracture patterns & deterministic root preservation
   for (let i = 0; i < splitLines.length; i++) {
     const line = splitLines[i];
     const prev = i > 0 ? splitLines[i - 1] : "";
@@ -423,6 +516,7 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
       !/log/i.test(line)
     ) {
       fractureFoundAt = i;
+      fractureTrapCategory = "sign_flip";
       trapTitle =
         lang === "kk"
           ? "Логарифм негізі 0 < a < 1: теңсіздік таңбасы ауыспаған"
@@ -436,6 +530,36 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
             ? "Asosi 1 dan kichik logarifmni tushirganda tengsizlik ishorasi teskarisiga o‘zgaradi va argument > 0 sharti olinadi."
             : "При переходе от логарифма с основанием меньше 1 знак неравенства меняется на противоположный + добавляется ОДЗ аргумента > 0.";
       correctedSuggestion = line.replace(">", "<") + " (с учётом ОДЗ > 0)";
+      break;
+    }
+
+    // Pattern 1b: Division by negative coefficient in inequality without flipping sign (e.g. "-2x > 8" -> "x > -4")
+    const prevNegIneq = prev.match(/^\s*[-−]\s*(\d+)\s*x\s*([><≥≤])\s*([-−]?\s*\d+(?:[.,]\d+)?)\s*$/);
+    const currIneq = line.match(/^\s*x\s*([><≥≤])\s*([-−]?\s*\d+(?:[.,]\d+)?)\s*$/);
+    if (prevNegIneq && currIneq && prevNegIneq[2] === currIneq[1]) {
+      fractureFoundAt = i;
+      fractureTrapCategory = "sign_flip";
+      const flippedSign =
+        currIneq[1] === ">"
+          ? "<"
+          : currIneq[1] === "<"
+            ? ">"
+            : currIneq[1] === "≥"
+              ? "≤"
+              : "≥";
+      trapTitle =
+        lang === "kk"
+          ? "Теріс санға бөлгенде теңсіздік таңбасы ауыспаған"
+          : lang === "uz"
+            ? "Manfiy songa bo‘lganda tengsizlik ishorasi o‘zgarmagan"
+            : "При делении на отрицательное число не развёрнут знак неравенства";
+      fractureReason =
+        lang === "kk"
+          ? `−${prevNegIneq[1]} теріс коэффициентіне бөлгенде теңсіздік таңбасы қарама-қарсыға (${flippedSign}) өзгеруі керек.`
+          : lang === "uz"
+            ? `−${prevNegIneq[1]} manfiy koeffitsiyentga bo‘lganda tengsizlik ishorasi teskarisiga (${flippedSign}) o‘zgarishi kerak.`
+            : `При делении обеих частей неравенства на отрицательное число (−${prevNegIneq[1]}) знак неравенства меняется на противоположный (${flippedSign}).`;
+      correctedSuggestion = `x ${flippedSign} ${currIneq[2].replace(/\s+/g, "")}`;
       break;
     }
 
@@ -484,6 +608,53 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
       }
     }
 
+    // Pattern 3b: General deterministic linear equation equivalence check between consecutive steps
+    if (i > 0) {
+      const prevLinear = parseLinearEquation(prev);
+      const currLinear = parseLinearEquation(line);
+      if (prevLinear && currLinear && Math.abs(prevLinear.root - currLinear.root) > 1e-6) {
+        fractureFoundAt = i;
+        const expectedRhs = currLinear.a * prevLinear.root + currLinear.b;
+        const cleanExpected = Number.isInteger(expectedRhs) ? String(expectedRhs) : expectedRhs.toFixed(2);
+        trapTitle =
+          lang === "kk"
+            ? "Теңдеуді түрлендіру қатесі: түбір өзгеріп кетті"
+            : lang === "uz"
+              ? "Tenglamani almashtirish xatosi: ildiz o‘zgarib ketdi"
+              : "Нарушение равносильности уравнения: корень изменился";
+        fractureReason =
+          lang === "kk"
+            ? `Алдыңғы жол бойынша x = ${prevLinear.root}, бірақ бұл жолда x = ${currLinear.root} шығады.`
+            : lang === "uz"
+              ? `Oldingi qator bo‘yicha x = ${prevLinear.root}, ammo bu qatorda x = ${currLinear.root} chiqadi.`
+              : `Из предыдущего шага следует корень x = ${prevLinear.root}, однако на этой строке уравнение даёт x = ${currLinear.root}.`;
+        correctedSuggestion =
+          currLinear.b === 0
+            ? `${currLinear.a === 1 ? "" : currLinear.a}x = ${cleanExpected}`
+            : `x = ${prevLinear.root}`;
+        break;
+      }
+    }
+
+    // Pattern 3c: Simple numeric arithmetic falsehood (e.g. "2 + 2 = 5")
+    const numericCheck = evaluateSimpleNumericEquality(line);
+    if (numericCheck === false) {
+      fractureFoundAt = i;
+      trapTitle =
+        lang === "kk"
+          ? "Арифметикалық есептеу қатесі"
+          : lang === "uz"
+            ? "Arifmetik hisoblash xatosi"
+            : "Арифметическая ошибка в равенстве";
+      fractureReason =
+        lang === "kk"
+          ? "Теңдіктің сол жағы мен оң жағы өзара тең емес."
+          : lang === "uz"
+            ? "Tenglikning chap va o‘ng tomonlari o‘zaro teng emas."
+            : "Левая и правая части числового равенства не совпадают.";
+      break;
+    }
+
     // Pattern 4: Vieta sum sign error
     if (/x[₁1]\s*\+\s*x[₂2]\s*=\s*[-−]\d+/.test(line) && /x[²2]\s*[-−]\s*\d+x/.test(prev + " " + splitLines[0])) {
       fractureFoundAt = i;
@@ -523,25 +694,77 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
     }
   }
 
-  // If no specific pattern matched and there are >=2 lines, check if user wrote a middle transition
+  // Check if all lines are deterministically verified linear equations or numeric equalities
+  const parsedLinears = splitLines.map(parseLinearEquation);
+  const allLinearVerified =
+    splitLines.length >= 2 &&
+    parsedLinears.every((p) => p !== null) &&
+    parsedLinears.every((p) => Math.abs(p!.root - parsedLinears[0]!.root) <= 1e-6);
+
+  const allUnsupported = splitLines.every((l) => !hasMathTokens(l));
+
   const diagnostics: TraceLineDiagnostic[] = splitLines.map((expr, idx) => {
-    if (fractureFoundAt === -1) {
+    if (!hasMathTokens(expr)) {
       return {
         lineNumber: idx + 1,
         expression: expr,
-        status: "valid",
+        status: "unsupported",
+        verificationState: "unsupported",
         badge:
           lang === "kk"
-            ? "ДҰРЫС ҚАДАМ"
+            ? "ФОРМАТ ҚОЛДАУ ТАППАЙДЫ"
             : lang === "uz"
-              ? "TO‘G‘RI QADAM"
-              : "ВЕРНЫЙ ШАГ",
+              ? "FORMAT QO‘LLAB-QUVVATLANMAYDI"
+              : "ФОРМАТ НЕ ПОДДЕРЖИВАЕТСЯ",
         note:
           lang === "kk"
-            ? "Логикалық ауысуда қайшылық табылмады."
+            ? "Бұл жолда математикалық теңдеу немесе өрнек табылмады."
             : lang === "uz"
-              ? "Mantiqiy o‘tishda ziddiyat topilmadi."
-              : "Равносильный математический переход сохранён."
+              ? "Ushbu qatorda matematik tenglama yoki ifoda topilmadi."
+              : "Строка не содержит математического выражения или уравнения для автоматической проверки."
+      };
+    }
+
+    if (fractureFoundAt === -1) {
+      if (allLinearVerified || evaluateSimpleNumericEquality(expr) === true) {
+        return {
+          lineNumber: idx + 1,
+          expression: expr,
+          status: "valid",
+          verificationState: "verified_correct",
+          badge:
+            lang === "kk"
+              ? "ТЕКСЕРІЛДІ: ДҰРЫС"
+              : lang === "uz"
+                ? "TASDIQLANDI: TO‘G‘RI"
+                : "ПРОВЕРЕНО: ВЕРНЫЙ ШАГ",
+          note:
+            lang === "kk"
+              ? "Теңдеудің түбірі мен теңбе-тең түрлендіруі математикалық түрде расталды."
+              : lang === "uz"
+                ? "Tenglama ildizi va teng kuchli o‘tish matematik tasdiqlandi."
+                : "Равносильность перехода и сохранение корня математически подтверждены."
+        };
+      }
+
+      // Honest Unverified state — never claim "Valid step" when the parser did not deterministically prove it!
+      return {
+        lineNumber: idx + 1,
+        expression: expr,
+        status: "unverified",
+        verificationState: "unverified",
+        badge:
+          lang === "kk"
+            ? "АВТОМАТТЫ ТЕКСЕРІЛМЕДІ"
+            : lang === "uz"
+              ? "AVTOMATIK TEKSHIRILMADI"
+              : "НЕ ПРОВЕРЕНО АВТОМАТИЧЕСКИ",
+        note:
+          lang === "kk"
+            ? "Типтік қате табылмады, бірақ бұл өрнектің толық дұрыстығын детерминирленген алгоритм дәлелдеген жоқ."
+            : lang === "uz"
+              ? "Tipik xato topilmadi, ammo ifodaning to‘liq to‘g‘riligini deterministik algoritm isbotlamadi."
+              : "Известный шаблон ошибки не сработал, но детерминированный алгоритм не может гарантировать правильность этого преобразования без дополнительной проверки."
       };
     }
 
@@ -550,6 +773,7 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
         lineNumber: idx + 1,
         expression: expr,
         status: "valid",
+        verificationState: "verified_correct",
         badge:
           lang === "kk"
             ? "ДҰРЫС ҚАДАМ"
@@ -570,6 +794,7 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
         lineNumber: idx + 1,
         expression: expr,
         status: "fracture",
+        verificationState: "incorrect",
         badge:
           lang === "kk"
             ? `ЛОГИКАЛЫҚ СЫНУ НҮКТЕСІ (ЖОЛ ${idx + 1})`
@@ -577,7 +802,8 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
               ? `MANTIQIY SINISH NUQTASI (${idx + 1}-QATOR)`
               : `ТОЧКА ИЗЛОМА ЛОГИКИ (СТРОКА ${idx + 1})`,
         note: fractureReason,
-        correctedLine: correctedSuggestion
+        correctedLine: correctedSuggestion,
+        trapCategory: fractureTrapCategory
       };
     }
 
@@ -585,6 +811,7 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
       lineNumber: idx + 1,
       expression: expr,
       status: "cascade",
+      verificationState: "unverified",
       badge:
         lang === "kk"
           ? "КАСКАДТЫҚ САЛДАР"
@@ -600,23 +827,59 @@ export function analyzeCustomDraft(rawText: string, lang: Language): CustomDraft
     };
   });
 
+  const overallVerificationState: VerificationState = allUnsupported
+    ? "unsupported"
+    : fractureFoundAt !== -1
+      ? "incorrect"
+      : allLinearVerified
+        ? "verified_correct"
+        : "unverified";
+
   const summary =
-    fractureFoundAt === -1
+    overallVerificationState === "unsupported"
       ? lang === "kk"
-        ? "Барлық жолдарда типтік ҰБТ тұзақтары (АОО, таңба, модуль) байқалмады. Терең тексеру үшін төмендегі Claude API түймесін басыңыз."
+        ? "Енгізілген мәтін математикалық өрнек ретінде танылмады."
         : lang === "uz"
-          ? "Barcha qatorlarda tipik UBT tuzoqlari topilmadi. Chuqur tekshirish uchun quyidagi Claude API tugmasini bosing."
-          : "Явных когнитивных ловушек ЕНТ (потеря ОДЗ, смена знака, потеря модуля) не обнаружено. Нажмите кнопку Claude API ниже для глубокой проверки."
-      : lang === "kk"
-        ? `Логика ${fractureFoundAt + 1}-жолда бұзылды (${trapTitle}). Қалған ${splitLines.length - 1} жолдағы біліміңіз сақталған!`
-        : lang === "uz"
-          ? `Mantiq ${fractureFoundAt + 1}-qatorda buzildi (${trapTitle}). Qolgan ${splitLines.length - 1} qatordagi bilimingiz saqlangan!`
-          : `Точка излома найдена на строке ${fractureFoundAt + 1} (${trapTitle}). Остальные шаги решены верно — вам нужно исправить ровно один переход!`;
+          ? "Kiritilgan matn matematik ifoda sifatida tanilmadi."
+          : "Введённый текст не распознан как поддерживаемое математическое выражение."
+      : overallVerificationState === "verified_correct"
+        ? lang === "kk"
+          ? "Барлық қадамдар математикалық түрде тексерілді: теңдеудің түбірі әр жолда сақталған."
+          : lang === "uz"
+            ? "Barcha qadamlar matematik tekshirildi: tenglama ildizi har bir qatorda saqlangan."
+            : "Все переходы математически проверены: равносильность и корень уравнения сохранены на каждом шаге."
+        : fractureFoundAt === -1
+          ? lang === "kk"
+            ? "Типтік тұзақтар байқалмады, бірақ бұл түрлендіру автоматты түрде толық дәлелденбеді (Unverified). Терең талдау үшін ИИ-репетиторға жіберіңіз."
+            : lang === "uz"
+              ? "Tipik tuzoqlar topilmadi, biroq bu almashtirish avtomatik to‘liq isbotlanmadi (Unverified). Chuqur tahlil uchun AI-repetitorga yuboring."
+              : "Известные шаблоны ловушек не сработали, но автоматический анализатор не подтверждает правильность произвольных преобразований без проверки (статус: Не проверено автоматически)."
+          : lang === "kk"
+            ? `Логика ${fractureFoundAt + 1}-жолда бұзылды (${trapTitle}). Қалған ${splitLines.length - 1} жолдағы біліміңіз сақталған!`
+            : lang === "uz"
+              ? `Mantiq ${fractureFoundAt + 1}-qatorda buzildi (${trapTitle}). Qolgan ${splitLines.length - 1} qatordagi bilimingiz saqlangan!`
+              : `Точка излома найдена на строке ${fractureFoundAt + 1} (${trapTitle}). Остальные шаги решены верно — вам нужно исправить ровно один переход!`;
 
   return {
     lines: diagnostics,
-    detectedTrapTitle: trapTitle,
+    detectedTrapTitle:
+      overallVerificationState === "unverified"
+        ? lang === "kk"
+          ? "Автоматты тексеру шектеуі (Unverified)"
+          : lang === "uz"
+            ? "Avtomatik tekshiruv chegarasi (Unverified)"
+            : "Требуется дополнительная проверка (Unverified)"
+        : overallVerificationState === "unsupported"
+          ? lang === "kk"
+            ? "Формат қолдау таппайды (Unsupported)"
+            : lang === "uz"
+              ? "Format qo‘llab-quvvatlanmaydi (Unsupported)"
+              : "Формат не поддерживается (Unsupported)"
+          : trapTitle,
     summary,
-    savedPointsEstimate: fractureFoundAt === -1 ? 1 : 2
+    savedPointsEstimate: fractureFoundAt !== -1 ? 2 : allLinearVerified ? 1 : 0,
+    overallVerificationState,
+    limitationsNote
   };
 }
+

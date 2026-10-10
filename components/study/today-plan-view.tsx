@@ -588,7 +588,7 @@ export function TodayPlanView({
                     />
                   </label>
                   <div className="flex flex-col justify-end pb-1">
-                    <span className="small font-medium">{t.rmPaceLabel(baseline.topicsPerWeek)}</span>
+                    <span className="small font-medium">{t.rmPaceLabel(baseline.topicsPerWeek ?? 2)}</span>
                   </div>
                 </div>
 

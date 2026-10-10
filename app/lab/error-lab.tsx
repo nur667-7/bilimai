@@ -632,6 +632,57 @@ export default function ErrorLab({
           </nav>
         </div>
 
+        {/* Universal 12-Subject Error Lab Switcher */}
+        <div
+          data-testid="lab-universal-subject-bar"
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 12,
+            padding: "10px 12px",
+            borderRadius: 12,
+            background: "var(--surface, #fff)",
+            border: "1px solid var(--border, #e4e1d8)"
+          }}
+        >
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted, #65635d)" }}>
+            Предмет Лаборатории ошибок:
+          </span>
+          {[
+            { id: "math", label: "Математика (16 тем)" },
+            { id: "physics", label: "Физика" },
+            { id: "informatics", label: "Информатика" },
+            { id: "chemistry", label: "Химия" },
+            { id: "biology", label: "Биология" },
+            { id: "history_kz", label: "История РК" },
+            { id: "english", label: "Английский" },
+            { id: "geography", label: "География" },
+            { id: "world_history", label: "Всемирная история" },
+            { id: "law", label: "Основы права" },
+            { id: "math_lit", label: "Мат. грамотность" },
+            { id: "reading_lit", label: "Грамотность чтения" }
+          ].map((subj) => (
+            <a
+              key={subj.id}
+              href={subj.id === "math" ? `/lab?lang=${lang}` : `/subjects/${subj.id}`}
+              style={{
+                padding: "5px 10px",
+                borderRadius: 999,
+                fontSize: 12.5,
+                fontWeight: 600,
+                textDecoration: "none",
+                background: subj.id === "math" ? "var(--accent, #3856f5)" : "var(--bg, #f7f5ef)",
+                color: subj.id === "math" ? "#fff" : "inherit",
+                border: "1px solid var(--border, #dcd8ce)"
+              }}
+            >
+              {subj.label}
+            </a>
+          ))}
+        </div>
+
         {/* Single-line mobile topic selector matching the study page */}
         <div className="mobile-topic-bar">
           <label htmlFor="mobile-lab-select">{t.mobileTopicLabel}</label>

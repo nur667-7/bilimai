@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Language, TopicId } from "./curriculum";
+import type { UntSubjectId } from "./unt-all-subjects";
 
 export const userProfileStorageKey = "aniq-user-v1";
 export const themeStorageKey = "aniq-theme";
@@ -146,14 +147,46 @@ export const kzUniversities = [
 
 export type UniversityId = (typeof kzUniversities)[number]["id"];
 
+export const profileSubjectOptions = [
+  { id: "math", title: { ru: "Математика", kk: "Математика", uz: "Matematika" } },
+  { id: "physics", title: { ru: "Физика", kk: "Физика", uz: "Fizika" } },
+  { id: "informatics", title: { ru: "Информатика", kk: "Информатика", uz: "Informatika" } },
+  { id: "chemistry", title: { ru: "Химия", kk: "Химия", uz: "Kimyo" } },
+  { id: "biology", title: { ru: "Биология", kk: "Биология", uz: "Biologiya" } },
+  { id: "geography", title: { ru: "География", kk: "География", uz: "Geografiya" } },
+  { id: "history_kz", title: { ru: "История Казахстана", kk: "Қазақстан тарихы", uz: "Qozog‘iston tarixi" } },
+  { id: "world_history", title: { ru: "Всемирная история", kk: "Дүниежүзі тарихы", uz: "Jahon tarixi" } },
+  { id: "law", title: { ru: "Основы права", kk: "Құқық негіздері", uz: "Huquq asoslari" } },
+  { id: "english", title: { ru: "Английский язык", kk: "Ағылшын тілі", uz: "Ingliz tili" } },
+  { id: "math_lit", title: { ru: "Математическая грамотность", kk: "Математикалық сауаттылық", uz: "Matematik savodxonlik" } },
+  { id: "reading_lit", title: { ru: "Грамотность чтения", kk: "Оқу сауаттылығы", uz: "O‘qish savodxonligi" } }
+] as const satisfies ReadonlyArray<{ id: UntSubjectId; title: Record<Language, string> }>;
+
+const subjectSchema = z.enum(["math", "physics", "informatics", "chemistry", "biology", "geography", "history_kz", "world_history", "law", "english", "math_lit", "reading_lit"]);
+const gradeSchema = z.enum(["8", "9", "10", "11", "graduate", "university", "teacher"]);
+const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+});
+
 export const userProfileSchema = z.object({
+  version: z.literal(2),
   id: z.string().min(1).max(64),
-  name: z.string().min(1).max(80),
-  identifier: z.string().min(2).max(120),
+  name: z.string().trim().max(80),
+  identifier: z.string().max(120),
   role: z.enum(["student", "teacher"]),
-  grade: z.enum(["8", "9", "10", "11", "teacher"]),
-  targetUniversity: z.enum(["kbtu", "iitu", "aitu", "sdu", "satbayev", "kaznu"]),
-  targetScore: z.number().int().min(20).max(50),
+  goal: z.enum(["exam", "learn", "teach"]).nullable(),
+  subjects: z.array(subjectSchema).max(12).transform((subjects) => [...new Set(subjects)]),
+  grade: gradeSchema.nullable(),
+  targetUniversity: z.string().trim().min(1).max(120).nullable(),
+  targetScore: z.number().int().min(0).max(50).nullable(),
+  examDate: dateSchema.nullable(),
+  preferencesConfirmed: z.boolean(),
+  legacyPreferences: z.object({
+    grade: gradeSchema.nullable(),
+    targetUniversity: z.string().max(120).nullable(),
+    targetScore: z.number().int().min(0).max(50).nullable()
+  }).optional(),
   preferredLanguage: z.enum(["ru", "kk", "uz"]),
   trapBlitzBestStreak: z.number().int().min(0).max(999).default(0),
   disarmedTrapsCount: z.number().int().min(0).max(9999).default(0),
@@ -162,23 +195,59 @@ export const userProfileSchema = z.object({
 
 export type UserProfile = z.infer<typeof userProfileSchema>;
 
+/** Old forms silently preselected these fields. Preserve them for recovery,
+ * but never use them as confirmed learner choices. Reading never overwrites storage. */
+export function parseUserProfile(value: unknown): UserProfile | null {
+  const current = userProfileSchema.safeParse(value);
+  if (current.success) return current.data;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const old = value as Record<string, unknown>;
+  if (old.version !== undefined && old.version !== 1) return null;
+  const legacySchema = z.object({
+    id: z.string().min(1).max(64), name: z.string().min(1).max(80),
+    identifier: z.string().min(2).max(120), role: z.enum(["student", "teacher"]),
+    grade: gradeSchema, targetUniversity: z.string().min(1).max(120),
+    targetScore: z.number().int().min(0).max(50),
+    preferredLanguage: z.enum(["ru", "kk", "uz"]),
+    trapBlitzBestStreak: z.number().int().min(0).max(999).default(0),
+    disarmedTrapsCount: z.number().int().min(0).max(9999).default(0),
+    createdAt: z.string()
+  });
+  const legacy = legacySchema.safeParse(value);
+  if (!legacy.success) return null;
+  const { grade, targetUniversity, targetScore, ...identity } = legacy.data;
+  return {
+    ...identity, version: 2, goal: null, subjects: [], grade: null,
+    targetUniversity: null, targetScore: null, examDate: null, preferencesConfirmed: false,
+    legacyPreferences: { grade, targetUniversity, targetScore }
+  };
+}
+
+export function getProfileStartHref(profile: UserProfile, lang: Language = profile.preferredLanguage): string {
+  const subject = profile.subjects[0];
+  if (!profile.preferencesConfirmed || !subject) return `/register?lang=${lang}`;
+  return `/?${new URLSearchParams({ lang, tab: subject === "math" && profile.goal === "learn" ? "lesson" : "exam", subject, ...(subject === "math" ? { topic: "linear" } : {}) }).toString()}`;
+}
+
 export function loadUserProfile(): UserProfile | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(userProfileStorageKey);
     if (!raw) return null;
-    const parsed = userProfileSchema.safeParse(JSON.parse(raw));
-    return parsed.success ? parsed.data : null;
+    return parseUserProfile(JSON.parse(raw));
   } catch {
     return null;
   }
 }
 
-export function saveUserProfile(profile: UserProfile): void {
-  if (typeof window === "undefined") return;
+export function saveUserProfile(profile: UserProfile): boolean {
+  if (typeof window === "undefined") return false;
+  const parsed = userProfileSchema.safeParse(profile);
+  if (!parsed.success) return false;
   try {
-    window.localStorage.setItem(userProfileStorageKey, JSON.stringify(profile));
-  } catch {}
+    window.localStorage.setItem(userProfileStorageKey, JSON.stringify(parsed.data));
+    return true;
+  } catch { return false; }
 }
 
 export function clearUserProfile(): void {
@@ -189,32 +258,17 @@ export function clearUserProfile(): void {
 }
 
 export function createDemoProfile(role: "student" | "teacher", lang: Language = "ru"): UserProfile {
-  if (role === "teacher") {
-    return {
-      id: "teacher-101",
-      name: lang === "kk" ? "Айгүл Сәтбаева" : lang === "uz" ? "Aziza Karimova" : "Айгуль Сатпаева",
-      identifier: "teacher@bilimai.dpdns.org",
-      role: "teacher",
-      grade: "teacher",
-      targetUniversity: "kbtu",
-      targetScore: 48,
-      preferredLanguage: lang,
-      trapBlitzBestStreak: 7,
-      disarmedTrapsCount: 18,
-      createdAt: new Date().toISOString()
-    };
-  }
   return {
-    id: "student-1001",
-    name: lang === "kk" ? "Әлихан Нұрланов" : lang === "uz" ? "Sardor Alimov" : "Алихан Нурланов",
-    identifier: "1001",
-    role: "student",
-    grade: "11",
-    targetUniversity: "kbtu",
-    targetScore: 45,
+    version: 2,
+    id: `demo-${role}`,
+    name: lang === "kk" ? "Демо-профиль" : lang === "uz" ? "Demo profil" : "Демо-профиль",
+    identifier: "",
+    role,
+    goal: null, subjects: [], grade: null, targetUniversity: null, targetScore: null,
+    examDate: null, preferencesConfirmed: false,
     preferredLanguage: lang,
-    trapBlitzBestStreak: 4,
-    disarmedTrapsCount: 9,
+    trapBlitzBestStreak: 0,
+    disarmedTrapsCount: 0,
     createdAt: new Date().toISOString()
   };
 }

@@ -74,7 +74,6 @@ export function LoginClient({ initialLang = "ru" }: { initialLang?: Language }) 
   const { dark, toggleTheme } = useAniqTheme();
   const { lang, changeLanguage: handleLangChange } = useAuxiliaryPageNavigation(initialLang);
   const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
   const [returnHref, setReturnHref] = useState<string>(`/?lang=${initialLang}`);
 
   const c = loginCopy[lang];
@@ -98,17 +97,17 @@ export function LoginClient({ initialLang = "ru" }: { initialLang?: Language }) 
             name: trimmed.includes("@")
               ? trimmed.split("@")[0]
               : isTeacher
-                ? "Учитель математики"
-                : `Абитуриент #${trimmed}`
+                ? "Учитель"
+                : `Ученик #${trimmed}`
           };
     saveUserProfile(profile);
-    window.location.href = resolveReturnHref(lang);
+    window.location.href = isTeacher ? "/teacher" : resolveReturnHref(lang);
   }
 
   function handleDemoLogin(role: "student" | "teacher") {
     const profile = createDemoProfile(role, lang);
     saveUserProfile(profile);
-    window.location.href = resolveReturnHref(lang);
+    window.location.href = role === "teacher" ? "/teacher" : resolveReturnHref(lang);
   }
 
   const registerHref = `/register?lang=${lang}&returnTo=${encodeURIComponent(returnHref)}`;
@@ -137,7 +136,7 @@ export function LoginClient({ initialLang = "ru" }: { initialLang?: Language }) 
       </div>
 
       <div className="aniq-auth-container">
-        <div className="aniq-auth-card">
+        <div className="aniq-auth-card" data-testid="local-profile-card">
           <div className="aniq-auth-header-row">
             <a className="aniq-brand-logo" href={returnHref}>
               <PixelBrandMark size={24} />
@@ -148,6 +147,22 @@ export function LoginClient({ initialLang = "ru" }: { initialLang?: Language }) 
             <a href={returnHref} className="aniq-auth-skip-link">
               {c.tryWithoutAuth}
             </a>
+          </div>
+
+          <div
+            data-testid="honest-storage-badge"
+            style={{
+              display: "inline-block",
+              padding: "4px 10px",
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 700,
+              background: "rgba(56, 86, 245, 0.1)",
+              color: "var(--accent, #3856f5)",
+              marginBottom: 8
+            }}
+          >
+            Локальный профиль на этом устройстве (localStorage · без пароля)
           </div>
 
           <h1 className="aniq-auth-title">{c.title}</h1>
@@ -166,22 +181,6 @@ export function LoginClient({ initialLang = "ru" }: { initialLang?: Language }) 
                 placeholder={c.idPlaceholder}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="aniq-input"
-              />
-            </div>
-
-            <div className="aniq-field-group">
-              <label htmlFor="login-password" className="aniq-label">
-                {c.passLabel}
-              </label>
-              <input
-                id="login-password"
-                type="password"
-                required
-                autoComplete="current-password"
-                placeholder={c.passPlaceholder}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 className="aniq-input"
               />
             </div>

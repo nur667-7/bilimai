@@ -413,6 +413,15 @@ export function XrayTrapView({
                       {isPresetExample && (
                         <span className="section-pill">{c.exampleBadge}</span>
                       )}
+                      <span className="section-pill">
+                        {checkedReport.overallVerificationState === "verified_correct"
+                          ? "Verified correct"
+                          : checkedReport.overallVerificationState === "incorrect"
+                            ? "Incorrect"
+                            : checkedReport.overallVerificationState === "unsupported"
+                              ? "Unsupported"
+                              : "Unverified"}
+                      </span>
                       <strong>{checkedReport.detectedTrapTitle}</strong>
                     </div>
                   </div>
@@ -440,6 +449,9 @@ export function XrayTrapView({
                       </div>
                     ))}
                   </div>
+                  <p className="small text-muted-foreground mt-3 mb-0">
+                    {checkedReport.limitationsNote}
+                  </p>
                 </>
               )}
             </div>

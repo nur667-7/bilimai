@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { languages, topicIds, type Language, type TopicId } from "./curriculum.ts";
+import type { UntSubjectId } from "./unt-all-subjects";
 
 export type UntQuestionFormat = "single" | "context" | "matching" | "multiple";
-export type UntSubtest = "math_literacy" | "profile_math";
+export type UntSubtest = "math_literacy" | "profile_math" | "subject_practice";
 
 export type LocalizedText = Record<Language, string>;
 export type LocalizedList = Record<Language, string[]>;
@@ -13,7 +14,8 @@ export type UntSingleQuestion = {
   format: "single";
   subtest: UntSubtest;
   untNumberRange: string;
-  topic: TopicId;
+  topic: TopicId | null;
+  subjectId?: UntSubjectId;
   maxPoints: 1;
   prompt: LocalizedText;
   options: LocalizedList;
@@ -30,7 +32,8 @@ export type UntContextQuestion = {
   format: "context";
   subtest: UntSubtest;
   untNumberRange: string;
-  topic: TopicId;
+  topic: TopicId | null;
+  subjectId?: UntSubjectId;
   maxPoints: 1;
   contextId: string;
   contextTitle: LocalizedText;
@@ -50,7 +53,8 @@ export type UntMatchingQuestion = {
   format: "matching";
   subtest: UntSubtest;
   untNumberRange: string;
-  topic: TopicId;
+  topic: TopicId | null;
+  subjectId?: UntSubjectId;
   maxPoints: 2;
   prompt: LocalizedText;
   leftItems: Record<Language, [string, string]>;
@@ -68,7 +72,8 @@ export type UntMultipleQuestion = {
   format: "multiple";
   subtest: UntSubtest;
   untNumberRange: string;
-  topic: TopicId;
+  topic: TopicId | null;
+  subjectId?: UntSubjectId;
   maxPoints: 2;
   prompt: LocalizedText;
   options: LocalizedList;
@@ -92,7 +97,7 @@ export type UntUserAnswer =
 
 export type UntQuestionScore = {
   questionId: string;
-  topic: TopicId;
+  topic: TopicId | null;
   format: UntQuestionFormat;
   earned: 0 | 1 | 2;
   max: 1 | 2;
@@ -103,6 +108,7 @@ export type TopicExamStat = {
   topic: TopicId;
   earned: number;
   max: number;
+  answeredMax: number;
   ratio: number;
   questionCount: number;
   answeredCount: number;
@@ -162,30 +168,26 @@ export const untQuestions: UntQuestion[] = [
     topic: "linear",
     maxPoints: 1,
     prompt: {
-      ru: "Решите систему уравнений { 3x − 2y = 11; 4x + 5y = 7 } и найдите значение выражения x₀ + y₀.",
-      kk: "{ 3x − 2y = 11; 4x + 5y = 7 } теңдеулер жүйесін шешіп, x₀ + y₀ өрнегінің мәнін табыңыз.",
-      uz: "{ 3x − 2y = 11; 4x + 5y = 7 } tenglamalar sistemasini yeching va x₀ + y₀ ifodaning qiymatini toping."
+      ru: "Решите уравнение 3(x + 2) = 12.",
+      kk: "3(x + 2) = 12 теңдеуін шешіңіз.",
+      uz: "3(x + 2) = 12 tenglamani yeching."
     },
-    options: {
-      ru: ["1", "2", "3", "4"],
-      kk: ["1", "2", "3", "4"],
-      uz: ["1", "2", "3", "4"]
-    },
+    options: { ru: ["1", "2", "3", "4"], kk: ["1", "2", "3", "4"], uz: ["1", "2", "3", "4"] },
     correctIndex: 1,
     rule: {
-      ru: "Метод алгебраического сложения: умножаем уравнения так, чтобы коэффициенты при одной переменной стали противоположными.",
-      kk: "Алгебралық қосу тәсілі: бір айнымалының коэффициенттері қарама-қарсы болатындай етіп көбейтеміз.",
-      uz: "Algebraik qo‘shish usuli: bitta o‘zgaruvchi oldidagi koeffitsiyentlar qarama-qarshi bo‘lishi uchun ko‘paytiramiz."
+      ru: "Одинаковое действие с обеими частями уравнения сохраняет равенство.",
+      kk: "Теңдеудің екі жағына бірдей амал қолдану теңдікті сақтайды.",
+      uz: "Tenglamaning ikkala tomoniga bir xil amal qo‘llash tenglikni saqlaydi."
     },
     explanation: {
-      ru: "Умножим первое уравнение на 5, второе на 2: (15x − 10y) + (8x + 10y) = 55 + 14 ⇒ 23x = 69 ⇒ x₀ = 3. Подставим x₀ = 3: 9 − 2y = 11 ⇒ y₀ = −1. Тогда x₀ + y₀ = 3 + (−1) = 2.",
-      kk: "Бірінші теңдеуді 5-ке, екіншісін 2-ге көбейтеміз: 23x = 69 ⇒ x₀ = 3. Онда 9 − 2y = 11 ⇒ y₀ = −1. Сонда x₀ + y₀ = 3 + (−1) = 2.",
-      uz: "Birinchi tenglamani 5 ga, ikkinchisini 2 ga ko‘paytiramiz: 23x = 69 ⇒ x₀ = 3. U holda 9 − 2y = 11 ⇒ y₀ = −1. Demak, x₀ + y₀ = 3 + (−1) = 2."
+      ru: "Делим обе части на 3: x + 2 = 4. Вычитаем 2: x = 2. Проверка: 3(2 + 2) = 12.",
+      kk: "Екі жағын 3-ке бөлеміз: x + 2 = 4. 2-ні азайтамыз: x = 2. Тексеру: 3(2 + 2) = 12.",
+      uz: "Ikkala tomonni 3 ga bo‘lamiz: x + 2 = 4. 2 ni ayiramiz: x = 2. Tekshirish: 3(2 + 2) = 12."
     },
     trap: {
-      ru: "Частая ошибка — получить y₀ = 1 вместо y₀ = −1 при переносе 9 в правую часть (11 − 9 = 2, делим на −2) и выбрать ответ 4.",
-      kk: "Жиі қате: −2y = 2 теңдеуінде таңбаны жоғалтып, y₀ = 1 деп алып, 3 + 1 = 4 жауабын таңдау.",
-      uz: "Tipik xato: −2y = 2 tenglamada manfiy ishorani yo‘qotib, y₀ = 1 deb olish va 4 javobini belgilash."
+      ru: "После деления на 3 нужно ещё вычесть 2 из обеих частей.",
+      kk: "3-ке бөлгеннен кейін екі жақтан да 2-ні азайту қажет.",
+      uz: "3 ga bo‘lgandan keyin ikkala tomondan ham 2 ni ayirish kerak."
     },
     labSeed: 0
   },
@@ -856,9 +858,25 @@ export const untQuestions: UntQuestion[] = [
   }
 ];
 
+/** Compare the displayed values, including old snapshots with duplicate choices. */
+export function normalizeUntOption(value: string): string {
+  const text = value.replace(/^\s*\d+\)\s*/, "").replaceAll("−", "-").replaceAll(",", ".").trim();
+  const compact = text.replace(/\s+/g, " ");
+  if (/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/.test(compact)) return String(Number(compact));
+  const fraction = compact.match(/^([+-]?\d+)\s*\/\s*([+-]?\d+)$/);
+  if (fraction && Number(fraction[2]) !== 0) return String(Number(fraction[1]) / Number(fraction[2]));
+  return compact;
+}
+
+function equalOption(options: string[], selected: number | null, correct: number): boolean {
+  return selected !== null && Number.isInteger(selected) && selected >= 0 && selected < options.length &&
+    normalizeUntOption(options[selected]) === normalizeUntOption(options[correct]);
+}
+
 export function scoreUntQuestion(
   question: UntQuestion,
-  answer: UntUserAnswer | undefined
+  answer: UntUserAnswer | undefined,
+  language: Language = "ru"
 ): UntQuestionScore {
   if (!answer) {
     return {
@@ -878,7 +896,7 @@ export function scoreUntQuestion(
     if (answer.selectedIndex === null || answer.selectedIndex === undefined) {
       return { questionId: question.id, topic: question.topic, format: question.format, earned: 0, max: 1, status: "unanswered" };
     }
-    const isCorrect = answer.selectedIndex === question.correctIndex;
+    const isCorrect = equalOption(question.options[language], answer.selectedIndex, question.correctIndex);
     return {
       questionId: question.id,
       topic: question.topic,
@@ -898,8 +916,8 @@ export function scoreUntQuestion(
       return { questionId: question.id, topic: question.topic, format: "matching", earned: 0, max: 2, status: "unanswered" };
     }
     const [corrA, corrB] = question.correctPairs;
-    const matchA = a === corrA;
-    const matchB = b === corrB;
+    const matchA = equalOption(question.rightOptions[language], a, corrA);
+    const matchB = equalOption(question.rightOptions[language], b, corrB);
     if (matchA && matchB) {
       return { questionId: question.id, topic: question.topic, format: "matching", earned: 2, max: 2, status: "full" };
     }
@@ -946,7 +964,8 @@ export function scoreUntQuestion(
 
 export function evaluateUntExam(
   answers: Record<string, UntUserAnswer>,
-  questions: UntQuestion[] = untQuestions
+  questions: UntQuestion[] = untQuestions,
+  language: Language = "ru"
 ): UntExamEvaluation {
   let earnedPoints = 0;
   let maxPoints = 0;
@@ -967,6 +986,7 @@ export function evaluateUntExam(
         topic: id,
         earned: 0,
         max: 0,
+        answeredMax: 0,
         ratio: 0,
         questionCount: 0,
         answeredCount: 0,
@@ -981,7 +1001,7 @@ export function evaluateUntExam(
   const questionScores: Record<string, UntQuestionScore> = {};
 
   for (const q of questions) {
-    const sc = scoreUntQuestion(q, answers[q.id]);
+    const sc = scoreUntQuestion(q, answers[q.id], language);
     questionScores[q.id] = sc;
     earnedPoints += sc.earned;
     maxPoints += sc.max;
@@ -991,15 +1011,17 @@ export function evaluateUntExam(
     byFormat[q.format].earned += sc.earned;
     byFormat[q.format].max += sc.max;
 
+    // Only explicitly mapped mathematics may influence the mathematics plan.
+    if (!q.topic || (q.subjectId && q.subjectId !== "math")) continue;
     const tStat = byTopic[q.topic];
     tStat.earned += sc.earned;
     tStat.max += sc.max;
     tStat.questionCount += 1;
     if (sc.status === "unanswered") {
       tStat.unansweredCount += 1;
-      tStat.zeroCount += 1;
     } else {
       tStat.answeredCount += 1;
+      tStat.answeredMax += sc.max;
       if (sc.status === "partial") tStat.partialCount += 1;
       if (sc.status === "zero") {
         tStat.answeredWrongCount += 1;
@@ -1014,19 +1036,12 @@ export function evaluateUntExam(
 
   for (const id of topicIds) {
     const st = byTopic[id];
-    st.ratio = st.max > 0 ? Math.round((st.earned / st.max) * 100) / 100 : 0;
-    if (st.max > 0) {
-      if (st.answeredCount === 0) {
-        unansweredTopics.push(id);
-      } else if (st.ratio < 0.75 || st.answeredWrongCount > 0 || st.partialCount > 0) {
-        if (st.ratio < 0.75) {
-          verifiedWeakTopics.push(id);
-        } else {
-          strongTopics.push(id);
-        }
-      } else {
-        strongTopics.push(id);
-      }
+    st.ratio = st.answeredMax > 0 ? Math.round((st.earned / st.answeredMax) * 100) / 100 : 0;
+    if (st.unansweredCount > 0) unansweredTopics.push(id);
+    if (st.answeredWrongCount > 0 || st.partialCount > 0) {
+      verifiedWeakTopics.push(id);
+    } else if (st.answeredCount >= 2 && st.unansweredCount === 0) {
+      strongTopics.push(id);
     }
   }
 
@@ -1064,6 +1079,11 @@ export const untStorageKey = "bilimai-unt-v1";
 export const untAttemptSummarySchema = z
   .object({
     completedAt: z.string().min(10).max(40),
+    subjectId: z.enum(["math", "physics", "informatics", "chemistry", "biology", "geography", "history_kz", "world_history", "law", "english", "math_lit", "reading_lit"]).optional(),
+    variantNumber: z.number().int().min(0).max(10).optional(),
+    questionCount: z.number().int().min(1).max(60).optional(),
+    answeredCount: z.number().int().min(0).max(60).optional(),
+    bankVersion: z.string().max(40).optional(),
     earnedPoints: z.number().int().min(0).max(60),
     maxPoints: z.number().int().min(1).max(60),
     scaledScore50: z.number().int().min(0).max(50),

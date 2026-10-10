@@ -485,8 +485,8 @@ export default function Study({
             errorCauses={errorCauses}
             nextDueReview={nextDueReview}
             interleavedQueue={interleavedQueue}
-            targetScore={state.targetScore}
-            weeksLeft={state.weeksLeft}
+            targetScore={state.targetScore ?? 40}
+            weeksLeft={state.weeksLeft ?? 8}
             weakTopics={state.weakTopics}
             goalNote={state.goalNote}
             consent={state.consent}

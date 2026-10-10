@@ -219,6 +219,15 @@ export function LearnSubnav({
           <span>{t.subAi}</span>
         </button>
 
+        <a
+          className="learn-subnav-pill"
+          href="/subjects"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <Compass size={14} />
+          <span>{lang === "kk" ? "Пәндер (12)" : lang === "uz" ? "Fanlar (12)" : "Предметы (12)"}</span>
+        </a>
+
         <button
           type="button"
           className="learn-subnav-toggle-btn"
@@ -230,21 +239,31 @@ export function LearnSubnav({
         </button>
       </nav>
 
-      {/* Subject Boundary Notice if the user came from a non-Math subject in UNT Exam */}
+      {/* Universal Subject Course CTA when another subject is active */}
       {examSubjectId !== "math" && (
         <div className="subject-boundary-banner mt-3" role="status">
           <div className="subject-boundary-text">
-            <strong>{t.subjectBoundaryTitle(currentSubjectMeta.title[lang])}</strong>
+            <strong>{currentSubjectMeta.title[lang]} — полный курс предмета доступен</strong>
             <p className="small m-0 mt-1">
-              {t.subjectBoundaryDesc(currentSubjectMeta.title[lang])}
+              Откройте интерактивные уроки, практику, Лабораторию ошибок, Карту знаний и ИИ-репетитора по предмету «{currentSubjectMeta.title[lang]}».
             </p>
           </div>
           <div className="subject-boundary-actions">
-            <Button size="sm" onClick={() => onSubjectChange("math")}>
+            <a
+              href={`/subjects/${examSubjectId}`}
+              className="btn-primary"
+              style={{
+                padding: "8px 14px",
+                borderRadius: 10,
+                textDecoration: "none",
+                fontSize: 13.5,
+                fontWeight: 700
+              }}
+            >
+              Открыть уроки: {currentSubjectMeta.title[lang]} →
+            </a>
+            <Button size="sm" variant="outline" onClick={() => onSubjectChange("math")}>
               {t.subjectBoundaryStudyMath}
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => onTabChange("exam")}>
-              {t.subjectBoundaryBackExam(currentSubjectMeta.title[lang])}
             </Button>
           </div>
         </div>

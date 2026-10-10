@@ -1,12 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import type { Language } from "@/lib/curriculum";
-import { UNT_SUBJECTS, type UntSubjectId } from "@/lib/unt-all-subjects";
+import { UNT_SUBJECTS } from "@/lib/unt-all-subjects";
 import { SubjectIcon } from "@/app/unt-exam-view";
 import { PixelBrandMark, PixelKnowledgeMosaic } from "@/components/pixel-mosaic";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import { useAuxiliaryPageNavigation } from "@/lib/use-study-navigation";
+import {
+  WELCOME_DEMO_ITEMS,
+  getAllSubjectCurricula
+} from "@/lib/universal-curriculum";
+import { UniversalQuestionRenderer } from "@/components/study/universal-question-renderer";
+import {
+  UNIVERSAL_PROGRESS_STORAGE_KEY,
+  createDefaultUniversalProgressState,
+  migrateUniversalProgressState,
+  saveOnboardingSelection,
+  type UserLearnerRole,
+  type UserLearningGoal,
+  type UserInitialLevel
+} from "@/lib/universal-progress";
 
 const COPY: Record<
   Language,
@@ -14,210 +29,288 @@ const COPY: Record<
     eyebrow: string;
     title: string;
     subtitle: string;
-    primaryCta: string;
-    examCta: string;
-    labCta: string;
+    ctaChooseSubject: string;
+    ctaCheckLevel: string;
+    ctaTryDemo: string;
+    catalogLink: string;
     profileLink: string;
-    miniTitle: string;
-    miniPrompt: string;
-    miniInstruction: string;
-    miniCorrectMsg: string;
-    miniWrongMsg: string;
-    miniOpenLab: string;
+    demoSectionTitle: string;
+    demoSectionSubtitle: string;
+    demoOpenLesson: string;
+    onboardingTitle: string;
+    onboardingSubtitle: string;
     subjectsTitle: string;
     subjectsNote: string;
-    mandatoryGroup: string;
-    profileGroup: string;
-    officialBadge: (q: number, pts: number) => string;
-    trainingBadge: string;
-    startSubject: string;
+    openSubjectOverview: string;
+    lessonsBadge: (n: number) => string;
     howTitle: string;
-    howItems: { title: string; body: string; href: string; cta: string }[];
+    howSteps: Array<{ num: string; title: string; body: string }>;
+    aiTitle: string;
+    aiCapabilities: string[];
     footerAbout: string;
     footerPrivacy: string;
-    footerNct: string;
+    footerTeacher: string;
+    footerGithub: string;
   }
 > = {
   ru: {
-    eyebrow: "Тренажёр подготовки к ЕНТ (ҰБТ) · RU / ҚАЗ / OʻZB",
-    title: "Разбор задач ЕНТ с проверкой каждого шага решения",
+    eyebrow: "Универсальная образовательная ИИ-платформа · RU / ҚАЗ / OʻZB",
+    title: "BilimAI — твой персональный ИИ-преподаватель по любому предмету",
     subtitle:
-      "Решайте задачи сразу без регистрации: находите первую ошибочную строку в черновике, проходите пробное ЕНТ в официальном формате НЦТ РК (10 / 20 / 40 заданий) и закрывайте пробелы по карте тем.",
-    primaryCta: "Попробовать без регистрации →",
-    examCta: "Пробное ЕНТ (формат НЦТ)",
-    labCta: "Тренировка ошибок",
+      "Объяснения простым языком, интерактивные уроки, практика разных форматов, разбор причины ошибки, карта знаний и подготовка к урокам, контрольным и ЕНТ.",
+    ctaChooseSubject: "Выбрать предмет",
+    ctaCheckLevel: "Проверить свой уровень",
+    ctaTryDemo: "Попробовать демо без регистрации",
+    catalogLink: "Предметы (12)",
     profileLink: "Профиль",
-    miniTitle: "Быстрый пример прямо здесь",
-    miniPrompt: "Решите уравнение: 3(x − 2) = 15",
-    miniInstruction: "Нажмите на строку черновика, в которой допущена первая математическая ошибка:",
-    miniCorrectMsg:
-      "Верно! В строке 02 при раскрытии скобок 3(x − 2) забыли умножить −2 на 3: должно быть 3x − 6 = 15, откуда 3x = 21 и x = 7.",
-    miniWrongMsg:
-      "В этой строке нет первичной ошибки. Посмотрите на строку 02: как раскрыты скобки 3(x − 2)?",
-    miniOpenLab: "Открыть тренажёр ошибок (1 152 разбора) →",
-    subjectsTitle: "Все 12 предметов ЕНТ по спецификации НЦТ РК",
+    demoSectionTitle: "Живое демо по 5 предметам прямо здесь",
+    demoSectionSubtitle:
+      "Переключайте предметы (Математика, Физика, Английский, История, Информатика), проверяйте ответ и смотрите пошаговое объяснение:",
+    demoOpenLesson: "Перейти к полному курсу предмета →",
+    onboardingTitle: "Персональная настройка обучения за 5 шагов",
+    onboardingSubtitle:
+      "Ответьте на 4 коротких вопроса, чтобы платформа подобрала стартовый предмет, уровень и первый урок.",
+    subjectsTitle: "Каталог предметов BilimAI (12 полных направлений)",
     subjectsNote:
-      "Обязательные предметы содержат 10 или 20 заданий (как на реальном ЕНТ), профильные — 40 заданий на 50 баллов. Дополнительно по каждому предмету доступен расширенный тренировочный банк (10 вариантов по 40 вопросов).",
-    mandatoryGroup: "Обязательные предметы ЕНТ (3 предмета)",
-    profileGroup: "Профильные предметы ЕНТ (9 предметов · 40 заданий / 50 баллов)",
-    officialBadge: (q, pts) => `Офиц. ЕНТ: ${q} вопр. · ${pts} б.`,
-    trainingBadge: "10 вариантов",
-    startSubject: "Открыть вариант →",
-    howTitle: "Четыре основных раздела платформы",
-    howItems: [
+      "Нажмите на любой предмет, чтобы открыть его обзор, пошаговые уроки, практику, Лабораторию ошибок, Карту тем и тренажёр ЕНТ.",
+    openSubjectOverview: "Обзор предмета и уроки →",
+    lessonsBadge: (n) => `${n} уроков`,
+    howTitle: "Как работает платформа (5 шагов)",
+    howSteps: [
       {
-        title: "1. Урок и практика по шагам",
-        body: "Формула, пошаговый образец и 3 задачи для закрепления с проверкой каждого перехода.",
-        href: "/?tab=lesson",
-        cta: "Перейти к уроку →"
+        num: "01",
+        title: "Выбираешь предмет и цель",
+        body: "Школьная программа, изучение с нуля, закрытие пробелов или подготовка к экзамену / ЕНТ."
       },
       {
-        title: "2. Проверить черновик и тренировка ошибок",
-        body: "Вставляйте собственное решение для построчной проверки или ищите неверный шаг в готовых примерах.",
-        href: "/?tab=xray",
-        cta: "Проверить черновик →"
+        num: "02",
+        title: "Проходишь быструю диагностику или начинаешь с первого урока",
+        body: "За 5 минут определяем знакомые темы и точки потери баллов без лишнего стресса."
       },
       {
-        title: "3. Карта 16 тем и персональный план",
-        body: "Наглядный маршрут по всем 16 разделам математики ЕНТ и приоритеты на сегодня.",
-        href: "/?tab=graph",
-        cta: "Открыть карту тем →"
+        num: "03",
+        title: "Изучаешь тему через понятные объяснения и практику",
+        body: "Короткая теория, разобранный по шагам пример, переключение «Объясни проще» и интерактивные задачи."
+      },
+      {
+        num: "04",
+        title: "Разбираешь ошибки с ИИ-репетитором",
+        body: "Платформа показывает не просто «неверно», а объясняет причину ошибки и даёт задачу на закрепление."
+      },
+      {
+        num: "05",
+        title: "Двигаешься по персональному плану и видишь прогресс",
+        body: "Карта знаний и очередь занятий показывают, что изучать сегодня и какие темы уже освоены."
       }
     ],
-    footerAbout: "О проекте, методике и научных источниках",
-    footerPrivacy: "Конфиденциальность и локальное хранение",
-    footerNct: "Официальный формат ЕНТ на сайте НЦТ РК (testcenter.kz) ↗"
+    aiTitle: "Что реально умеет ИИ-репетитор BilimAI",
+    aiCapabilities: [
+      "Объясняет тему проще или глубже на русском, казахском и узбекском языках",
+      "Даёт пошаговую наводящую подсказку вместо готового ответа для списывания",
+      "Находит первую ошибочную строку в черновике и честно маркирует статус проверки",
+      "Подбирает аналогичную задачу на закрепление после исправления ошибки"
+    ],
+    footerAbout: "О платформе и методике",
+    footerPrivacy: "Конфиденциальность и хранение данных",
+    footerTeacher: "Кабинет преподавателя",
+    footerGithub: "Исходный код на GitHub ↗"
   },
   kk: {
-    eyebrow: "ҰБТ-ға дайындық тренажері · RU / ҚАЗ / OʻZB",
-    title: "Әр қадамды тексеретін ҰБТ есептер тренажері",
+    eyebrow: "Әмбебап білім беру ЖИ-платформасы · RU / ҚАЗ / OʻZB",
+    title: "BilimAI — кез келген пән бойынша сенің жеке ЖИ-оқытушың",
     subtitle:
-      "Тіркеусіз бірден бастаңыз: шешімдегі алғашқы қате жолды табыңыз, ҚР ҰТО ресми форматында (10 / 20 / 40 тапсырма) байқау ҰБТ тапсырыңыз және тақырыптар картасы бойынша олқылықтарды жабыңыз.",
-    primaryCta: "Тіркеусіз бастау →",
-    examCta: "Байқау ҰБТ (ҰТО форматы)",
-    labCta: "Қателермен жұмыс",
+      "Қарапайым тілмен түсіндіру, интерактивті сабақтар, түрлі форматтағы практика, қателерді талдау, білім картасы және сабақ пен ҰБТ-ға дайындық.",
+    ctaChooseSubject: "Пәнді таңдау",
+    ctaCheckLevel: "Деңгейді тексеру",
+    ctaTryDemo: "Тіркеусіз демоны көру",
+    catalogLink: "Пәндер (12)",
     profileLink: "Профиль",
-    miniTitle: "Осы жерде тексеріп көріңіз",
-    miniPrompt: "Теңдеуді шешіңіз: 3(x − 2) = 15",
-    miniInstruction: "Бірінші математикалық қате жіберілген жолды басыңыз:",
-    miniCorrectMsg:
-      "Дұрыс! 02-жолда 3(x − 2) жақшасын ашқанда −2 санын 3-ке көбейту ұмытылған: 3x − 6 = 15, демек 3x = 21 және x = 7 болуы керек.",
-    miniWrongMsg:
-      "Бұл жолда бастапқы қате жоқ. 02-жолдағы 3(x − 2) жақшасының ашылуын тексеріңіз.",
-    miniOpenLab: "Қателер зертханасын ашу (1 152 талдау) →",
-    subjectsTitle: "ҚР ҰТО спецификациясы бойынша ҰБТ-ның барлық 12 пәні",
+    demoSectionTitle: "5 пән бойынша интерактивті демо",
+    demoSectionSubtitle:
+      "Пәнді таңдап (Математика, Физика, Ағылшын тілі, Тарих, Информатика), жауапты тексеріңіз және қадамдық түсіндірмені көріңіз:",
+    demoOpenLesson: "Пәннің толық курсына өту →",
+    onboardingTitle: "5 қадаммен жеке оқу маршрутын баптау",
+    onboardingSubtitle:
+      "Платформа сізге лайықты пән мен алғашқы сабақты таңдап беруі үшін 4 сұраққа жауап беріңіз.",
+    subjectsTitle: "BilimAI пәндер каталогы (12 бағыт)",
     subjectsNote:
-      "Міндетті пәндерде нақты ҰБТ-дағыдай 10 немесе 20 тапсырма, ал бейіндік пәндерде 40 тапсырма (50 балл). Сонымен қатар әр пән бойынша 40 сұрақтық жаттығу жинағы бар.",
-    mandatoryGroup: "Міндетті пәндер (3 пән)",
-    profileGroup: "Бейіндік пәндер (9 пән · 40 тапсырма / 50 балл)",
-    officialBadge: (q, pts) => `Ресми ҰБТ: ${q} сұрақ · ${pts} б.`,
-    trainingBadge: "10 нұсқа",
-    startSubject: "Нұсқаны ашу →",
-    howTitle: "Платформаның негізгі құралдары",
-    howItems: [
+      "Кез келген пәнді басып, оның шолуын, сабақтарын, практикасын, Қателер зертханасын және Білім картасын ашыңыз.",
+    openSubjectOverview: "Пән шолуы мен сабақтар →",
+    lessonsBadge: (n) => `${n} сабақ`,
+    howTitle: "Платформа қалай жұмыс істейді (5 қадам)",
+    howSteps: [
       {
-        title: "1. Сабақ және қадамдық практика",
-        body: "Формула, қадамдық үлгі және әр қадамы тексерілетін 3 жаттығу есебі.",
-        href: "/?tab=lesson&lang=kk",
-        cta: "Сабаққа өту →"
+        num: "01",
+        title: "Пән мен мақсатты таңдайсың",
+        body: "Мектеп бағдарламасы, нөлден бастап оқу немесе ҰБТ-ға дайындық."
       },
       {
-        title: "2. Жазбаны тексеру және қатемен жұмыс",
-        body: "Өз шешіміңізді жолдап тексеріңіз немесе дайын шешімдегі алғашқы қате жолды табыңыз.",
-        href: "/?tab=xray&lang=kk",
-        cta: "Жазбаны тексеру →"
+        num: "02",
+        title: "Қысқа диагностикадан өтесің немесе 1-сабақтан бастайсың",
+        body: "5 минут ішінде деңгейді анықтап, оқу ретін құрамыз."
       },
       {
-        title: "3. Тақырыптар картасы мен жоспар",
-        body: "ҰБТ математикасының 16 бөлімі және бүгінгі дайындық жоспары.",
-        href: "/?tab=graph&lang=kk",
-        cta: "Картаны ашу →"
+        num: "03",
+        title: "Түсінікті мысалдар мен практика арқылы меңгересің",
+        body: "Қысқа теория, қадамдық үлгі және интерактивті тапсырмалар."
+      },
+      {
+        num: "04",
+        title: "ЖИ-репетитормен қателерді талдайсың",
+        body: "Қатенің себебін түсініп, бекіту есебін шығарасың."
+      },
+      {
+        num: "05",
+        title: "Жеке жоспармен алға жылжисың",
+        body: "Білім картасы әр пән бойынша прогресті бөлек сақтайды."
       }
     ],
-    footerAbout: "Жоба, әдістеме және ғылыми дереккөздер туралы",
+    aiTitle: "BilimAI ЖИ-репетиторының мүмкіндіктері",
+    aiCapabilities: [
+      "Тақырыпты орыс, қазақ және өзбек тілдерінде қарапайым тілмен түсіндіреді",
+      "Дайын жауаптың орнына бағыттаушы кеңес береді",
+      "Шешімдегі қате жолды тауып, тексеру мәртебесін адал көрсетеді",
+      "Қатені түзеткен соң ұқсас бекіту тапсырмасын ұсынады"
+    ],
+    footerAbout: "Жоба және әдістеме туралы",
     footerPrivacy: "Құпиялылық және деректерді сақтау",
-    footerNct: "ҚР ҰТО ресми ҰБТ форматы (testcenter.kz) ↗"
+    footerTeacher: "Оқытушы кабинеті",
+    footerGithub: "GitHub бастапқы коды ↗"
   },
   uz: {
-    eyebrow: "UBT tayyorgarlik trenajyori · RU / ҚАЗ / OʻZB",
-    title: "Har bir yechim qadamini tekshiruvchi UBT trenajyori",
+    eyebrow: "Universal ta’limiy SI-platformasi · RU / ҚАЗ / OʻZB",
+    title: "BilimAI — har qanday fan bo‘yicha shaxsiy SI-o‘qituvchingiz",
     subtitle:
-      "Ro‘yxatdan o‘tmasdan darhol boshlang: qoralama yechimdagi birinchi xato qatorni toping, rasmiy UTO formatida (10 / 20 / 40 topshiriq) sinov UBT topshiring va mavzular xaritasi bo‘yicha bo‘shliqlarni yoping.",
-    primaryCta: "Ro‘yxatdan o‘tmasdan boshlash →",
-    examCta: "Sinov UBT (rasmiy format)",
-    labCta: "Xatolar ustida ishlash",
+      "Sodda tilda tushuntirishlar, interaktiv darslar, turli formatdagi amaliyot, xatolar tahlili, bilimlar xaritasi va imtihonlarga tayyorgarlik.",
+    ctaChooseSubject: "Fanni tanlash",
+    ctaCheckLevel: "Darajani tekshirish",
+    ctaTryDemo: "Ro‘yxatdan o‘tmasdan demoni ko‘rish",
+    catalogLink: "Fanlar (12)",
     profileLink: "Profil",
-    miniTitle: "Shu yerning o‘zida sinab ko‘ring",
-    miniPrompt: "Tenglamani yeching: 3(x − 2) = 15",
-    miniInstruction: "Birinchi matematik xato qilingan qatorni bosing:",
-    miniCorrectMsg:
-      "To‘g‘ri! 02-qatorda 3(x − 2) qavsni ochishda −2 ni 3 ga ko‘paytirish unutilgan: 3x − 6 = 15, demak 3x = 21 va x = 7 bo‘lishi kerak.",
-    miniWrongMsg:
-      "Bu qatorda birlamchi xato yo‘q. 02-qatordagi 3(x − 2) qavsning ochilishiga e’tibor bering.",
-    miniOpenLab: "Xatolar trenajyorini ochish (1 152 tahlil) →",
-    subjectsTitle: "UTO spetsifikatsiyasi bo‘yicha barcha 12 ta UBT fani",
+    demoSectionTitle: "5 ta fan bo‘yicha jonli demo",
+    demoSectionSubtitle:
+      "Fanni tanlang (Matematika, Fizika, Ingliz tili, Tarix, Informatika), javobni tekshiring va qadamma-qadam izohni ko‘ring:",
+    demoOpenLesson: "Fanning to‘liq kursiga o‘tish →",
+    onboardingTitle: "5 qadamda shaxsiy o‘quv yo‘nalishini sozlash",
+    onboardingSubtitle:
+      "Platforma sizga mos fan va birinchi darsni tanlab berishi uchun 4 ta qisqa savolga javob bering.",
+    subjectsTitle: "BilimAI fanlar katalogi (12 ta yo‘nalish)",
     subjectsNote:
-      "Majburiy fanlarda 10 yoki 20 ta topshiriq, profil fanlarda esa 40 ta topshiriq (50 ball). Har bir fan bo‘yicha 10 ta variant mavjud.",
-    mandatoryGroup: "Majburiy fanlar (3 ta fan)",
-    profileGroup: "Profil fanlar (9 ta fan · 40 savol / 50 ball)",
-    officialBadge: (q, pts) => `Rasmiy UBT: ${q} savol · ${pts} b.`,
-    trainingBadge: "10 variant",
-    startSubject: "Variantni ochish →",
-    howTitle: "Asosiy ishchi vositalar",
-    howItems: [
+      "Istalgan fanni bosib, uning sharhi, darslari, amaliyoti, Xatolar laboratoriyasi va Bilimlar xaritasini oching.",
+    openSubjectOverview: "Fan sharhi va darslar →",
+    lessonsBadge: (n) => `${n} dars`,
+    howTitle: "Platforma qanday ishlaydi (5 qadam)",
+    howSteps: [
       {
-        title: "1. Dars va qadamma-qadam amaliyot",
-        body: "Formula, namuna va har bir qadami tekshiriladigan 3 ta mustaqil masala.",
-        href: "/?tab=lesson&lang=uz",
-        cta: "Darsga o‘tish →"
+        num: "01",
+        title: "Fan va maqsadni tanlaysiz",
+        body: "Maktab dasturi, noldan o‘rganish yoki imtihonga tayyorgarlik."
       },
       {
-        title: "2. Qoralamani tekshirish va xatolar ustida ishlash",
-        body: "O‘z qoralama yechimingizni tekshiring yoki yechimdagi birinchi xato qatorni toping.",
-        href: "/?tab=xray&lang=uz",
-        cta: "Qoralamani tekshirish →"
+        num: "02",
+        title: "Qisqa diagnostikadan o‘tasiz yoki 1-darsdan boshlaysiz",
+        body: "5 daqiqada boshlang‘ich darajani aniqlaymiz."
       },
       {
-        title: "3. Mavzular xaritasi va reja",
-        body: "UBT matematikasining 16 bo‘limi va tayyorgarlik rejasi.",
-        href: "/?tab=graph&lang=uz",
-        cta: "Xaritani ochish →"
+        num: "03",
+        title: "Tushunarli misollar va amaliyot orqali o‘rganasiz",
+        body: "Qisqa nazariya, qadamma-qadam namuna va interaktiv topshiriqlar."
+      },
+      {
+        num: "04",
+        title: "SI-repetitor bilan xatolarni tahlil qilasiz",
+        body: "Xato sababini tushunib, mustahkamlash masalasini yechasiz."
+      },
+      {
+        num: "05",
+        title: "Shaxsiy reja bo‘yicha oldinga borasiz",
+        body: "Bilimlar xaritasi har bir fan bo‘yicha progressni alohida saqlaydi."
       }
     ],
-    footerAbout: "Loyiha, metodika va ilmiy manbalar haqida",
+    aiTitle: "BilimAI SI-repetitorining imkoniyatlari",
+    aiCapabilities: [
+      "Mavzuni rus, qozoq va o‘zbek tillarida sodda tilda tushuntiradi",
+      "Tayyor javob o‘rniga yo‘naltiruvchi maslahat beradi",
+      "Qoralamadagi xato qatorni topib, tekshirish holatini halol ko‘rsatadi",
+      "Xatoni tuzatgach, o‘xshash mustahkamlash masalasini beradi"
+    ],
+    footerAbout: "Loyiha va metodika haqida",
     footerPrivacy: "Maxfiylik va ma’lumotlarni saqlash",
-    footerNct: "Rasmiy UBT formati (testcenter.kz) ↗"
+    footerTeacher: "O‘qituvchi kabineti",
+    footerGithub: "GitHub manba kodi ↗"
   }
 };
 
-const MINI_STEPS = [
-  { num: "01", expr: "3(x − 2) = 15", isError: false },
-  { num: "02", expr: "3x − 2 = 15", isError: true },
-  { num: "03", expr: "3x = 17  ⇒  x = 17/3", isError: false }
-];
-
-export default function WelcomeClient({
-  initialLang = "ru"
-}: {
-  initialLang?: Language;
-}) {
+export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) {
+  const { lang, changeLanguage: handleLangChange } = useAuxiliaryPageNavigation(initialLang ?? "ru");
   const { dark, toggleTheme } = useAniqTheme();
-  const { lang, changeLanguage: handleLangChange } = useAuxiliaryPageNavigation(initialLang);
-  const [pickedStep, setPickedStep] = useState<number | null>(null);
-
   const t = COPY[lang];
-  const mandatorySubjects = UNT_SUBJECTS.filter((s) => s.category === "mandatory");
-  const profileSubjects = UNT_SUBJECTS.filter((s) => s.category === "profile");
+
+  const [demoSubjectIndex, setDemoSubjectIndex] = useState(0);
+  const allCurricula = getAllSubjectCurricula();
+
+  // 5-Step Onboarding state
+  const [onboardingStep, setOnboardingStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [role, setRole] = useState<UserLearnerRole>("student");
+  const [goal, setGoal] = useState<UserLearningGoal>("school");
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(["math", "physics"]);
+  const [level, setLevel] = useState<UserInitialLevel>("beginner");
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(UNIVERSAL_PROGRESS_STORAGE_KEY);
+      if (raw) {
+        const state = migrateUniversalProgressState(raw);
+        if (state.onboarding.selectedSubjects.length > 0) {
+          setSelectedSubjects(state.onboarding.selectedSubjects);
+          setRole(state.onboarding.role);
+          setGoal(state.onboarding.goal);
+          setLevel(state.onboarding.level);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const toggleOnboardingSubject = (subjId: string) => {
+    setSelectedSubjects((prev) => {
+      if (prev.includes(subjId)) {
+        return prev.length > 1 ? prev.filter((id) => id !== subjId) : prev;
+      }
+      return [...prev, subjId];
+    });
+  };
+
+  const finishOnboardingAndNavigate = (targetMode: "lesson" | "diagnostic") => {
+    const primarySubject = selectedSubjects[0] ?? "math";
+    try {
+      const raw = window.localStorage.getItem(UNIVERSAL_PROGRESS_STORAGE_KEY);
+      const current = raw ? migrateUniversalProgressState(raw) : createDefaultUniversalProgressState();
+      const updated = saveOnboardingSelection(current, {
+        role,
+        goal,
+        selectedSubjects,
+        level
+      });
+      window.localStorage.setItem(UNIVERSAL_PROGRESS_STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // ignore
+    }
+    window.location.href = `/subjects/${primarySubject}${targetMode === "diagnostic" ? "?start=diagnostic" : ""}`;
+  };
+
+  const activeDemo = WELCOME_DEMO_ITEMS[demoSubjectIndex] ?? WELCOME_DEMO_ITEMS[0];
 
   return (
-    <div className="study-page welcome-standalone-page">
+    <div className="study-root welcome-standalone-root">
       <header className="study-topbar">
         <div className="study-topbar-inner">
           <div className="study-brand-row">
-            <a href={`/?lang=${lang}`} className="aniq-brand-logo">
+            <Link href="/welcome" className="brand-link" aria-label="BilimAI">
               <PixelBrandMark size={26} />
-              <span className="aniq-logo-word">BilimAI</span>
-            </a>
+              <span className="brand-title">BilimAI</span>
+            </Link>
             <span className="brand-Sep hide-on-narrow-mobile" aria-hidden="true">
               /
             </span>
@@ -246,19 +339,23 @@ export default function WelcomeClient({
 
             <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
-            <a href={`/?tab=profile&lang=${lang}`} className="top-UtilityLink hide-on-narrow-mobile">
-              {t.profileLink}
-            </a>
+            <Link href="/subjects" className="top-UtilityLink hide-on-narrow-mobile">
+              {t.catalogLink}
+            </Link>
 
-            <a href={`/?tab=lesson&lang=${lang}`} className="btn-primary welcome-top-cta hide-on-narrow-mobile">
-              {t.primaryCta}
+            <Link href={`/?tab=profile&lang=${lang}`} className="top-UtilityLink hide-on-narrow-mobile">
+              {t.profileLink}
+            </Link>
+
+            <a href="#subjects-catalog" className="btn-primary welcome-top-cta hide-on-narrow-mobile">
+              {t.ctaChooseSubject}
             </a>
           </div>
         </div>
       </header>
 
       <main className="welcome-standalone-main">
-        {/* Hero + Interactive Mini Problem */}
+        {/* 1. HERO + 5-SUBJECT INTERACTIVE DEMO */}
         <section className="welcome-hero-grid" aria-labelledby="welcome-h1">
           <div className="welcome-hero-copy">
             <span className="lesson-kicker">{t.eyebrow}</span>
@@ -270,83 +367,353 @@ export default function WelcomeClient({
             <PixelKnowledgeMosaic className="mt-1" />
 
             <div className="welcome-cta-row">
-              <a href={`/?tab=lesson&lang=${lang}`} className="btn-primary">
-                {t.primaryCta}
+              <a href="#subjects-catalog" className="btn-primary" data-testid="hero-cta-choose-subject">
+                {t.ctaChooseSubject}
               </a>
-              <a href={`/?tab=exam&lang=${lang}`} className="btn-ghost">
-                {t.examCta}
+              <a href="#onboarding-wizard" className="btn-ghost" data-testid="hero-cta-check-level">
+                {t.ctaCheckLevel}
               </a>
-              <a href={`/lab?lang=${lang}`} className="btn-ghost">
-                {t.labCta}
+              <a href="#interactive-multi-demo" className="btn-ghost" data-testid="hero-cta-try-demo">
+                {t.ctaTryDemo}
               </a>
             </div>
           </div>
 
-          <div className="welcome-mini-card">
-            <div className="welcome-mini-header">
-              <span className="section-num">{t.miniTitle}</span>
-              <strong className="welcome-mini-Equation">{t.miniPrompt}</strong>
-              <p className="muted-note">{t.miniInstruction}</p>
+          {/* Interactive 5-Subject Live Demo Card */}
+          <div
+            id="interactive-multi-demo"
+            className="welcome-mini-card"
+            data-testid="welcome-5subject-demo"
+            style={{ display: "grid", gap: 12 }}
+          >
+            <div>
+              <span className="section-num">{t.demoSectionTitle}</span>
+              <p className="muted-note" style={{ margin: "4px 0 0" }}>
+                {t.demoSectionSubtitle}
+              </p>
             </div>
 
-            <div className="welcome-mini-steps" role="group" aria-label={t.miniPrompt}>
-              {MINI_STEPS.map((st, idx) => {
-                const isSelected = pickedStep === idx;
-                const isRight = isSelected && st.isError;
-                const isWrong = isSelected && !st.isError;
+            {/* 5 Subject Switcher Pills */}
+            <div
+              role="tablist"
+              aria-label="Демо-предметы"
+              style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
+            >
+              {WELCOME_DEMO_ITEMS.map((item, idx) => {
+                const active = idx === demoSubjectIndex;
                 return (
                   <button
-                    key={st.num}
+                    key={item.subjectId}
                     type="button"
-                    onClick={() => setPickedStep(idx)}
-                    className={`welcome-step-btn ${isRight ? "step-correct" : ""} ${
-                      isWrong ? "step-wrong" : ""
-                    }`}
+                    role="tab"
+                    aria-selected={active}
+                    data-testid={`welcome-demo-tab-${item.subjectId}`}
+                    onClick={() => setDemoSubjectIndex(idx)}
+                    style={{
+                      padding: "6px 11px",
+                      borderRadius: 999,
+                      border: active
+                        ? "1px solid var(--accent, #3856f5)"
+                        : "1px solid var(--border, #dcd8ce)",
+                      background: active ? "var(--accent, #3856f5)" : "var(--surface, #fff)",
+                      color: active ? "#fff" : "inherit",
+                      fontSize: 12.5,
+                      fontWeight: 700,
+                      cursor: "pointer"
+                    }}
                   >
-                    <span className="welcome-step-num">{st.num}</span>
-                    <span className="welcome-step-expr">{st.expr}</span>
+                    {item.subjectTitle[lang]}
                   </button>
                 );
               })}
             </div>
 
-            {pickedStep !== null && (
-              <div
-                className={`feedback-banner ${
-                  MINI_STEPS[pickedStep].isError ? "ok" : "err"
-                }`}
+            <div
+              style={{
+                padding: "9px 12px",
+                borderRadius: 10,
+                background: "rgba(56, 86, 245, 0.07)",
+                fontSize: 13.5,
+                lineHeight: 1.45
+              }}
+            >
+              💡 <strong>Правило урока:</strong> {activeDemo.contextNote[lang]}
+            </div>
+
+            <UniversalQuestionRenderer question={activeDemo.question} locale={lang} />
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+              <Link
+                href={`/subjects/${activeDemo.subjectId}`}
+                className="inline-action-link"
+                data-testid="welcome-demo-open-subject-link"
               >
-                <p>
-                  {MINI_STEPS[pickedStep].isError ? t.miniCorrectMsg : t.miniWrongMsg}
-                </p>
-                <div style={{ marginTop: "0.5rem" }}>
-                  <a href={`/lab?lang=${lang}`} className="inline-action-link">
-                    {t.miniOpenLab}
-                  </a>
-                </div>
+                {t.demoOpenLesson} ({activeDemo.subjectTitle[lang]})
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* 2. 5-STEP INTERACTIVE ONBOARDING WIZARD (Part VI) */}
+        <section
+          id="onboarding-wizard"
+          data-testid="welcome-onboarding-wizard"
+          style={{
+            background: "var(--surface, #fff)",
+            border: "1px solid var(--border, #e4e1d8)",
+            borderRadius: 20,
+            padding: "22px 24px",
+            display: "grid",
+            gap: 16
+          }}
+        >
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <div>
+              <h2 className="section-title" style={{ margin: 0 }}>
+                {t.onboardingTitle}
+              </h2>
+              <p className="muted-note" style={{ margin: "4px 0 0" }}>
+                {t.onboardingSubtitle}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              {([1, 2, 3, 4, 5] as const).map((stepNum) => (
+                <button
+                  key={stepNum}
+                  type="button"
+                  onClick={() => setOnboardingStep(stepNum)}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    border:
+                      onboardingStep === stepNum
+                        ? "2px solid var(--accent, #3856f5)"
+                        : "1px solid var(--border, #dcd8ce)",
+                    background:
+                      onboardingStep === stepNum ? "var(--accent, #3856f5)" : "var(--bg, #f7f5ef)",
+                    color: onboardingStep === stepNum ? "#fff" : "inherit",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: "pointer"
+                  }}
+                >
+                  {stepNum}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {onboardingStep === 1 && (
+            <div style={{ display: "grid", gap: 12 }}>
+              <strong style={{ fontSize: 16 }}>Шаг 1 из 5. Кто ты?</strong>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+                {(
+                  [
+                    { id: "student", label: "Школьник (5–11 класс)" },
+                    { id: "applicant", label: "Абитуриент (подготовка к ЕНТ)" },
+                    { id: "self_learner", label: "Самостоятельно изучаю предмет" },
+                    { id: "teacher", label: "Преподаватель / репетитор" }
+                  ] as Array<{ id: UserLearnerRole; label: string }>
+                ).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setRole(item.id);
+                      setOnboardingStep(2);
+                    }}
+                    style={{
+                      padding: "13px 15px",
+                      borderRadius: 12,
+                      border:
+                        role === item.id
+                          ? "2px solid var(--accent, #3856f5)"
+                          : "1px solid var(--border, #dcd8ce)",
+                      background: role === item.id ? "rgba(56, 86, 245, 0.08)" : "var(--bg, #f7f5ef)",
+                      fontWeight: 600,
+                      textAlign: "left",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {onboardingStep === 2 && (
+            <div style={{ display: "grid", gap: 12 }}>
+              <strong style={{ fontSize: 16 }}>Шаг 2 из 5. Какая у тебя цель?</strong>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
+                {(
+                  [
+                    { id: "school", label: "Подтянуть школьный предмет" },
+                    { id: "exam", label: "Подготовиться к экзамену / ЕНТ" },
+                    { id: "from_scratch", label: "Изучить тему с нуля" },
+                    { id: "practice_gaps", label: "Практиковаться и разбирать ошибки" }
+                  ] as Array<{ id: UserLearningGoal; label: string }>
+                ).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setGoal(item.id);
+                      setOnboardingStep(3);
+                    }}
+                    style={{
+                      padding: "13px 15px",
+                      borderRadius: 12,
+                      border:
+                        goal === item.id
+                          ? "2px solid var(--accent, #3856f5)"
+                          : "1px solid var(--border, #dcd8ce)",
+                      background: goal === item.id ? "rgba(56, 86, 245, 0.08)" : "var(--bg, #f7f5ef)",
+                      fontWeight: 600,
+                      textAlign: "left",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {onboardingStep === 3 && (
+            <div style={{ display: "grid", gap: 12 }}>
+              <strong style={{ fontSize: 16 }}>Шаг 3 из 5. Выбери один или несколько предметов:</strong>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {UNT_SUBJECTS.map((s) => {
+                  const picked = selectedSubjects.includes(s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => toggleOnboardingSubject(s.id)}
+                      style={{
+                        padding: "9px 13px",
+                        borderRadius: 999,
+                        border: picked
+                          ? "2px solid var(--accent, #3856f5)"
+                          : "1px solid var(--border, #dcd8ce)",
+                        background: picked ? "rgba(56, 86, 245, 0.1)" : "var(--bg, #f7f5ef)",
+                        fontWeight: 600,
+                        fontSize: 13.5,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {picked ? "✓ " : ""}
+                      {s.title[lang]}
+                    </button>
+                  );
+                })}
+              </div>
+              <div>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setOnboardingStep(4)}
+                  style={{ cursor: "pointer" }}
+                >
+                  Далее: выбрать уровень →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {onboardingStep === 4 && (
+            <div style={{ display: "grid", gap: 12 }}>
+              <strong style={{ fontSize: 16 }}>Шаг 4 из 5. Выбери стартовый уровень:</strong>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+                {(
+                  [
+                    { id: "beginner", label: "Начальный — объяснять с самых азов" },
+                    { id: "intermediate", label: "Средний — знаю базу, нужна практика" },
+                    { id: "advanced", label: "Продвинутый — сложные задачи и ловушки" },
+                    { id: "check_level", label: "Проверить мой уровень за 5 минут" }
+                  ] as Array<{ id: UserInitialLevel; label: string }>
+                ).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setLevel(item.id);
+                      setOnboardingStep(5);
+                    }}
+                    style={{
+                      padding: "13px 15px",
+                      borderRadius: 12,
+                      border:
+                        level === item.id
+                          ? "2px solid var(--accent, #3856f5)"
+                          : "1px solid var(--border, #dcd8ce)",
+                      background: level === item.id ? "rgba(56, 86, 245, 0.08)" : "var(--bg, #f7f5ef)",
+                      fontWeight: 600,
+                      textAlign: "left",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {onboardingStep === 5 && (
+            <div
+              style={{
+                padding: "16px 18px",
+                borderRadius: 14,
+                background: "rgba(56, 86, 245, 0.07)",
+                border: "1px solid rgba(56, 86, 245, 0.28)",
+                display: "grid",
+                gap: 12
+              }}
+            >
+              <strong style={{ fontSize: 17 }}>
+                Шаг 5 из 5. Твой персональный маршрут готов!
+              </strong>
+              <p style={{ margin: 0, fontSize: 14.5 }}>
+                Выбранные предметы:{" "}
+                <strong>
+                  {selectedSubjects
+                    .map((id) => UNT_SUBJECTS.find((s) => s.id === id)?.title[lang] ?? id)
+                    .join(", ")}
+                </strong>
+                . Начни с первого интерактивного урока или пройди 5-минутную проверку уровня:
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => finishOnboardingAndNavigate("lesson")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Начать первый урок →
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => finishOnboardingAndNavigate("diagnostic")}
+                  style={{ cursor: "pointer" }}
+                >
+                  Пройти проверку уровня (5 мин)
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
-        {/* Three core tools */}
-        <section className="welcome-tools-section" aria-label={t.howTitle}>
-          <h2 className="section-title">{t.howTitle}</h2>
-          <div className="welcome-tools-grid">
-            {t.howItems.map((item) => (
-              <article key={item.title} className="welcome-tool-card">
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-                <a href={item.href} className="inline-action-link">
-                  {item.cta}
-                </a>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* Compact 12 UNT Subjects Picker with Official NCT Counts */}
-        <section className="welcome-subjects-section" aria-labelledby="welcome-subjects-h2">
+        {/* 3. FULL 12-SUBJECT CATALOG (CASE G: Every card links to /subjects/[subject]) */}
+        <section
+          id="subjects-catalog"
+          className="welcome-subjects-section"
+          aria-labelledby="welcome-subjects-h2"
+        >
           <div className="welcome-subjects-head">
             <h2 id="welcome-subjects-h2" className="section-title">
               {t.subjectsTitle}
@@ -354,75 +721,96 @@ export default function WelcomeClient({
             <p className="muted-note">{t.subjectsNote}</p>
           </div>
 
-          <h3 className="welcome-group-subtitle">{t.mandatoryGroup}</h3>
-          <div className="welcome-subject-grid mandatory">
-            {mandatorySubjects.map((subj: {
-              id: UntSubjectId;
-              officialQuestions: number;
-              officialMaxPoints: number;
-              title: Record<Language, string>;
-            }) => (
-              <a
-                key={subj.id}
-                href={`/?tab=exam&subject=${subj.id}&lang=${lang}`}
-                className="welcome-subject-card"
-              >
-                <div className="welcome-subject-top">
-                  <SubjectIcon subjectId={subj.id} size={18} />
-                  <strong>{subj.title[lang]}</strong>
-                </div>
-                <div className="welcome-subject-badges">
-                  <span className="welcome-subj-badge official">
-                    {t.officialBadge(subj.officialQuestions, subj.officialMaxPoints)}
-                  </span>
-                  <span className="welcome-subj-badge">{t.trainingBadge}</span>
-                </div>
-              </a>
-            ))}
-          </div>
-
-          <h3 className="welcome-group-subtitle">{t.profileGroup}</h3>
           <div className="welcome-subject-grid profile">
-            {profileSubjects.map((subj: {
-              id: UntSubjectId;
-              officialQuestions: number;
-              officialMaxPoints: number;
-              title: Record<Language, string>;
-            }) => (
-              <a
-                key={subj.id}
-                href={`/?tab=exam&subject=${subj.id}&lang=${lang}`}
-                className="welcome-subject-card"
-              >
-                <div className="welcome-subject-top">
-                  <SubjectIcon subjectId={subj.id} size={18} />
-                  <strong>{subj.title[lang]}</strong>
-                </div>
-                <div className="welcome-subject-badges">
-                  <span className="welcome-subj-badge official">
-                    {t.officialBadge(subj.officialQuestions, subj.officialMaxPoints)}
-                  </span>
-                  <span className="welcome-subj-badge">{t.trainingBadge}</span>
-                </div>
-              </a>
+            {allCurricula.map((subj) => {
+              const totalQuestions = subj.lessons.reduce((acc, l) => acc + l.questions.length, 0);
+              return (
+                <Link
+                  key={subj.id}
+                  href={`/subjects/${subj.id}`}
+                  data-testid={`welcome-subject-card-${subj.id}`}
+                  className="welcome-subject-card"
+                >
+                  <div className="welcome-subject-top">
+                    <SubjectIcon subjectId={subj.id as import("@/lib/unt-all-subjects").UntSubjectId} size={18} />
+                    <strong>{subj.title[lang]}</strong>
+                  </div>
+                  <p
+                    style={{
+                      margin: "6px 0 10px",
+                      fontSize: 13,
+                      color: "var(--muted, #57544e)",
+                      lineHeight: 1.4
+                    }}
+                  >
+                    {subj.subtitle[lang]}
+                  </p>
+                  <div className="welcome-subject-badges">
+                    <span className="welcome-subj-badge official">
+                      {t.lessonsBadge(subj.lessons.length)} · {totalQuestions} заданий
+                    </span>
+                    <span className="welcome-subj-badge">{t.openSubjectOverview}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* 4. HOW PLATFORM WORKS (5 STEPS) + AI CAPABILITIES */}
+        <section className="welcome-tools-section" aria-label={t.howTitle}>
+          <h2 className="section-title">{t.howTitle}</h2>
+          <div className="welcome-tools-grid">
+            {t.howSteps.map((step) => (
+              <article key={step.num} className="welcome-tool-card">
+                <span className="section-num">ШАГ {step.num}</span>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </article>
             ))}
           </div>
         </section>
 
+        <section
+          style={{
+            background: "var(--surface, #fff)",
+            border: "1px solid var(--border, #e4e1d8)",
+            borderRadius: 18,
+            padding: "20px 22px",
+            display: "grid",
+            gap: 12
+          }}
+        >
+          <h2 className="section-title" style={{ margin: 0 }}>
+            {t.aiTitle}
+          </h2>
+          <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6, fontSize: 15 }}>
+            {t.aiCapabilities.map((cap, idx) => (
+              <li key={idx}>{cap}</li>
+            ))}
+          </ul>
+        </section>
+
         <footer className="welcome-footer">
-          <a href={`/about?lang=${lang}`}>{t.footerAbout}</a>
+          <Link href={`/subjects`}>{t.catalogLink}</Link>
           <span aria-hidden="true">·</span>
-          <a href={`/privacy?lang=${lang}`}>{t.footerPrivacy}</a>
+          <Link href={`/about?lang=${lang}`}>{t.footerAbout}</Link>
+          <span aria-hidden="true">·</span>
+          <Link href={`/privacy?lang=${lang}`}>{t.footerPrivacy}</Link>
+          <span aria-hidden="true">·</span>
+          <Link href="/teacher">{t.footerTeacher}</Link>
           <span aria-hidden="true">·</span>
           <a
-            href="https://testcenter.kz/?page_id=15074&lang=ru"
+            href="https://github.com/nur667-7/bilimai"
             target="_blank"
             rel="noopener noreferrer"
           >
-            {t.footerNct}
+            {t.footerGithub}
           </a>
         </footer>
       </main>
     </div>
   );
 }
+
+export default WelcomeClient;

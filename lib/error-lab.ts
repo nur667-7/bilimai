@@ -1073,6 +1073,8 @@ export const progressRecordSchema = z
     topic: z.enum(topicIds),
     challenge: z.string(),
     independent: z.boolean(),
+    source: z.enum(["lab", "lesson", "transfer"]).optional(),
+    correct: z.boolean().optional(),
     date: z.string().datetime(),
     wrongAnswer: z.string().max(120).optional(),
     hintsUsed: z.number().int().min(0).max(10).optional(),
@@ -1081,12 +1083,9 @@ export const progressRecordSchema = z
   })
   .strict()
   .refine((r) => {
-    const suffix = r.challenge.slice(r.topic.length + 1);
-    return (
-      r.challenge.startsWith(r.topic + '-') &&
-      /^(0|[1-9]\d*)$/.test(suffix) &&
-      Number(suffix) < variantsPerTopic
-    );
+    const prefix = r.source === "lesson" ? `lesson-${r.topic}-` : r.source === "transfer" ? `transfer-${r.topic}-` : `${r.topic}-`;
+    const suffix = r.challenge.slice(prefix.length);
+    return r.challenge.startsWith(prefix) && /^(0|[1-9]\d*)$/.test(suffix) && Number(suffix) < (r.source === "lesson" ? 3 : variantsPerTopic);
   }, 'Challenge must match topic and variant range');
 
 export const progressSchema = z.object({
@@ -1126,11 +1125,10 @@ export function analyzeErrorCauseHistory(
   for (const [topic, records] of byTopic.entries()) {
     const sorted = [...records].sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
     const errorRecords = sorted.filter(
-      (r) => !r.independent || Boolean(r.errorReason) || Boolean(r.wrongAnswer) || (r.hintsUsed ?? 0) > 0
+      (r) => r.correct === false || Boolean(r.wrongAnswer) || (r.correct === undefined && !r.independent && r.verifiedClean !== true)
     );
     if (errorRecords.length === 0) continue;
 
-    const latestRecord = sorted.at(-1)!;
     const latestError = errorRecords.at(-1)!;
     const reasonId = latestError.errorReason ?? getTopicErrorReasonId(topic);
     const copy = getErrorCauseCopy(reasonId, language);
@@ -1142,9 +1140,10 @@ export function analyzeErrorCauseHistory(
         Date.parse(r.date) > lastErrorTime &&
         r.independent &&
         (r.hintsUsed ?? 0) === 0 &&
-        !r.wrongAnswer
+        !r.wrongAnswer &&
+        r.challenge !== latestError.challenge
     );
-    const verifiedClean = Boolean(latestRecord.verifiedClean || solvedCleanAfterError);
+    const verifiedClean = solvedCleanAfterError;
     const hintsTotal = sorted.reduce((acc, r) => acc + (r.hintsUsed ?? (r.independent ? 0 : 1)), 0);
 
     summaries.push({
@@ -1466,8 +1465,8 @@ export function reviewSchedule(progress: Progress, now: number) {
 
 export function buildBaselineRoadmap(
   progress: Progress,
-  targetScore: number,
-  weeksLeft: number,
+  targetScore: number | null,
+  weeksLeft: number | null,
   language: Language
 ) {
   const counts = labTopics.map((topic) => {
@@ -1477,7 +1476,7 @@ export function buildBaselineRoadmap(
   });
   const weak = counts.filter(c => c.solo < 2).sort((a, b) => a.solo - b.solo || b.assisted - a.assisted).slice(0, 4);
   const strong = counts.filter((c) => c.solo >= 2).map((c) => c.topic);
-  const perWeek = Math.max(2, Math.ceil(labTopics.length * (targetScore / 20) / Math.max(1, Math.min(weeksLeft, 8))));
+  const perWeek = targetScore !== null && weeksLeft !== null ? Math.max(2, Math.ceil(labTopics.length * (targetScore / 20) / Math.max(1, Math.min(weeksLeft, 8)))) : null;
   return {
     targetScore,
     weeksLeft,

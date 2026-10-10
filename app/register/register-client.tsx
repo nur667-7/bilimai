@@ -97,7 +97,6 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
   const [grade, setGrade] = useState<"8" | "9" | "10" | "11">("11");
   const [targetUni, setTargetUni] = useState<UniversityId>("kbtu");
   const [targetScore, setTargetScore] = useState(42);
-  const [password, setPassword] = useState("");
   const [returnHref, setReturnHref] = useState<string>(`/?lang=${initialLang}`);
 
   const c = registerCopy[lang];
@@ -109,20 +108,25 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
   function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     const profile: UserProfile = {
+      version: 2,
       id: `${role}-${Date.now().toString(36)}`,
-      name: name.trim() || (role === "teacher" ? "Учитель математики" : "Абитуриент ЕНТ"),
+      name: name.trim() || (role === "teacher" ? "Учитель" : "Ученик BilimAI"),
       identifier: identifier.trim() || "1001",
       role,
+      goal: role === "teacher" ? "teach" : "learn",
+      subjects: ["math"],
       grade: role === "teacher" ? "teacher" : grade,
       targetUniversity: targetUni,
       targetScore,
+      examDate: null,
+      preferencesConfirmed: true,
       preferredLanguage: lang,
       trapBlitzBestStreak: 0,
       disarmedTrapsCount: 0,
       createdAt: new Date().toISOString()
     };
     saveUserProfile(profile);
-    window.location.href = resolveReturnHref(lang);
+    window.location.href = role === "teacher" ? "/teacher" : resolveReturnHref(lang);
   }
 
   const loginHref = `/login?lang=${lang}&returnTo=${encodeURIComponent(returnHref)}`;
@@ -151,7 +155,7 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
       </div>
 
       <div className="aniq-auth-container">
-        <div className="aniq-auth-card">
+        <div className="aniq-auth-card" data-testid="local-register-card">
           <div className="aniq-auth-header-row">
             <a className="aniq-brand-logo" href={returnHref}>
               <PixelBrandMark size={24} />
@@ -162,6 +166,22 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
             <a href={returnHref} className="aniq-auth-skip-link">
               {c.tryWithoutAuth}
             </a>
+          </div>
+
+          <div
+            data-testid="honest-storage-badge"
+            style={{
+              display: "inline-block",
+              padding: "4px 10px",
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 700,
+              background: "rgba(56, 86, 245, 0.1)",
+              color: "var(--accent, #3856f5)",
+              marginBottom: 8
+            }}
+          >
+            Локальный профиль на этом устройстве (localStorage · без пароля)
           </div>
 
           <h1 className="aniq-auth-title">{c.title}</h1>
@@ -220,23 +240,6 @@ export function RegisterClient({ initialLang = "ru" }: { initialLang?: Language 
                 placeholder={c.idPlaceholder}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="aniq-input"
-              />
-            </div>
-
-            <div className="aniq-field-group">
-              <label htmlFor="reg-pass" className="aniq-label">
-                {c.passLabel}
-              </label>
-              <input
-                id="reg-pass"
-                type="password"
-                required
-                minLength={6}
-                autoComplete="new-password"
-                placeholder={c.passPlaceholder}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 className="aniq-input"
               />
             </div>

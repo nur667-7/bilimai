@@ -20,4 +20,6 @@ export const topicIds = [
 export const languages = ['ru', 'uz', 'kk'] as const;
 export type TopicId = typeof topicIds[number];
 export type Language = typeof languages[number];
+export type Locale = Language;
 export const variantsPerTopic = 24;
+

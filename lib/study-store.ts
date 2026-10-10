@@ -107,7 +107,15 @@ export interface TutorDialogueTurn {
   answer: TutorAnswerPayload;
 }
 
+export interface PracticeAttemptState {
+  checks: number;
+  helped: boolean;
+  wasWrong: boolean;
+  completed: boolean;
+}
+
 export interface TopicPracticeSession {
+  attempts: Record<string, PracticeAttemptState>;
   activeQ: number;
   answers: Record<number, string>;
   checkedMap: Record<number, boolean>;
@@ -126,8 +134,8 @@ export interface StudyStoreState {
   labProgress: Progress;
   untStorage: UntStorage;
   weakTopics: TopicId[];
-  targetScore: number;
-  weeksLeft: number;
+  targetScore: number | null;
+  weeksLeft: number | null;
   showExamplePlan: boolean;
   goalNote: string;
   rmBusy: boolean;
@@ -147,6 +155,7 @@ export const emptyProgress: Progress = { version: 1, records: [] };
 
 export function createEmptyTopicPracticeSession(): TopicPracticeSession {
   return {
+    attempts: {},
     activeQ: 0,
     answers: {},
     checkedMap: {},
@@ -167,8 +176,8 @@ export function createInitialStudyStoreState(): StudyStoreState {
     labProgress: emptyProgress,
     untStorage: emptyUntStorage,
     weakTopics: [],
-    targetScore: 42,
-    weeksLeft: 6,
+    targetScore: null,
+    weeksLeft: null,
     showExamplePlan: false,
     goalNote: "",
     rmBusy: false,
@@ -188,7 +197,8 @@ export function getTopicPracticeSession(
   state: StudyStoreState,
   topic: TopicId
 ): TopicPracticeSession {
-  return state.practiceByTopic[topic] ?? createEmptyTopicPracticeSession();
+  const saved = state.practiceByTopic[topic];
+  return { ...createEmptyTopicPracticeSession(), ...saved, attempts: saved?.attempts ?? {} };
 }
 
 export type StudyStoreAction =
@@ -228,14 +238,14 @@ export type StudyStoreAction =
   | { type: "SET_AI_QUESTION"; question: string }
   | { type: "SET_CONSENT"; consent: boolean }
   | { type: "AI_REQUEST_START" }
-  | { type: "AI_REQUEST_SUCCESS"; question?: string; answer: TutorAnswerPayload }
+  | { type: "AI_REQUEST_SUCCESS"; topic?: TopicId; question?: string; answer: TutorAnswerPayload }
   | { type: "AI_REQUEST_ERROR"; error: string }
   | { type: "CLEAR_AI_ERROR" }
   | { type: "RESET_AI_DIALOGUE" }
   | { type: "COMPLETE_UNT_EXAM"; summary: UntAttemptSummary }
   | { type: "TOGGLE_WEAK_TOPIC"; topic: TopicId }
-  | { type: "SET_TARGET_SCORE"; targetScore: number }
-  | { type: "SET_WEEKS_LEFT"; weeksLeft: number }
+  | { type: "SET_TARGET_SCORE"; targetScore: number | null }
+  | { type: "SET_WEEKS_LEFT"; weeksLeft: number | null }
   | { type: "SET_SHOW_EXAMPLE_PLAN"; show: boolean }
   | { type: "SET_GOAL_NOTE"; goalNote: string }
   | { type: "ROADMAP_REQUEST_START" }
@@ -260,6 +270,52 @@ function updateTopicPractice(
   };
 }
 
+function markPracticeHelp(state: StudyStoreState, topic: TopicId, id: string): StudyStoreState {
+  return updateTopicPractice(state, topic, (session) => {
+    const existing = session.attempts[id];
+    return {
+      ...session,
+      attempts: {
+        ...session.attempts,
+        [id]: {
+          checks: existing?.checks ?? 0,
+          wasWrong: existing?.wasWrong ?? false,
+          completed: existing?.completed ?? false,
+          helped: true
+        }
+      }
+    };
+  });
+}
+
+function recordPracticeCheck(
+  state: StudyStoreState, topic: TopicId, id: string, source: "lesson" | "transfer", correct: boolean, wrongAnswer?: string
+): StudyStoreState {
+  const session = getTopicPracticeSession(state, topic);
+  const oldRecords = state.labProgress.records.filter((r) => r.challenge === id);
+  const prior = session.attempts[id] ?? {
+    checks: oldRecords.length,
+    helped: oldRecords.some((r) => (r.hintsUsed ?? 0) > 0),
+    wasWrong: oldRecords.some((r) => r.correct === false || Boolean(r.wrongAnswer)),
+    completed: oldRecords.some((r) => r.correct === true || r.independent)
+  };
+  const independent = correct && prior.checks === 0 && !prior.helped && !prior.wasWrong && !prior.completed;
+  const next = updateTopicPractice(state, topic, (s) => ({
+    ...s,
+    attempts: { ...s.attempts, [id]: { checks: prior.checks + 1, helped: prior.helped, wasWrong: prior.wasWrong || !correct, completed: prior.completed || correct } }
+  }));
+  // Rechecking a completed task does not add a duplicate success or repair evidence.
+  if (correct && prior.completed) return { ...next, hasInteracted: true };
+  const record = {
+    topic, challenge: id, source, correct, independent,
+    date: new Date().toISOString(), hintsUsed: prior.helped ? 1 : 0,
+    ...(!correct ? { wrongAnswer: (wrongAnswer ?? session.answers[session.activeQ] ?? "").slice(0, 120), errorReason: getTopicErrorReasonId(topic) } : {}),
+    // A first, unassisted new task is evidence; retrying the same task is not.
+    verifiedClean: independent
+  };
+  return { ...next, hasInteracted: true, labProgress: { version: 1, records: [...state.labProgress.records, record].slice(-60) } };
+}
+
 export function studyStoreReducer(
   state: StudyStoreState,
   action: StudyStoreAction
@@ -277,7 +333,7 @@ export function studyStoreReducer(
 
     case "RESET_TOPIC_SESSION":
       return {
-        ...updateTopicPractice(state, action.topic, () => createEmptyTopicPracticeSession()),
+        ...updateTopicPractice(state, action.topic, (prev) => ({ ...createEmptyTopicPracticeSession(), attempts: prev.attempts })),
         answer: null,
         aiHistory: [],
         error: "",
@@ -307,61 +363,16 @@ export function studyStoreReducer(
           practiceNotice: true
         }));
       }
+      if (curr.checkedMap[action.qIdx]) return state;
       const nextState = updateTopicPractice(state, action.topic, (s) => ({
         ...s,
         practiceNotice: false,
         checkedMap: { ...s.checkedMap, [action.qIdx]: true }
       }));
 
-      let nextLabProgress = state.labProgress;
-      const reasonId = getTopicErrorReasonId(action.topic);
-      const challengeId = `${action.topic}-${(curr.practiceSeed + action.qIdx) % 24}`;
-
-      if (action.isCorrect === false) {
-        nextLabProgress = {
-          version: 1,
-          records: [
-            ...state.labProgress.records,
-            {
-              topic: action.topic,
-              challenge: challengeId,
-              independent: false,
-              date: new Date().toISOString(),
-              ...(action.wrongAnswerText
-                ? { wrongAnswer: action.wrongAnswerText.slice(0, 120) }
-                : {}),
-              hintsUsed: 1,
-              errorReason: reasonId,
-              verifiedClean: false
-            }
-          ].slice(-60)
-        };
-      } else if (
-        action.isCorrect === true &&
-        state.labProgress.records.some((r) => r.topic === action.topic && !r.independent)
-      ) {
-        nextLabProgress = {
-          version: 1,
-          records: [
-            ...state.labProgress.records,
-            {
-              topic: action.topic,
-              challenge: challengeId,
-              independent: true,
-              date: new Date().toISOString(),
-              hintsUsed: 0,
-              errorReason: reasonId,
-              verifiedClean: true
-            }
-          ].slice(-60)
-        };
-      }
-
-      return {
-        ...nextState,
-        labProgress: nextLabProgress,
-        hasInteracted: true
-      };
+      if (action.isCorrect === undefined) return { ...nextState, hasInteracted: true };
+      // Lesson questions are fixed across transfers and languages; never share a lab seed ID.
+      return recordPracticeCheck(nextState, action.topic, `lesson-${action.topic}-${action.qIdx}`, "lesson", action.isCorrect, action.wrongAnswerText);
     }
 
     case "RETRY_QUESTION":
@@ -381,11 +392,12 @@ export function studyStoreReducer(
         };
       });
 
-    case "EXPAND_ERROR_NOTE":
-      return updateTopicPractice(state, action.topic, (s) => ({
-        ...s,
-        expandedErrorMap: { ...s.expandedErrorMap, [action.qIdx]: true }
+    case "EXPAND_ERROR_NOTE": {
+      const next = updateTopicPractice(state, action.topic, (s) => ({
+        ...s, expandedErrorMap: { ...s.expandedErrorMap, [action.qIdx]: true }
       }));
+      return markPracticeHelp(next, action.topic, `lesson-${action.topic}-${action.qIdx}`);
+    }
 
     case "SET_TRANSFER_INPUT":
       return updateTopicPractice(state, action.topic, (s) => ({
@@ -402,41 +414,19 @@ export function studyStoreReducer(
           transferStatus: "invalid"
         }));
       }
+      if (curr.transferStatus === "right") return state;
       const isRight = checkAnswer(curr.transferInput, action.expectedAnswer);
       const nextState = updateTopicPractice(state, action.topic, (s) => ({
         ...s,
         transferStatus: isRight ? "right" : "wrong"
       }));
-      const reasonId = getTopicErrorReasonId(action.topic);
-      const nextLabProgress: Progress = isRight
-        ? {
-            version: 1,
-            records: [
-              ...state.labProgress.records,
-              {
-                topic: action.topic,
-                challenge: `${action.topic}-${curr.practiceSeed}`,
-                independent: !curr.showTransferRule,
-                date: new Date().toISOString(),
-                hintsUsed: curr.showTransferRule ? 1 : 0,
-                errorReason: reasonId,
-                verifiedClean: !curr.showTransferRule
-              }
-            ].slice(-60)
-          }
-        : state.labProgress;
-      return {
-        ...nextState,
-        labProgress: nextLabProgress,
-        hasInteracted: true
-      };
+      return recordPracticeCheck(nextState, action.topic, `transfer-${action.topic}-${curr.practiceSeed}`, "transfer", isRight, isRight ? undefined : curr.transferInput);
     }
 
-    case "SHOW_TRANSFER_RULE":
-      return updateTopicPractice(state, action.topic, (s) => ({
-        ...s,
-        showTransferRule: true
-      }));
+    case "SHOW_TRANSFER_RULE": {
+      const next = updateTopicPractice(state, action.topic, (s) => ({ ...s, showTransferRule: true }));
+      return markPracticeHelp(next, action.topic, `transfer-${action.topic}-${getTopicPracticeSession(state, action.topic).practiceSeed}`);
+    }
 
     case "NEXT_TRANSFER_VARIANT":
       return updateTopicPractice(state, action.topic, (s) => ({
@@ -473,13 +463,13 @@ export function studyStoreReducer(
       const nextHistory: TutorDialogueTurn[] = turnQuestion
         ? [...state.aiHistory, { question: turnQuestion, answer: action.answer }].slice(-3)
         : state.aiHistory;
-      return {
-        ...state,
-        busy: false,
-        error: "",
-        answer: action.answer,
-        aiHistory: nextHistory
-      };
+      let next: StudyStoreState = { ...state, busy: false, error: "", answer: action.answer, aiHistory: nextHistory };
+      if (action.topic) {
+        const session = getTopicPracticeSession(state, action.topic);
+        next = markPracticeHelp(next, action.topic, `lesson-${action.topic}-${session.activeQ}`);
+        next = markPracticeHelp(next, action.topic, `transfer-${action.topic}-${session.practiceSeed}`);
+      }
+      return next;
     }
 
     case "AI_REQUEST_ERROR":
@@ -513,7 +503,7 @@ export function studyStoreReducer(
         hasInteracted: true,
         untStorage: nextUntStorage,
         weakTopics:
-          action.summary.weakTopics.length > 0 ? action.summary.weakTopics : state.weakTopics
+          (!action.summary.subjectId || action.summary.subjectId === "math") && action.summary.weakTopics.length > 0 ? action.summary.weakTopics : state.weakTopics
       };
     }
 
@@ -532,13 +522,13 @@ export function studyStoreReducer(
     case "SET_TARGET_SCORE":
       return {
         ...state,
-        targetScore: Math.max(20, Math.min(50, action.targetScore || 40))
+        targetScore: action.targetScore !== null && Number.isFinite(action.targetScore) ? Math.max(0, Math.min(50, action.targetScore)) : null
       };
 
     case "SET_WEEKS_LEFT":
       return {
         ...state,
-        weeksLeft: Math.max(1, Math.min(24, action.weeksLeft || 6))
+        weeksLeft: action.weeksLeft !== null && Number.isFinite(action.weeksLeft) ? Math.max(1, Math.min(24, action.weeksLeft)) : null
       };
 
     case "SET_SHOW_EXAMPLE_PLAN":
@@ -584,7 +574,8 @@ export function studyStoreReducer(
       return {
         ...state,
         userProfile: action.profile,
-        targetScore: action.profile ? action.profile.targetScore : state.targetScore
+        targetScore: action.profile?.targetScore ?? null,
+        weeksLeft: action.profile ? state.weeksLeft : null
       };
 
     default:
@@ -610,7 +601,7 @@ export function loadStudyStoreSnapshot(): Partial<StudyStoreState> {
       const parsed = progressSchema.safeParse(JSON.parse(rawLab));
       if (parsed.success && parsed.data.records.length > 0) {
         snapshot.labProgress = parsed.data;
-        const autoBase = buildBaselineRoadmap(parsed.data, 42, 6, "ru");
+        const autoBase = buildBaselineRoadmap(parsed.data, null, null, "ru");
         snapshot.weakTopics = autoBase.weakTopics;
       }
     }
@@ -643,9 +634,11 @@ export function loadStudyStoreSnapshot(): Partial<StudyStoreState> {
         );
         if (validWeak.length > 0) snapshot.weakTopics = validWeak;
       }
-      if (typeof parsed.targetScore === "number" && parsed.targetScore >= 20 && parsed.targetScore <= 50) {
+      if (typeof parsed.targetScore === "number" && parsed.targetScore >= 0 && parsed.targetScore <= 50) {
         snapshot.targetScore = parsed.targetScore;
       }
+      if (parsed.targetScore === null) snapshot.targetScore = null;
+      if (parsed.weeksLeft === null) snapshot.weeksLeft = null;
       if (typeof parsed.weeksLeft === "number" && parsed.weeksLeft >= 1 && parsed.weeksLeft <= 24) {
         snapshot.weeksLeft = parsed.weeksLeft;
       }

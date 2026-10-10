@@ -948,7 +948,7 @@ export function UntExamView({
                   {currentQuestion.maxPoints === 2 ? t.points2 : t.points1}
                 </span>
                 <span className="small font-semibold text-muted-foreground">
-                  · {subjectMeta.title[lang]} ({topicName(currentQuestion.topic, lang)})
+                  · {subjectMeta.title[lang]} ({topicName(currentQuestion.topic ?? "linear", lang)})
                 </span>
               </div>
               <Button
@@ -1387,7 +1387,7 @@ export function UntExamView({
                         type="button"
                         size="sm"
                         variant="outline"
-                        onClick={() => onOpenLesson(currentQuestion.topic)}
+                        onClick={() => onOpenLesson(currentQuestion.topic ?? "linear")}
                       >
                         {t.openLessonBtn}
                       </Button>
