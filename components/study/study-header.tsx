@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import {
   BookOpen,
+  ChevronDown,
   Compass,
   FlaskConical,
   GitBranch,
@@ -163,13 +165,23 @@ export function LearnSubnav({
   onTabChange,
   onSubjectChange
 }: LearnSubnavProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSelectMode = (nextTab: string) => {
+    setMobileMenuOpen(false);
+    onTabChange(nextTab);
+  };
+
   return (
-    <div className="learn-subnav-wrap mb-4">
-      <nav className="learn-subnav" aria-label={t.navLearn}>
+    <div className="learn-subnav-wrap mb-3">
+      <nav
+        className={`learn-subnav ${mobileMenuOpen ? "is-mobile-open" : ""}`}
+        aria-label={t.navLearn}
+      >
         <button
           type="button"
           className={`learn-subnav-pill ${tab === "lesson" || tab === "practice" ? "active" : ""}`}
-          onClick={() => onTabChange("lesson")}
+          onClick={() => handleSelectMode("lesson")}
         >
           <BookOpen size={14} />
           <span>{t.subLesson}</span>
@@ -177,7 +189,7 @@ export function LearnSubnav({
         <button
           type="button"
           className={`learn-subnav-pill ${tab === "graph" ? "active" : ""}`}
-          onClick={() => onTabChange("graph")}
+          onClick={() => handleSelectMode("graph")}
         >
           <GitBranch size={14} />
           <span>{t.subGraph}</span>
@@ -185,22 +197,36 @@ export function LearnSubnav({
         <button
           type="button"
           className={`learn-subnav-pill ${tab === "xray" ? "active" : ""}`}
-          onClick={() => onTabChange("xray")}
+          onClick={() => handleSelectMode("xray")}
         >
           <Microscope size={14} />
           <span>{t.subXray}</span>
         </button>
-        <a className="learn-subnav-pill" href={`/lab?lang=${lang}&topic=${topic}`}>
+        <a
+          className="learn-subnav-pill"
+          href={`/lab?lang=${lang}&topic=${topic}`}
+          onClick={() => setMobileMenuOpen(false)}
+        >
           <FlaskConical size={14} />
           <span>{t.subLab}</span>
         </a>
         <button
           type="button"
           className={`learn-subnav-pill ${tab === "ai" ? "active" : ""}`}
-          onClick={() => onTabChange("ai")}
+          onClick={() => handleSelectMode("ai")}
         >
           <Sparkles size={14} />
           <span>{t.subAi}</span>
+        </button>
+
+        <button
+          type="button"
+          className="learn-subnav-toggle-btn"
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+        >
+          <span>{t.changeModeBtn}</span>
+          <ChevronDown size={14} className={mobileMenuOpen ? "rotate-180 transition-transform" : "transition-transform"} />
         </button>
       </nav>
 

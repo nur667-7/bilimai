@@ -30,7 +30,8 @@ export const studyCopy = {
     todayFirstSub:
       "Начните с первого урока математики, проверьте знания на короткой диагностике или выберите свой предмет ЕНТ ниже. Все решения автоматически сохраняются в вашем браузере.",
     todayStartBtn: "Начать подготовку",
-    todayCheckMathBtn: "Проверить знания (Диагностика по математике · 18 заданий)",
+    todayCheckMathBtn: "Проверить знания",
+    todayCheckMathSub: "Математика · 18 заданий",
     todayPickTopicBtn: "Выбрать тему (16 разделов)",
     todayOptionalRegNote: "Регистрация необязательна — вы можете учиться сразу и создать профиль позже.",
     todaySubjectsTitle: "Выберите предмет ЕНТ (12 предметов НЦТ РК)",
@@ -38,6 +39,10 @@ export const studyCopy = {
       "Для математики доступны пошаговые уроки, карта тем, проверка черновика и пробники. Для остальных 11 предметов доступны тренировочные и официальные варианты Пробного ЕНТ.",
     todayOpenMathLessons: "Открыть уроки математики →",
     todayOpenSubjectExam: (subj: string) => `Пробное ЕНТ: ${subj} →`,
+    changeModeBtn: "Сменить режим",
+    howItWorksToggle: "Как это работает",
+    howItWorksPracticeDetails:
+      "В каждой теме подобраны 3 типовые задачи ЕНТ. При неверном ответе открывается подсказка с главным правилом.",
     // Returning visitor card
     todayContinueBadge: "Продолжить обучение",
     todayContinueTitle: (topicTitle: string, modeLabel: string) =>
@@ -67,7 +72,7 @@ export const studyCopy = {
     note: "Проверьте себя: объясните своими словами, почему на каждом шаге сохраняется верное равенство или свойство.",
     solveSelf: "Перейти к практике (3 задачи)",
     askAboutRule: "Задать вопрос по теме",
-    practicePurposeNote: "Короткое закрепление урока: решите 3 задачи с проверкой каждого ответа.",
+    practicePurposeNote: "Выберите правильный вариант решения.",
     taskProgress: "Задача",
     ofLabel: "из",
     extraTaskTab: "С другими числами",
@@ -198,7 +203,8 @@ export const studyCopy = {
     todayFirstSub:
       "Математиканың бірінші сабағынан бастаңыз, қысқа диагностикадан өтіңіз немесе төменнен өз ҰБТ пәніңізді таңдаңыз. Барлық жауаптар браузерде автоматты түрде сақталады.",
     todayStartBtn: "Дайындықты бастау",
-    todayCheckMathBtn: "Білімді тексеру (Математика диагностикасы · 18 тапсырма)",
+    todayCheckMathBtn: "Білімді тексеру",
+    todayCheckMathSub: "Математика · 18 тапсырма",
     todayPickTopicBtn: "Тақырып таңдау (16 бөлім)",
     todayOptionalRegNote: "Тіркелу міндетті емес — бірден оқып бастап, профильді кейін ашуға болады.",
     todaySubjectsTitle: "ҰБТ пәнін таңдаңыз (ҚР ҰТО 12 пәні)",
@@ -206,6 +212,10 @@ export const studyCopy = {
       "Математика бойынша қадамдық сабақтар, тақырыптар картасы және жазбаны тексеру бар. Қалған 11 пән бойынша Байқау ҰБТ нұсқалары қолжетімді.",
     todayOpenMathLessons: "Математика сабақтарын ашу →",
     todayOpenSubjectExam: (subj: string) => `Байқау ҰБТ: ${subj} →`,
+    changeModeBtn: "Режимді ауыстыру",
+    howItWorksToggle: "Қалай жұмыс істейді",
+    howItWorksPracticeDetails:
+      "Әр тақырыпта ҰБТ-ның 3 типтік есебі берілген. Қате жауап берілсе, негізгі ереже бойынша көмек ашылады.",
     todayContinueBadge: "Оқуды жалғастыру",
     todayContinueTitle: (topicTitle: string, modeLabel: string) =>
       `Жалғастыру: Математика → ${topicTitle} → ${modeLabel}`,
@@ -233,7 +243,7 @@ export const studyCopy = {
     note: "Өзіңізді тексеріңіз: әр қадамда теңдік немесе қасиет неліктен сақталатынын өз сөзіңізбен түсіндіріңіз.",
     solveSelf: "Жаттығуға өту (3 есеп)",
     askAboutRule: "Тақырып бойынша сұрақ қою",
-    practicePurposeNote: "Сабақты қысқа бекіту: әр жауапты тексере отырып 3 есеп шығарыңыз.",
+    practicePurposeNote: "Дұрыс шешу нұсқасын таңдаңыз.",
     taskProgress: "Есеп",
     ofLabel: "/",
     extraTaskTab: "Басқа сандармен",
@@ -361,7 +371,8 @@ export const studyCopy = {
     todayFirstSub:
       "Matematikaning birinchi darsidan boshlang, qisqa diagnostikadan o‘ting yoki quyidan o‘z UBT faningizni tanlang. Barcha javoblar brauzerda avtomatik saqlanadi.",
     todayStartBtn: "Tayyorgarlikni boshlash",
-    todayCheckMathBtn: "Bilimni tekshirish (Matematika diagnostikasi · 18 topshiriq)",
+    todayCheckMathBtn: "Bilimni tekshirish",
+    todayCheckMathSub: "Matematika · 18 topshiriq",
     todayPickTopicBtn: "Mavzu tanlash (16 bo‘lim)",
     todayOptionalRegNote: "Ro‘yxatdan o‘tish majburiy emas — darhol o‘qishni boshlab, profilni keyinroq ochishingiz mumkin.",
     todaySubjectsTitle: "UBT fanini tanlang (12 ta fan)",
@@ -369,6 +380,10 @@ export const studyCopy = {
       "Matematika bo‘yicha qadamma-qadam darslar, mavzular xaritasi va qoralama tekshiruvi mavjud. Qolgan 11 ta fan bo‘yicha Sinov UBT variantlari mavjud.",
     todayOpenMathLessons: "Matematika darslarini ochish →",
     todayOpenSubjectExam: (subj: string) => `Sinov UBT: ${subj} →`,
+    changeModeBtn: "Rejimni almashtirish",
+    howItWorksToggle: "Qanday ishlaydi",
+    howItWorksPracticeDetails:
+      "Har bir mavzuda 3 ta namunaviy masala berilgan. Noto‘g‘ri javob berilganda qoida bo‘yicha yordam ochiladi.",
     todayContinueBadge: "O‘qishni davom ettirish",
     todayContinueTitle: (topicTitle: string, modeLabel: string) =>
       `Davom ettirish: Matematika → ${topicTitle} → ${modeLabel}`,
@@ -396,7 +411,7 @@ export const studyCopy = {
     note: "O‘zingizni tekshiring: har bir qadamda tenglik nima uchun saqlanishini o‘z so‘zlaringiz bilan tushuntiring.",
     solveSelf: "Mashqqa o‘tish (3 masala)",
     askAboutRule: "Mavzu bo‘yicha savol berish",
-    practicePurposeNote: "Darsni qisqa mustahkamlash: har bir javobni tekshirib 3 ta masala yeching.",
+    practicePurposeNote: "To‘g‘ri yechim variantini tanlang.",
     taskProgress: "Masala",
     ofLabel: "/",
     extraTaskTab: "Boshqa sonlar bilan",

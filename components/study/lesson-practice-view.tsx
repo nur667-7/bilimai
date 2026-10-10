@@ -171,8 +171,12 @@ export function LessonPracticeView({
               </span>
             </div>
             <h1 className="lesson-title">{lesson.title}</h1>
-            <p className="lesson-action-subtitle">{t.lessonActionSubtitle}</p>
-            <p className="lesson-intro">{lesson.intro}</p>
+            <p className={`lesson-action-subtitle ${tab !== "lesson" ? "hide-in-practice-mobile" : ""}`}>
+              {t.lessonActionSubtitle}
+            </p>
+            <p className={`lesson-intro ${tab !== "lesson" ? "hide-in-practice-mobile" : ""}`}>
+              {lesson.intro}
+            </p>
           </header>
 
           {/* Inside the lesson: 3 calm modes for the current topic */}
@@ -233,9 +237,15 @@ export function LessonPracticeView({
 
             {/* TAB 2: ПРАКТИКА */}
             <TabsContent value="practice">
-              <p className="small text-muted-foreground mt-0 mb-3">
-                {t.practicePurposeNote}
-              </p>
+              <div className="practice-instruction-row mb-3">
+                <p className="practice-instruction-text m-0">
+                  {t.practicePurposeNote}
+                </p>
+                <details className="how-it-works-details">
+                  <summary>{t.howItWorksToggle}</summary>
+                  <p>{t.howItWorksPracticeDetails}</p>
+                </details>
+              </div>
 
               <div className="practice-header-bar">
                 <div className="flex items-center gap-3">

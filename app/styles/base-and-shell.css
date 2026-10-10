@@ -486,24 +486,24 @@ summary:focus-visible {
   margin: 0;
   font-family: var(--font-serif);
   font-style: normal;
-  font-size: clamp(25px, 2.8vw, 32px);
-  font-weight: 600;
-  line-height: 1.18;
+  font-size: clamp(22px, 2.8vw, 30px);
+  font-weight: 700;
+  line-height: 1.25;
   letter-spacing: -0.02em;
-  color: #0f172a;
+  color: var(--foreground);
 }
 
 .lesson-intro {
   margin: 0;
   max-width: 70ch;
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.55;
-  color: #44403c;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--foreground);
 }
 
 .small {
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.45;
   color: var(--muted-foreground);
 }

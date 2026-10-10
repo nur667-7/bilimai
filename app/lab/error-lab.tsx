@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpen, Calendar, CheckCircle2, FlaskConical, GitBranch, Microscope, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpen, Calendar, CheckCircle2, ChevronDown, FlaskConical, GitBranch, Microscope, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteFooter } from "@/components/site-footer";
 import { PixelBrandMark } from "@/components/pixel-mosaic";
@@ -38,15 +38,15 @@ const labels = {
     subXray: "Проверить черновик",
     subLab: "Тренировка ошибок",
     subAi: "Вопрос по теме",
+    changeModeBtn: "Сменить режим",
     topicsHeading: "16 тем математики ЕНТ",
     mobileTopicLabel: "Тема математики",
     tag: "Тренировка поиска ошибки",
     title: "Найди первый неверный шаг и реши задачу",
-    purposeNote:
-      "Двухшаговый тренажёр: 1) найдите строку с первой ошибкой в готовом примере, 2) решите новую задачу с другими числами. Чтобы проверить собственное решение, откройте «Проверить черновик».",
-    howItWorksTitle: "Как работает тренировка",
+    purposeNote: "Нажмите на первый неверный шаг в решении.",
+    howItWorksTitle: "Как это работает",
     intro:
-      "Выбери шаг (01–03), на котором впервые нарушено математическое правило, изучи исправление и реши задачу для закрепления.",
+      "Двухшаговый тренажёр: 1) выберите шаг (01–03), на котором впервые нарушено математическое правило, 2) решите новую задачу с другими числами для закрепления. Чтобы проверить собственное решение, откройте «Проверить черновик».",
     taskLabel: "1. Условие задачи и готовый черновик с ошибкой",
     check: "Проверить шаг",
     choose: "Шаги решения задачи",
@@ -101,15 +101,15 @@ const labels = {
     subXray: "Жазбаны тексеру",
     subLab: "Қатемен жұмыс",
     subAi: "Тақырып сұрағы",
+    changeModeBtn: "Режимді ауыстыру",
     topicsHeading: "ҰБТ 16 тақырыбы",
     mobileTopicLabel: "Математика тақырыбы",
     tag: "Қатені табу жаттығуы",
     title: "Алғашқы қате қадамды тап және есеп шығар",
-    purposeNote:
-      "Екі қадамдық жаттығу: 1) дайын үлгідегі бірінші қате жолды табыңыз, 2) жаңа сандармен есеп шығарыңыз. Өз шешіміңізді тексеру үшін «Жазбаны тексеру» бөлімін ашыңыз.",
-    howItWorksTitle: "Жаттығу қалай жұмыс істейді",
+    purposeNote: "Шешімдегі алғашқы қате қадамды басыңыз.",
+    howItWorksTitle: "Қалай жұмыс істейді",
     intro:
-      "Математикалық ереже алғаш бұзылған қадамды (01–03) таңдап, түзетуді оқып шық және бекіту есебін шығар.",
+      "Екі қадамдық жаттығу: 1) математикалық ереже алғаш бұзылған қадамды (01–03) таңдаңыз, 2) жаңа сандармен бекіту есебін шығарыңыз. Өз шешіміңізді тексеру үшін «Жазбаны тексеру» бөлімін ашыңыз.",
     taskLabel: "1. Есеп шарты және қатесі бар шешім",
     check: "Қадамды тексеру",
     choose: "Есептің шешу қадамдары",
@@ -164,15 +164,15 @@ const labels = {
     subXray: "Qoralamani tekshirish",
     subLab: "Xatolar ustida ishlash",
     subAi: "Mavzu savoli",
+    changeModeBtn: "Rejimni almashtirish",
     topicsHeading: "16 ta kurs mavzusi",
     mobileTopicLabel: "Matematika mavzusi",
     tag: "Xatoni topish mashqi",
     title: "Birinchi xato qadamni top va masalani yech",
-    purposeNote:
-      "Ikki bosqichli mashq: 1) tayyor namunadagi birinchi xato qatorni toping, 2) yangi sonlar bilan masalani mustaqil yeching. O‘z yechimingizni tekshirish uchun «Qoralamani tekshirish» bo‘limini oching.",
-    howItWorksTitle: "Mashq qanday ishlaydi",
+    purposeNote: "Yechimdagi birinchi xato qadamni bosing.",
+    howItWorksTitle: "Qanday ishlaydi",
     intro:
-      "Matematik qoida birinchi marta buzilgan qadamni (01–03) tanlang, tuzatishni o‘rganing va mustahkamlash masalasini yeching.",
+      "Ikki bosqichli mashq: 1) matematik qoida birinchi marta buzilgan qadamni (01–03) tanlang, 2) yangi sonlar bilan mustahkamlash masalasini yeching. O‘z yechimingizni tekshirish uchun «Qoralamani tekshirish» bo‘limini oching.",
     taskLabel: "1. Masala sharti va xatosi bor yechim",
     check: "Qadamni tekshirish",
     choose: "Masalani yechish qadamlari",
@@ -289,6 +289,7 @@ export default function ErrorLab({
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState("");
   const [aiDiag, setAiDiag] = useState<LabAiDiagnosis | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const c = makeChallenge(topic, seed, lang);
   const t = labels[lang];
@@ -556,28 +557,62 @@ export default function ErrorLab({
 
       <main className="wrap main-container">
         {/* Sub-navigation inside "Учиться" */}
-        <div className="learn-subnav-wrap mb-4">
-          <nav className="learn-subnav" aria-label={t.navLearn}>
-            <a className="learn-subnav-pill" href={`/?lang=${lang}&tab=lesson&topic=${topic}`}>
+        <div className="learn-subnav-wrap mb-3">
+          <nav
+            className={`learn-subnav ${mobileMenuOpen ? "is-mobile-open" : ""}`}
+            aria-label={t.navLearn}
+          >
+            <a
+              className="learn-subnav-pill"
+              href={`/?lang=${lang}&tab=lesson&topic=${topic}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <BookOpen size={14} />
               <span>{t.subLesson}</span>
             </a>
-            <a className="learn-subnav-pill" href={`/?lang=${lang}&tab=graph&topic=${topic}`}>
+            <a
+              className="learn-subnav-pill"
+              href={`/?lang=${lang}&tab=graph&topic=${topic}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <GitBranch size={14} />
               <span>{t.subGraph}</span>
             </a>
-            <a className="learn-subnav-pill" href={`/?lang=${lang}&tab=xray&topic=${topic}`}>
+            <a
+              className="learn-subnav-pill"
+              href={`/?lang=${lang}&tab=xray&topic=${topic}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <Microscope size={14} />
               <span>{t.subXray}</span>
             </a>
-            <a className="learn-subnav-pill active" aria-current="page" href={`/lab?lang=${lang}&topic=${topic}`}>
+            <a
+              className="learn-subnav-pill active"
+              aria-current="page"
+              href={`/lab?lang=${lang}&topic=${topic}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <FlaskConical size={14} />
               <span>{t.subLab}</span>
             </a>
-            <a className="learn-subnav-pill" href={`/?lang=${lang}&tab=ai&topic=${topic}`}>
+            <a
+              className="learn-subnav-pill"
+              href={`/?lang=${lang}&tab=ai&topic=${topic}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <Sparkles size={14} />
               <span>{t.subAi}</span>
             </a>
+
+            <button
+              type="button"
+              className="learn-subnav-toggle-btn"
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+            >
+              <span>{t.changeModeBtn}</span>
+              <ChevronDown size={14} className={mobileMenuOpen ? "rotate-180 transition-transform" : "transition-transform"} />
+            </button>
           </nav>
         </div>
 

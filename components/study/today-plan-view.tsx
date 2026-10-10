@@ -112,16 +112,19 @@ export function TodayPlanView({
                   <span>{t.todayStartBtn}</span>
                   <ArrowRight size={16} />
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    onSubjectChange("math");
-                    onTabChange("exam");
-                  }}
-                >
-                  <Target size={15} />
-                  <span>{t.todayCheckMathBtn}</span>
-                </Button>
+                <div className="today-check-math-wrap">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      onSubjectChange("math");
+                      onTabChange("exam");
+                    }}
+                  >
+                    <Target size={15} />
+                    <span>{t.todayCheckMathBtn}</span>
+                  </Button>
+                  <span className="today-check-math-sub">{t.todayCheckMathSub}</span>
+                </div>
                 <Button
                   variant="outline"
                   onClick={() => {
