@@ -159,7 +159,7 @@ export function LessonPracticeView({
         {/* Single Main Study Surface */}
         <article className="surface" aria-label={lesson.title}>
           <header className="lesson-head">
-            <div className="lesson-meta-line">
+            <div className={`lesson-meta-line ${tab !== "lesson" ? "hide-in-practice-mobile" : ""}`}>
               <span className="topic-index-label">
                 {t.lessonBreadcrumbPrefix} → {String(topicIndex + 1).padStart(2, "0")}.{" "}
                 {lesson.title} ({lesson.section})

@@ -413,13 +413,16 @@ html.dark .xray-hero-card {
 
 @media (max-width: 540px) {
   .unt-subject-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .unt-subject-card {
     justify-content: flex-start;
     padding: 10px 14px;
     gap: 12px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .unt-subject-info {
@@ -427,12 +430,16 @@ html.dark .xray-hero-card {
     align-items: center;
     justify-content: space-between;
     flex: 1;
+    min-width: 0;
     gap: 10px;
   }
 
   .unt-subject-info strong {
     font-size: 14px;
     white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+    min-width: 0;
   }
 
   .unt-subject-info small {

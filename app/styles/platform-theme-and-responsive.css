@@ -609,7 +609,16 @@ input[type="range"] {
 
 @media (max-width: 360px) {
   .wrap {
-    padding: 0 10px;
+    padding: 0 8px;
+  }
+
+  .site-header {
+    padding: 6px 0;
+    margin-bottom: 8px;
+  }
+
+  .surface {
+    padding: 12px 10px;
   }
 
   .header-top-row {
@@ -627,6 +636,30 @@ input[type="range"] {
 
   .learn-subnav.is-mobile-open .learn-subnav-pill {
     flex: 1 1 100%;
+  }
+
+  .unt-subject-card {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .unt-subject-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .unt-subject-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .unt-subject-info strong {
+    font-size: 13px;
+  }
+
+  .unt-subject-info small {
+    font-size: 11px;
   }
 }
 

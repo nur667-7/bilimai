@@ -802,11 +802,12 @@
 
   .lesson-title,
   .lesson-head h2 {
-      font-size: 21px;
+      font-size: clamp(22px, 3.2vw, 26px);
     }
 
   .lesson-intro {
-      font-size: 14px;
+      font-size: 16px;
+      line-height: 1.5;
     }
 
   .tabsbar {
@@ -828,12 +829,13 @@
     }
 
   .equation {
-      font-size: clamp(21px, 5.8vw, 26px);
+      font-size: clamp(22px, 3vw, 26px);
     }
 
   .steps li {
       padding: 8px 10px;
-      font-size: 14.5px;
+      font-size: 16px;
+      line-height: 1.5;
     }
 
   .lab-step,
@@ -845,7 +847,8 @@
 
   .step-math-line,
   .option-math-text {
-      font-size: 16.5px;
+      font-size: clamp(20px, 2.6vw, 24px);
+      line-height: 1.4;
     }
 
   .lab-progress ul,

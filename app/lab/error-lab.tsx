@@ -667,8 +667,8 @@ export default function ErrorLab({
                   </span>
                 </div>
                 <h1 className="lesson-title">{t.title}</h1>
-                <p className="lesson-intro">{t.purposeNote}</p>
-                <details className="lab-how-details mt-2">
+                <p className="lesson-intro lab-purpose-note">{t.purposeNote}</p>
+                <details className="lab-how-details how-it-works-details mt-2">
                   <summary>{t.howItWorksTitle}</summary>
                   <p>{t.intro}</p>
                 </details>
