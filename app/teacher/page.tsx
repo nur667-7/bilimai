@@ -612,7 +612,7 @@ export default function TeacherWorkspacePage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))",
             gap: 20
           }}
         >
@@ -955,7 +955,7 @@ export default function TeacherWorkspacePage() {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 110px), 1fr))",
                   gap: 10,
                   marginBottom: 14
                 }}

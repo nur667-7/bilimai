@@ -504,13 +504,12 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
         {/* 1. HERO + 5-SUBJECT INTERACTIVE DEMO */}
         <section className="welcome-hero-grid" aria-labelledby="welcome-h1">
           <div className="welcome-hero-copy">
-            <span className="lesson-kicker">{t.eyebrow}</span>
             <h1 id="welcome-h1" className="welcome-main-title">
               {t.title}
             </h1>
             <p className="welcome-main-lead">{t.subtitle}</p>
 
-            <PixelKnowledgeMosaic className="mt-1" />
+            <PixelKnowledgeMosaic className="mt-1 hide-on-narrow-mobile" />
 
             <div className="welcome-cta-row">
               <a href="#subjects-catalog" className="btn-primary" data-testid="hero-cta-choose-subject">
@@ -583,7 +582,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                 lineHeight: 1.45
               }}
             >
-              💡 <strong>{ob.ruleLabel}</strong> {activeDemo.contextNote[lang]}
+              <strong>{ob.ruleLabel}</strong> {activeDemo.contextNote[lang]}
             </div>
 
             <UniversalQuestionRenderer question={activeDemo.question} locale={lang} />
@@ -957,6 +956,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                     <strong>{subj.title[lang]}</strong>
                   </div>
                   <p
+                    className="welcome-subject-subtitle"
                     style={{
                       margin: "6px 0 10px",
                       fontSize: 13,
@@ -970,7 +970,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                     <span className="welcome-subj-badge official">
                       {formatLessonsCountLabel(subj.lessons.length, lang)} · {formatQuestionsCountLabel(totalQuestions, lang)}
                     </span>
-                    <span className="welcome-subj-badge">{t.openSubjectOverview}</span>
+                    <span className="welcome-subj-badge welcome-subj-cta-badge">{t.openSubjectOverview}</span>
                   </div>
                 </Link>
               );
@@ -978,7 +978,7 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
           </div>
         </section>
 
-        {/* 4. HOW PLATFORM WORKS (5 STEPS) + AI CAPABILITIES */}
+        {/* 4. HOW PLATFORM WORKS + AI CAPABILITIES (Unified process section) */}
         <section className="welcome-tools-section" aria-label={t.howTitle}>
           <h2 className="section-title">{t.howTitle}</h2>
           <div className="welcome-tools-grid">
@@ -992,26 +992,6 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
               </article>
             ))}
           </div>
-        </section>
-
-        <section
-          style={{
-            background: "var(--surface, #fff)",
-            border: "1px solid var(--border, #e4e1d8)",
-            borderRadius: 18,
-            padding: "20px 22px",
-            display: "grid",
-            gap: 12
-          }}
-        >
-          <h2 className="section-title" style={{ margin: 0 }}>
-            {t.aiTitle}
-          </h2>
-          <ul style={{ margin: 0, paddingLeft: 20, display: "grid", gap: 6, fontSize: 15 }}>
-            {t.aiCapabilities.map((cap, idx) => (
-              <li key={idx}>{cap}</li>
-            ))}
-          </ul>
         </section>
 
         <footer className="welcome-footer">

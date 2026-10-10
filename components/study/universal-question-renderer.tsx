@@ -592,7 +592,7 @@ export function UniversalQuestionRenderer({
             lineHeight: 1.5
           }}
         >
-          💡 {question.hint[locale] ?? question.hint.ru}
+          {question.hint[locale] ?? question.hint.ru}
         </div>
       )}
 

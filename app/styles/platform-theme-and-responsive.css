@@ -1066,3 +1066,42 @@ html.dark .option[data-selected="true"] {
   background-color: rgba(82, 115, 255, 0.18) !important;
   border-color: #6382FF !important;
 }
+
+/* 18.8 Mobile Anti-Overload & Compact Density Rules (Landing Skill) */
+@media (max-width: 640px) {
+  .welcome-subject-grid.profile {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .welcome-subject-card {
+    padding: 10px 12px !important;
+    min-height: 64px !important;
+    justify-content: space-between;
+  }
+
+  .welcome-subject-subtitle,
+  .welcome-subj-cta-badge {
+    display: none !important;
+  }
+
+  .welcome-subject-top strong {
+    font-size: 0.86rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .welcome-subj-badge.official {
+    font-size: 0.7rem !important;
+    padding: 3px 7px !important;
+  }
+
+  .welcome-tools-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .welcome-tool-card {
+    padding: 12px !important;
+  }
+}
+

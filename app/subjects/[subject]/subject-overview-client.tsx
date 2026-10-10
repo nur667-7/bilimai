@@ -886,8 +886,8 @@ export function SubjectOverviewClient({
       const replyText =
         data.reply ||
         (data.explanation
-          ? `${data.explanation}${data.nextStepPrompt ? `\n\n👉 ${data.nextStepPrompt}` : ""}`
-          : `${currentLesson.simpleExplanation[locale]}\n\n${currentLesson.workedExample.steps[locale].join("\n")}\n\n📌 ${currentLesson.workedExample.takeaway[locale]}`);
+          ? `${data.explanation}${data.nextStepPrompt ? `\n\n${data.nextStepPrompt}` : ""}`
+          : `${currentLesson.simpleExplanation[locale]}\n\n${currentLesson.workedExample.steps[locale].join("\n")}\n\n${currentLesson.workedExample.takeaway[locale]}`);
 
       const isFallback = Boolean(data.fallbackUsed || data.source === "deterministic_fallback");
       setTutorMessages((prev) => [
@@ -906,7 +906,7 @@ export function SubjectOverviewClient({
         ...prev,
         {
           role: "assistant",
-          text: `${currentLesson.simpleExplanation[locale]}\n\nПример по шагам:\n${currentLesson.workedExample.steps[locale].join("\n")}\n\n📌 ${currentLesson.workedExample.takeaway[locale]}`,
+          text: `${currentLesson.simpleExplanation[locale]}\n\nПример по шагам:\n${currentLesson.workedExample.steps[locale].join("\n")}\n\n${currentLesson.workedExample.takeaway[locale]}`,
           modeLabel: modeLabel ?? ui.tutorTitle,
           verificationBadge:
             "Deterministically verified · Локальный педагогический разбор по правилу урока"
@@ -1072,21 +1072,21 @@ export function SubjectOverviewClient({
         style={{
           maxWidth: 1180,
           margin: "0 auto",
-          padding: "24px 16px 80px",
+          padding: "20px 16px 80px",
           display: "grid",
-          gap: 22
+          gap: 18
         }}
       >
-        {/* Subject Hero & 4 Primary CTAs */}
+        {/* Subject Hero (Full on overview, compact context bar on active study tabs) */}
         <section
           data-testid="subject-overview-hero"
           style={{
             background: "var(--surface, #ffffff)",
             border: "1px solid var(--border, #e4e1d8)",
-            borderRadius: 20,
-            padding: "22px 24px",
+            borderRadius: activeTab === "overview" ? 20 : 14,
+            padding: activeTab === "overview" ? "20px 22px" : "12px 16px",
             display: "grid",
-            gap: 16
+            gap: activeTab === "overview" ? 14 : 8
           }}
         >
           <div
@@ -1095,7 +1095,7 @@ export function SubjectOverviewClient({
               flexWrap: "wrap",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 12
+              gap: 10
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -1111,11 +1111,17 @@ export function SubjectOverviewClient({
               >
                 {curriculum.badge}
               </span>
-              <span style={{ fontSize: 13, color: "var(--muted, #65635d)" }}>
-                {formatLessonsCountLabel(curriculum.lessons.length, locale)} ·{" "}
-                {formatQuestionsCountLabel(allPracticeQuestions.length, locale)}
-              </span>
-              {curriculum.readinessLabel && (
+              {activeTab !== "overview" ? (
+                <h1 style={{ margin: 0, fontSize: "clamp(17px, 2.2vw, 21px)", lineHeight: 1.2 }}>
+                  {curriculum.title[locale]}
+                </h1>
+              ) : (
+                <span style={{ fontSize: 13, color: "var(--muted, #65635d)" }}>
+                  {formatLessonsCountLabel(curriculum.lessons.length, locale)} ·{" "}
+                  {formatQuestionsCountLabel(allPracticeQuestions.length, locale)}
+                </span>
+              )}
+              {activeTab === "overview" && curriculum.readinessLabel && (
                 <span
                   style={{
                     fontSize: 12,
@@ -1134,9 +1140,9 @@ export function SubjectOverviewClient({
             <div
               data-testid="subject-isolated-progress-pill"
               style={{
-                fontSize: 13,
+                fontSize: 12.5,
                 fontWeight: 600,
-                padding: "6px 12px",
+                padding: "5px 11px",
                 borderRadius: 999,
                 background: "var(--bg, #f7f5ef)",
                 border: "1px solid var(--border, #e4e1d8)"
@@ -1151,110 +1157,114 @@ export function SubjectOverviewClient({
             </div>
           </div>
 
-          <div>
-            <h1 style={{ margin: "0 0 8px", fontSize: "clamp(22px, 3vw, 30px)", lineHeight: 1.2 }}>
-              {curriculum.title[locale]}
-            </h1>
-            <p style={{ margin: 0, fontSize: 16, lineHeight: 1.5, color: "var(--muted, #57544e)" }}>
-              {curriculum.description[locale]}
-            </p>
-          </div>
+          {activeTab === "overview" && (
+            <>
+              <div>
+                <h1 style={{ margin: "0 0 8px", fontSize: "clamp(22px, 3vw, 30px)", lineHeight: 1.2 }}>
+                  {curriculum.title[locale]}
+                </h1>
+                <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.5, color: "var(--muted, #57544e)" }}>
+                  {curriculum.description[locale]}
+                </p>
+              </div>
 
-          {/* Available levels */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {(curriculum.levels[locale] ?? curriculum.levels.ru).map((lvl, idx) => (
-              <span
-                key={idx}
-                style={{
-                  fontSize: 12.5,
-                  padding: "5px 11px",
-                  borderRadius: 999,
-                  background: "var(--bg, #f7f5ef)",
-                  color: "var(--ink, #171717)"
-                }}
-              >
-                {ui.levelPrefix} {idx + 1}: {lvl}
-              </span>
-            ))}
-          </div>
+              {/* Available levels */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {(curriculum.levels[locale] ?? curriculum.levels.ru).map((lvl, idx) => (
+                  <span
+                    key={idx}
+                    style={{
+                      fontSize: 12.5,
+                      padding: "5px 11px",
+                      borderRadius: 999,
+                      background: "var(--bg, #f7f5ef)",
+                      color: "var(--ink, #171717)"
+                    }}
+                  >
+                    {ui.levelPrefix} {idx + 1}: {lvl}
+                  </span>
+                ))}
+              </div>
 
-          {/* 4 Required Primary Buttons */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, paddingTop: 4 }}>
-            <button
-              type="button"
-              data-testid="cta-start-first-lesson"
-              onClick={() => openLessonByIndex(0)}
-              style={{
-                padding: "12px 18px",
-                borderRadius: 12,
-                border: "none",
-                background: "var(--accent, #3856f5)",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: 15,
-                cursor: "pointer"
-              }}
-            >
-              {ui.ctaStartFirstLesson}
-            </button>
+              {/* 4 Required Primary Buttons */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, paddingTop: 4 }}>
+                <button
+                  type="button"
+                  data-testid="cta-start-first-lesson"
+                  onClick={() => openLessonByIndex(0)}
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: 12,
+                    border: "none",
+                    background: "var(--accent, #3856f5)",
+                    color: "#fff",
+                    fontWeight: 700,
+                    fontSize: 15,
+                    cursor: "pointer"
+                  }}
+                >
+                  {ui.ctaStartFirstLesson}
+                </button>
 
-            <button
-              type="button"
-              data-testid="cta-check-level"
-              onClick={() => {
-                setDiagIndex(0);
-                setDiagResponses([]);
-                setDiagDone(false);
-                switchTab("diagnostic");
-              }}
-              style={{
-                padding: "12px 16px",
-                borderRadius: 12,
-                border: "1px solid var(--accent, #3856f5)",
-                background: "rgba(56, 86, 245, 0.08)",
-                color: "var(--accent, #3856f5)",
-                fontWeight: 700,
-                fontSize: 14.5,
-                cursor: "pointer"
-              }}
-            >
-              {ui.ctaCheckLevel}
-            </button>
+                <button
+                  type="button"
+                  data-testid="cta-check-level"
+                  onClick={() => {
+                    setDiagIndex(0);
+                    setDiagResponses([]);
+                    setDiagDone(false);
+                    switchTab("diagnostic");
+                  }}
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 12,
+                    border: "1px solid var(--accent, #3856f5)",
+                    background: "rgba(56, 86, 245, 0.08)",
+                    color: "var(--accent, #3856f5)",
+                    fontWeight: 700,
+                    fontSize: 14.5,
+                    cursor: "pointer"
+                  }}
+                >
+                  {ui.ctaCheckLevel}
+                </button>
 
-            <button
-              type="button"
-              data-testid="cta-open-topic-map"
-              onClick={() => switchTab("map")}
-              style={{
-                padding: "12px 16px",
-                borderRadius: 12,
-                border: "1px solid var(--border, #dcd8ce)",
-                background: "var(--surface, #fff)",
-                fontWeight: 600,
-                fontSize: 14.5,
-                cursor: "pointer"
-              }}
-            >
-              {ui.ctaOpenTopicMap}
-            </button>
+                <button
+                  type="button"
+                  data-testid="cta-open-topic-map"
+                  onClick={() => switchTab("map")}
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 12,
+                    border: "1px solid var(--border, #dcd8ce)",
+                    background: "var(--surface, #fff)",
+                    fontWeight: 600,
+                    fontSize: 14.5,
+                    cursor: "pointer"
+                  }}
+                >
+                  {ui.ctaOpenTopicMap}
+                </button>
 
-            <button
-              type="button"
-              data-testid="cta-go-practice"
-              onClick={() => switchTab("practice")}
-              style={{
-                padding: "12px 16px",
-                borderRadius: 12,
-                border: "1px solid var(--border, #dcd8ce)",
-                background: "var(--surface, #fff)",
-                fontWeight: 600,
-                fontSize: 14.5,
-                cursor: "pointer"
-              }}
-            >
-              {ui.ctaGoPractice}
-            </button>
-          </div>
+                <button
+                  type="button"
+                  data-testid="cta-go-practice"
+                  onClick={() => switchTab("practice")}
+                  style={{
+                    padding: "12px 16px",
+                    borderRadius: 12,
+                    border: "1px solid var(--border, #dcd8ce)",
+                    background: "var(--surface, #fff)",
+                    fontWeight: 600,
+                    fontSize: 14.5,
+                    cursor: "pointer"
+                  }}
+                >
+                  {ui.ctaGoPractice}
+                </button>
+              </div>
+            </>
+          )}
         </section>
 
         {/* Subject Workspace Mode Tabs */}
@@ -1262,10 +1272,12 @@ export function SubjectOverviewClient({
           aria-label="Разделы предмета"
           style={{
             display: "flex",
-            flexWrap: "wrap",
-            gap: 8,
+            flexWrap: "nowrap",
+            overflowX: "auto",
+            gap: 6,
             borderBottom: "1px solid var(--border, #e4e1d8)",
-            paddingBottom: 10
+            paddingBottom: 8,
+            scrollbarWidth: "thin"
           }}
         >
           {(
@@ -1279,7 +1291,9 @@ export function SubjectOverviewClient({
                 data-testid={`subject-tab-${tabId}`}
                 onClick={() => switchTab(tabId)}
                 style={{
-                  padding: "9px 15px",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
+                  padding: "8px 13px",
                   borderRadius: 10,
                   border: active
                     ? "1px solid var(--accent, #3856f5)"
@@ -1287,7 +1301,7 @@ export function SubjectOverviewClient({
                   background: active ? "var(--accent, #3856f5)" : "var(--surface, #fff)",
                   color: active ? "#fff" : "inherit",
                   fontWeight: 600,
-                  fontSize: 14,
+                  fontSize: 13.5,
                   cursor: "pointer"
                 }}
               >
@@ -1301,14 +1315,16 @@ export function SubjectOverviewClient({
             href={`/?tab=exam&subject=${curriculum.id}&lang=${locale}`}
             data-testid="subject-unt-exam-link"
             style={{
+              flexShrink: 0,
+              whiteSpace: "nowrap",
               marginLeft: "auto",
-              padding: "9px 14px",
+              padding: "8px 12px",
               borderRadius: 10,
               border: "1px dashed var(--border, #c5c0b4)",
               background: "transparent",
               color: "var(--muted, #57544e)",
               textDecoration: "none",
-              fontSize: 13.5,
+              fontSize: 13,
               fontWeight: 600
             }}
           >

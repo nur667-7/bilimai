@@ -350,24 +350,14 @@ export default function SubjectsCatalogPage() {
           gap: 22
         }}
       >
-        <section style={{ display: "grid", gap: 8 }}>
-          <span
-            style={{
-              fontSize: 12.5,
-              fontWeight: 700,
-              color: "var(--accent, #3856f5)",
-              letterSpacing: "0.04em"
-            }}
-          >
-            {ui.kicker}
-          </span>
+        <section style={{ display: "grid", gap: 6 }}>
           <h1 style={{ margin: 0, fontSize: "clamp(24px, 3.2vw, 34px)", lineHeight: 1.2 }}>
             {ui.title}
           </h1>
           <p
             style={{
               margin: 0,
-              fontSize: 16,
+              fontSize: 15.5,
               color: "var(--muted, #57544e)",
               maxWidth: 780,
               lineHeight: 1.5
@@ -475,7 +465,7 @@ export default function SubjectsCatalogPage() {
             data-testid="subjects-catalog-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 290px), 1fr))",
               gap: 16
             }}
           >
