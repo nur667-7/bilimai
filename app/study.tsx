@@ -13,6 +13,7 @@ import { TodayPlanView } from "@/components/study/today-plan-view";
 import { LessonPracticeView } from "@/components/study/lesson-practice-view";
 import { ProfileView } from "@/components/study/profile-view";
 import { lessons, untTopicIds, type Language, type TopicId } from "@/lib/lessons";
+import { getTopicErrorReasonId } from "@/lib/error-lab";
 import { UNT_SUBJECTS, type UntSubjectId } from "@/lib/unt-all-subjects";
 import { buildBjorkInterleavedList } from "@/lib/scientific-pedagogy";
 import { getStudyErrorText, getTopicAiPrompts, studyCopy } from "@/lib/study-copy";
@@ -106,6 +107,8 @@ export default function Study({
     currentPractice,
     baseline,
     transferChallenge,
+    errorCauses,
+    smartDailySession,
     nextDueReview,
     handleCompleteUntExam,
     handleToggleWeakTopic,
@@ -192,6 +195,11 @@ export default function Study({
     return { hasActivity, soloReviews };
   }, [state.labProgress.records, state.untStorage.lastAttempt, topic, solvedCount]);
 
+  const topicErrorCause = useMemo(
+    () => errorCauses.find((c) => c.topic === topic) ?? null,
+    [errorCauses, topic]
+  );
+
   const isPlanAssessed =
     state.untStorage.lastAttempt !== null ||
     state.labProgress.records.length > 0 ||
@@ -216,8 +224,20 @@ export default function Study({
     return buildBjorkInterleavedList(items).slice(0, 6);
   }, [baseline.priorityModules]);
 
+  const openTopicPractice = useCallback(
+    (targetTopic: TopicId) => {
+      setTopic(targetTopic);
+      handleTabChange("practice");
+    },
+    [setTopic, handleTabChange]
+  );
+
   const runExplainQuery = useCallback(
-    async (rawQuestion: string, overrideConsent?: boolean) => {
+    async (
+      rawQuestion: string,
+      overrideConsent?: boolean,
+      followUpMode?: "simpler_example" | "socratic_question"
+    ) => {
       if (state.busy) return;
       const isConsented = overrideConsent ?? state.consent;
       if (!isConsented || rawQuestion.trim().length < 3) {
@@ -227,6 +247,32 @@ export default function Study({
       const version = generation.current;
       controller.current = new AbortController();
       dispatch({ type: "AI_REQUEST_START" });
+
+      const activeQObj = lesson.questions[currentPractice.activeQ] ?? lesson.questions[0];
+      const selectedIdx = currentPractice.answers[currentPractice.activeQ];
+      const chosenOptionText =
+        selectedIdx !== undefined ? activeQObj.options[Number(selectedIdx)] : undefined;
+      const learnerAttempt =
+        currentPractice.activeQ === 3 && currentPractice.transferInput.trim()
+          ? currentPractice.transferInput.trim().slice(0, 120)
+          : chosenOptionText
+            ? chosenOptionText.slice(0, 120)
+            : undefined;
+      const taskText =
+        currentPractice.activeQ === 3
+          ? transferChallenge.transfer.slice(0, 320)
+          : (activeQObj?.text ?? lesson.example).slice(0, 320);
+      const hintsAlreadyShown =
+        Object.keys(currentPractice.expandedErrorMap).length +
+        (currentPractice.showTransferRule ? 1 : 0);
+
+      const historyTurns = state.aiHistory
+        .flatMap((turn) => [
+          { role: "user" as const, text: turn.question.slice(0, 400) },
+          { role: "assistant" as const, text: turn.answer.explanation.slice(0, 400) }
+        ])
+        .slice(-6);
+
       try {
         const res = await fetch("/api/explain", {
           method: "POST",
@@ -236,6 +282,20 @@ export default function Study({
             topic,
             language: lang,
             question: rawQuestion.trim(),
+            taskContext: {
+              taskText,
+              ...(learnerAttempt ? { learnerAttempt } : {}),
+              stage:
+                currentPractice.activeQ === 3
+                  ? "transfer"
+                  : checkedCount > 0
+                    ? "practice"
+                    : "lesson",
+              errorReason: getTopicErrorReasonId(topic),
+              hintsAlreadyShown: Math.min(10, hintsAlreadyShown)
+            },
+            ...(historyTurns.length > 0 ? { history: historyTurns } : {}),
+            ...(followUpMode ? { followUpMode } : {}),
             adult: true,
             consent: true
           })
@@ -245,6 +305,9 @@ export default function Study({
             error: z.string().optional(),
             explanation: z.string().optional(),
             hint: z.string().optional(),
+            errorType: z.string().optional(),
+            socraticQuestion: z.string().optional(),
+            nextAction: z.string().optional(),
             source: z.string().optional()
           })
           .parse(await res.json());
@@ -253,7 +316,15 @@ export default function Study({
         if (!data.explanation || !data.hint) throw new Error("Invalid response");
         dispatch({
           type: "AI_REQUEST_SUCCESS",
-          answer: { explanation: data.explanation, hint: data.hint, source: data.source }
+          question: rawQuestion.trim(),
+          answer: {
+            explanation: data.explanation,
+            hint: data.hint,
+            errorType: data.errorType,
+            socraticQuestion: data.socraticQuestion,
+            nextAction: data.nextAction,
+            source: data.source
+          }
         });
       } catch (e) {
         if (
@@ -267,7 +338,18 @@ export default function Study({
         }
       }
     },
-    [state.busy, state.consent, lang, topic, dispatch]
+    [
+      state.busy,
+      state.consent,
+      state.aiHistory,
+      currentPractice,
+      lesson,
+      transferChallenge.transfer,
+      checkedCount,
+      lang,
+      topic,
+      dispatch
+    ]
   );
 
   const askWithPrefill = useCallback(
@@ -399,6 +481,8 @@ export default function Study({
             soloReviews={topicStatusInfo.soloReviews}
             continueModeLabel={continueModeLabel}
             baseline={baseline}
+            smartDailySession={smartDailySession}
+            errorCauses={errorCauses}
             nextDueReview={nextDueReview}
             interleavedQueue={interleavedQueue}
             targetScore={state.targetScore}
@@ -413,6 +497,7 @@ export default function Study({
             onSubjectChange={handleSubjectChange}
             onTabChange={handleTabChange}
             onOpenTopicLesson={openTopicLesson}
+            onOpenTopicPractice={openTopicPractice}
             onSetShowExamplePlan={(show) => dispatch({ type: "SET_SHOW_EXAMPLE_PLAN", show })}
             onSetTargetScore={(targetScore) =>
               dispatch({ type: "SET_TARGET_SCORE", targetScore })
@@ -439,12 +524,14 @@ export default function Study({
             soloReviews={topicStatusInfo.soloReviews}
             practice={currentPractice}
             transferChallenge={transferChallenge}
+            topicErrorCause={topicErrorCause}
             topicAiPrompts={topicAiPrompts}
             question={state.question}
             consent={state.consent}
             busy={state.busy}
             error={state.error}
             answer={state.answer}
+            aiHistory={state.aiHistory}
             t={t}
             onSelectTopic={selectTopic}
             onTabChange={handleTabChange}
@@ -454,7 +541,9 @@ export default function Study({
             onSelectOption={(qIdx, value) =>
               dispatch({ type: "SELECT_OPTION", topic, qIdx, value })
             }
-            onCheckQuestion={(qIdx) => dispatch({ type: "CHECK_QUESTION", topic, qIdx })}
+            onCheckQuestion={(qIdx, isCorrect, wrongAnswerText) =>
+              dispatch({ type: "CHECK_QUESTION", topic, qIdx, isCorrect, wrongAnswerText })
+            }
             onRetryQuestion={(qIdx) => dispatch({ type: "RETRY_QUESTION", topic, qIdx })}
             onExpandErrorNote={(qIdx) => dispatch({ type: "EXPAND_ERROR_NOTE", topic, qIdx })}
             onSetTransferInput={(value) =>
@@ -472,7 +561,8 @@ export default function Study({
             onSetQuestion={(question) => dispatch({ type: "SET_AI_QUESTION", question })}
             onSetConsent={(consent) => dispatch({ type: "SET_CONSENT", consent })}
             onClearAiError={() => dispatch({ type: "CLEAR_AI_ERROR" })}
-            onRunExplainQuery={(q) => void runExplainQuery(q)}
+            onRunExplainQuery={(q, mode) => void runExplainQuery(q, mode ? true : undefined, mode)}
+            onResetAiDialogue={() => dispatch({ type: "RESET_AI_DIALOGUE" })}
             onAskWithPrefill={askWithPrefill}
           />
         ) : tab === "xray" ? (

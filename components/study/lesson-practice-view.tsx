@@ -7,9 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PixelProgressBar } from "@/components/pixel-mosaic";
 import { getOptionFeedback, lessons, type Language, type Lesson, type TopicId } from "@/lib/lessons";
-import { formatLabTask, type Challenge } from "@/lib/error-lab";
+import { formatLabTask, type Challenge, type ErrorCauseSummaryItem } from "@/lib/error-lab";
 import type { StudyCopyLang } from "@/lib/study-copy";
-import type { TopicPracticeSession } from "@/lib/study-store";
+import type { TopicPracticeSession, TutorAnswerPayload, TutorDialogueTurn } from "@/lib/study-store";
 import type { WorkspaceTab } from "@/lib/use-study-navigation";
 
 const optionLetters = ["A", "B", "C", "D"];
@@ -28,18 +28,20 @@ export interface LessonPracticeViewProps {
   soloReviews: number;
   practice: TopicPracticeSession;
   transferChallenge: Challenge;
+  topicErrorCause: ErrorCauseSummaryItem | null;
   topicAiPrompts: { placeholder: string; quick: string[] };
   question: string;
   consent: boolean;
   busy: boolean;
   error: string;
-  answer: { explanation: string; hint: string; source?: string } | null;
+  answer: TutorAnswerPayload | null;
+  aiHistory: TutorDialogueTurn[];
   t: StudyCopyLang;
   onSelectTopic: (topic: TopicId) => void;
   onTabChange: (tab: string) => void;
   onSetActiveQ: (qIdx: number) => void;
   onSelectOption: (qIdx: number, value: string) => void;
-  onCheckQuestion: (qIdx: number) => void;
+  onCheckQuestion: (qIdx: number, isCorrect?: boolean, wrongAnswerText?: string) => void;
   onRetryQuestion: (qIdx: number) => void;
   onExpandErrorNote: (qIdx: number) => void;
   onSetTransferInput: (value: string) => void;
@@ -49,7 +51,11 @@ export interface LessonPracticeViewProps {
   onSetQuestion: (q: string) => void;
   onSetConsent: (c: boolean) => void;
   onClearAiError: () => void;
-  onRunExplainQuery: (questionText: string) => void;
+  onRunExplainQuery: (
+    questionText: string,
+    followUpMode?: "simpler_example" | "socratic_question"
+  ) => void;
+  onResetAiDialogue: () => void;
   onAskWithPrefill: (prefilled: string) => void;
 }
 
@@ -67,12 +73,14 @@ export function LessonPracticeView({
   soloReviews,
   practice,
   transferChallenge,
+  topicErrorCause,
   topicAiPrompts,
   question,
   consent,
   busy,
   error,
   answer,
+  aiHistory,
   t,
   onSelectTopic,
   onTabChange,
@@ -89,6 +97,7 @@ export function LessonPracticeView({
   onSetConsent,
   onClearAiError,
   onRunExplainQuery,
+  onResetAiDialogue,
   onAskWithPrefill
 }: LessonPracticeViewProps) {
   const {
@@ -384,7 +393,17 @@ export function LessonPracticeView({
 
                   <div className="practice-actions">
                     {!isCurrentChecked ? (
-                      <Button onClick={() => onCheckQuestion(activeQ)}>
+                      <Button
+                        onClick={() => {
+                          if (selectedVal === undefined) {
+                            onCheckQuestion(activeQ);
+                            return;
+                          }
+                          const isOptRight = selectedVal === String(currentQuestionObj.correct);
+                          const chosenText = currentQuestionObj.options[Number(selectedVal)] ?? "";
+                          onCheckQuestion(activeQ, isOptRight, isOptRight ? undefined : chosenText);
+                        }}
+                      >
                         <CheckCircle2 size={16} />
                         {t.checkOne}
                       </Button>
@@ -465,6 +484,15 @@ export function LessonPracticeView({
                     <span className="topic-index-label">#{practiceSeed + 1}/24</span>
                   </div>
                   <p className="lesson-intro">{t.transferSub}</p>
+
+                  {topicErrorCause && !topicErrorCause.verifiedClean && (
+                    <div className="rule mb-3" role="note">
+                      <span className="rule-label">{t.errorCausePendingBadge}</span>
+                      <p className="small mt-1 mb-0">
+                        <strong>{topicErrorCause.personalMessage}</strong>
+                      </p>
+                    </div>
+                  )}
 
                   <div className="practice-math-stem">
                     {formatLabTask(transferChallenge.transfer)}
@@ -560,9 +588,15 @@ export function LessonPracticeView({
               )}
             </TabsContent>
 
-            {/* TAB 3: ИИ-ТЬЮТОР */}
+            {/* TAB 3: ИИ-ТЬЮТОР (Contextual Multi-Turn Tutor Dialogue) */}
             <TabsContent value="ai">
               <div className="ai-stage">
+                <div className="lesson-meta-line mb-1">
+                  <span className="rule-label">{t.aiContextAttachedLabel}</span>
+                  <span className="lesson-honest-status">
+                    {t.aiDialogueTurnLabel(Math.min(3, Math.max(1, aiHistory.length)), 3)}
+                  </span>
+                </div>
                 <h2 className="steps-heading">{t.aiTitle}</h2>
                 <p className="lesson-intro">{t.aiSub}</p>
 
@@ -625,6 +659,15 @@ export function LessonPracticeView({
                       <Sparkles size={15} />
                       {busy ? t.loading : t.ask}
                     </Button>
+                    {aiHistory.length > 0 && (
+                      <button
+                        type="button"
+                        className="quiet-text-action"
+                        onClick={onResetAiDialogue}
+                      >
+                        {t.aiResetDialogueBtn}
+                      </button>
+                    )}
                   </div>
                 </form>
                 <p className="small">{t.pilot}</p>
@@ -635,9 +678,21 @@ export function LessonPracticeView({
                 )}
                 {answer && (
                   <section aria-live="polite" className="response">
-                    <span className="rule-label">
-                      {answer.source === "claude" ? t.badgeLive : t.badgePreview}
-                    </span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                      <span className="rule-label m-0">
+                        {answer.source === "claude" ? t.badgeLive : t.badgePreview}
+                      </span>
+                      <span className="small text-muted-foreground">
+                        {t.aiDialogueTurnLabel(Math.min(3, Math.max(1, aiHistory.length)), 3)}
+                      </span>
+                    </div>
+
+                    {answer.errorType && (
+                      <p className="small font-medium mt-0 mb-2">
+                        <strong>{t.aiErrorTypeLabel}</strong> {answer.errorType}
+                      </p>
+                    )}
+
                     <p className="response-explanation">{answer.explanation}</p>
                     <strong>
                       {lang === "ru"
@@ -647,6 +702,39 @@ export function LessonPracticeView({
                           : "O‘zingizni tekshiring:"}
                     </strong>
                     <p className="response-hint">{answer.hint}</p>
+
+                    {/* Multi-Turn Contextual Follow-Up Actions */}
+                    <div className="practice-actions mt-3 pt-3 border-t border-border/60">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={busy || aiHistory.length >= 3}
+                        onClick={() => onRunExplainQuery(question || lesson.example, "simpler_example")}
+                      >
+                        {t.aiFollowUpSimplerBtn}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={busy || aiHistory.length >= 3}
+                        onClick={() => onRunExplainQuery(question || lesson.example, "socratic_question")}
+                      >
+                        {t.aiFollowUpSocraticBtn}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          onTabChange("practice");
+                          onSetActiveQ(3);
+                        }}
+                      >
+                        <span>{t.aiFollowUpCheckSelfBtn}</span>
+                        <ArrowRight size={14} />
+                      </Button>
+                    </div>
                   </section>
                 )}
               </div>

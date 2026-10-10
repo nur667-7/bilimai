@@ -6,9 +6,19 @@ import {
   roadmapInputSchema,
   labDiagnoseInputSchema,
   buildLabDiagnosePreview,
+  buildExplainPreview,
+  MAX_TUTOR_DIALOGUE_TURNS,
   explain
 } from '../lib/claude.ts';
-import { makeChallenge, buildBaselineRoadmap, progressSchema, resolveVerifiedChallenge } from '../lib/error-lab.ts';
+import {
+  makeChallenge,
+  buildBaselineRoadmap,
+  progressSchema,
+  resolveVerifiedChallenge,
+  analyzeErrorCauseHistory,
+  buildSmartDailySession
+} from '../lib/error-lab.ts';
+import { lessons } from '../lib/lessons.ts';
 import {
   studyStoreReducer,
   createInitialStudyStoreState,
@@ -268,4 +278,101 @@ test('unified studyStoreReducer deterministically manages practice answers, tran
     '/?lang=kk&tab=lesson&topic=quadratic&subject=physics'
   );
 });
+
+test('Stage-1 Personalization: error cause history verification, smart daily session queue with anti-fatigue rotation, and contextual multi-turn AI tutor', () => {
+  // 1. Personal Error Cause History & Verification
+  const unverifiedProgress = {
+    version: 1,
+    records: [
+      {
+        topic: 'inequalities',
+        challenge: 'inequalities-0',
+        independent: false,
+        date: '2026-10-09T10:00:00.000Z',
+        wrongAnswer: 'x > -5',
+        hintsUsed: 2,
+        errorReason: 'sign_flip',
+        verifiedClean: false
+      }
+    ]
+  };
+  assert.equal(progressSchema.safeParse(unverifiedProgress).success, true);
+
+  const causesBefore = analyzeErrorCauseHistory(unverifiedProgress, 'ru');
+  assert.equal(causesBefore.length, 1);
+  assert.equal(causesBefore[0].reasonId, 'sign_flip');
+  assert.equal(causesBefore[0].topic, 'inequalities');
+  assert.equal(causesBefore[0].verifiedClean, false);
+  assert.equal(causesBefore[0].lastWrongAnswer, 'x > -5');
+  assert.ok(causesBefore[0].personalMessage.includes('знак неравенства'));
+
+  // Smart Daily Session prioritizes the unverified error cause
+  const sessionUnverified = buildSmartDailySession(unverifiedProgress, 'ru', Date.parse('2026-10-10T10:00:00.000Z'));
+  assert.equal(sessionUnverified.dominantCause?.topic, 'inequalities');
+  assert.equal(sessionUnverified.steps.length, 3);
+  assert.equal(sessionUnverified.steps[0].badge, '01 · Повторить');
+  assert.equal(sessionUnverified.steps[1].badge, '02 · Разобрать ошибку');
+  assert.equal(sessionUnverified.steps[1].topic, 'inequalities');
+  assert.equal(sessionUnverified.steps[2].badge, '03 · Новая задача');
+  assert.ok(sessionUnverified.headline.includes('8'));
+
+  // Clean independent solve on inequalities transitions verifiedClean to true
+  const verifiedProgress = {
+    version: 1,
+    records: [
+      ...unverifiedProgress.records,
+      {
+        topic: 'inequalities',
+        challenge: 'inequalities-1',
+        independent: true,
+        date: '2026-10-10T11:00:00.000Z',
+        hintsUsed: 0,
+        errorReason: 'sign_flip',
+        verifiedClean: true
+      }
+    ]
+  };
+  const causesAfter = analyzeErrorCauseHistory(verifiedProgress, 'ru');
+  assert.equal(causesAfter[0].verifiedClean, true);
+
+  // 2. Anti-fatigue rotation: 2 consecutive records on 'inequalities' rotates review topic
+  const sessionRotated = buildSmartDailySession(verifiedProgress, 'ru', Date.parse('2026-10-10T12:00:00.000Z'));
+  assert.equal(sessionRotated.antiFatigueRotated, true);
+  assert.notEqual(sessionRotated.steps[0].topic, 'inequalities');
+
+  // 3. Contextual Multi-Turn Tutor Dialogue schema and preview modes
+  assert.equal(MAX_TUTOR_DIALOGUE_TURNS, 6);
+  const contextualInput = {
+    topic: 'inequalities',
+    language: 'ru',
+    question: 'Покажи на более простом примере без дробей.',
+    taskContext: {
+      taskText: '−3x > 12',
+      learnerAttempt: 'x > −4',
+      stage: 'practice',
+      errorReason: 'sign_flip',
+      hintsAlreadyShown: ['Разделите обе части на −3.']
+    },
+    history: [
+      { role: 'user', text: 'Почему мой ответ x > -4 неверный?' },
+      { role: 'assistant', text: 'При делении на −3 знак неравенства меняется.' }
+    ],
+    followUpMode: 'simpler_example',
+    adult: true,
+    consent: true
+  };
+  assert.equal(inputSchema.safeParse(contextualInput).success, true);
+
+  const previewSimpler = buildExplainPreview(contextualInput, lessons.ru.find((l) => l.id === 'inequalities'));
+  assert.equal(previewSimpler.errorType, 'sign_flip');
+  assert.ok(previewSimpler.socraticQuestion && previewSimpler.socraticQuestion.length > 10);
+  assert.ok(previewSimpler.nextAction && previewSimpler.nextAction.length > 10);
+
+  const previewSocratic = buildExplainPreview(
+    { ...contextualInput, followUpMode: 'socratic_question' },
+    lessons.ru.find((l) => l.id === 'inequalities')
+  );
+  assert.ok(previewSocratic.explanation.includes('x > −4'));
+});
+
 

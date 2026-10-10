@@ -1,12 +1,18 @@
 "use client";
 
-import { ArrowRight, Calendar, GitBranch, Sparkles, Target } from "lucide-react";
+import { ArrowRight, Calendar, CheckCircle2, GitBranch, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PixelKnowledgeMosaic, PixelProgressBar } from "@/components/pixel-mosaic";
 import { SubjectIcon } from "@/app/unt-exam-view";
 import { untTopicIds, type Language, type Lesson, type TopicId } from "@/lib/lessons";
-import { buildBaselineRoadmap, reviewSchedule, topicName } from "@/lib/error-lab";
+import {
+  buildBaselineRoadmap,
+  reviewSchedule,
+  topicName,
+  type ErrorCauseSummaryItem,
+  type SmartDailySession
+} from "@/lib/error-lab";
 import { UNT_SUBJECTS, type UntSubjectId } from "@/lib/unt-all-subjects";
 import type { StudyCopyLang } from "@/lib/study-copy";
 import type { ClaudeRoadmap } from "@/lib/study-store";
@@ -29,6 +35,8 @@ export interface TodayPlanViewProps {
   soloReviews: number;
   continueModeLabel: string;
   baseline: BaselineRoadmap;
+  smartDailySession: SmartDailySession;
+  errorCauses: ErrorCauseSummaryItem[];
   nextDueReview: ReviewScheduleItem | null;
   interleavedQueue: { topic: TopicId; title: string }[];
   targetScore: number;
@@ -43,6 +51,7 @@ export interface TodayPlanViewProps {
   onSubjectChange: (subjectId: UntSubjectId) => void;
   onTabChange: (tab: string) => void;
   onOpenTopicLesson: (topic: TopicId) => void;
+  onOpenTopicPractice: (topic: TopicId) => void;
   onSetShowExamplePlan: (show: boolean) => void;
   onSetTargetScore: (score: number) => void;
   onSetWeeksLeft: (weeks: number) => void;
@@ -67,6 +76,8 @@ export function TodayPlanView({
   soloReviews,
   continueModeLabel,
   baseline,
+  smartDailySession,
+  errorCauses,
   nextDueReview,
   interleavedQueue,
   targetScore,
@@ -81,6 +92,7 @@ export function TodayPlanView({
   onSubjectChange,
   onTabChange,
   onOpenTopicLesson,
+  onOpenTopicPractice,
   onSetShowExamplePlan,
   onSetTargetScore,
   onSetWeeksLeft,
@@ -215,6 +227,135 @@ export function TodayPlanView({
                 </a>
               )}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* SMART DAILY SESSION QUEUE + PERSONAL ERROR CAUSE HISTORY */}
+      {(hasLearningHistory || isPlanAssessed || showExamplePlan || errorCauses.length > 0) && (
+        <section
+          className="surface section-surface smart-daily-session-card"
+          aria-label={t.smartDailyBadge}
+        >
+          <header className="lesson-head mb-4">
+            <div className="lesson-meta-line">
+              <span className="rule-label">{t.smartDailyBadge}</span>
+              <span className="lesson-honest-status">
+                ~{smartDailySession.estimatedMinutes}{" "}
+                {lang === "kk" ? "мин" : lang === "uz" ? "daq." : "мин"}
+              </span>
+            </div>
+            <h2 className="steps-heading m-0">{smartDailySession.headline}</h2>
+            <p className="lesson-intro mt-1.5 mb-0">{smartDailySession.whyChosen}</p>
+          </header>
+
+          {/* 3 Concrete Micro-Steps: 1) Review, 2) Repair Error, 3) Try New Task Independently */}
+          <div className="plan-priority-list mb-4">
+            {smartDailySession.steps.map((step) => (
+              <div key={step.id} className="plan-priority-row">
+                <div className="plan-priority-info">
+                  <span className="step-number">{step.badge.slice(0, 2)}</span>
+                  <div>
+                    <span className="rule-label block mb-0.5">{step.badge}</span>
+                    <strong>{step.title}</strong>
+                    <span className="small block">{step.subtitle}</span>
+                  </div>
+                </div>
+                <div className="plan-priority-btns">
+                  {step.targetTab === "lab" ? (
+                    <a
+                      href={`/lab?lang=${lang}&topic=${step.topic}`}
+                      className="btn-ghost-sm"
+                    >
+                      {step.actionLabel} →
+                    </a>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant={step.id === "review" ? "default" : "outline"}
+                      onClick={() => {
+                        onSubjectChange("math");
+                        onOpenTopicPractice(step.topic);
+                      }}
+                    >
+                      <span>{step.actionLabel}</span>
+                      <ArrowRight size={14} />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Post-Session Outcome Summary: What was solved solo and what is next */}
+          <div className="rule mt-3 mb-0">
+            <span className="rule-label">{t.smartDailyOutcomeTitle}</span>
+            <p className="small mt-1 mb-1">
+              <strong>{smartDailySession.outcomeSummary.summaryText}</strong>
+            </p>
+            <p className="small m-0">{smartDailySession.outcomeSummary.nextStepText}</p>
+          </div>
+
+          {/* PERSONAL ERROR CAUSE HISTORY */}
+          <div className="mt-5 pt-4 border-t border-border/60">
+            <h3 className="steps-heading m-0">{t.errorCausesTitle}</h3>
+            <p className="small mt-1 mb-3">{t.errorCausesSub}</p>
+
+            {errorCauses.length === 0 ? (
+              <p className="small text-muted-foreground m-0">{t.errorCauseEmptyNote}</p>
+            ) : (
+              <div className="plan-priority-list">
+                {errorCauses.slice(0, 4).map((cause) => (
+                  <div key={cause.reasonId} className="plan-priority-row">
+                    <div className="plan-priority-info">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <span className="rule-label m-0">{cause.topicTitle}</span>
+                          <span
+                            className={`lesson-honest-status ${
+                              cause.verifiedClean ? "text-emerald-700 dark:text-emerald-400" : ""
+                            }`}
+                          >
+                            {cause.verifiedClean ? (
+                              <span className="inline-flex items-center gap-1">
+                                <CheckCircle2 size={13} />
+                                {t.errorCauseVerifiedBadge}
+                              </span>
+                            ) : (
+                              t.errorCausePendingBadge
+                            )}
+                          </span>
+                        </div>
+                        <strong className="block">{cause.personalMessage}</strong>
+                        <p className="small mt-1 mb-1">{cause.explanation}</p>
+                        <span className="small text-muted-foreground block">
+                          {t.errorCauseOccurrences(cause.occurrences, cause.hintsTotal)}
+                          {cause.lastWrongAnswer ? ` · Ответ: «${cause.lastWrongAnswer}»` : ""}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="plan-priority-btns">
+                      <a
+                        href={`/lab?lang=${lang}&topic=${cause.topic}`}
+                        className="btn-ghost-sm"
+                      >
+                        {t.errorCauseTrainBtn}
+                      </a>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          onSubjectChange("math");
+                          onOpenTopicPractice(cause.topic);
+                        }}
+                      >
+                        {t.errorCauseCheckNewBtn}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}

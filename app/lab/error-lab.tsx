@@ -16,7 +16,8 @@ import {
   nextSeed,
   reviewSchedule,
   exportProgress,
-  labTopics
+  labTopics,
+  getTopicErrorReasonId
 } from "@/lib/error-lab";
 import type { LabTopic, Progress } from "@/lib/error-lab";
 import { lessons, type Language } from "@/lib/lessons";
@@ -274,13 +275,14 @@ export default function ErrorLab({
   const [stepNotice, setStepNotice] = useState(false);
   const [stepMistakes, setStepMistakes] = useState(0);
   const [input, setInput] = useState("");
+  const [firstWrongAnswer, setFirstWrongAnswer] = useState("");
   const [hints, setHints] = useState(0);
   const [tries, setTries] = useState(0);
   const [solved, setSolved] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [message, setMessage] = useState("");
   const [progress, setProgress] = useState<Progress>(initialProgress);
-  const [persist, setPersist] = useState(false);
+  const [persist, setPersist] = useState(true);
   const [storageError, setStorageError] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -380,6 +382,7 @@ export default function ErrorLab({
     setStepNotice(false);
     setStepMistakes(0);
     setInput("");
+    setFirstWrongAnswer("");
     setHints(0);
     setTries(0);
     setSolved(false);
@@ -453,17 +456,30 @@ export default function ErrorLab({
     const currentTryIndex = tries;
     setTries(currentTryIndex + 1);
     if (!correct) {
+      if (!firstWrongAnswer && input.trim()) {
+        setFirstWrongAnswer(input.trim().slice(0, 80));
+      }
       setMessage("wrong");
       return;
     }
     const independentSolve = stepMistakes === 0 && hints === 0 && currentTryIndex === 0 && !usedAi && !revealed;
+    const totalHintsUsed = Math.min(10, hints + stepMistakes + (usedAi ? 1 : 0));
     setSolved(true);
     setMessage("right");
     setProgress((p) => ({
       version: 1,
       records: [
         ...p.records,
-        { topic, challenge: c.id, independent: independentSolve, date: new Date().toISOString() }
+        {
+          topic,
+          challenge: c.id,
+          independent: independentSolve,
+          date: new Date().toISOString(),
+          ...(firstWrongAnswer ? { wrongAnswer: firstWrongAnswer } : {}),
+          hintsUsed: totalHintsUsed,
+          errorReason: getTopicErrorReasonId(topic),
+          verifiedClean: independentSolve
+        }
       ].slice(-60)
     }));
   }
@@ -868,6 +884,22 @@ export default function ErrorLab({
                           onClick={() => {
                             setRevealed(true);
                             setMessage("");
+                            setProgress((p) => ({
+                              version: 1,
+                              records: [
+                                ...p.records,
+                                {
+                                  topic,
+                                  challenge: c.id,
+                                  independent: false,
+                                  date: new Date().toISOString(),
+                                  ...(firstWrongAnswer ? { wrongAnswer: firstWrongAnswer } : {}),
+                                  hintsUsed: Math.min(10, hints + stepMistakes + 1),
+                                  errorReason: getTopicErrorReasonId(topic),
+                                  verifiedClean: false
+                                }
+                              ].slice(-60)
+                            }));
                           }}
                         >
                           {t.reveal}

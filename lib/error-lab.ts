@@ -765,20 +765,676 @@ export function checkAnswer(raw: string, expected: number) {
   return value !== null && Math.abs(value - expected) <= 1e-6;
 }
 
-export const progressSchema = z.object({
-  version: z.literal(1),
-  records: z.array(z.object({
+export const errorReasonIds = [
+  'balance_shift',
+  'sign_flip',
+  'term_combine',
+  'percent_base',
+  'sample_space',
+  'order_factor',
+  'root_squaring',
+  'vieta_sign',
+  'index_shift',
+  'domain_loss',
+  'pythagorean_id',
+  'power_rule',
+  'antiderivative_power',
+  'half_area',
+  'dot_product_ops',
+  'pyramid_third'
+] as const;
+
+export type ErrorReasonId = (typeof errorReasonIds)[number];
+
+const topicToErrorReason: Record<LabTopic, ErrorReasonId> = {
+  linear: 'balance_shift',
+  inequalities: 'sign_flip',
+  systems: 'term_combine',
+  percent: 'percent_base',
+  probability: 'sample_space',
+  combinatorics: 'order_factor',
+  radicals: 'root_squaring',
+  quadratic: 'vieta_sign',
+  progressions: 'index_shift',
+  functions: 'domain_loss',
+  trigonometry: 'pythagorean_id',
+  derivative: 'power_rule',
+  integrals: 'antiderivative_power',
+  planimetry: 'half_area',
+  vectors: 'dot_product_ops',
+  stereometry: 'pyramid_third'
+};
+
+export function getTopicErrorReasonId(topic: LabTopic): ErrorReasonId {
+  return topicToErrorReason[topic];
+}
+
+export interface ErrorCauseCopy {
+  shortLabel: string;
+  personalMessage: string;
+  explanation: string;
+}
+
+const errorCauseCatalog: Record<Language, Record<ErrorReasonId, ErrorCauseCopy>> = {
+  ru: {
+    balance_shift: {
+      shortLabel: 'Перенос слагаемого без смены знака',
+      personalMessage: 'Ты терял равносильность при переносе слагаемого между частями уравнения. Сегодня проверим именно это.',
+      explanation: 'При переносе числа через знак «=» его знак меняется на противоположный (или одно и то же число вычитается из обеих частей).'
+    },
+    sign_flip: {
+      shortLabel: 'Знак неравенства при делении на отрицательное число',
+      personalMessage: 'Ты забывал менять знак неравенства при делении на отрицательное число. Сегодня проверим именно это.',
+      explanation: 'При делении или умножении обеих частей неравенства на отрицательное число знак (<, >, ≤, ≥) разворачивается.'
+    },
+    term_combine: {
+      shortLabel: 'Сложение коэффициентов в системе уравнений',
+      personalMessage: 'При сложении уравнений системы ты терял удвоение коэффициента (2x вместо x). Сегодня закрепим этот шаг.',
+      explanation: 'При почленном сложении (x + y) и (x − y) переменные y взаимно уничтожаются, а коэффициенты при x складываются: 2x.'
+    },
+    percent_base: {
+      shortLabel: 'Доля процента от исходной величины',
+      personalMessage: 'Ты вычитал число процентов напрямую из цены вместо расчёта доли в тенге. Сегодня проверим это правило.',
+      explanation: 'Процент всегда берётся от исходной базы: сначала находим сумму скидки P × (r / 100), затем вычитаем её.'
+    },
+    sample_space: {
+      shortLabel: 'Полное число исходов в знаменателе вероятности',
+      personalMessage: 'В задачах на вероятность ты ставил в знаменатель только часть шаров вместо всех возможных исходов.',
+      explanation: 'Классическая вероятность P = m / n требует в знаменателе n сумму всех равновозможных исходов.'
+    },
+    order_factor: {
+      shortLabel: 'Деление на 2! в формуле сочетаний C(n, 2)',
+      personalMessage: 'В сочетаниях ты забывал разделить произведение n(n − 1) на 2!, учитывая порядок дважды.',
+      explanation: 'Поскольку порядок выбора в группе не важен, число пар равно C(n, 2) = n(n − 1) / 2.'
+    },
+    root_squaring: {
+      shortLabel: 'Возведение в квадрат при избавлении от корня',
+      personalMessage: 'При решении иррационального уравнения ты умножал правую часть на 2 вместо возведения в квадрат.',
+      explanation: 'Для перехода от √A = r при r ≥ 0 обе части возводятся в квадрат: A = r².'
+    },
+    vieta_sign: {
+      shortLabel: 'Знак суммы корней по теореме Виета',
+      personalMessage: 'Ты путал знак суммы корней x₁ + x₂ = −p в приведённом квадратном уравнении. Сегодня проверим именно это.',
+      explanation: 'Для уравнения x² − Sx + P = 0 сумма корней равна +S (второй коэффициент с противоположным знаком).'
+    },
+    index_shift: {
+      shortLabel: 'Множитель (n − 1) в формуле прогрессии',
+      personalMessage: 'В арифметической прогрессии ты прибавлял n·d вместо (n − 1)·d. Сегодня проверим это на новой задаче.',
+      explanation: 'От первого до n-го члена ровно (n − 1) шагов: aₙ = a₁ + (n − 1)d.'
+    },
+    domain_loss: {
+      shortLabel: 'Определение логарифма и проверка ОДЗ',
+      personalMessage: 'Ты путал основание и показатель степени при переходе от log_a(f(x)) = b к f(x) = a^b и проверке ОДЗ.',
+      explanation: 'Равенство log_a(x − c) = b при x > c означает, что основание a возводится в степень b: x − c = a^b.'
+    },
+    pythagorean_id: {
+      shortLabel: 'Основное тригонометрическое тождество',
+      personalMessage: 'При выражении cos²α через sin²α ты ставил плюс вместо вычитания из единицы.',
+      explanation: 'Из тождества sin²α + cos²α = 1 всегда следует cos²α = 1 − sin²α.'
+    },
+    power_rule: {
+      shortLabel: 'Показатель степени (n − 1) в производной',
+      personalMessage: 'При дифференцировании xⁿ ты выносил степень n, но забывал уменьшить показатель на единицу.',
+      explanation: 'По правилу производной степенной функции (a·xⁿ)′ = a·n·xⁿ⁻¹, а производная константы равна 0.'
+    },
+    antiderivative_power: {
+      shortLabel: 'Интегрирование степенной функции x^(n+1)/(n+1)',
+      personalMessage: 'В первообразной ты применял правило производной вместо увеличения степени на 1 и деления на (n + 1).',
+      explanation: 'Первообразная от a·xⁿ равна a·xⁿ⁺¹ / (n + 1) + C.'
+    },
+    half_area: {
+      shortLabel: 'Множитель 1/2 в площади треугольника',
+      personalMessage: 'Ты вычислял площадь прямоугольного треугольника как произведение катетов a·b, забывая разделить на 2.',
+      explanation: 'Прямоугольный треугольник составляет половину прямоугольника: S = (a × b) / 2.'
+    },
+    dot_product_ops: {
+      shortLabel: 'Попарное произведение координат в скалярном произведении',
+      personalMessage: 'В скалярном произведении векторов ты складывал одноимённые координаты вместо их умножения.',
+      explanation: 'Скалярное произведение равно сумме попарных произведений координат: a⃗ · b⃗ = x₁x₂ + y₁y₂.'
+    },
+    pyramid_third: {
+      shortLabel: 'Коэффициент 1/3 в объёме пирамиды',
+      personalMessage: 'В стереометрии ты находил объём призмы S·h вместо объёма пирамиды (S·h) / 3.',
+      explanation: 'Объём любой пирамиды равен одной трети произведения площади основания на высоту: V = (S × h) / 3.'
+    }
+  },
+  kk: {
+    balance_shift: {
+      shortLabel: 'Мүшені таңбасын өзгертпей көшіру',
+      personalMessage: 'Сен теңдеу мүшесін екінші жаққа көшіргенде таңбаны өзгертуді ұмыттың. Бүгін дәл осыны тексереміз.',
+      explanation: 'Санды «=» таңбасы арқылы көшіргенде оның таңбасы қарама-қарсыға өзгереді.'
+    },
+    sign_flip: {
+      shortLabel: 'Теріс санға бөлгенде теңсіздік таңбасы',
+      personalMessage: 'Сен теңсіздікті теріс санға бөлгенде таңбаны өзгертуді бірнеше рет ұмыттың. Бүгін осы ережені тексереміз.',
+      explanation: 'Теңсіздіктің екі жағын теріс санға бөлгенде теңсіздік таңбасы (<, >) қарама-қарсыға ауысады.'
+    },
+    term_combine: {
+      shortLabel: 'Теңдеулер жүйесіндегі коэффициенттерді қосу',
+      personalMessage: 'Теңдеулерді мүшелеп қосқанда x коэффициентін екі еселеуді (2x) жіберіп алдың.',
+      explanation: '(x + y) және (x − y) теңдеулерін қосқанда y жойылып, 2x шығады.'
+    },
+    percent_base: {
+      shortLabel: 'Бастапқы шамадан пайыздық үлес',
+      personalMessage: 'Сен жеңілдік сомасын есептемей, пайыз санын бағадан тікелей азайттың.',
+      explanation: 'Алдымен бастапқы бағадан жеңілдік сомасын тауып, содан кейін ғана оны азайтамыз.'
+    },
+    sample_space: {
+      shortLabel: 'Ықтималдық бөліміндегі барлық нәтижелер саны',
+      personalMessage: 'Ықтималдық есебінде бөліміне барлық шарлардың орнына тек бір түсті шарларды жаздың.',
+      explanation: 'P = m / n формуласында n — барлық тең мүмкіндікті нәтижелердің қосындысы.'
+    },
+    order_factor: {
+      shortLabel: 'Терулер формуласында 2!-ға бөлу',
+      personalMessage: 'Терулер санын есептегенде n(n − 1) көбейтіндісін 2-ге бөлуді ұмыттың.',
+      explanation: 'Рет маңызды болмағандықтан, C(n, 2) = n(n − 1) / 2 формуласы қолданылады.'
+    },
+    root_squaring: {
+      shortLabel: 'Түбірден құтылу үшін квадраттау',
+      personalMessage: 'Түбір теңдеуінде оң жақты квадраттаудың орнына 2-ге көбейттің.',
+      explanation: '√A = r теңдеуінде екі жағы да квадратталады: A = r².'
+    },
+    vieta_sign: {
+      shortLabel: 'Виет теоремасындағы түбірлер қосындысының таңбасы',
+      personalMessage: 'Виет теоремасы бойынша түбірлер қосындысының таңбасын шатастырдың. Бүгін осыны бекітеміз.',
+      explanation: 'x² − Sx + P = 0 теңдеуі үшін түбірлер қосындысы x₁ + x₂ = +S болады.'
+    },
+    index_shift: {
+      shortLabel: 'Прогрессия формуласындағы (n − 1) көбейткіші',
+      personalMessage: 'Арифметикалық прогрессияда (n − 1)·d орнына n·d қостың.',
+      explanation: 'n-ші мүше формуласы: aₙ = a₁ + (n − 1)d.'
+    },
+    domain_loss: {
+      shortLabel: 'Логарифм анықтамасы және АОО (ОДЗ)',
+      personalMessage: 'log_a(f(x)) = b теңдеуінен f(x) = a^b түріне өту кезінде дәрежені шатастырдың.',
+      explanation: 'log_a(x − c) = b теңдігі x − c = a^b дегенді білдіреді (x > c).'
+    },
+    pythagorean_id: {
+      shortLabel: 'Негізгі тригонометриялық тепе-теңдік',
+      personalMessage: 'cos²α өрнегін тапқанда 1-ден sin²α-ны азайтудың орнына қостың.',
+      explanation: 'sin²α + cos²α = 1 тепе-теңдігінен cos²α = 1 − sin²α шығады.'
+    },
+    power_rule: {
+      shortLabel: 'Туындыдағы (n − 1) дәреже көрсеткіші',
+      personalMessage: 'xⁿ туындысын тапқанда дәрежені 1-ге кемітуді ұмыттың.',
+      explanation: 'Дәрежелік функция туындысы: (a·xⁿ)′ = a·n·xⁿ⁻¹.'
+    },
+    antiderivative_power: {
+      shortLabel: 'Алғашқы функциядағы x^(n+1)/(n+1) ережесі',
+      personalMessage: 'Интегралдауда дәрежені 1-ге арттырып, (n + 1)-ге бөлу ережесінен қателестің.',
+      explanation: 'a·xⁿ функциясының алғашқы функциясы: a·xⁿ⁺¹ / (n + 1) + C.'
+    },
+    half_area: {
+      shortLabel: 'Үшбұрыш ауданындағы 1/2 көбейткіші',
+      personalMessage: 'Тікбұрышты үшбұрыш ауданын тапқанда катеттер көбейтіндісін 2-ге бөлуді ұмыттың.',
+      explanation: 'Тікбұрышты үшбұрыш ауданы: S = (a × b) / 2.'
+    },
+    dot_product_ops: {
+      shortLabel: 'Скаляр көбейтіндіде координаталарды көбейту',
+      personalMessage: 'Векторлардың скаляр көбейтіндісінде координаталарды көбейтудің орнына қостың.',
+      explanation: 'Скаляр көбейтінді формуласы: a⃗ · b⃗ = x₁x₂ + y₁y₂.'
+    },
+    pyramid_third: {
+      shortLabel: 'Пирамида көлеміндегі 1/3 коэффициенті',
+      personalMessage: 'Пирамида көлемін есептегенде S·h көбейтіндісін 3-ке бөлуді ұмыттың.',
+      explanation: 'Пирамида көлемі: V = (S × h) / 3.'
+    }
+  },
+  uz: {
+    balance_shift: {
+      shortLabel: 'Hadni ishorasini o‘zgartirmay ko‘chirish',
+      personalMessage: 'Tenglama hadini ikkinchi tomonga o‘tkazishda ishorani o‘zgartirishni unutdingiz. Bugun shuni tekshiramiz.',
+      explanation: 'Son «=» белгиси орқали o‘tkazilganda uning ishorasi teskarisiga o‘zgaradi.'
+    },
+    sign_flip: {
+      shortLabel: 'Manfiy songa bo‘lganda tengsizlik ishorasi',
+      personalMessage: 'Tengsizlikni manfiy songa bo‘lganda ishorani o‘zgartirishni unutdingiz. Bugun aynan shuni mashq qilamiz.',
+      explanation: 'Tengsizlikning ikkala tomonini manfiy songa bo‘lganda ishora (<, >) teskarisiga o‘zgaradi.'
+    },
+    term_combine: {
+      shortLabel: 'Tenglamalar sistemasida koeffitsiyentlarni qo‘shish',
+      personalMessage: 'Tenglamalarni hadlab qo‘shganda 2x koeffitsiyentini yo‘qotdingiz.',
+      explanation: '(x + y) va (x − y) tenglamalarini qo‘shganda y qisqarib, 2x hosil bo‘ladi.'
+    },
+    percent_base: {
+      shortLabel: 'Boshlang‘ich miqdordan foiz ulushi',
+      personalMessage: 'Chegirma miqdorini hisoblamasdan, foiz sonini narxdan to‘g‘ridan-to‘g‘ri ayirdingiz.',
+      explanation: 'Avval boshlang‘ich narxdan chegirma summasini topib, so‘ng uni ayiramiz.'
+    },
+    sample_space: {
+      shortLabel: 'Ehtimollik maxrajidagi barcha natijalar soni',
+      personalMessage: 'Ehtimollik masalasida maxrajga barcha sharlar o‘rniga faqat bir qismini yozdingiz.',
+      explanation: 'P = m / n formulasida n — barcha teng imkoniyatli natijalar yig‘indisi.'
+    },
+    order_factor: {
+      shortLabel: 'Guruhlash formulasida 2! ga bo‘lish',
+      personalMessage: 'C(n, 2) ni hisoblashda n(n − 1) ko‘paytmasini 2 ga bo‘lishni unutdingiz.',
+      explanation: 'Tartib muhim bo‘lmagani uchun C(n, 2) = n(n − 1) / 2.'
+    },
+    root_squaring: {
+      shortLabel: 'Ildizdan qutulish uchun kvadratga oshirish',
+      personalMessage: 'Ildizli tenglamada o‘ng tomonni kvadratga oshirish o‘rniga 2 ga ko‘paytirdingiz.',
+      explanation: '√A = r tenglamada ikkala tomon kvadratga oshiriladi: A = r².'
+    },
+    vieta_sign: {
+      shortLabel: 'Viyet teoremasida ildizlar yig‘indisi ishorasi',
+      personalMessage: 'Viyet teoremasi bo‘yicha ildizlar yig‘indisi ishorasida adashdingiz. Bugun shuni tekshiramiz.',
+      explanation: 'x² − Sx + P = 0 tenglama uchun ildizlar yig‘indisi x₁ + x₂ = +S ga teng.'
+    },
+    index_shift: {
+      shortLabel: 'Progressiya formulasidagi (n − 1) ko‘paytuvchi',
+      personalMessage: 'Arifmetik progressiyada (n − 1)·d o‘rniga n·d qo‘shdingiz.',
+      explanation: 'n-chi had formulasi: aₙ = a₁ + (n − 1)d.'
+    },
+    domain_loss: {
+      shortLabel: 'Logarifm ta’rifi va aniqlanish sohasi',
+      personalMessage: 'log_a(f(x)) = b dan f(x) = a^b ga o‘tishda asos va darajani adashtirdingiz.',
+      explanation: 'log_a(x − c) = b tenglik x − c = a^b degani (x > c).'
+    },
+    pythagorean_id: {
+      shortLabel: 'Asosiy trigonometrik ayniyat',
+      personalMessage: 'cos²α ni topishda 1 dan sin²α ni ayirish o‘rniga qo‘shdingiz.',
+      explanation: 'sin²α + cos²α = 1 ayniyatdan cos²α = 1 − sin²α kelib chiqadi.'
+    },
+    power_rule: {
+      shortLabel: 'Hosilada (n − 1) daraja ko‘rsatkichi',
+      personalMessage: 'xⁿ hosilasini topishda darajani 1 ga kamaytirishni unutdingiz.',
+      explanation: 'Darajali funksiya hosilasi: (a·xⁿ)′ = a·n·xⁿ⁻¹.'
+    },
+    antiderivative_power: {
+      shortLabel: 'Boshlang‘ich funksiyada x^(n+1)/(n+1) qoidasi',
+      personalMessage: 'Integrallashda darajani 1 ga oshirib, (n + 1) ga bo‘lish qoidasida adashdingiz.',
+      explanation: 'a·xⁿ funksiyaning boshlang‘ich funksiyasi: a·xⁿ⁺¹ / (n + 1) + C.'
+    },
+    half_area: {
+      shortLabel: 'Uchburchak yuzasida 1/2 ko‘paytuvchi',
+      personalMessage: 'To‘g‘ri burchakli uchburchak yuzasini topishda katetlar ko‘paytmasini 2 ga bo‘lishni unutdingiz.',
+      explanation: 'To‘g‘ri burchakli uchburchak yuzasi: S = (a × b) / 2.'
+    },
+    dot_product_ops: {
+      shortLabel: 'Skalyar ko‘paytmada koordinatalarni ko‘paytirish',
+      personalMessage: 'Vektorlarning skalyar ko‘paytmasida koordinatalarni ko‘paytirish o‘rniga qo‘shdingiz.',
+      explanation: 'Skalyar ko‘paytma formulasi: a⃗ · b⃗ = x₁x₂ + y₁y₂.'
+    },
+    pyramid_third: {
+      shortLabel: 'Piramida hajmida 1/3 koeffitsiyent',
+      personalMessage: 'Piramida hajmini hisoblashda S·h ko‘paytmani 3 ga bo‘lishni unutdingiz.',
+      explanation: 'Piramida hajmi: V = (S × h) / 3.'
+    }
+  }
+};
+
+export function getErrorCauseCopy(reasonId: ErrorReasonId, language: Language): ErrorCauseCopy {
+  return errorCauseCatalog[language][reasonId];
+}
+
+export const progressRecordSchema = z
+  .object({
     topic: z.enum(topicIds),
     challenge: z.string(),
     independent: z.boolean(),
-    date: z.string().datetime()
-  }).strict().refine(r => {
+    date: z.string().datetime(),
+    wrongAnswer: z.string().max(120).optional(),
+    hintsUsed: z.number().int().min(0).max(10).optional(),
+    errorReason: z.enum(errorReasonIds).optional(),
+    verifiedClean: z.boolean().optional()
+  })
+  .strict()
+  .refine((r) => {
     const suffix = r.challenge.slice(r.topic.length + 1);
-    return r.challenge.startsWith(r.topic + '-') && /^(0|[1-9]\d*)$/.test(suffix) && Number(suffix) < variantsPerTopic;
-  }, 'Challenge must match topic and variant range')).max(60)
+    return (
+      r.challenge.startsWith(r.topic + '-') &&
+      /^(0|[1-9]\d*)$/.test(suffix) &&
+      Number(suffix) < variantsPerTopic
+    );
+  }, 'Challenge must match topic and variant range');
+
+export const progressSchema = z.object({
+  version: z.literal(1),
+  records: z.array(progressRecordSchema).max(60)
 }).strict();
 
+export type ProgressRecord = z.infer<typeof progressRecordSchema>;
 export type Progress = z.infer<typeof progressSchema>;
+
+export interface ErrorCauseSummaryItem {
+  reasonId: ErrorReasonId;
+  topic: LabTopic;
+  topicTitle: string;
+  shortLabel: string;
+  personalMessage: string;
+  explanation: string;
+  occurrences: number;
+  hintsTotal: number;
+  lastWrongAnswer?: string;
+  lastDate: string;
+  verifiedClean: boolean;
+}
+
+export function analyzeErrorCauseHistory(
+  progress: Progress,
+  language: Language
+): ErrorCauseSummaryItem[] {
+  const byTopic = new Map<LabTopic, ProgressRecord[]>();
+  for (const r of progress.records) {
+    const list = byTopic.get(r.topic) ?? [];
+    list.push(r);
+    byTopic.set(r.topic, list);
+  }
+
+  const summaries: ErrorCauseSummaryItem[] = [];
+  for (const [topic, records] of byTopic.entries()) {
+    const sorted = [...records].sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+    const errorRecords = sorted.filter(
+      (r) => !r.independent || Boolean(r.errorReason) || Boolean(r.wrongAnswer) || (r.hintsUsed ?? 0) > 0
+    );
+    if (errorRecords.length === 0) continue;
+
+    const latestRecord = sorted.at(-1)!;
+    const latestError = errorRecords.at(-1)!;
+    const reasonId = latestError.errorReason ?? getTopicErrorReasonId(topic);
+    const copy = getErrorCauseCopy(reasonId, language);
+
+    // Verified clean if the learner solved at least one subsequent task on this topic independently with 0 hints
+    const lastErrorTime = Date.parse(latestError.date);
+    const solvedCleanAfterError = sorted.some(
+      (r) =>
+        Date.parse(r.date) > lastErrorTime &&
+        r.independent &&
+        (r.hintsUsed ?? 0) === 0 &&
+        !r.wrongAnswer
+    );
+    const verifiedClean = Boolean(latestRecord.verifiedClean || solvedCleanAfterError);
+    const hintsTotal = sorted.reduce((acc, r) => acc + (r.hintsUsed ?? (r.independent ? 0 : 1)), 0);
+
+    summaries.push({
+      reasonId,
+      topic,
+      topicTitle: topicName(topic, language),
+      shortLabel: copy.shortLabel,
+      personalMessage: copy.personalMessage,
+      explanation: copy.explanation,
+      occurrences: errorRecords.length,
+      hintsTotal,
+      lastWrongAnswer: latestError.wrongAnswer,
+      lastDate: latestError.date,
+      verifiedClean
+    });
+  }
+
+  // Sort: unverified causes first, then by higher occurrences, then by most recent date
+  return summaries.sort((a, b) => {
+    if (a.verifiedClean !== b.verifiedClean) return a.verifiedClean ? 1 : -1;
+    if (b.occurrences !== a.occurrences) return b.occurrences - a.occurrences;
+    return Date.parse(b.lastDate) - Date.parse(a.lastDate);
+  });
+}
+
+export interface SmartDailyStep {
+  id: 'review' | 'error_repair' | 'transfer_new';
+  badge: string;
+  title: string;
+  subtitle: string;
+  topic: LabTopic;
+  targetTab: 'practice' | 'lab' | 'lesson';
+  actionLabel: string;
+}
+
+export interface SmartDailySession {
+  headline: string;
+  whyChosen: string;
+  estimatedMinutes: number;
+  antiFatigueRotated: boolean;
+  dominantCause: ErrorCauseSummaryItem | null;
+  errorCauses: ErrorCauseSummaryItem[];
+  steps: [SmartDailyStep, SmartDailyStep, SmartDailyStep];
+  outcomeSummary: {
+    soloSolvedCount: number;
+    assistedCount: number;
+    confirmedFixedCount: number;
+    pendingCausesCount: number;
+    summaryText: string;
+    nextStepText: string;
+  };
+}
+
+export function buildSmartDailySession(
+  progress: Progress,
+  language: Language,
+  now: number = Date.now()
+): SmartDailySession {
+  const causes = analyzeErrorCauseHistory(progress, language);
+  const unverifiedCauses = causes.filter((c) => !c.verifiedClean);
+  const confirmedCauses = causes.filter((c) => c.verifiedClean);
+  const schedule = reviewSchedule(progress, Number.isFinite(now) ? now : Date.now());
+  const dueTopics = schedule.filter((s) => s.due).map((s) => s.topic);
+
+  // Anti-fatigue check: did the learner do the last 2 tasks on the exact same topic?
+  const sortedAll = [...progress.records].sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+  const lastTwoSameTopic =
+    sortedAll.length >= 2 && sortedAll.at(-1)!.topic === sortedAll.at(-2)!.topic
+      ? sortedAll.at(-1)!.topic
+      : null;
+
+  const dominantCause = unverifiedCauses[0] ?? causes[0] ?? null;
+
+  // Pick Topic 1: Review (due topic or assisted topic, avoiding fatigue topic if possible)
+  let reviewTopic: LabTopic =
+    dueTopics.find((t) => t !== lastTwoSameTopic) ??
+    dueTopics[0] ??
+    unverifiedCauses.find((c) => c.topic !== lastTwoSameTopic)?.topic ??
+    recommendTopic(progress);
+
+  // Pick Topic 2: Error repair (unverified cause topic or next weak topic)
+  let errorTopic: LabTopic =
+    dominantCause?.topic ??
+    labTopics.find((t) => t !== reviewTopic) ??
+    'inequalities';
+
+  // Pick Topic 3: New independent challenge (a different topic to interleave)
+  let newTopic: LabTopic =
+    labTopics.find(
+      (t) =>
+        t !== reviewTopic &&
+        t !== errorTopic &&
+        !progress.records.some((r) => r.topic === t && r.independent)
+    ) ??
+    labTopics.find((t) => t !== reviewTopic && t !== errorTopic) ??
+    'quadratic';
+
+  const antiFatigueRotated = Boolean(lastTwoSameTopic && reviewTopic !== lastTwoSameTopic);
+  const estimatedMinutes = 8;
+
+  const soloSolvedCount = new Set(
+    progress.records.filter((r) => r.independent).map((r) => r.challenge)
+  ).size;
+  const assistedCount = progress.records.filter((r) => !r.independent).length;
+
+  const reviewTitle = topicName(reviewTopic, language);
+  const errorTitle = topicName(errorTopic, language);
+  const newTitle = topicName(newTopic, language);
+  const errorShort =
+    dominantCause?.shortLabel ?? getErrorCauseCopy(getTopicErrorReasonId(errorTopic), language).shortLabel;
+
+  if (language === 'kk') {
+    const headline = dominantCause
+      ? `Бүгін «${errorShort.toLowerCase()}» қатесін түзетеміз — шамамен ${estimatedMinutes} минут`
+      : `Бүгінгі қысқа жаттығу: «${reviewTitle}» — шамамен ${estimatedMinutes} минут`;
+    const whyChosen = dominantCause
+      ? `${dominantCause.personalMessage}${antiFatigueRotated ? ' Шаршамау үшін тақырыптарды кезектестіреміз.' : ''}`
+      : 'Интервалдық қайталау және жаңа есепті өз бетінше шығару тізбегі.';
+    return {
+      headline,
+      whyChosen,
+      estimatedMinutes,
+      antiFatigueRotated,
+      dominantCause,
+      errorCauses: causes,
+      steps: [
+        {
+          id: 'review',
+          badge: '01 · Қайталау',
+          title: `«${reviewTitle}» қайталау — 2 есеп`,
+          subtitle: dueTopics.includes(reviewTopic) ? 'Қайталау уақыты келді (2/7 күн)' : 'Ережені еске түсіру',
+          topic: reviewTopic,
+          targetTab: 'practice',
+          actionLabel: 'Қайталауды бастау'
+        },
+        {
+          id: 'error_repair',
+          badge: '02 · Қатемен жұмыс',
+          title: `1 қатені талдау: ${errorShort}`,
+          subtitle: `Тақырып: «${errorTitle}»`,
+          topic: errorTopic,
+          targetTab: 'lab',
+          actionLabel: 'Жаттығу'
+        },
+        {
+          id: 'transfer_new',
+          badge: '03 · Жаңа есеп',
+          title: `Көмексіз жаңа есеп: «${newTitle}»`,
+          subtitle: 'Принципті өз бетінше қолдануды тексеру',
+          topic: newTopic,
+          targetTab: 'practice',
+          actionLabel: 'Шығарып көру'
+        }
+      ],
+      outcomeSummary: {
+        soloSolvedCount,
+        assistedCount,
+        confirmedFixedCount: confirmedCauses.length,
+        pendingCausesCount: unverifiedCauses.length,
+        summaryText:
+          soloSolvedCount > 0 || assistedCount > 0
+            ? `Өз бетінше шығарылды: ${soloSolvedCount} есеп · Расталған түзетулер: ${confirmedCauses.length}`
+            : 'Алғашқы жаттығуды аяқтаған соң осында нәтиже мен келесі қадам пайда болады.',
+        nextStepText:
+          unverifiedCauses.length > 0
+            ? `Келесі қадам: «${unverifiedCauses[0].topicTitle}» тақырыбында 1 жаңа есепті көмексіз шығарып, қатенің жойылғанын растау.`
+            : `Келесі қадам: «${newTitle}» тақырыбына өту.`
+      }
+    };
+  }
+
+  if (language === 'uz') {
+    const headline = dominantCause
+      ? `Bugun «${errorShort.toLowerCase()}» xatosini tuzatamiz — taxminan ${estimatedMinutes} daqiqa`
+      : `Bugungi qisqa mashg‘ulot: «${reviewTitle}» — taxminan ${estimatedMinutes} daqiqa`;
+    const whyChosen = dominantCause
+      ? `${dominantCause.personalMessage}${antiFatigueRotated ? ' Charchamaslik uchun mavzularni almashtiramiz.' : ''}`
+      : 'Intervalli takrorlash va yangi masalani mustaqil yechish navbati.';
+    return {
+      headline,
+      whyChosen,
+      estimatedMinutes,
+      antiFatigueRotated,
+      dominantCause,
+      errorCauses: causes,
+      steps: [
+        {
+          id: 'review',
+          badge: '01 · Takrorlash',
+          title: `«${reviewTitle}»ni takrorlash — 2 masala`,
+          subtitle: dueTopics.includes(reviewTopic) ? 'Takrorlash muddati keldi (2/7 kun)' : 'Qoidani mustahkamlash',
+          topic: reviewTopic,
+          targetTab: 'practice',
+          actionLabel: 'Takrorlash'
+        },
+        {
+          id: 'error_repair',
+          badge: '02 · Xato tahlili',
+          title: `1 ta xatoni tahlil qilish: ${errorShort}`,
+          subtitle: `Mavzu: «${errorTitle}»`,
+          topic: errorTopic,
+          targetTab: 'lab',
+          actionLabel: 'Mashq qilish'
+        },
+        {
+          id: 'transfer_new',
+          badge: '03 · Yangi masala',
+          title: `Yordamsiz yangi masala: «${newTitle}»`,
+          subtitle: 'Qoidani mustaqil qo‘llashni tekshirish',
+          topic: newTopic,
+          targetTab: 'practice',
+          actionLabel: 'Sinab ko‘rish'
+        }
+      ],
+      outcomeSummary: {
+        soloSolvedCount,
+        assistedCount,
+        confirmedFixedCount: confirmedCauses.length,
+        pendingCausesCount: unverifiedCauses.length,
+        summaryText:
+          soloSolvedCount > 0 || assistedCount > 0
+            ? `Mustaqil yechildi: ${soloSolvedCount} masala · Tasdiqlangan tuzatishlar: ${confirmedCauses.length}`
+            : 'Birinchi mashg‘ulotdan so‘ng bu yerda natija va keyingi qadam ko‘rinadi.',
+        nextStepText:
+          unverifiedCauses.length > 0
+            ? `Keyingi qadam: «${unverifiedCauses[0].topicTitle}» mavzusida 1 ta yangi masalani yordamsiz yechib, xato tuzatilganini tasdiqlash.`
+            : `Keyingi qadam: «${newTitle}» mavzusiga o‘tish.`
+      }
+    };
+  }
+
+  const headline = dominantCause
+    ? `Сегодня исправляем: ${errorShort.toLowerCase()} — примерно ${estimatedMinutes} минут`
+    : `Занятие на сегодня: «${reviewTitle}» — примерно ${estimatedMinutes} минут`;
+  const whyChosen = dominantCause
+    ? `${dominantCause.personalMessage}${antiFatigueRotated ? ' Чередуем со свежей темой, чтобы не вызывать усталость.' : ''}`
+    : 'Короткая очередь по интервальному повторению и проверке самостоятельного переноса навыка.';
+
+  return {
+    headline,
+    whyChosen,
+    estimatedMinutes,
+    antiFatigueRotated,
+    dominantCause,
+    errorCauses: causes,
+    steps: [
+      {
+        id: 'review',
+        badge: '01 · Повторить',
+        title: `Повторить «${reviewTitle}» — 2 задачи`,
+        subtitle: dueTopics.includes(reviewTopic) ? 'Подошёл срок интервального повторения (2/7 дней)' : 'Короткое закрепление правила',
+        topic: reviewTopic,
+        targetTab: 'practice',
+        actionLabel: 'Начать повторение'
+      },
+      {
+        id: 'error_repair',
+        badge: '02 · Разобрать ошибку',
+        title: `Разобрать 1 ошибку: ${errorShort}`,
+        subtitle: `Тема: «${errorTitle}»`,
+        topic: errorTopic,
+        targetTab: 'lab',
+        actionLabel: 'Потренироваться'
+      },
+      {
+        id: 'transfer_new',
+        badge: '03 · Новая задача',
+        title: `Попробовать новую задачу: «${newTitle}»`,
+        subtitle: 'Проверка самостоятельного решения без подсказок',
+        topic: newTopic,
+        targetTab: 'practice',
+        actionLabel: 'Попробовать'
+      }
+    ],
+    outcomeSummary: {
+      soloSolvedCount,
+      assistedCount,
+      confirmedFixedCount: confirmedCauses.length,
+      pendingCausesCount: unverifiedCauses.length,
+      summaryText:
+        soloSolvedCount > 0 || assistedCount > 0
+          ? `Решено самостоятельно: ${soloSolvedCount} зад. · С подсказкой: ${assistedCount} · Подтверждено исправлений: ${confirmedCauses.length}`
+          : 'После первого короткого занятия здесь появится разбор: что получилось самостоятельно и что проверить дальше.',
+      nextStepText:
+        unverifiedCauses.length > 0
+          ? `Что дальше: решить 1 новую задачу по теме «${unverifiedCauses[0].topicTitle}» без подсказок, чтобы подтвердить исправление причины ошибки.`
+          : `Что дальше: перейти к новой теме «${newTitle}» или закрепить результат в пробном ЕНТ.`
+    }
+  };
+}
 
 export function recommendTopic(progress: Progress): LabTopic {
   return labTopics.reduce((best, topic) => {
@@ -868,4 +1524,5 @@ export function resolveVerifiedChallenge(input: {
   }
   return challenge;
 }
+
 
