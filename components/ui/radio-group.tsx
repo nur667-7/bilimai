@@ -83,7 +83,7 @@ function RadioGroupItem({
         onClick?.(e);
       }}
       className={cn(
-        "relative aspect-square size-4 shrink-0 cursor-pointer rounded-full border border-input text-primary shadow-xs transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
+        "relative aspect-square size-4 shrink-0 cursor-pointer rounded-full border border-input text-primary shadow-xs transition-[color,background-color,border-color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
         isChecked && "border-primary bg-primary/10",
         className
       )}

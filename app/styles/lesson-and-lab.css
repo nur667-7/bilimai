@@ -5,10 +5,10 @@
    ========================================================================== */
 
 .rule {
-  background: #f8f6f1;
-  border-left: 3px solid var(--primary);
+  background: var(--bilimai-surface-raised);
+  border: 1px solid var(--bilimai-border);
   padding: 14px 18px;
-  border-radius: 0 7px 7px 0;
+  border-radius: 7px;
   font-size: 16px;
   line-height: 1.55;
   color: var(--foreground);
@@ -347,15 +347,15 @@
   border-radius: 6px;
   font-size: 16px;
   line-height: 1.5;
-  background: #f0fdf4;
-  border-left: 3px solid #15803d;
-  color: #14532d;
+  background: var(--bilimai-success-bg);
+  border: 1px solid var(--bilimai-success-border);
+  color: var(--bilimai-success-text);
 }
 
 .feedback.wrong {
-  background: #fffbeb;
-  border-left: 3px solid #d97706;
-  color: #78350f;
+  background: var(--bilimai-warning-bg);
+  border: 1px solid var(--bilimai-warning-border);
+  color: var(--bilimai-warning-text);
 }
 
 .feedback-heading {
@@ -504,10 +504,11 @@
 .response {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  border-left: 3px solid var(--primary);
-  border-radius: 0 7px 7px 0;
+  border: 1px solid var(--bilimai-border);
+  border-radius: 7px;
   padding: 15px 18px;
-  background: #f8f6f1;
+  background: var(--bilimai-surface-raised);
+  color: var(--bilimai-text);
 }
 
 .response-explanation {
@@ -631,15 +632,15 @@
 }
 
 .step-inline-feedback.wrong {
-  background: #fffbeb;
-  border-left: 3px solid #d97706;
-  color: #78350f;
+  background: var(--bilimai-warning-bg);
+  border: 1px solid var(--bilimai-warning-border);
+  color: var(--bilimai-warning-text);
 }
 
 .step-inline-feedback.correct {
-  background: #f0fdf4;
-  border-left: 3px solid #15803d;
-  color: #14532d;
+  background: var(--bilimai-success-bg);
+  border: 1px solid var(--bilimai-success-border);
+  color: var(--bilimai-success-text);
 }
 
 .transfer-stage {

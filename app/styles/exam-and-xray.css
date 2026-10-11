@@ -159,11 +159,11 @@
 .exam-context-box {
   margin-bottom: 12px;
   padding: 12px 14px;
-  border-radius: 0 6px 6px 0;
-  background: #f8f6f1;
-  border-left: 3px solid var(--primary);
+  border-radius: 6px;
+  background: var(--bilimai-surface-raised);
+  border: 1px solid var(--bilimai-border);
   font-size: 14px;
-  color: #1f2937;
+  color: var(--bilimai-text);
 }
 
 .exam-stem {
@@ -337,23 +337,27 @@
 .exam-solution-box {
   padding: 12px 14px;
   border-radius: 6px;
-  border-left: 3px solid var(--primary);
-  background: #f8f6f1;
+  border: 1px solid var(--bilimai-border);
+  background: var(--bilimai-surface-raised);
+  color: var(--bilimai-text);
 }
 
 .exam-solution-box.sol-full {
-  background: #f0fdf4;
-  border-left-color: #15803d;
+  background: var(--bilimai-success-bg);
+  border-color: var(--bilimai-success-border);
+  color: var(--bilimai-success-text);
 }
 
 .exam-solution-box.sol-partial {
-  background: #fffbeb;
-  border-left-color: #d97706;
+  background: var(--bilimai-warning-bg);
+  border-color: var(--bilimai-warning-border);
+  color: var(--bilimai-warning-text);
 }
 
 .exam-solution-box.sol-zero {
-  background: #fef2f2;
-  border-left-color: #dc2626;
+  background: var(--bilimai-error-bg);
+  border-color: var(--bilimai-error-border);
+  color: var(--bilimai-error-text);
 }
 
 .exam-footer-actions {

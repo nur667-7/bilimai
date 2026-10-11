@@ -147,7 +147,7 @@ function TabsTrigger({ className, value, onClick, ...props }: TabsTriggerProps) 
         onClick?.(e);
       }}
       className={cn(
-        "relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-foreground/70 transition-all select-none hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "relative inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-transparent px-3 py-1.5 text-sm font-semibold whitespace-nowrap text-foreground/70 transition-[color,background-color,box-shadow] select-none hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
         className
       )}
@@ -170,7 +170,7 @@ function TabsContent({ className, value, children, ...props }: TabsContentProps)
       role="tabpanel"
       data-slot="tabs-content"
       data-state="active"
-      className={cn("flex-1 outline-none", className)}
+      className={cn("flex-1 outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
       {...props}
     >
       {children}

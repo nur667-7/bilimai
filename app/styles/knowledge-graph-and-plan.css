@@ -964,13 +964,15 @@ html.dark .tabsbar [data-slot="tabs-trigger"] {
 }
 
 .feedback-banner.ok {
-  background: rgba(21, 128, 61, 0.1);
-  border-left: 3px solid #15803d;
+  background: var(--bilimai-success-bg);
+  border: 1px solid var(--bilimai-success-border);
+  color: var(--bilimai-success-text);
 }
 
 .feedback-banner.err {
-  background: rgba(217, 119, 6, 0.1);
-  border-left: 3px solid #d97706;
+  background: var(--bilimai-warning-bg);
+  border: 1px solid var(--bilimai-warning-border);
+  color: var(--bilimai-warning-text);
 }
 
 .inline-action-link {
@@ -1128,7 +1130,7 @@ html.dark .tabsbar [data-slot="tabs-trigger"] {
   padding: 10px 12px;
   border-radius: 7px;
   background: var(--card);
-  border-left: 3px solid var(--primary);
+  border: 1px solid var(--bilimai-border);
 }
 
 .plan-controls-grid {

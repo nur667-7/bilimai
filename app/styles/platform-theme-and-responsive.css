@@ -1031,10 +1031,9 @@ button[data-slot="button"].bg-primary:hover {
 
 .kg-inline-inspector {
   margin: 6px 0 4px 0;
-  border: 0;
-  border-left: 3px solid var(--primary);
-  border-radius: 0 8px 8px 0;
-  background: #F8FAFF;
+  border: 1px solid var(--bilimai-border);
+  border-radius: 8px;
+  background: var(--bilimai-surface-raised);
   padding: 12px 14px;
 }
 

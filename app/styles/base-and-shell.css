@@ -198,8 +198,27 @@ button {
   cursor: pointer;
 }
 
+button:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
 button:disabled {
-  cursor: default;
+  cursor: not-allowed;
+}
+
+input,
+textarea {
+  caret-color: var(--bilimai-brand);
+}
+
+::selection {
+  background-color: var(--bilimai-selected-bg);
+  color: var(--bilimai-selected-text);
+}
+
+html {
+  scrollbar-color: var(--bilimai-border-strong) var(--bilimai-bg);
+  scrollbar-width: thin;
 }
 
 button:focus-visible,
@@ -208,8 +227,19 @@ textarea:focus-visible,
 input:focus-visible,
 select:focus-visible,
 summary:focus-visible {
-  outline: 2.5px solid #b45309;
+  outline: 2.5px solid var(--bilimai-focus);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .beta,

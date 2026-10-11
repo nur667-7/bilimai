@@ -272,11 +272,11 @@ export function UniversalQuestionRenderer({
       data-question-id={question.id}
       data-question-type={question.type}
       style={{
-        border: "1px solid var(--bilimai-border, #D8E0EE)",
+        border: "1px solid var(--bilimai-border)",
         borderRadius: 16,
         padding: "18px 20px",
-        background: "var(--bilimai-surface, #ffffff)",
-        color: "var(--bilimai-text, #0F172A)",
+        background: "var(--bilimai-surface)",
+        color: "var(--bilimai-text)",
         display: "grid",
         gap: 14
       }}
@@ -288,13 +288,13 @@ export function UniversalQuestionRenderer({
             fontWeight: 700,
             padding: "4px 10px",
             borderRadius: 999,
-            background: "var(--bilimai-selected-bg, #E0E7FF)",
-            color: "var(--bilimai-selected-text, #1E3A8A)"
+            background: "var(--bilimai-selected-bg)",
+            color: "var(--bilimai-selected-text)"
           }}
         >
           {ui.typeBadges[question.type]}
         </span>
-        <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #475569)", fontWeight: 600 }}>
+        <span style={{ fontSize: 12, color: "var(--bilimai-text-muted)", fontWeight: 600 }}>
           {question.maxPoints} {question.maxPoints === 1 ? "балл" : "балла"}
         </span>
       </div>
@@ -304,8 +304,8 @@ export function UniversalQuestionRenderer({
           style={{
             padding: "12px 14px",
             borderRadius: 12,
-            background: "var(--bilimai-surface-raised, #EEF2F9)",
-            color: "var(--bilimai-text, #0F172A)",
+            background: "var(--bilimai-surface-raised)",
+            color: "var(--bilimai-text)",
             fontSize: 14,
             lineHeight: 1.5
           }}
@@ -325,8 +325,9 @@ export function UniversalQuestionRenderer({
             margin: 0,
             padding: "12px 14px",
             borderRadius: 12,
-            background: "#161922",
-            color: "#f8f8f2",
+            background: "var(--bilimai-surface-raised)",
+            border: "1px solid var(--bilimai-border)",
+            color: "var(--bilimai-text)",
             fontSize: 13.5,
             overflowX: "auto",
             fontFamily: "var(--font-mono, monospace)"
@@ -336,7 +337,7 @@ export function UniversalQuestionRenderer({
         </pre>
       )}
 
-      <div style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.5, color: "var(--bilimai-text, #0F172A)" }}>
+      <div style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.5, color: "var(--bilimai-text)" }}>
         {question.prompt[locale] ?? question.prompt.ru}
       </div>
 
@@ -365,18 +366,18 @@ export function UniversalQuestionRenderer({
                     minHeight: 44,
                     borderRadius: 12,
                     border: active
-                      ? "2px solid var(--bilimai-selected-border, #254EDB)"
-                      : "1px solid var(--bilimai-border, #D8E0EE)",
+                      ? "2px solid var(--bilimai-selected-border)"
+                      : "1px solid var(--bilimai-border)",
                     background: active
-                      ? "var(--bilimai-selected-bg, #E0E7FF)"
-                      : "var(--bilimai-surface, #fff)",
+                      ? "var(--bilimai-selected-bg)"
+                      : "var(--bilimai-surface)",
                     fontSize: 15,
                     lineHeight: 1.45,
                     cursor: "pointer",
                     fontWeight: active ? 600 : 400,
                     color: active
-                      ? "var(--bilimai-selected-text, #1E3A8A)"
-                      : "var(--bilimai-text, #0F172A)"
+                      ? "var(--bilimai-selected-text)"
+                      : "var(--bilimai-text)"
                   }}
                 >
                   {opt}
@@ -402,14 +403,14 @@ export function UniversalQuestionRenderer({
                   minHeight: 44,
                   borderRadius: 12,
                   border: checked
-                    ? "2px solid var(--bilimai-selected-border, #254EDB)"
-                    : "1px solid var(--bilimai-border, #D8E0EE)",
+                    ? "2px solid var(--bilimai-selected-border)"
+                    : "1px solid var(--bilimai-border)",
                   background: checked
-                    ? "var(--bilimai-selected-bg, #E0E7FF)"
-                    : "var(--bilimai-surface, #fff)",
+                    ? "var(--bilimai-selected-bg)"
+                    : "var(--bilimai-surface)",
                   color: checked
-                    ? "var(--bilimai-selected-text, #1E3A8A)"
-                    : "var(--bilimai-text, #0F172A)",
+                    ? "var(--bilimai-selected-text)"
+                    : "var(--bilimai-text)",
                   cursor: "pointer",
                   fontSize: 15
                 }}
@@ -449,14 +450,14 @@ export function UniversalQuestionRenderer({
               padding: "11px 14px",
               minHeight: 44,
               borderRadius: 12,
-              border: "1px solid var(--bilimai-border, #D8E0EE)",
+              border: "1px solid var(--bilimai-border)",
               fontSize: 16,
-              background: "var(--bilimai-surface, #fff)",
-              color: "var(--bilimai-text, #0F172A)"
+              background: "var(--bilimai-surface)",
+              color: "var(--bilimai-text)"
             }}
           />
           {question.unit && (
-            <span style={{ fontSize: 15, fontWeight: 600, color: "var(--bilimai-text-muted, #475569)" }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "var(--bilimai-text-muted)" }}>
               {question.unit}
             </span>
           )}
@@ -477,10 +478,10 @@ export function UniversalQuestionRenderer({
             width: "100%",
             padding: "12px 14px",
             borderRadius: 12,
-            border: "1px solid var(--bilimai-border, #D8E0EE)",
+            border: "1px solid var(--bilimai-border)",
             fontSize: 15,
-            background: "var(--bilimai-surface, #fff)",
-            color: "var(--bilimai-text, #0F172A)"
+            background: "var(--bilimai-surface)",
+            color: "var(--bilimai-text)"
           }}
         />
       )}
@@ -497,7 +498,7 @@ export function UniversalQuestionRenderer({
                   gap: 6,
                   padding: "10px 12px",
                   borderRadius: 12,
-                  background: "var(--bilimai-surface-raised, #EEF2F9)"
+                  background: "var(--bilimai-surface-raised)"
                 }}
               >
                 <span style={{ fontSize: 14, fontWeight: 600 }}>
@@ -517,10 +518,10 @@ export function UniversalQuestionRenderer({
                     padding: "10px 12px",
                     minHeight: 44,
                     borderRadius: 10,
-                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    border: "1px solid var(--bilimai-border)",
                     fontSize: 14.5,
-                    background: "var(--bilimai-surface, #fff)",
-                    color: "var(--bilimai-text, #0F172A)"
+                    background: "var(--bilimai-surface)",
+                    color: "var(--bilimai-text)"
                   }}
                 >
                   <option value="">{ui.selectMatch}</option>
@@ -548,8 +549,8 @@ export function UniversalQuestionRenderer({
                 gap: 10,
                 padding: "10px 12px",
                 borderRadius: 12,
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
-                background: "var(--bilimai-surface-raised, #EEF2F9)"
+                border: "1px solid var(--bilimai-border)",
+                background: "var(--bilimai-surface-raised)"
               }}
             >
               <span style={{ fontSize: 14.5 }}>
@@ -564,9 +565,9 @@ export function UniversalQuestionRenderer({
                     minHeight: 38,
                     padding: "8px 12px",
                     borderRadius: 8,
-                    border: "1px solid var(--bilimai-border, #D8E0EE)",
-                    background: "var(--bilimai-surface, #fff)",
-                    color: "var(--bilimai-text, #0F172A)",
+                    border: "1px solid var(--bilimai-border)",
+                    background: "var(--bilimai-surface)",
+                    color: "var(--bilimai-text)",
                     cursor: pos === 0 ? "not-allowed" : "pointer",
                     opacity: pos === 0 ? 0.5 : 1,
                     fontSize: 12.5,
@@ -583,9 +584,9 @@ export function UniversalQuestionRenderer({
                     minHeight: 38,
                     padding: "8px 12px",
                     borderRadius: 8,
-                    border: "1px solid var(--bilimai-border, #D8E0EE)",
-                    background: "var(--bilimai-surface, #fff)",
-                    color: "var(--bilimai-text, #0F172A)",
+                    border: "1px solid var(--bilimai-border)",
+                    background: "var(--bilimai-surface)",
+                    color: "var(--bilimai-text)",
                     cursor: pos === sequenceOrder.length - 1 ? "not-allowed" : "pointer",
                     opacity: pos === sequenceOrder.length - 1 ? 0.5 : 1,
                     fontSize: 12.5,
@@ -607,9 +608,9 @@ export function UniversalQuestionRenderer({
           style={{
             padding: "10px 14px",
             borderRadius: 10,
-            background: "var(--bilimai-warning-bg, #FFFBEB)",
-            border: "1px solid var(--bilimai-warning-border, #D97706)",
-            color: "var(--bilimai-warning-text, #92400E)",
+            background: "var(--bilimai-warning-bg)",
+            border: "1px solid var(--bilimai-warning-border)",
+            color: "var(--bilimai-warning-text)",
             fontSize: 14,
             fontWeight: 600
           }}
@@ -630,8 +631,8 @@ export function UniversalQuestionRenderer({
             padding: "11px 18px",
             borderRadius: 12,
             border: "none",
-            background: "var(--bilimai-brand, #254EDB)",
-            color: "var(--bilimai-on-brand, #ffffff)",
+            background: "var(--bilimai-brand)",
+            color: "var(--bilimai-on-brand)",
             fontWeight: 600,
             fontSize: 15,
             cursor: "pointer"
@@ -649,11 +650,11 @@ export function UniversalQuestionRenderer({
             minHeight: 44,
             padding: "10px 14px",
             borderRadius: 12,
-            border: "1px solid var(--bilimai-border, #D8E0EE)",
-            background: "var(--bilimai-surface, #ffffff)",
+            border: "1px solid var(--bilimai-border)",
+            background: "var(--bilimai-surface)",
             fontSize: 14,
             cursor: "pointer",
-            color: "var(--bilimai-text, #0F172A)",
+            color: "var(--bilimai-text)",
             fontWeight: 600
           }}
         >
@@ -669,9 +670,9 @@ export function UniversalQuestionRenderer({
               minHeight: 44,
               padding: "11px 16px",
               borderRadius: 12,
-              border: "1px solid var(--bilimai-selected-border, #254EDB)",
-              background: "var(--bilimai-selected-bg, #E0E7FF)",
-              color: "var(--bilimai-selected-text, #1E3A8A)",
+              border: "1px solid var(--bilimai-selected-border)",
+              background: "var(--bilimai-selected-bg)",
+              color: "var(--bilimai-selected-text)",
               fontWeight: 600,
               fontSize: 14.5,
               cursor: "pointer"
@@ -687,9 +688,9 @@ export function UniversalQuestionRenderer({
           style={{
             padding: "11px 14px",
             borderRadius: 12,
-            background: "var(--bilimai-warning-bg, #FFFBEB)",
-            border: "1px solid var(--bilimai-warning-border, #D97706)",
-            color: "var(--bilimai-warning-text, #92400E)",
+            background: "var(--bilimai-warning-bg)",
+            border: "1px solid var(--bilimai-warning-border)",
+            color: "var(--bilimai-warning-text)",
             fontSize: 14.5,
             lineHeight: 1.5
           }}
@@ -707,22 +708,22 @@ export function UniversalQuestionRenderer({
             borderRadius: 12,
             border:
               evaluation.verificationState === "verified_correct"
-                ? "1px solid var(--bilimai-success-border, #059669)"
+                ? "1px solid var(--bilimai-success-border)"
                 : evaluation.verificationState === "incorrect"
-                  ? "1px solid var(--bilimai-error-border, #DC2626)"
-                  : "1px solid var(--bilimai-warning-border, #D97706)",
+                  ? "1px solid var(--bilimai-error-border)"
+                  : "1px solid var(--bilimai-warning-border)",
             background:
               evaluation.verificationState === "verified_correct"
-                ? "var(--bilimai-success-bg, #ECFDF5)"
+                ? "var(--bilimai-success-bg)"
                 : evaluation.verificationState === "incorrect"
-                  ? "var(--bilimai-error-bg, #FEF2F2)"
-                  : "var(--bilimai-warning-bg, #FFFBEB)",
+                  ? "var(--bilimai-error-bg)"
+                  : "var(--bilimai-warning-bg)",
             color:
               evaluation.verificationState === "verified_correct"
-                ? "var(--bilimai-success-text, #065F46)"
+                ? "var(--bilimai-success-text)"
                 : evaluation.verificationState === "incorrect"
-                  ? "var(--bilimai-error-text, #991B1B)"
-                  : "var(--bilimai-warning-text, #92400E)",
+                  ? "var(--bilimai-error-text)"
+                  : "var(--bilimai-warning-text)",
             display: "grid",
             gap: 8
           }}
