@@ -34,6 +34,7 @@ import {
   type UniversalPlatformProgressState
 } from "@/lib/universal-progress";
 import { UniversalQuestionRenderer } from "@/components/study/universal-question-renderer";
+import { useAniqTheme, ThemeToggleButton } from "@/components/hero-canvas";
 
 export type SubjectWorkspaceTab =
   | "overview"
@@ -47,7 +48,7 @@ export type SubjectWorkspaceTab =
 const LOCALE_STORAGE_KEY = "bilimai-locale-v1";
 const LEGACY_LANG_STORAGE_KEY = "bilimai-lang";
 
-function parseStartModeToTab(rawStart?: string | null): SubjectWorkspaceTab {
+export function parseStartModeToTab(rawStart?: string | null): SubjectWorkspaceTab {
   if (!rawStart) return "overview";
   const clean = rawStart.trim().toLowerCase();
   switch (clean) {
@@ -513,7 +514,7 @@ export function SubjectOverviewClient({
       window.localStorage.setItem(LOCALE_STORAGE_KEY, resolvedLocale);
       window.localStorage.setItem(LEGACY_LANG_STORAGE_KEY, resolvedLocale);
 
-      const urlStart = params.get("start") ?? initialStartMode;
+      const urlStart = params.get("start") ?? params.get("mode") ?? initialStartMode;
       const urlLesson = params.get("lesson") ?? initialLessonId;
 
       if (urlLesson) {
@@ -575,7 +576,7 @@ export function SubjectOverviewClient({
           return;
         }
       }
-      const qStart = params.get("start");
+      const qStart = params.get("start") ?? params.get("mode");
       setActiveTab(parseStartModeToTab(qStart));
     };
 
@@ -608,12 +609,14 @@ export function SubjectOverviewClient({
     syncBrowserUrl(activeTab, selectedLessonIndex, nextLocale, "replace");
   };
 
+  const { dark, toggleTheme } = useAniqTheme();
+
   if (!curriculum) {
     return (
       <main style={{ maxWidth: 920, margin: "40px auto", padding: "0 20px" }}>
         <h1>Предмет не найден</h1>
         <p>Выберите предмет из каталога BilimAI.</p>
-        <Link href="/subjects" style={{ color: "var(--accent, #3856f5)", fontWeight: 600 }}>
+        <Link href="/subjects" style={{ color: "var(--bilimai-brand-text, #1D4ED8)", fontWeight: 600 }}>
           ← Перейти в каталог предметов
         </Link>
       </main>
@@ -635,16 +638,13 @@ export function SubjectOverviewClient({
   // Select up to 5 diagnostic questions spanning distinct lessons/difficulties (Section 10)
   const diagnosticQuestions: UniversalQuestion[] = (() => {
     const picked: UniversalQuestion[] = [];
-    for (const lesson of curriculum.lessons) {
-      if (lesson.questions[0]) {
-        picked.push(lesson.questions[0]);
-      }
-      if (picked.length >= 5) break;
-    }
-    for (const q of allPracticeQuestions) {
-      if (picked.length >= 5) break;
-      if (!picked.some((p) => p.id === q.id)) {
-        picked.push(q);
+    for (let pass = 0; pass < 3 && picked.length < 5; pass++) {
+      for (const lesson of curriculum.lessons) {
+        const candidate = lesson.questions[pass];
+        if (candidate && !picked.some((p) => p.id === candidate.id)) {
+          picked.push(candidate);
+        }
+        if (picked.length >= 5) break;
       }
     }
     return picked;
@@ -695,6 +695,11 @@ export function SubjectOverviewClient({
     setLessonQuestionIndex(step.nextIndex);
     if (step.completed) {
       setLessonQuestionsFinished(true);
+      if (typeof document !== "undefined") {
+        document
+          .getElementById("lesson-summary-card")
+          ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     }
   };
 
@@ -917,6 +922,19 @@ export function SubjectOverviewClient({
     }
   };
 
+  const themeLightAction =
+    locale === "kk"
+      ? "Жарық тақырыпты қосу"
+      : locale === "uz"
+        ? "Yorug‘ mavzuni yoqish"
+        : "Включить светлую тему";
+  const themeDarkAction =
+    locale === "kk"
+      ? "Қараңғы тақырыпты қосу"
+      : locale === "uz"
+        ? "Qorong‘i mavzuni yoqish"
+        : "Включить тёмную тему";
+
   const activeErrorLab =
     curriculum.errorLabCases[
       Math.min(selectedErrorLabIdx, Math.max(0, curriculum.errorLabCases.length - 1))
@@ -925,16 +943,22 @@ export function SubjectOverviewClient({
   const lastDiag = subjectProgress.lastDiagnostic;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg, #f7f5ef)", color: "var(--ink, #171717)" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--bilimai-bg, #F6F7FB)",
+        color: "var(--bilimai-text, #0F172A)"
+      }}
+    >
       {/* Top Universal Navigation Bar */}
       <header
         style={{
           position: "sticky",
           top: 0,
           zIndex: 30,
-          background: "rgba(247, 245, 239, 0.94)",
+          background: "var(--bilimai-header-bg, rgba(246, 247, 251, 0.94))",
           backdropFilter: "blur(10px)",
-          borderBottom: "1px solid var(--border, #e4e1d8)",
+          borderBottom: "1px solid var(--bilimai-border, #D8E0EE)",
           padding: "10px 16px"
         }}
       >
@@ -951,12 +975,12 @@ export function SubjectOverviewClient({
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <Link
-              href="/welcome"
+              href={`/welcome?lang=${locale}`}
               style={{
                 fontWeight: 800,
                 fontSize: 18,
                 textDecoration: "none",
-                color: "var(--ink, #171717)",
+                color: "var(--bilimai-text, #0F172A)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8
@@ -967,8 +991,8 @@ export function SubjectOverviewClient({
                   width: 28,
                   height: 28,
                   borderRadius: 8,
-                  background: "var(--accent, #3856f5)",
-                  color: "#fff",
+                  background: "var(--bilimai-brand, #254EDB)",
+                  color: "var(--bilimai-on-brand, #fff)",
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -982,12 +1006,16 @@ export function SubjectOverviewClient({
             </Link>
 
             <Link
-              href="/subjects"
+              href={`/subjects?lang=${locale}`}
               style={{
                 fontSize: 13.5,
-                color: "var(--muted, #65635d)",
+                color: "var(--bilimai-text-muted, #475569)",
                 textDecoration: "none",
-                fontWeight: 600
+                fontWeight: 600,
+                padding: "8px 10px",
+                minHeight: 38,
+                display: "inline-flex",
+                alignItems: "center"
               }}
             >
               {ui.allSubjects}
@@ -1000,10 +1028,12 @@ export function SubjectOverviewClient({
                 window.location.href = `/subjects/${e.target.value}?lang=${locale}`;
               }}
               style={{
-                padding: "6px 10px",
+                padding: "7px 10px",
+                minHeight: 38,
                 borderRadius: 10,
-                border: "1px solid var(--border, #dcd8ce)",
-                background: "var(--surface, #fff)",
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                background: "var(--bilimai-surface, #fff)",
+                color: "var(--bilimai-text, #0F172A)",
                 fontSize: 13.5,
                 fontWeight: 600
               }}
@@ -1023,9 +1053,9 @@ export function SubjectOverviewClient({
               style={{
                 display: "inline-flex",
                 borderRadius: 10,
-                border: "1px solid var(--border, #dcd8ce)",
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
                 overflow: "hidden",
-                background: "var(--surface, #fff)"
+                background: "var(--bilimai-surface, #fff)"
               }}
             >
               {(["ru", "kk", "uz"] as const).map((lang) => (
@@ -1033,12 +1063,17 @@ export function SubjectOverviewClient({
                   key={lang}
                   type="button"
                   data-testid={`subject-lang-${lang}`}
+                  aria-pressed={locale === lang}
                   onClick={() => handleLocaleChange(lang)}
                   style={{
-                    padding: "6px 10px",
+                    padding: "7px 11px",
+                    minHeight: 38,
                     border: "none",
-                    background: locale === lang ? "var(--accent, #3856f5)" : "transparent",
-                    color: locale === lang ? "#fff" : "inherit",
+                    background: locale === lang ? "var(--bilimai-brand, #254EDB)" : "transparent",
+                    color:
+                      locale === lang
+                        ? "var(--bilimai-on-brand, #fff)"
+                        : "var(--bilimai-text, #0F172A)",
                     fontSize: 12,
                     fontWeight: 700,
                     cursor: "pointer"
@@ -1049,15 +1084,25 @@ export function SubjectOverviewClient({
               ))}
             </div>
 
+            <ThemeToggleButton
+              dark={dark}
+              onToggle={toggleTheme}
+              lightActionLabel={themeLightAction}
+              darkActionLabel={themeDarkAction}
+            />
+
             <Link
               href={`/?subject=${curriculum.id}&lang=${locale}`}
               style={{
-                padding: "7px 12px",
+                padding: "8px 12px",
+                minHeight: 38,
+                display: "inline-flex",
+                alignItems: "center",
                 borderRadius: 10,
-                border: "1px solid var(--border, #dcd8ce)",
-                background: "var(--surface, #fff)",
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                background: "var(--bilimai-surface, #fff)",
                 textDecoration: "none",
-                color: "inherit",
+                color: "var(--bilimai-text, #0F172A)",
                 fontSize: 13,
                 fontWeight: 600
               }}
@@ -1081,8 +1126,8 @@ export function SubjectOverviewClient({
         <section
           data-testid="subject-overview-hero"
           style={{
-            background: "var(--surface, #ffffff)",
-            border: "1px solid var(--border, #e4e1d8)",
+            background: "var(--bilimai-surface, #ffffff)",
+            border: "1px solid var(--bilimai-border, #D8E0EE)",
             borderRadius: activeTab === "overview" ? 20 : 14,
             padding: activeTab === "overview" ? "20px 22px" : "12px 16px",
             display: "grid",
@@ -1103,8 +1148,8 @@ export function SubjectOverviewClient({
                 style={{
                   padding: "4px 10px",
                   borderRadius: 999,
-                  background: `${curriculum.accentColor}18`,
-                  color: curriculum.accentColor,
+                  background: "var(--bilimai-selected-bg, #E0E7FF)",
+                  color: "var(--bilimai-selected-text, #1E3A8A)",
                   fontWeight: 800,
                   fontSize: 12
                 }}
@@ -1116,7 +1161,7 @@ export function SubjectOverviewClient({
                   {curriculum.title[locale]}
                 </h1>
               ) : (
-                <span style={{ fontSize: 13, color: "var(--muted, #65635d)" }}>
+                <span style={{ fontSize: 13, color: "var(--bilimai-text-muted, #475569)" }}>
                   {formatLessonsCountLabel(curriculum.lessons.length, locale)} ·{" "}
                   {formatQuestionsCountLabel(allPracticeQuestions.length, locale)}
                 </span>
@@ -1128,8 +1173,8 @@ export function SubjectOverviewClient({
                     fontWeight: 700,
                     padding: "3px 9px",
                     borderRadius: 999,
-                    background: "var(--bg, #f7f5ef)",
-                    color: "var(--muted, #57544e)"
+                    background: "var(--bilimai-surface-raised, #EEF2F9)",
+                    color: "var(--bilimai-text-muted, #475569)"
                   }}
                 >
                   {curriculum.readinessLabel[locale]}
@@ -1144,8 +1189,9 @@ export function SubjectOverviewClient({
                 fontWeight: 600,
                 padding: "5px 11px",
                 borderRadius: 999,
-                background: "var(--bg, #f7f5ef)",
-                border: "1px solid var(--border, #e4e1d8)"
+                background: "var(--bilimai-surface-raised, #EEF2F9)",
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                color: "var(--bilimai-text, #0F172A)"
               }}
             >
               {ui.progressPrefix} {summaryMetrics.completedLessons} {ui.ofWord}{" "}
@@ -1163,7 +1209,7 @@ export function SubjectOverviewClient({
                 <h1 style={{ margin: "0 0 8px", fontSize: "clamp(22px, 3vw, 30px)", lineHeight: 1.2 }}>
                   {curriculum.title[locale]}
                 </h1>
-                <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.5, color: "var(--muted, #57544e)" }}>
+                <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.5, color: "var(--bilimai-text-muted, #475569)" }}>
                   {curriculum.description[locale]}
                 </p>
               </div>
@@ -1177,8 +1223,8 @@ export function SubjectOverviewClient({
                       fontSize: 12.5,
                       padding: "5px 11px",
                       borderRadius: 999,
-                      background: "var(--bg, #f7f5ef)",
-                      color: "var(--ink, #171717)"
+                      background: "var(--bilimai-surface-raised, #EEF2F9)",
+                      color: "var(--bilimai-text, #0F172A)"
                     }}
                   >
                     {ui.levelPrefix} {idx + 1}: {lvl}
@@ -1194,9 +1240,10 @@ export function SubjectOverviewClient({
                   onClick={() => openLessonByIndex(0)}
                   style={{
                     padding: "12px 18px",
+                    minHeight: 44,
                     borderRadius: 12,
                     border: "none",
-                    background: "var(--accent, #3856f5)",
+                    background: "var(--bilimai-brand, #254EDB)",
                     color: "#fff",
                     fontWeight: 700,
                     fontSize: 15,
@@ -1217,10 +1264,11 @@ export function SubjectOverviewClient({
                   }}
                   style={{
                     padding: "12px 16px",
+                    minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--accent, #3856f5)",
-                    background: "rgba(56, 86, 245, 0.08)",
-                    color: "var(--accent, #3856f5)",
+                    border: "1px solid var(--bilimai-selected-border, #254EDB)",
+                    background: "var(--bilimai-selected-bg, #E0E7FF)",
+                    color: "var(--bilimai-selected-text, #1E3A8A)",
                     fontWeight: 700,
                     fontSize: 14.5,
                     cursor: "pointer"
@@ -1235,9 +1283,11 @@ export function SubjectOverviewClient({
                   onClick={() => switchTab("map")}
                   style={{
                     padding: "12px 16px",
+                    minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--border, #dcd8ce)",
-                    background: "var(--surface, #fff)",
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    background: "var(--bilimai-surface, #fff)",
+                    color: "var(--bilimai-text, #0F172A)",
                     fontWeight: 600,
                     fontSize: 14.5,
                     cursor: "pointer"
@@ -1252,9 +1302,11 @@ export function SubjectOverviewClient({
                   onClick={() => switchTab("practice")}
                   style={{
                     padding: "12px 16px",
+                    minHeight: 44,
                     borderRadius: 12,
-                    border: "1px solid var(--border, #dcd8ce)",
-                    background: "var(--surface, #fff)",
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    background: "var(--bilimai-surface, #fff)",
+                    color: "var(--bilimai-text, #0F172A)",
                     fontWeight: 600,
                     fontSize: 14.5,
                     cursor: "pointer"
@@ -1275,7 +1327,7 @@ export function SubjectOverviewClient({
             flexWrap: "nowrap",
             overflowX: "auto",
             gap: 6,
-            borderBottom: "1px solid var(--border, #e4e1d8)",
+            borderBottom: "1px solid var(--bilimai-border, #D8E0EE)",
             paddingBottom: 8,
             scrollbarWidth: "thin"
           }}
@@ -1293,13 +1345,14 @@ export function SubjectOverviewClient({
                 style={{
                   flexShrink: 0,
                   whiteSpace: "nowrap",
-                  padding: "8px 13px",
+                  padding: "9px 14px",
+                  minHeight: 40,
                   borderRadius: 10,
                   border: active
-                    ? "1px solid var(--accent, #3856f5)"
-                    : "1px solid var(--border, #dcd8ce)",
-                  background: active ? "var(--accent, #3856f5)" : "var(--surface, #fff)",
-                  color: active ? "#fff" : "inherit",
+                    ? "1px solid var(--bilimai-selected-border, #254EDB)"
+                    : "1px solid var(--bilimai-border, #D8E0EE)",
+                  background: active ? "var(--bilimai-brand, #254EDB)" : "var(--bilimai-surface, #fff)",
+                  color: active ? "#fff" : "var(--bilimai-text, #0F172A)",
                   fontWeight: 600,
                   fontSize: 13.5,
                   cursor: "pointer"
@@ -1318,11 +1371,14 @@ export function SubjectOverviewClient({
               flexShrink: 0,
               whiteSpace: "nowrap",
               marginLeft: "auto",
-              padding: "8px 12px",
+              padding: "9px 13px",
+              minHeight: 40,
+              display: "inline-flex",
+              alignItems: "center",
               borderRadius: 10,
-              border: "1px dashed var(--border, #c5c0b4)",
+              border: "1px dashed var(--bilimai-border, #D8E0EE)",
               background: "transparent",
-              color: "var(--muted, #57544e)",
+              color: "var(--bilimai-text-muted, #475569)",
               textDecoration: "none",
               fontSize: 13,
               fontWeight: 600
@@ -1350,13 +1406,13 @@ export function SubjectOverviewClient({
               }}
             >
               <div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--accent, #3856f5)" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--bilimai-brand-text, #1D4ED8)" }}>
                   {ui.recommendedNextKicker}
                 </span>
                 <div style={{ fontSize: 17, fontWeight: 700, marginTop: 2 }}>
                   {recommendedLessonInfo.lesson.title[locale]}
                 </div>
-                <div style={{ fontSize: 13.5, color: "var(--muted, #57544e)", marginTop: 2 }}>
+                <div style={{ fontSize: 13.5, color: "var(--bilimai-text-muted, #475569)", marginTop: 2 }}>
                   {recommendedLessonInfo.reason[locale]}
                 </div>
               </div>
@@ -1366,9 +1422,10 @@ export function SubjectOverviewClient({
                 onClick={() => openLessonByIndex(recommendedLessonInfo.index)}
                 style={{
                   padding: "10px 16px",
+                  minHeight: 42,
                   borderRadius: 10,
                   border: "none",
-                  background: "var(--accent, #3856f5)",
+                  background: "var(--bilimai-brand, #254EDB)",
                   color: "#fff",
                   fontWeight: 600,
                   cursor: "pointer"
@@ -1380,8 +1437,8 @@ export function SubjectOverviewClient({
 
             <section
               style={{
-                background: "var(--surface, #fff)",
-                border: "1px solid var(--border, #e4e1d8)",
+                background: "var(--bilimai-surface, #fff)",
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
                 borderRadius: 18,
                 padding: "18px 20px",
                 display: "grid",
@@ -1406,8 +1463,10 @@ export function SubjectOverviewClient({
                         gap: 12,
                         padding: "12px 14px",
                         borderRadius: 14,
-                        border: "1px solid var(--border, #e4e1d8)",
-                        background: isDone ? "rgba(22, 163, 74, 0.05)" : "var(--bg, #f7f5ef)"
+                        border: "1px solid var(--bilimai-border, #D8E0EE)",
+                        background: isDone
+                          ? "rgba(22, 163, 74, 0.07)"
+                          : "var(--bilimai-surface-raised, #EEF2F9)"
                       }}
                     >
                       <div style={{ display: "grid", gap: 3 }}>
@@ -1423,7 +1482,7 @@ export function SubjectOverviewClient({
                             style={{
                               fontSize: 12,
                               fontWeight: 700,
-                              color: "var(--muted, #65635d)"
+                              color: "var(--bilimai-text-muted, #475569)"
                             }}
                           >
                             {ui.lessonWord} {idx + 1} · {lesson.sectionTitle[locale]}
@@ -1435,25 +1494,25 @@ export function SubjectOverviewClient({
                                 fontWeight: 700,
                                 padding: "2px 8px",
                                 borderRadius: 999,
-                                background: "rgba(22, 163, 74, 0.15)",
-                                color: "#15803d"
+                                background: "var(--bilimai-success-bg, #DCFCE7)",
+                                color: "var(--bilimai-success-text, #166534)"
                               }}
                             >
                               {ui.lessonCompletedBadge}
                             </span>
                           )}
                           {topicStat && topicStat.max > 0 ? (
-                            <span style={{ fontSize: 12, color: "var(--muted, #65635d)" }}>
+                            <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #475569)" }}>
                               {ui.accuracyPrefix}: {Math.round((topicStat.earned / topicStat.max) * 100)}%
                             </span>
                           ) : (
-                            <span style={{ fontSize: 12, color: "var(--muted, #65635d)" }}>
+                            <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #475569)" }}>
                               {ui.notAssessedYet}
                             </span>
                           )}
                         </div>
                         <strong style={{ fontSize: 16 }}>{lesson.title[locale]}</strong>
-                        <span style={{ fontSize: 13.5, color: "var(--muted, #57544e)" }}>
+                        <span style={{ fontSize: 13.5, color: "var(--bilimai-text-muted, #475569)" }}>
                           {ui.goalPrefix} {lesson.learningGoal[locale]}
                         </span>
                       </div>
@@ -1463,11 +1522,12 @@ export function SubjectOverviewClient({
                         data-testid={`open-lesson-idx-${idx}`}
                         onClick={() => openLessonByIndex(idx)}
                         style={{
-                          padding: "9px 14px",
+                          padding: "10px 15px",
+                          minHeight: 42,
                           borderRadius: 10,
-                          border: "1px solid var(--accent, #3856f5)",
-                          background: "var(--surface, #fff)",
-                          color: "var(--accent, #3856f5)",
+                          border: "1px solid var(--bilimai-selected-border, #254EDB)",
+                          background: "var(--bilimai-surface, #fff)",
+                          color: "var(--bilimai-brand-text, #1D4ED8)",
                           fontWeight: 600,
                           fontSize: 13.5,
                           cursor: "pointer"
@@ -1489,8 +1549,8 @@ export function SubjectOverviewClient({
             data-testid="interactive-lesson-engine"
             data-lesson-id={currentLesson.id}
             style={{
-              background: "var(--surface, #fff)",
-              border: "1px solid var(--border, #e4e1d8)",
+              background: "var(--bilimai-surface, #fff)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
               borderRadius: 20,
               padding: "22px 24px",
               display: "grid",
@@ -1508,10 +1568,10 @@ export function SubjectOverviewClient({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent, #3856f5)" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--bilimai-brand-text, #1D4ED8)" }}>
                   {ui.lessonWord} {selectedLessonIndex + 1} {ui.ofWord} {curriculum.lessons.length}
                 </span>
-                <span style={{ fontSize: 13, color: "var(--muted, #65635d)" }}>
+                <span style={{ fontSize: 13, color: "var(--bilimai-text-muted, #475569)" }}>
                   · {currentLesson.sectionTitle[locale]} · ~{currentLesson.estimatedMinutes} min
                 </span>
               </div>
@@ -1524,15 +1584,18 @@ export function SubjectOverviewClient({
                     data-testid={`lesson-selector-${idx}`}
                     onClick={() => openLessonByIndex(idx)}
                     style={{
-                      padding: "6px 11px",
+                      padding: "7px 12px",
+                      minHeight: 38,
                       borderRadius: 8,
                       border:
                         idx === selectedLessonIndex
-                          ? "1px solid var(--accent, #3856f5)"
-                          : "1px solid var(--border, #dcd8ce)",
+                          ? "1px solid var(--bilimai-selected-border, #254EDB)"
+                          : "1px solid var(--bilimai-border, #D8E0EE)",
                       background:
-                        idx === selectedLessonIndex ? "var(--accent, #3856f5)" : "transparent",
-                      color: idx === selectedLessonIndex ? "#fff" : "inherit",
+                        idx === selectedLessonIndex
+                          ? "var(--bilimai-brand, #254EDB)"
+                          : "var(--bilimai-surface-raised, #EEF2F9)",
+                      color: idx === selectedLessonIndex ? "#fff" : "var(--bilimai-text, #0F172A)",
                       fontSize: 12.5,
                       fontWeight: 600,
                       cursor: "pointer"
@@ -1548,7 +1611,7 @@ export function SubjectOverviewClient({
               <h2 data-testid="active-lesson-title" style={{ margin: "0 0 6px", fontSize: 23 }}>
                 {currentLesson.title[locale]}
               </h2>
-              <p style={{ margin: 0, fontSize: 15, color: "var(--muted, #57544e)" }}>
+              <p style={{ margin: 0, fontSize: 15, color: "var(--bilimai-text-muted, #475569)" }}>
                 <strong>{ui.goalPrefix}</strong> {currentLesson.learningGoal[locale]}
               </p>
             </div>
@@ -1558,7 +1621,8 @@ export function SubjectOverviewClient({
               style={{
                 padding: "16px 18px",
                 borderRadius: 16,
-                background: "var(--bg, #f7f5ef)",
+                background: "var(--bilimai-surface-raised, #EEF2F9)",
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
                 display: "grid",
                 gap: 12
               }}
@@ -1576,16 +1640,19 @@ export function SubjectOverviewClient({
                 <div style={{ display: "flex", gap: 6 }}>
                   <button
                     type="button"
+                    data-testid="lesson-depth-simple"
                     onClick={() => setExplanationDepth("simple")}
                     style={{
-                      padding: "6px 11px",
+                      padding: "7px 12px",
+                      minHeight: 38,
                       borderRadius: 8,
-                      border: "1px solid var(--border, #dcd8ce)",
+                      border: "1px solid var(--bilimai-border, #D8E0EE)",
                       background:
                         explanationDepth === "simple"
-                          ? "var(--accent, #3856f5)"
-                          : "var(--surface, #fff)",
-                      color: explanationDepth === "simple" ? "#fff" : "inherit",
+                          ? "var(--bilimai-brand, #254EDB)"
+                          : "var(--bilimai-surface, #fff)",
+                      color:
+                        explanationDepth === "simple" ? "#fff" : "var(--bilimai-text, #0F172A)",
                       fontSize: 12.5,
                       fontWeight: 600,
                       cursor: "pointer"
@@ -1595,16 +1662,19 @@ export function SubjectOverviewClient({
                   </button>
                   <button
                     type="button"
+                    data-testid="lesson-depth-detailed"
                     onClick={() => setExplanationDepth("detailed")}
                     style={{
-                      padding: "6px 11px",
+                      padding: "7px 12px",
+                      minHeight: 38,
                       borderRadius: 8,
-                      border: "1px solid var(--border, #dcd8ce)",
+                      border: "1px solid var(--bilimai-border, #D8E0EE)",
                       background:
                         explanationDepth === "detailed"
-                          ? "var(--accent, #3856f5)"
-                          : "var(--surface, #fff)",
-                      color: explanationDepth === "detailed" ? "#fff" : "inherit",
+                          ? "var(--bilimai-brand, #254EDB)"
+                          : "var(--bilimai-surface, #fff)",
+                      color:
+                        explanationDepth === "detailed" ? "#fff" : "var(--bilimai-text, #0F172A)",
                       fontSize: 12.5,
                       fontWeight: 600,
                       cursor: "pointer"
@@ -1627,9 +1697,9 @@ export function SubjectOverviewClient({
                   style={{
                     padding: "12px 14px",
                     borderRadius: 12,
-                    border: "1px solid var(--border, #dcd8ce)",
-                    background: block.type === "code" ? "#161922" : "var(--surface, #fff)",
-                    color: block.type === "code" ? "#f8f8f2" : "inherit"
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    background: block.type === "code" ? "#161922" : "var(--bilimai-surface, #fff)",
+                    color: block.type === "code" ? "#f8f8f2" : "var(--bilimai-text, #0F172A)"
                   }}
                 >
                   <strong style={{ display: "block", fontSize: 13.5, marginBottom: 4 }}>
@@ -1658,7 +1728,8 @@ export function SubjectOverviewClient({
               style={{
                 padding: "16px 18px",
                 borderRadius: 16,
-                border: "1px solid var(--border, #e4e1d8)",
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                background: "var(--bilimai-surface, #fff)",
                 display: "grid",
                 gap: 10
               }}
@@ -1677,7 +1748,8 @@ export function SubjectOverviewClient({
                     style={{
                       padding: "9px 12px",
                       borderRadius: 10,
-                      background: "var(--bg, #f7f5ef)",
+                      background: "var(--bilimai-surface-raised, #EEF2F9)",
+                      color: "var(--bilimai-text, #0F172A)",
                       fontSize: 14.5
                     }}
                   >
@@ -1685,7 +1757,7 @@ export function SubjectOverviewClient({
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize: 14, color: "var(--accent, #3856f5)", fontWeight: 600 }}>
+              <div style={{ fontSize: 14, color: "var(--bilimai-brand-text, #1D4ED8)", fontWeight: 600 }}>
                 {ui.takeawayPrefix} {currentLesson.workedExample.takeaway[locale]}
               </div>
             </div>
@@ -1706,21 +1778,53 @@ export function SubjectOverviewClient({
                   {Math.min(lessonQuestionIndex + 1, currentLesson.questions.length)} {ui.ofWord}{" "}
                   {currentLesson.questions.length})
                 </strong>
-                {lessonQuestionsFinished && (
-                  <span
-                    data-testid="lesson-questions-completed-badge"
-                    style={{
-                      fontSize: 12.5,
-                      fontWeight: 700,
-                      padding: "4px 10px",
-                      borderRadius: 999,
-                      background: "rgba(22, 163, 74, 0.14)",
-                      color: "#15803d"
-                    }}
-                  >
-                    {ui.allLessonQuestionsDone}
-                  </span>
-                )}
+
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  {currentLesson.questions.map((lq, qIdx) => (
+                    <button
+                      key={lq.id}
+                      type="button"
+                      data-testid={`lesson-question-selector-${qIdx}`}
+                      onClick={() => setLessonQuestionIndex(qIdx)}
+                      style={{
+                        padding: "6px 11px",
+                        minHeight: 36,
+                        borderRadius: 8,
+                        border:
+                          qIdx === lessonQuestionIndex
+                            ? "1px solid var(--bilimai-selected-border, #254EDB)"
+                            : "1px solid var(--bilimai-border, #D8E0EE)",
+                        background:
+                          qIdx === lessonQuestionIndex
+                            ? "var(--bilimai-brand, #254EDB)"
+                            : "var(--bilimai-surface-raised, #EEF2F9)",
+                        color:
+                          qIdx === lessonQuestionIndex ? "#fff" : "var(--bilimai-text, #0F172A)",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}
+                    >
+                      #{qIdx + 1}
+                    </button>
+                  ))}
+
+                  {lessonQuestionsFinished && (
+                    <span
+                      data-testid="lesson-questions-completed-badge"
+                      style={{
+                        fontSize: 12.5,
+                        fontWeight: 700,
+                        padding: "4px 10px",
+                        borderRadius: 999,
+                        background: "var(--bilimai-success-bg, #DCFCE7)",
+                        color: "var(--bilimai-success-text, #166534)"
+                      }}
+                    >
+                      {ui.allLessonQuestionsDone}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {currentLesson.questions[lessonQuestionIndex] && (
@@ -1740,11 +1844,13 @@ export function SubjectOverviewClient({
 
             {/* Step 4: Lesson Summary & Completion Button */}
             <div
+              id="lesson-summary-card"
+              data-testid="lesson-summary-card"
               style={{
                 padding: "16px 18px",
                 borderRadius: 16,
-                background: "rgba(22, 163, 74, 0.07)",
-                border: "1px solid rgba(22, 163, 74, 0.25)",
+                background: "rgba(22, 163, 74, 0.08)",
+                border: "1px solid rgba(22, 163, 74, 0.3)",
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "center",
@@ -1763,7 +1869,8 @@ export function SubjectOverviewClient({
                   data-testid="complete-lesson-btn"
                   onClick={handleCompleteCurrentLesson}
                   style={{
-                    padding: "10px 16px",
+                    padding: "11px 16px",
+                    minHeight: 44,
                     borderRadius: 10,
                     border: "none",
                     background: "#15803d",
@@ -1777,22 +1884,41 @@ export function SubjectOverviewClient({
                     : ui.completeLessonBtn}
                 </button>
 
-                {selectedLessonIndex + 1 < curriculum.lessons.length && (
+                {selectedLessonIndex + 1 < curriculum.lessons.length ? (
                   <button
                     type="button"
                     data-testid="next-lesson-btn"
                     onClick={() => openLessonByIndex(selectedLessonIndex + 1)}
                     style={{
-                      padding: "10px 16px",
+                      padding: "11px 16px",
+                      minHeight: 44,
                       borderRadius: 10,
-                      border: "1px solid var(--accent, #3856f5)",
-                      background: "var(--surface, #fff)",
-                      color: "var(--accent, #3856f5)",
+                      border: "1px solid var(--bilimai-selected-border, #254EDB)",
+                      background: "var(--bilimai-surface, #fff)",
+                      color: "var(--bilimai-brand-text, #1D4ED8)",
                       fontWeight: 600,
                       cursor: "pointer"
                     }}
                   >
                     {ui.nextLessonBtn}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    data-testid="after-last-lesson-practice-btn"
+                    onClick={() => switchTab("practice")}
+                    style={{
+                      padding: "11px 16px",
+                      minHeight: 44,
+                      borderRadius: 10,
+                      border: "1px solid var(--bilimai-selected-border, #254EDB)",
+                      background: "var(--bilimai-surface, #fff)",
+                      color: "var(--bilimai-brand-text, #1D4ED8)",
+                      fontWeight: 600,
+                      cursor: "pointer"
+                    }}
+                  >
+                    {ui.ctaGoPractice} →
                   </button>
                 )}
               </div>
@@ -1821,19 +1947,22 @@ export function SubjectOverviewClient({
                   <button
                     key={q.id}
                     type="button"
+                    data-testid={`practice-question-selector-${idx}`}
                     onClick={() => setPracticeQuestionIndex(idx)}
                     style={{
-                      padding: "6px 11px",
+                      padding: "7px 12px",
+                      minHeight: 38,
                       borderRadius: 8,
                       border:
                         idx === practiceQuestionIndex
-                          ? "1px solid var(--accent, #3856f5)"
-                          : "1px solid var(--border, #dcd8ce)",
+                          ? "1px solid var(--bilimai-selected-border, #254EDB)"
+                          : "1px solid var(--bilimai-border, #D8E0EE)",
                       background:
                         idx === practiceQuestionIndex
-                          ? "var(--accent, #3856f5)"
-                          : "var(--surface, #fff)",
-                      color: idx === practiceQuestionIndex ? "#fff" : "inherit",
+                          ? "var(--bilimai-brand, #254EDB)"
+                          : "var(--bilimai-surface, #fff)",
+                      color:
+                        idx === practiceQuestionIndex ? "#fff" : "var(--bilimai-text, #0F172A)",
                       fontSize: 12.5,
                       fontWeight: 600,
                       cursor: "pointer"
@@ -1865,8 +1994,8 @@ export function SubjectOverviewClient({
           <section
             data-testid="subject-error-lab"
             style={{
-              background: "var(--surface, #fff)",
-              border: "1px solid var(--border, #e4e1d8)",
+              background: "var(--bilimai-surface, #fff)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
               borderRadius: 20,
               padding: "22px 24px",
               display: "grid",
@@ -1888,8 +2017,8 @@ export function SubjectOverviewClient({
                   fontWeight: 700,
                   padding: "4px 10px",
                   borderRadius: 999,
-                  background: "rgba(220, 38, 38, 0.1)",
-                  color: "#b91c1c"
+                  background: "var(--bilimai-error-bg, #FEE2E2)",
+                  color: "var(--bilimai-error-text, #991B1B)"
                 }}
               >
                 {ui.errorLabBadge} · {curriculum.badge}
@@ -1907,15 +2036,19 @@ export function SubjectOverviewClient({
                         setSelectedStepIdx(null);
                       }}
                       style={{
-                        padding: "6px 12px",
+                        padding: "7px 12px",
+                        minHeight: 38,
                         borderRadius: 8,
                         border:
                           cIdx === selectedErrorLabIdx
                             ? "1px solid #b91c1c"
-                            : "1px solid var(--border, #dcd8ce)",
+                            : "1px solid var(--bilimai-border, #D8E0EE)",
                         background:
-                          cIdx === selectedErrorLabIdx ? "#b91c1c" : "var(--surface, #fff)",
-                        color: cIdx === selectedErrorLabIdx ? "#fff" : "inherit",
+                          cIdx === selectedErrorLabIdx
+                            ? "#b91c1c"
+                            : "var(--bilimai-surface-raised, #EEF2F9)",
+                        color:
+                          cIdx === selectedErrorLabIdx ? "#fff" : "var(--bilimai-text, #0F172A)",
                         fontSize: 12.5,
                         fontWeight: 600,
                         cursor: "pointer"
@@ -1930,7 +2063,7 @@ export function SubjectOverviewClient({
 
             <div>
               <h2 style={{ margin: "4px 0", fontSize: 21 }}>{activeErrorLab.title[locale]}</h2>
-              <p style={{ margin: 0, fontSize: 15, color: "var(--muted, #57544e)" }}>
+              <p style={{ margin: 0, fontSize: 15, color: "var(--bilimai-text-muted, #475569)" }}>
                 {activeErrorLab.taskPrompt[locale]} {ui.errorLabPromptSuffix}
               </p>
             </div>
@@ -1955,17 +2088,19 @@ export function SubjectOverviewClient({
                     style={{
                       textAlign: "left",
                       padding: "13px 15px",
+                      minHeight: 44,
                       borderRadius: 12,
                       border: isSelected
                         ? isBroken
                           ? "2px solid #15803d"
                           : "2px solid #b91c1c"
-                        : "1px solid var(--border, #dcd8ce)",
+                        : "1px solid var(--bilimai-border, #D8E0EE)",
                       background: isSelected
                         ? isBroken
-                          ? "rgba(22, 163, 74, 0.09)"
-                          : "rgba(220, 38, 38, 0.08)"
-                        : "var(--bg, #f7f5ef)",
+                          ? "rgba(22, 163, 74, 0.1)"
+                          : "rgba(220, 38, 38, 0.09)"
+                        : "var(--bilimai-surface-raised, #EEF2F9)",
+                      color: "var(--bilimai-text, #0F172A)",
                       fontSize: 15,
                       cursor: "pointer"
                     }}
@@ -1999,7 +2134,7 @@ export function SubjectOverviewClient({
                     : ui.errorLabWrongHit}
                 </strong>
                 <p style={{ margin: 0, fontSize: 14.5 }}>{activeErrorLab.whyBroken[locale]}</p>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#15803d" }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--bilimai-success-text, #166534)" }}>
                   {ui.correctStepPrefix} {activeErrorLab.correctedStep[locale]}
                 </div>
               </div>
@@ -2021,8 +2156,8 @@ export function SubjectOverviewClient({
           <section
             data-testid="subject-knowledge-map"
             style={{
-              background: "var(--surface, #fff)",
-              border: "1px solid var(--border, #e4e1d8)",
+              background: "var(--bilimai-surface, #fff)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
               borderRadius: 20,
               padding: "22px 24px",
               display: "grid",
@@ -2033,7 +2168,7 @@ export function SubjectOverviewClient({
               <h2 style={{ margin: "0 0 4px", fontSize: 21 }}>
                 {ui.mapTitle} · {curriculum.title[locale]}
               </h2>
-              <p style={{ margin: 0, fontSize: 14.5, color: "var(--muted, #57544e)" }}>
+              <p style={{ margin: 0, fontSize: 14.5, color: "var(--bilimai-text-muted, #475569)" }}>
                 {ui.mapSubtitle}
               </p>
             </div>
@@ -2046,28 +2181,28 @@ export function SubjectOverviewClient({
                 > = {
                   mastered: {
                     text: ui.statusMastered,
-                    color: "#15803d",
-                    bg: "rgba(22, 163, 74, 0.12)"
+                    color: "var(--bilimai-success-text, #166534)",
+                    bg: "var(--bilimai-success-bg, #DCFCE7)"
                   },
                   review: {
                     text: ui.statusReview,
-                    color: "#b45309",
-                    bg: "rgba(245, 158, 11, 0.14)"
+                    color: "var(--bilimai-warning-text, #92400E)",
+                    bg: "var(--bilimai-warning-bg, #FEF3C7)"
                   },
                   gap: {
                     text: ui.statusGap,
-                    color: "#b91c1c",
-                    bg: "rgba(220, 38, 38, 0.12)"
+                    color: "var(--bilimai-error-text, #991B1B)",
+                    bg: "var(--bilimai-error-bg, #FEE2E2)"
                   },
                   recommended: {
                     text: ui.statusRecommended,
-                    color: "#3856f5",
-                    bg: "rgba(56, 86, 245, 0.12)"
+                    color: "var(--bilimai-selected-text, #1E3A8A)",
+                    bg: "var(--bilimai-selected-bg, #E0E7FF)"
                   },
                   unassessed: {
                     text: ui.statusUnassessed,
-                    color: "#65635d",
-                    bg: "rgba(101, 99, 93, 0.12)"
+                    color: "var(--bilimai-text-muted, #475569)",
+                    bg: "rgba(100, 116, 139, 0.14)"
                   }
                 };
                 const st = statusLabels[node.status];
@@ -2079,8 +2214,8 @@ export function SubjectOverviewClient({
                     style={{
                       padding: "14px 16px",
                       borderRadius: 14,
-                      border: "1px solid var(--border, #e4e1d8)",
-                      background: "var(--bg, #f7f5ef)",
+                      border: "1px solid var(--bilimai-border, #D8E0EE)",
+                      background: "var(--bilimai-surface-raised, #EEF2F9)",
                       display: "flex",
                       flexWrap: "wrap",
                       alignItems: "center",
@@ -2116,19 +2251,20 @@ export function SubjectOverviewClient({
                               fontWeight: 600,
                               padding: "3px 8px",
                               borderRadius: 999,
-                              background: "rgba(15, 23, 42, 0.08)",
-                              color: "var(--ink, #171717)"
+                              background: "var(--bilimai-surface, #fff)",
+                              border: "1px solid var(--bilimai-border, #D8E0EE)",
+                              color: "var(--bilimai-text, #0F172A)"
                             }}
                           >
                             {ui.lessonReadBadge}
                           </span>
                         )}
-                        <span style={{ fontSize: 12.5, color: "var(--muted, #65635d)" }}>
+                        <span style={{ fontSize: 12.5, color: "var(--bilimai-text-muted, #475569)" }}>
                           #{idx + 1} · {node.sectionTitle[locale]}
                         </span>
                       </div>
                       <strong style={{ fontSize: 16 }}>{node.title[locale]}</strong>
-                      <div style={{ fontSize: 13, color: "var(--muted, #57544e)" }}>
+                      <div style={{ fontSize: 13, color: "var(--bilimai-text-muted, #475569)" }}>
                         {node.prerequisites.length > 0
                           ? `${ui.prereqPrefix} ${node.prerequisites.join(", ")}`
                           : ui.noPrereqs}
@@ -2140,16 +2276,18 @@ export function SubjectOverviewClient({
 
                     <button
                       type="button"
+                      data-testid={`knowledge-node-open-${idx}`}
                       onClick={() => {
                         const lIdx = curriculum.lessons.findIndex((l) => l.id === node.lessonId);
                         openLessonByIndex(lIdx >= 0 ? lIdx : 0);
                       }}
                       style={{
-                        padding: "9px 14px",
+                        padding: "10px 15px",
+                        minHeight: 42,
                         borderRadius: 10,
-                        border: "1px solid var(--accent, #3856f5)",
-                        background: "var(--surface, #fff)",
-                        color: "var(--accent, #3856f5)",
+                        border: "1px solid var(--bilimai-selected-border, #254EDB)",
+                        background: "var(--bilimai-surface, #fff)",
+                        color: "var(--bilimai-brand-text, #1D4ED8)",
                         fontWeight: 600,
                         fontSize: 13.5,
                         cursor: "pointer"
@@ -2169,8 +2307,8 @@ export function SubjectOverviewClient({
           <section
             data-testid="subject-ai-tutor"
             style={{
-              background: "var(--surface, #fff)",
-              border: "1px solid var(--border, #e4e1d8)",
+              background: "var(--bilimai-surface, #fff)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
               borderRadius: 20,
               padding: "22px 24px",
               display: "grid",
@@ -2181,7 +2319,7 @@ export function SubjectOverviewClient({
               <h2 style={{ margin: "0 0 4px", fontSize: 21 }}>
                 {ui.tutorTitle} · {curriculum.title[locale]}
               </h2>
-              <p style={{ margin: 0, fontSize: 14.5, color: "var(--muted, #57544e)" }}>
+              <p style={{ margin: 0, fontSize: 14.5, color: "var(--bilimai-text-muted, #475569)" }}>
                 {ui.tutorSubtitlePrefix} «{currentLesson.title[locale]}»
               </p>
             </div>
@@ -2194,10 +2332,12 @@ export function SubjectOverviewClient({
                   data-testid={`tutor-mode-${btn.mode}`}
                   onClick={() => askTutor(btn.prompt, btn.label[locale], btn.mode)}
                   style={{
-                    padding: "8px 13px",
+                    padding: "9px 14px",
+                    minHeight: 40,
                     borderRadius: 999,
-                    border: "1px solid var(--border, #dcd8ce)",
-                    background: "var(--bg, #f7f5ef)",
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    background: "var(--bilimai-surface-raised, #EEF2F9)",
+                    color: "var(--bilimai-text, #0F172A)",
                     fontSize: 13,
                     fontWeight: 600,
                     cursor: "pointer"
@@ -2214,9 +2354,9 @@ export function SubjectOverviewClient({
                   style={{
                     padding: "14px 16px",
                     borderRadius: 12,
-                    background: "var(--bg, #f7f5ef)",
+                    background: "var(--bilimai-surface-raised, #EEF2F9)",
                     fontSize: 14.5,
-                    color: "var(--muted, #57544e)"
+                    color: "var(--bilimai-text-muted, #475569)"
                   }}
                 >
                   {ui.tutorEmptyHint}
@@ -2230,8 +2370,11 @@ export function SubjectOverviewClient({
                     padding: "12px 15px",
                     borderRadius: 14,
                     background:
-                      msg.role === "user" ? "rgba(56, 86, 245, 0.08)" : "var(--bg, #f7f5ef)",
-                    border: "1px solid var(--border, #e4e1d8)",
+                      msg.role === "user"
+                        ? "rgba(56, 86, 245, 0.08)"
+                        : "var(--bilimai-surface-raised, #EEF2F9)",
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    color: "var(--bilimai-text, #0F172A)",
                     whiteSpace: "pre-wrap",
                     fontSize: 14.5,
                     lineHeight: 1.5
@@ -2252,7 +2395,7 @@ export function SubjectOverviewClient({
                         style={{
                           fontSize: 11.5,
                           fontWeight: 700,
-                          color: "var(--accent, #3856f5)"
+                          color: "var(--bilimai-brand-text, #1D4ED8)"
                         }}
                       >
                         {msg.modeLabel}
@@ -2266,8 +2409,8 @@ export function SubjectOverviewClient({
                           fontWeight: 700,
                           padding: "2px 8px",
                           borderRadius: 999,
-                          background: "rgba(56, 86, 245, 0.1)",
-                          color: "var(--accent, #3856f5)"
+                          background: "var(--bilimai-selected-bg, #E0E7FF)",
+                          color: "var(--bilimai-selected-text, #1E3A8A)"
                         }}
                       >
                         {msg.verificationBadge}
@@ -2294,8 +2437,11 @@ export function SubjectOverviewClient({
                 style={{
                   flex: "1 1 260px",
                   padding: "11px 14px",
+                  minHeight: 44,
                   borderRadius: 12,
-                  border: "1px solid var(--border, #dcd8ce)",
+                  border: "1px solid var(--bilimai-border, #D8E0EE)",
+                  background: "var(--bilimai-surface, #fff)",
+                  color: "var(--bilimai-text, #0F172A)",
                   fontSize: 15
                 }}
               />
@@ -2304,9 +2450,10 @@ export function SubjectOverviewClient({
                 disabled={tutorLoading}
                 style={{
                   padding: "11px 18px",
+                  minHeight: 44,
                   borderRadius: 12,
                   border: "none",
-                  background: "var(--accent, #3856f5)",
+                  background: "var(--bilimai-brand, #254EDB)",
                   color: "#fff",
                   fontWeight: 600,
                   cursor: "pointer"
@@ -2323,21 +2470,51 @@ export function SubjectOverviewClient({
           <section
             data-testid="subject-diagnostic"
             style={{
-              background: "var(--surface, #fff)",
-              border: "1px solid var(--border, #e4e1d8)",
+              background: "var(--bilimai-surface, #fff)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
               borderRadius: 20,
               padding: "22px 24px",
               display: "grid",
               gap: 16
             }}
           >
-            <div>
-              <h2 style={{ margin: "0 0 4px", fontSize: 21 }}>
-                {ui.diagTitle} · {curriculum.title[locale]}
-              </h2>
-              <p style={{ margin: 0, fontSize: 14.5, color: "var(--muted, #57544e)" }}>
-                {ui.diagSubtitle}
-              </p>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10
+              }}
+            >
+              <div>
+                <h2 style={{ margin: "0 0 4px", fontSize: 21 }}>
+                  {ui.diagTitle} · {curriculum.title[locale]}
+                </h2>
+                <p style={{ margin: 0, fontSize: 14.5, color: "var(--bilimai-text-muted, #475569)" }}>
+                  {ui.diagSubtitle}
+                </p>
+              </div>
+
+              {!diagDone && diagnosticQuestions.length > 0 && (
+                <span
+                  data-testid="diagnostic-progress-pill"
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    borderRadius: 999,
+                    background: "var(--bilimai-selected-bg, #E0E7FF)",
+                    color: "var(--bilimai-selected-text, #1E3A8A)"
+                  }}
+                >
+                  {locale === "kk"
+                    ? `Сұрақ ${diagIndex + 1} / ${diagnosticQuestions.length}`
+                    : locale === "uz"
+                      ? `Savol ${diagIndex + 1} / ${diagnosticQuestions.length}`
+                      : `Вопрос ${diagIndex + 1} из ${diagnosticQuestions.length}`}
+                </span>
+              )}
             </div>
 
             {!diagDone && diagnosticQuestions[diagIndex] ? (
@@ -2369,7 +2546,15 @@ export function SubjectOverviewClient({
                     setDiagIndex(step.nextIndex);
                   }
                 }}
-                nextButtonLabel={ui.diagNextBtn}
+                nextButtonLabel={
+                  diagIndex + 1 < diagnosticQuestions.length
+                    ? ui.diagNextBtn
+                    : locale === "kk"
+                      ? "Диагностиканы аяқтап, маршрутты алу →"
+                      : locale === "uz"
+                        ? "Diagnostikani yakunlab, yo‘nalishni olish →"
+                        : "Завершить диагностику и получить маршрут →"
+                }
               />
             ) : (
               <div
@@ -2388,7 +2573,7 @@ export function SubjectOverviewClient({
                   {lastDiag ? `${lastDiag.scorePercent}%` : `${subjectProgress.diagnosticScorePercent ?? 0}%`}
                 </strong>
                 {lastDiag && (
-                  <div style={{ fontSize: 13.5, color: "var(--muted, #57544e)" }}>
+                  <div style={{ fontSize: 13.5, color: "var(--bilimai-text-muted, #475569)" }}>
                     {ui.diagConfidencePrefix} <strong>{lastDiag.confidenceLevel.toUpperCase()}</strong> ·{" "}
                     ✓ {lastDiag.verifiedCorrectCount} / ✕ {lastDiag.incorrectCount}
                   </div>
@@ -2405,10 +2590,11 @@ export function SubjectOverviewClient({
                     data-testid="start-recommended-lesson-btn"
                     onClick={() => openLessonByIndex(recommendedLessonInfo.index)}
                     style={{
-                      padding: "10px 16px",
+                      padding: "11px 16px",
+                      minHeight: 44,
                       borderRadius: 10,
                       border: "none",
-                      background: "var(--accent, #3856f5)",
+                      background: "var(--bilimai-brand, #254EDB)",
                       color: "#fff",
                       fontWeight: 600,
                       cursor: "pointer"
@@ -2418,12 +2604,15 @@ export function SubjectOverviewClient({
                   </button>
                   <button
                     type="button"
+                    data-testid="diag-view-map-btn"
                     onClick={() => switchTab("map")}
                     style={{
-                      padding: "10px 16px",
+                      padding: "11px 16px",
+                      minHeight: 44,
                       borderRadius: 10,
-                      border: "1px solid var(--border, #dcd8ce)",
-                      background: "var(--surface, #fff)",
+                      border: "1px solid var(--bilimai-border, #D8E0EE)",
+                      background: "var(--bilimai-surface, #fff)",
+                      color: "var(--bilimai-text, #0F172A)",
                       fontWeight: 600,
                       cursor: "pointer"
                     }}

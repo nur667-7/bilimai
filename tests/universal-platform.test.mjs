@@ -726,3 +726,208 @@ test("P1-003, P1-004 & Pluralization: Lesson slug lookup, dynamic recommendation
   assert.equal(formatQuestionsCountLabel(15, "ru"), "15 заданий");
 });
 
+test("Welcome 5-subject demo items have varied correctIndex, per-option diagnoses, follow-up questions, and localized empty-submission message", () => {
+  assert.equal(WELCOME_DEMO_ITEMS.length, 5);
+  const correctIndices = new Set(WELCOME_DEMO_ITEMS.map((item) => item.question.correctIndex));
+  assert.ok(
+    correctIndices.size >= 3,
+    "Demo questions must not all share the same correctIndex"
+  );
+
+  for (const item of WELCOME_DEMO_ITEMS) {
+    assert.ok(item.subjectCtaLabel.ru.length > 0);
+    assert.ok(item.followUpQuestion, `Missing followUpQuestion for ${item.subjectId}`);
+    assert.equal(item.question.optionDiagnoses?.ru?.length, 4);
+    assert.equal(item.followUpQuestion.optionDiagnoses?.ru?.length, 4);
+  }
+
+  // History contextNote and question both relate to Laws of the Kazakh Khanate / Жеті жарғы
+  const histDemo = WELCOME_DEMO_ITEMS.find((item) => item.subjectId === "history_kz");
+  assert.ok(histDemo);
+  assert.ok(histDemo.contextNote.ru.includes("Жеті жарғы"));
+  assert.ok(histDemo.question.prompt.ru.includes("Жеті жарғы"));
+
+  // Empty submission returns localized message without English "No option selected."
+  const emptyEval = evaluateUniversalQuestion(WELCOME_DEMO_ITEMS[0].question, {}, "ru");
+  assert.equal(emptyEval.verificationState, "unverified");
+  assert.ok(!emptyEval.verificationBasis.includes("No option selected"));
+  assert.ok(emptyEval.feedback.includes("Выберите вариант ответа"));
+  assert.ok(emptyEval.verificationBasis.includes("Вариант ответа не выбран"));
+});
+
+test("Every lesson across all 12 subjects has >= 3 questions and 100% of lesson & error-lab questions evaluate to verified_correct", () => {
+  const allSubjects = getAllSubjectCurricula();
+  assert.ok(allSubjects.length >= 12);
+
+  const buildIdealResponse = (q) => {
+    switch (q.type) {
+      case "single_choice":
+      case "code_fix":
+      case "context_table":
+        return { selectedIndex: q.correctIndex ?? 0 };
+      case "true_false":
+        return typeof q.booleanAnswer === "boolean"
+          ? { booleanAnswer: q.booleanAnswer }
+          : { selectedIndex: q.correctIndex ?? 0 };
+      case "multiple_choice":
+        return { selectedIndices: q.correctIndices ?? [0] };
+      case "numeric":
+      case "equation":
+        return { textValue: String(q.numericAnswer ?? 0) };
+      case "short_text":
+      case "fill_blank":
+      case "formula":
+        return { textValue: q.acceptedTexts?.ru?.[0] ?? "" };
+      case "matching": {
+        const pairs = q.matchingPairs ?? [1, 1];
+        return { matchingSelection: { A: pairs[0], B: pairs[1] } };
+      }
+      case "sequence":
+        return {
+          sequenceOrder:
+            q.correctSequence ?? (q.sequenceItems?.ru ?? []).map((_, idx) => idx)
+        };
+      default:
+        return {};
+    }
+  };
+
+  // Exclude dynamically registered test subjects like "economics" from the 3-questions-per-lesson rule
+  const coreIds = [
+    "math",
+    "physics",
+    "informatics",
+    "chemistry",
+    "biology",
+    "geography",
+    "history_kz",
+    "world_history",
+    "law",
+    "english",
+    "math_lit",
+    "reading_lit"
+  ];
+
+  for (const id of coreIds) {
+    const subj = getSubjectCurriculum(id);
+    assert.ok(subj, `Missing curriculum for ${id}`);
+    assert.ok(
+      subj.errorLabCases.length >= 2,
+      `Subject "${id}" must have at least 2 Error Lab cases (found ${subj.errorLabCases.length})`
+    );
+
+    for (const lesson of subj.lessons) {
+      assert.ok(
+        lesson.questions.length >= 3,
+        `Lesson "${lesson.id}" in subject "${id}" must have >= 3 questions (found ${lesson.questions.length})`
+      );
+
+      for (const q of lesson.questions) {
+        const res = evaluateUniversalQuestion(q, buildIdealResponse(q), "ru");
+        assert.equal(
+          res.verificationState,
+          "verified_correct",
+          `Question "${q.id}" (${q.type}) in lesson "${lesson.id}" failed verification: ${res.feedback}`
+        );
+      }
+    }
+
+    for (const errCase of subj.errorLabCases) {
+      assert.ok(
+        errCase.brokenStepIndex >= 0 && errCase.brokenStepIndex < errCase.steps.ru.length,
+        `ErrorLab case "${errCase.id}" has out-of-bounds brokenStepIndex`
+      );
+      const tq = errCase.transferQuestion;
+      const tRes = evaluateUniversalQuestion(tq, buildIdealResponse(tq), "ru");
+      assert.equal(
+        tRes.verificationState,
+        "verified_correct",
+        `Transfer question "${tq.id}" in ErrorLab "${errCase.id}" failed verification`
+      );
+    }
+  }
+
+  // Specific check for true_false questions phys-q3 and bio-q3
+  const phys = getSubjectCurriculum("physics");
+  const physQ3 = phys.lessons.flatMap((l) => l.questions).find((q) => q.id === "phys-q3");
+  assert.ok(physQ3);
+  assert.equal(
+    evaluateUniversalQuestion(physQ3, { selectedIndex: 1 }, "ru").verificationState,
+    "verified_correct"
+  );
+  assert.equal(
+    evaluateUniversalQuestion(physQ3, { booleanAnswer: false }, "ru").verificationState,
+    "verified_correct"
+  );
+  assert.equal(
+    evaluateUniversalQuestion(physQ3, {}, "ru").verificationState,
+    "unverified"
+  );
+
+  const bio = getSubjectCurriculum("biology");
+  const bioQ3 = bio.lessons.flatMap((l) => l.questions).find((q) => q.id === "bio-q3");
+  assert.ok(bioQ3);
+  assert.equal(
+    evaluateUniversalQuestion(bioQ3, { selectedIndex: 0 }, "ru").verificationState,
+    "verified_correct"
+  );
+  assert.equal(
+    evaluateUniversalQuestion(bioQ3, { booleanAnswer: true }, "ru").verificationState,
+    "verified_correct"
+  );
+});
+
+test("Subject AI Tutor /api/tutor route supports all 9 modes across ru/kk/uz with honest deterministic verification", async () => {
+  const { buildSubjectTutorReply, POST } = await import("../app/api/tutor/route.ts");
+  const phys = getSubjectCurriculum("physics");
+  assert.ok(phys);
+  const modes = [
+    "simple",
+    "step_by_step",
+    "hint",
+    "check_solution",
+    "why_wrong",
+    "similar_task",
+    "memorize",
+    "exam_prep",
+    "socratic"
+  ];
+
+  const replies = new Set();
+  for (const mode of modes) {
+    const out = buildSubjectTutorReply(
+      phys,
+      phys.lessons[0],
+      mode,
+      "ru",
+      "Объясни тему"
+    );
+    assert.ok(out.reply.length > 40, `Mode "${mode}" reply too short`);
+    assert.equal(out.source, "deterministic_fallback");
+    assert.equal(out.fallbackUsed, true);
+    replies.add(out.reply);
+  }
+  assert.equal(replies.size, modes.length, "Each of the 9 tutor modes must produce a distinct response");
+
+  const res = await POST(
+    new Request("http://localhost/api/tutor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subjectId: "biology",
+        lessonId: "biology-lesson-bio_genetics",
+        mode: "exam_prep",
+        locale: "kk",
+        userMessage: "Мендель заңдарын түсіндір"
+      })
+    })
+  );
+  assert.equal(res.status, 200);
+  const json = await res.json();
+  assert.equal(json.subjectId, "biology");
+  assert.equal(json.mode, "exam_prep");
+  assert.ok(json.reply.length > 40);
+});
+
+
+

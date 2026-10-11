@@ -43,6 +43,7 @@ export interface UniversalQuestion {
   correctIndex?: number;
   correctIndices?: number[];
   numericAnswer?: number;
+  tolerance?: number;
   unit?: string;
   acceptedTexts?: Record<Language, string[]>;
   booleanAnswer?: boolean;
@@ -450,7 +451,13 @@ function coerceLearnerResponse(
       return { type: "formula", expression: input.textValue ?? "" };
     case "equation":
       return { type: "equation", expression: input.textValue ?? "" };
-    case "true_false":
+    case "true_false": {
+      if (
+        typeof input.booleanAnswer !== "boolean" &&
+        (typeof input.selectedIndex !== "number" || input.selectedIndex < 0)
+      ) {
+        return null;
+      }
       return {
         type: "true_false",
         value:
@@ -458,6 +465,7 @@ function coerceLearnerResponse(
             ? input.booleanAnswer
             : input.selectedIndex === 0
       };
+    }
     case "matching":
       return {
         type: "matching",
@@ -554,7 +562,12 @@ export function evaluateUniversalQuestion(
                 : "Выберите вариант ответа.",
           hint: baseHint,
           errorCategory: question.errorCategory,
-          verificationBasis: "No option selected."
+          verificationBasis:
+            lang === "kk"
+              ? "Жауап нұсқасы таңдалмаған."
+              : lang === "uz"
+                ? "Javob varianti tanlanmagan."
+                : "Вариант ответа не выбран."
         };
       }
       const ok = idx === question.correctIndex;
@@ -594,7 +607,12 @@ export function evaluateUniversalQuestion(
                 : "Выберите хотя бы один вариант ответа.",
           hint: baseHint,
           errorCategory: question.errorCategory,
-          verificationBasis: "No options selected."
+          verificationBasis:
+            lang === "kk"
+              ? "Жауап нұсқалары таңдалмаған."
+              : lang === "uz"
+                ? "Javob variantlari tanlanmagan."
+                : "Варианты ответа не выбраны."
         };
       }
       const target = [...(question.correctIndices ?? [])].sort((a, b) => a - b);
@@ -781,13 +799,19 @@ export function evaluateUniversalQuestion(
 
     case "true_false": {
       const val = (response as { value: boolean }).value;
-      const ok = typeof val === "boolean" && val === question.booleanAnswer;
+      const expectedBoolean =
+        typeof question.booleanAnswer === "boolean"
+          ? question.booleanAnswer
+          : question.correctIndex === 0;
+      const ok = typeof val === "boolean" && val === expectedBoolean;
+      const selectedIdx = val === true ? 0 : 1;
+      const customDiag = question.optionDiagnoses?.[lang]?.[selectedIdx];
       return {
         verificationState: ok ? "verified_correct" : "incorrect",
         isCorrect: ok,
         earnedPoints: ok ? question.maxPoints : 0,
         maxPoints: question.maxPoints,
-        feedback: baseExplanation,
+        feedback: ok ? baseExplanation : customDiag || baseExplanation,
         hint: baseHint,
         errorCategory: question.errorCategory,
         verificationBasis:

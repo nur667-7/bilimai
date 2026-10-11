@@ -1,57 +1,121 @@
 /* Base Tokens, Resets, Layout Shell & Top Navigation */
 
 :root {
-  --background: #F5F7FC;
-  --foreground: #172033;
+  --background: #F6F7FB;
+  --foreground: #0F172A;
   --card: #FFFFFF;
-  --card-foreground: #172033;
+  --card-foreground: #0F172A;
   --popover: #FFFFFF;
-  --popover-foreground: #172033;
-  --primary: #355CFF;
+  --popover-foreground: #0F172A;
+  --primary: #254EDB;
   --primary-foreground: #FFFFFF;
-  --brand: #355CFF;
-  --brand-2: #2447E5;
+  --brand: #254EDB;
+  --brand-2: #1E40AF;
   --accent-warm: #755FF8;
-  --ink: #172033;
+  --ink: #0F172A;
   --secondary: #EAEFF8;
-  --secondary-foreground: #172033;
+  --secondary-foreground: #0F172A;
   --muted: #EDF1FA;
-  --muted-foreground: #4E5D78;
+  --muted-foreground: #475569;
   --accent: #EBF0FF;
-  --accent-foreground: #355CFF;
+  --accent-foreground: #1D4ED8;
   --destructive: #DC2626;
-  --border: rgba(23, 32, 51, 0.09);
-  --input: rgba(23, 32, 51, 0.18);
-  --ring: #355CFF;
+  --border: #D8E0EE;
+  --input: #CBD5E1;
+  --ring: #254EDB;
   --radius: 0.65rem;
   --font-serif: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Arial, sans-serif;
   --font-math: "STIX Two Math", "Cambria Math", "Times New Roman", Georgia, serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Unambiguous BilimAI surface & text token pairs (WCAG AA >= 4.5:1 verified) */
+  --bilimai-bg: #F6F7FB;
+  --bilimai-header-bg: rgba(246, 247, 251, 0.94);
+  --bilimai-surface: #FFFFFF;
+  --bilimai-surface-raised: #EEF2F9;
+  --bilimai-text: #0F172A;
+  --bilimai-text-muted: #475569;
+  --bilimai-text-subtle: #475569;
+  --bilimai-border: #D8E0EE;
+  --bilimai-border-strong: #64748B;
+  --bilimai-brand: #254EDB;
+  --bilimai-brand-hover: #1E40AF;
+  --bilimai-brand-text: #1D4ED8;
+  --bilimai-on-brand: #FFFFFF;
+  --bilimai-selected-bg: #E0E7FF;
+  --bilimai-selected-text: #1E3A8A;
+  --bilimai-selected-border: #254EDB;
+  --bilimai-focus: #254EDB;
+  --bilimai-success-bg: #ECFDF5;
+  --bilimai-success-border: #059669;
+  --bilimai-success-text: #065F46;
+  --bilimai-error-bg: #FEF2F2;
+  --bilimai-error-border: #DC2626;
+  --bilimai-error-text: #991B1B;
+  --bilimai-warning-bg: #FFFBEB;
+  --bilimai-warning-border: #D97706;
+  --bilimai-warning-text: #92400E;
+
+  /* Safe aliases for legacy inline styles */
+  --bg: var(--bilimai-bg);
+  --surface: var(--bilimai-surface);
 }
 
 html.dark {
-  --background: #0B111E;
-  --foreground: #F1F5F9;
-  --card: #121B2E;
-  --card-foreground: #F1F5F9;
-  --popover: #121B2E;
-  --popover-foreground: #F1F5F9;
-  --primary: #5273FF;
+  --background: #0B1020;
+  --foreground: #F8FAFC;
+  --card: #11192E;
+  --card-foreground: #F8FAFC;
+  --popover: #11192E;
+  --popover-foreground: #F8FAFC;
+  --primary: #2952E8;
   --primary-foreground: #FFFFFF;
-  --brand: #6382FF;
-  --brand-2: #849BFF;
+  --brand: #60A5FA;
+  --brand-2: #93C5FD;
   --accent-warm: #8B75FF;
-  --ink: #F1F5F9;
-  --secondary: #1A253D;
-  --secondary-foreground: #F1F5F9;
+  --ink: #F8FAFC;
+  --secondary: #17223B;
+  --secondary-foreground: #F8FAFC;
   --muted: #172136;
-  --muted-foreground: #94A3B8;
+  --muted-foreground: #CBD5E1;
   --accent: rgba(82, 115, 255, 0.16);
-  --accent-foreground: #93ADFF;
+  --accent-foreground: #93C5FD;
   --destructive: #F87171;
-  --border: rgba(148, 163, 184, 0.16);
-  --input: rgba(148, 163, 184, 0.28);
-  --ring: #5273FF;
+  --border: #263554;
+  --input: #334155;
+  --ring: #60A5FA;
+
+  /* Unambiguous BilimAI dark surface & text token pairs (WCAG AA >= 4.5:1 verified) */
+  --bilimai-bg: #0B1020;
+  --bilimai-header-bg: rgba(11, 16, 32, 0.94);
+  --bilimai-surface: #11192E;
+  --bilimai-surface-raised: #17223B;
+  --bilimai-text: #F8FAFC;
+  --bilimai-text-muted: #CBD5E1;
+  --bilimai-text-subtle: #94A3B8;
+  --bilimai-border: #263554;
+  --bilimai-border-strong: #60A5FA;
+  --bilimai-brand: #2952E8;
+  --bilimai-brand-hover: #3B63F6;
+  --bilimai-brand-text: #93C5FD;
+  --bilimai-on-brand: #FFFFFF;
+  --bilimai-selected-bg: #1E2F5D;
+  --bilimai-selected-text: #F8FAFC;
+  --bilimai-selected-border: #60A5FA;
+  --bilimai-focus: #60A5FA;
+  --bilimai-success-bg: #062E22;
+  --bilimai-success-border: #10B981;
+  --bilimai-success-text: #A7F3D0;
+  --bilimai-error-bg: #351319;
+  --bilimai-error-border: #F87171;
+  --bilimai-error-text: #FECACA;
+  --bilimai-warning-bg: #332008;
+  --bilimai-warning-border: #FBBF24;
+  --bilimai-warning-text: #FDE68A;
+
+  /* Safe aliases for legacy inline styles */
+  --bg: var(--bilimai-bg);
+  --surface: var(--bilimai-surface);
 }
 
 @theme inline {

@@ -3,24 +3,89 @@ import { useEffect, useRef, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { themeStorageKey } from "@/lib/user-profile";
 
+function resolveInitialDarkState(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const saved =
+      window.localStorage.getItem(themeStorageKey) ??
+      window.localStorage.getItem("bilim-theme");
+    if (saved === "dark") return true;
+    if (saved === "light") return false;
+    if (document.documentElement.classList.contains("dark")) return true;
+    return Boolean(
+      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function useAniqTheme() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(themeStorageKey) ?? localStorage.getItem("bilim-theme");
-      const isDark = saved === "dark";
+    const applyResolved = () => {
+      const isDark = resolveInitialDarkState();
       setDark(isDark);
       document.documentElement.classList.toggle("dark", isDark);
-    } catch {}
+      document.documentElement.dataset.theme = isDark ? "dark" : "light";
+    };
+    applyResolved();
+
+    const onThemeEvent = (ev: Event) => {
+      const custom = ev as CustomEvent<{ dark?: boolean }>;
+      if (typeof custom.detail?.dark === "boolean") {
+        setDark(custom.detail.dark);
+        document.documentElement.classList.toggle("dark", custom.detail.dark);
+        document.documentElement.dataset.theme = custom.detail.dark ? "dark" : "light";
+      } else {
+        applyResolved();
+      }
+    };
+    const onStorage = (ev: StorageEvent) => {
+      if (!ev.key || ev.key === themeStorageKey || ev.key === "bilim-theme") {
+        applyResolved();
+      }
+    };
+    const mql =
+      typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-color-scheme: dark)")
+        : null;
+    const onSystemChange = () => {
+      try {
+        const saved =
+          window.localStorage.getItem(themeStorageKey) ??
+          window.localStorage.getItem("bilim-theme");
+        if (saved !== "dark" && saved !== "light") {
+          applyResolved();
+        }
+      } catch {
+        applyResolved();
+      }
+    };
+
+    window.addEventListener("bilimai-theme-change", onThemeEvent);
+    window.addEventListener("storage", onStorage);
+    mql?.addEventListener?.("change", onSystemChange);
+    return () => {
+      window.removeEventListener("bilimai-theme-change", onThemeEvent);
+      window.removeEventListener("storage", onStorage);
+      mql?.removeEventListener?.("change", onSystemChange);
+    };
   }, []);
 
   function toggleTheme() {
     setDark((prev) => {
       const next = !prev;
+      const value = next ? "dark" : "light";
       try {
-        localStorage.setItem(themeStorageKey, next ? "dark" : "light");
+        window.localStorage.setItem(themeStorageKey, value);
+        window.localStorage.setItem("bilim-theme", value);
         document.documentElement.classList.toggle("dark", next);
+        document.documentElement.dataset.theme = value;
+        window.dispatchEvent(
+          new CustomEvent("bilimai-theme-change", { detail: { dark: next } })
+        );
       } catch {}
       return next;
     });
@@ -32,21 +97,32 @@ export function useAniqTheme() {
 export function ThemeToggleButton({
   dark,
   onToggle,
-  label = "Тёмная тема"
+  label,
+  lightActionLabel = "Включить светлую тему",
+  darkActionLabel = "Включить тёмную тему"
 }: {
   dark: boolean;
   onToggle: () => void;
   label?: string;
+  lightActionLabel?: string;
+  darkActionLabel?: string;
 }) {
+  const resolvedLabel =
+    dark
+      ? lightActionLabel
+      : label && label !== "Тёмная тема" && label !== "Светлая тема"
+        ? label
+        : darkActionLabel;
   return (
     <button
       type="button"
+      data-testid="theme-toggle-btn"
       onClick={onToggle}
-      aria-label={label}
-      title={label}
+      aria-label={resolvedLabel}
+      title={resolvedLabel}
       className="aniq-icon-btn"
     >
-      {dark ? <Sun size={17} /> : <Moon size={17} />}
+      {dark ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}
     </button>
   );
 }

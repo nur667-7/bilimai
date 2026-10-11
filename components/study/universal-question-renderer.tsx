@@ -158,6 +158,7 @@ export function UniversalQuestionRenderer({
   const [matchingSelection, setMatchingSelection] = useState<{ A?: number; B?: number }>({});
   const [sequenceOrder, setSequenceOrder] = useState<number[]>([]);
   const [showHint, setShowHint] = useState(false);
+  const [validationWarning, setValidationWarning] = useState<string | null>(null);
   const [evaluation, setEvaluation] = useState<UniversalQuestionEvaluation | null>(null);
   const lastSubmittedSignatureRef = useRef<string | null>(null);
 
@@ -179,11 +180,13 @@ export function UniversalQuestionRenderer({
       setSequenceOrder([]);
     }
     setShowHint(false);
+    setValidationWarning(null);
     setEvaluation(null);
     lastSubmittedSignatureRef.current = null;
   }, [question.id, locale, question.sequenceItems]);
 
   const handleToggleMulti = (idx: number) => {
+    setValidationWarning(null);
     setSelectedIndices((prev) =>
       prev.includes(idx) ? prev.filter((item) => item !== idx) : [...prev, idx]
     );
@@ -199,7 +202,31 @@ export function UniversalQuestionRenderer({
     setSequenceOrder(copy);
   };
 
+  const emptySelectionText =
+    locale === "kk"
+      ? "Жауап нұсқасын таңдаңыз"
+      : locale === "uz"
+        ? "Javob variantini tanlang"
+        : "Выберите вариант ответа";
+
   const handleCheck = () => {
+    if (
+      (question.type === "single_choice" ||
+        question.type === "true_false" ||
+        question.type === "code_fix" ||
+        question.type === "context_table") &&
+      selectedIndex === undefined
+    ) {
+      setValidationWarning(emptySelectionText);
+      setEvaluation(null);
+      return;
+    }
+    if (question.type === "multiple_choice" && selectedIndices.length === 0) {
+      setValidationWarning(emptySelectionText);
+      setEvaluation(null);
+      return;
+    }
+    setValidationWarning(null);
     const input: UniversalQuestionAnswerInput = {
       selectedIndex,
       selectedIndices,
@@ -217,7 +244,17 @@ export function UniversalQuestionRenderer({
     onEvaluated?.(result, question, attemptId);
   };
 
-  const options = question.options ? question.options[locale] ?? question.options.ru : [];
+  const defaultTrueFalseOptions =
+    locale === "kk"
+      ? ["Дұрыс", "Қате"]
+      : locale === "uz"
+        ? ["To‘g‘ri", "Noto‘g‘ri"]
+        : ["Верно", "Неверно"];
+  const options = question.options
+    ? question.options[locale] ?? question.options.ru
+    : question.type === "true_false"
+      ? defaultTrueFalseOptions
+      : [];
   const sequenceItems = question.sequenceItems
     ? question.sequenceItems[locale] ?? question.sequenceItems.ru
     : [];
@@ -232,11 +269,14 @@ export function UniversalQuestionRenderer({
     <div
       className="universal-question-card"
       data-testid={`universal-question-${question.id}`}
+      data-question-id={question.id}
+      data-question-type={question.type}
       style={{
-        border: "1px solid var(--border, #e4e1d8)",
+        border: "1px solid var(--bilimai-border, #D8E0EE)",
         borderRadius: 16,
         padding: "18px 20px",
-        background: "var(--surface, #ffffff)",
+        background: "var(--bilimai-surface, #ffffff)",
+        color: "var(--bilimai-text, #0F172A)",
         display: "grid",
         gap: 14
       }}
@@ -248,13 +288,13 @@ export function UniversalQuestionRenderer({
             fontWeight: 700,
             padding: "4px 10px",
             borderRadius: 999,
-            background: "rgba(56, 86, 245, 0.1)",
-            color: "var(--accent, #3856f5)"
+            background: "var(--bilimai-selected-bg, #E0E7FF)",
+            color: "var(--bilimai-selected-text, #1E3A8A)"
           }}
         >
           {ui.typeBadges[question.type]}
         </span>
-        <span style={{ fontSize: 12, color: "var(--muted, #65635d)" }}>
+        <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #475569)", fontWeight: 600 }}>
           {question.maxPoints} {question.maxPoints === 1 ? "балл" : "балла"}
         </span>
       </div>
@@ -264,7 +304,8 @@ export function UniversalQuestionRenderer({
           style={{
             padding: "12px 14px",
             borderRadius: 12,
-            background: "var(--bg, #f7f5ef)",
+            background: "var(--bilimai-surface-raised, #EEF2F9)",
+            color: "var(--bilimai-text, #0F172A)",
             fontSize: 14,
             lineHeight: 1.5
           }}
@@ -295,7 +336,7 @@ export function UniversalQuestionRenderer({
         </pre>
       )}
 
-      <div style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.5 }}>
+      <div style={{ fontSize: 16, fontWeight: 600, lineHeight: 1.5, color: "var(--bilimai-text, #0F172A)" }}>
         {question.prompt[locale] ?? question.prompt.ru}
       </div>
 
@@ -312,20 +353,30 @@ export function UniversalQuestionRenderer({
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => setSelectedIndex(idx)}
+                  data-testid={`question-option-${idx}`}
+                  aria-pressed={active}
+                  onClick={() => {
+                    setSelectedIndex(idx);
+                    setValidationWarning(null);
+                  }}
                   style={{
                     textAlign: "left",
                     padding: "12px 14px",
+                    minHeight: 44,
                     borderRadius: 12,
                     border: active
-                      ? "2px solid var(--accent, #3856f5)"
-                      : "1px solid var(--border, #dcd8ce)",
-                    background: active ? "rgba(56, 86, 245, 0.08)" : "var(--surface, #fff)",
+                      ? "2px solid var(--bilimai-selected-border, #254EDB)"
+                      : "1px solid var(--bilimai-border, #D8E0EE)",
+                    background: active
+                      ? "var(--bilimai-selected-bg, #E0E7FF)"
+                      : "var(--bilimai-surface, #fff)",
                     fontSize: 15,
                     lineHeight: 1.45,
                     cursor: "pointer",
                     fontWeight: active ? 600 : 400,
-                    color: "inherit"
+                    color: active
+                      ? "var(--bilimai-selected-text, #1E3A8A)"
+                      : "var(--bilimai-text, #0F172A)"
                   }}
                 >
                   {opt}
@@ -342,16 +393,23 @@ export function UniversalQuestionRenderer({
             return (
               <label
                 key={idx}
+                data-testid={`question-multi-option-${idx}`}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
                   padding: "11px 14px",
+                  minHeight: 44,
                   borderRadius: 12,
                   border: checked
-                    ? "2px solid var(--accent, #3856f5)"
-                    : "1px solid var(--border, #dcd8ce)",
-                  background: checked ? "rgba(56, 86, 245, 0.08)" : "var(--surface, #fff)",
+                    ? "2px solid var(--bilimai-selected-border, #254EDB)"
+                    : "1px solid var(--bilimai-border, #D8E0EE)",
+                  background: checked
+                    ? "var(--bilimai-selected-bg, #E0E7FF)"
+                    : "var(--bilimai-surface, #fff)",
+                  color: checked
+                    ? "var(--bilimai-selected-text, #1E3A8A)"
+                    : "var(--bilimai-text, #0F172A)",
                   cursor: "pointer",
                   fontSize: 15
                 }}
@@ -377,23 +435,28 @@ export function UniversalQuestionRenderer({
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <input
             type="text"
+            data-testid="question-text-input"
             value={textValue}
-            onChange={(e) => setTextValue(e.target.value)}
+            onChange={(e) => {
+              setTextValue(e.target.value);
+              setValidationWarning(null);
+            }}
             placeholder={
               question.type === "numeric" ? ui.placeholderNumeric : ui.placeholderShort
             }
             style={{
               flex: "1 1 220px",
               padding: "11px 14px",
+              minHeight: 44,
               borderRadius: 12,
-              border: "1px solid var(--border, #dcd8ce)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
               fontSize: 16,
-              background: "var(--surface, #fff)",
-              color: "inherit"
+              background: "var(--bilimai-surface, #fff)",
+              color: "var(--bilimai-text, #0F172A)"
             }}
           />
           {question.unit && (
-            <span style={{ fontSize: 15, fontWeight: 600, color: "var(--muted, #65635d)" }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: "var(--bilimai-text-muted, #475569)" }}>
               {question.unit}
             </span>
           )}
@@ -403,17 +466,21 @@ export function UniversalQuestionRenderer({
       {question.type === "long_text" && (
         <textarea
           rows={4}
+          data-testid="question-long-input"
           value={textValue}
-          onChange={(e) => setTextValue(e.target.value)}
+          onChange={(e) => {
+            setTextValue(e.target.value);
+            setValidationWarning(null);
+          }}
           placeholder={ui.placeholderLong}
           style={{
             width: "100%",
             padding: "12px 14px",
             borderRadius: 12,
-            border: "1px solid var(--border, #dcd8ce)",
+            border: "1px solid var(--bilimai-border, #D8E0EE)",
             fontSize: 15,
-            background: "var(--surface, #fff)",
-            color: "inherit"
+            background: "var(--bilimai-surface, #fff)",
+            color: "var(--bilimai-text, #0F172A)"
           }}
         />
       )}
@@ -430,27 +497,30 @@ export function UniversalQuestionRenderer({
                   gap: 6,
                   padding: "10px 12px",
                   borderRadius: 12,
-                  background: "var(--bg, #f7f5ef)"
+                  background: "var(--bilimai-surface-raised, #EEF2F9)"
                 }}
               >
                 <span style={{ fontSize: 14, fontWeight: 600 }}>
                   {rowKey}) {label}
                 </span>
                 <select
+                  data-testid={`matching-select-${rowKey}`}
                   value={matchingSelection[rowKey] ?? ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    setValidationWarning(null);
                     setMatchingSelection((prev) => ({
                       ...prev,
                       [rowKey]: e.target.value === "" ? undefined : Number(e.target.value)
-                    }))
-                  }
+                    }));
+                  }}
                   style={{
                     padding: "10px 12px",
+                    minHeight: 44,
                     borderRadius: 10,
-                    border: "1px solid var(--border, #dcd8ce)",
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
                     fontSize: 14.5,
-                    background: "var(--surface, #fff)",
-                    color: "inherit"
+                    background: "var(--bilimai-surface, #fff)",
+                    color: "var(--bilimai-text, #0F172A)"
                   }}
                 >
                   <option value="">{ui.selectMatch}</option>
@@ -478,8 +548,8 @@ export function UniversalQuestionRenderer({
                 gap: 10,
                 padding: "10px 12px",
                 borderRadius: 12,
-                border: "1px solid var(--border, #dcd8ce)",
-                background: "var(--bg, #f7f5ef)"
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                background: "var(--bilimai-surface-raised, #EEF2F9)"
               }}
             >
               <span style={{ fontSize: 14.5 }}>
@@ -491,13 +561,16 @@ export function UniversalQuestionRenderer({
                   disabled={pos === 0}
                   onClick={() => handleMoveSequence(pos, -1)}
                   style={{
-                    padding: "6px 10px",
+                    minHeight: 38,
+                    padding: "8px 12px",
                     borderRadius: 8,
-                    border: "1px solid var(--border, #dcd8ce)",
-                    background: "var(--surface, #fff)",
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    background: "var(--bilimai-surface, #fff)",
+                    color: "var(--bilimai-text, #0F172A)",
                     cursor: pos === 0 ? "not-allowed" : "pointer",
                     opacity: pos === 0 ? 0.5 : 1,
-                    fontSize: 12
+                    fontSize: 12.5,
+                    fontWeight: 600
                   }}
                 >
                   {ui.moveUp}
@@ -507,13 +580,16 @@ export function UniversalQuestionRenderer({
                   disabled={pos === sequenceOrder.length - 1}
                   onClick={() => handleMoveSequence(pos, 1)}
                   style={{
-                    padding: "6px 10px",
+                    minHeight: 38,
+                    padding: "8px 12px",
                     borderRadius: 8,
-                    border: "1px solid var(--border, #dcd8ce)",
-                    background: "var(--surface, #fff)",
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    background: "var(--bilimai-surface, #fff)",
+                    color: "var(--bilimai-text, #0F172A)",
                     cursor: pos === sequenceOrder.length - 1 ? "not-allowed" : "pointer",
                     opacity: pos === sequenceOrder.length - 1 ? 0.5 : 1,
-                    fontSize: 12
+                    fontSize: 12.5,
+                    fontWeight: 600
                   }}
                 >
                   {ui.moveDown}
@@ -524,18 +600,38 @@ export function UniversalQuestionRenderer({
         </div>
       )}
 
+      {validationWarning && (
+        <div
+          role="alert"
+          data-testid="question-validation-warning"
+          style={{
+            padding: "10px 14px",
+            borderRadius: 10,
+            background: "var(--bilimai-warning-bg, #FFFBEB)",
+            border: "1px solid var(--bilimai-warning-border, #D97706)",
+            color: "var(--bilimai-warning-text, #92400E)",
+            fontSize: 14,
+            fontWeight: 600
+          }}
+        >
+          {validationWarning}
+        </div>
+      )}
+
       {/* Action buttons */}
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
         <button
           type="button"
           className="primary"
+          data-testid="check-question-btn"
           onClick={handleCheck}
           style={{
+            minHeight: 44,
             padding: "11px 18px",
             borderRadius: 12,
             border: "none",
-            background: "var(--accent, #3856f5)",
-            color: "#ffffff",
+            background: "var(--bilimai-brand, #254EDB)",
+            color: "var(--bilimai-on-brand, #ffffff)",
             fontWeight: 600,
             fontSize: 15,
             cursor: "pointer"
@@ -547,15 +643,18 @@ export function UniversalQuestionRenderer({
         <button
           type="button"
           className="ghost"
+          data-testid="hint-question-btn"
           onClick={() => setShowHint((prev) => !prev)}
           style={{
+            minHeight: 44,
             padding: "10px 14px",
             borderRadius: 12,
-            border: "1px solid var(--border, #dcd8ce)",
-            background: "transparent",
+            border: "1px solid var(--bilimai-border, #D8E0EE)",
+            background: "var(--bilimai-surface, #ffffff)",
             fontSize: 14,
             cursor: "pointer",
-            color: "inherit"
+            color: "var(--bilimai-text, #0F172A)",
+            fontWeight: 600
           }}
         >
           {showHint ? ui.hideHintBtn : ui.hintBtn}
@@ -564,13 +663,15 @@ export function UniversalQuestionRenderer({
         {evaluation && onNextQuestion && (
           <button
             type="button"
+            data-testid="next-question-btn"
             onClick={onNextQuestion}
             style={{
+              minHeight: 44,
               padding: "11px 16px",
               borderRadius: 12,
-              border: "1px solid var(--accent, #3856f5)",
-              background: "rgba(56, 86, 245, 0.08)",
-              color: "var(--accent, #3856f5)",
+              border: "1px solid var(--bilimai-selected-border, #254EDB)",
+              background: "var(--bilimai-selected-bg, #E0E7FF)",
+              color: "var(--bilimai-selected-text, #1E3A8A)",
               fontWeight: 600,
               fontSize: 14.5,
               cursor: "pointer"
@@ -586,8 +687,9 @@ export function UniversalQuestionRenderer({
           style={{
             padding: "11px 14px",
             borderRadius: 12,
-            background: "rgba(245, 158, 11, 0.1)",
-            border: "1px solid rgba(245, 158, 11, 0.35)",
+            background: "var(--bilimai-warning-bg, #FFFBEB)",
+            border: "1px solid var(--bilimai-warning-border, #D97706)",
+            color: "var(--bilimai-warning-text, #92400E)",
             fontSize: 14.5,
             lineHeight: 1.5
           }}
@@ -605,16 +707,22 @@ export function UniversalQuestionRenderer({
             borderRadius: 12,
             border:
               evaluation.verificationState === "verified_correct"
-                ? "1px solid rgba(22, 163, 74, 0.4)"
+                ? "1px solid var(--bilimai-success-border, #059669)"
                 : evaluation.verificationState === "incorrect"
-                  ? "1px solid rgba(220, 38, 38, 0.4)"
-                  : "1px solid rgba(217, 119, 6, 0.45)",
+                  ? "1px solid var(--bilimai-error-border, #DC2626)"
+                  : "1px solid var(--bilimai-warning-border, #D97706)",
             background:
               evaluation.verificationState === "verified_correct"
-                ? "rgba(22, 163, 74, 0.08)"
+                ? "var(--bilimai-success-bg, #ECFDF5)"
                 : evaluation.verificationState === "incorrect"
-                  ? "rgba(220, 38, 38, 0.08)"
-                  : "rgba(245, 158, 11, 0.09)",
+                  ? "var(--bilimai-error-bg, #FEF2F2)"
+                  : "var(--bilimai-warning-bg, #FFFBEB)",
+            color:
+              evaluation.verificationState === "verified_correct"
+                ? "var(--bilimai-success-text, #065F46)"
+                : evaluation.verificationState === "incorrect"
+                  ? "var(--bilimai-error-text, #991B1B)"
+                  : "var(--bilimai-warning-text, #92400E)",
             display: "grid",
             gap: 8
           }}
@@ -624,12 +732,7 @@ export function UniversalQuestionRenderer({
               style={{
                 fontSize: 13,
                 letterSpacing: "0.03em",
-                color:
-                  evaluation.verificationState === "verified_correct"
-                    ? "#15803d"
-                    : evaluation.verificationState === "incorrect"
-                      ? "#b91c1c"
-                      : "#b45309"
+                color: "inherit"
               }}
             >
               {evaluation.verificationState === "verified_correct"
@@ -640,9 +743,6 @@ export function UniversalQuestionRenderer({
                     ? ui.statusUnverified
                     : ui.statusUnsupported}
             </strong>
-            <span style={{ fontSize: 12, color: "var(--muted, #65635d)" }}>
-              {evaluation.verificationBasis}
-            </span>
           </div>
 
           <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.5 }}>

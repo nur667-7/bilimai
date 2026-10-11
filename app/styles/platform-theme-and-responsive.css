@@ -919,30 +919,40 @@ html.dark .pixel-mosaic-banner {
   background: var(--accent);
 }
 
-/* 18.5 Strong Visual Hierarchy: Dominant #355CFF Primary CTA vs Calm Secondary */
+/* 18.5 Strong Visual Hierarchy: Dominant WCAG AA Primary CTA vs Calm Secondary */
 
 .aniq-primary-link-btn,
 .aniq-btn-primary,
+.btn-primary,
 button[data-slot="button"].bg-primary {
-  background-color: #355CFF !important;
+  background-color: var(--bilimai-brand, #254EDB) !important;
   background-image: none !important;
-  color: #FFFFFF !important;
-  border-color: #355CFF !important;
+  color: var(--bilimai-on-brand, #FFFFFF) !important;
+  border-color: var(--bilimai-brand, #254EDB) !important;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(53, 92, 255, 0.22);
+  box-shadow: 0 2px 6px rgba(37, 78, 219, 0.22);
 }
 
 .aniq-primary-link-btn:hover,
 .aniq-btn-primary:hover,
+.btn-primary:hover,
 button[data-slot="button"].bg-primary:hover {
-  background-color: #2447E5 !important;
-  border-color: #2447E5 !important;
+  background-color: var(--bilimai-brand-hover, #1D41C2) !important;
+  border-color: var(--bilimai-brand-hover, #1D41C2) !important;
+}
+
+.welcome-standalone-root a:focus-visible,
+.welcome-standalone-root button:focus-visible,
+.welcome-standalone-root input:focus-visible,
+.welcome-standalone-root label:has(input:focus-visible) {
+  outline: 2px solid var(--bilimai-focus, #254EDB);
+  outline-offset: 2px;
 }
 
 .btn-ghost-sm {
   background: transparent;
-  border: 1px solid rgba(23, 32, 51, 0.12);
-  color: var(--muted-foreground);
+  border: 1px solid var(--bilimai-border, rgba(23, 32, 51, 0.16));
+  color: var(--bilimai-text-muted, var(--muted-foreground));
   font-weight: 500;
 }
 
@@ -1067,41 +1077,71 @@ html.dark .option[data-selected="true"] {
   border-color: #6382FF !important;
 }
 
-/* 18.8 Mobile Anti-Overload & Compact Density Rules (Landing Skill) */
+/* 18.8 Mobile Ergonomics for Welcome Page (390x844 & 320x740) */
 @media (max-width: 640px) {
-  .welcome-subject-grid.profile {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  .study-topbar-inner {
+    padding: 10px 12px !important;
     gap: 8px !important;
   }
 
+  .welcome-standalone-main {
+    padding: 20px 12px 36px !important;
+    gap: 24px !important;
+  }
+
+  .welcome-cta-row {
+    width: 100%;
+  }
+
+  .welcome-cta-row > a {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .welcome-mini-card {
+    padding: 14px 12px !important;
+  }
+
+  .welcome-subject-grid.profile {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
   .welcome-subject-card {
-    padding: 10px 12px !important;
-    min-height: 64px !important;
+    padding: 12px 14px !important;
+    min-height: 76px !important;
     justify-content: space-between;
   }
 
-  .welcome-subject-subtitle,
+  .welcome-subject-subtitle {
+    display: block !important;
+    font-size: 0.85rem !important;
+    line-height: 1.4 !important;
+    margin: 4px 0 8px !important;
+  }
+
   .welcome-subj-cta-badge {
     display: none !important;
   }
 
   .welcome-subject-top strong {
-    font-size: 0.86rem !important;
-    line-height: 1.25 !important;
+    font-size: 0.94rem !important;
+    line-height: 1.3 !important;
   }
 
   .welcome-subj-badge.official {
-    font-size: 0.7rem !important;
-    padding: 3px 7px !important;
+    font-size: 0.75rem !important;
+    padding: 3px 8px !important;
   }
 
   .welcome-tools-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 8px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
   }
 
   .welcome-tool-card {
-    padding: 12px !important;
+    padding: 14px !important;
   }
 }
+
 

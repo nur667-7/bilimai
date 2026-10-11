@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, type KeyboardEvent } from "react";
 import Link from "next/link";
 import type { Language } from "@/lib/curriculum";
 import { UNT_SUBJECTS } from "@/lib/unt-all-subjects";
 import { SubjectIcon } from "@/app/unt-exam-view";
-import { PixelBrandMark, PixelKnowledgeMosaic } from "@/components/pixel-mosaic";
+import { PixelBrandMark } from "@/components/pixel-mosaic";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
 import { useAuxiliaryPageNavigation } from "@/lib/use-study-navigation";
 import {
@@ -14,7 +14,6 @@ import {
   formatLessonsCountLabel,
   formatQuestionsCountLabel
 } from "@/lib/universal-curriculum";
-import { UniversalQuestionRenderer } from "@/components/study/universal-question-renderer";
 import {
   UNIVERSAL_PROGRESS_STORAGE_KEY,
   createDefaultUniversalProgressState,
@@ -25,141 +24,238 @@ import {
   type UserInitialLevel
 } from "@/lib/universal-progress";
 
+type AttemptSolveMode = "independent" | "second_try" | "assisted" | "after_solution";
+
 const ONBOARDING_COPY: Record<
   Language,
   {
-    ruleLabel: string;
     stepWord: string;
     backBtn: string;
     nextBtn: string;
     skipBtn: string;
+    restoreBtn: string;
+    skippedText: string;
+    skippedCatalogLink: string;
     step1Title: string;
+    step1Error: string;
     roles: Array<{ id: UserLearnerRole; label: string }>;
     step2Title: string;
+    step2Error: string;
     goals: Array<{ id: UserLearningGoal; label: string }>;
     step3Title: string;
+    step3Hint: string;
+    step3Error: string;
     step3Next: string;
     step4Title: string;
-    levels: Array<{ id: UserInitialLevel; label: string }>;
+    step4Error: string;
+    levels: Array<{ id: UserInitialLevel; label: string; badge: string }>;
     step5Title: string;
-    step5SelectedLabel: string;
-    step5Lead: string;
-    startLessonBtn: string;
+    summaryRole: string;
+    summaryGoal: string;
+    summarySubjects: string;
+    summaryLevel: string;
+    chooseStartSubjectLabel: string;
+    startLessonBtn: (subjTitle: string) => string;
     startDiagnosticBtn: string;
     startPracticeBtn: string;
     startMapBtn: string;
+    editAnswersBtn: string;
   }
 > = {
   ru: {
-    ruleLabel: "Правило урока:",
     stepWord: "ШАГ",
     backBtn: "← Назад",
     nextBtn: "Далее →",
     skipBtn: "Пропустить",
-    step1Title: "Шаг 1 из 5. Кто ты?",
+    restoreBtn: "Настроить маршрут",
+    skippedText:
+      "Анкета пропущена. Выберите любой предмет в каталоге ниже или вернитесь к настройке, когда будет удобно.",
+    skippedCatalogLink: "Перейти к каталогу предметов →",
+    step1Title: "Шаг 1 из 4. Кто вы?",
+    step1Error: "Выберите вариант ответа или нажмите «Пропустить».",
     roles: [
       { id: "student", label: "Школьник (5–11 класс)" },
       { id: "applicant", label: "Абитуриент (подготовка к ЕНТ)" },
-      { id: "self_learner", label: "Самостоятельно изучаю предмет" },
+      { id: "self_learner", label: "Учусь самостоятельно" },
       { id: "teacher", label: "Преподаватель / репетитор" }
     ],
-    step2Title: "Шаг 2 из 5. Какая у тебя цель?",
+    step2Title: "Шаг 2 из 4. Какая у вас цель?",
+    step2Error: "Выберите цель обучения, чтобы перейти к выбору предметов.",
     goals: [
-      { id: "school", label: "Подтянуть школьный предмет" },
+      { id: "school", label: "Разобраться в школьной теме" },
       { id: "exam", label: "Подготовиться к экзамену / ЕНТ" },
-      { id: "from_scratch", label: "Изучить тему с нуля" },
-      { id: "practice_gaps", label: "Практиковаться и разбирать ошибки" }
+      { id: "from_scratch", label: "Изучить предмет с нуля" },
+      { id: "practice_gaps", label: "Найти и закрыть пробелы на практике" }
     ],
-    step3Title: "Шаг 3 из 5. Выбери один или несколько предметов:",
-    step3Next: "Далее: выбрать уровень →",
-    step4Title: "Шаг 4 из 5. Выбери стартовый уровень:",
+    step3Title: "Шаг 3 из 4. Какие предметы вы хотите изучать?",
+    step3Hint: "Можно выбрать один или несколько предметов. Повторное нажатие снимает выбор.",
+    step3Error: "Выберите хотя бы один предмет для продолжения.",
+    step3Next: "Далее: стартовый уровень →",
+    step4Title: "Шаг 4 из 4. Как вы оцениваете свой текущий уровень?",
+    step4Error: "Укажите ориентировочный уровень или выберите мини-диагностику.",
     levels: [
-      { id: "beginner", label: "Начальный — объяснять с самых азов" },
-      { id: "intermediate", label: "Средний — знаю базу, нужна практика" },
-      { id: "advanced", label: "Продвинутый — сложные задачи и ловушки" },
-      { id: "check_level", label: "Проверить мой уровень за 5 минут" }
+      {
+        id: "beginner",
+        label: "Начальный — хочу разбор с базовых понятий",
+        badge: "Самооценка"
+      },
+      {
+        id: "intermediate",
+        label: "Средний — знаю основы, нужна практика",
+        badge: "Самооценка"
+      },
+      {
+        id: "advanced",
+        label: "Продвинутый — интересны сложные задачи и ловушки",
+        badge: "Самооценка"
+      },
+      {
+        id: "check_level",
+        label: "Не уверен — пройти короткую диагностику (5 вопросов)",
+        badge: "Проверка"
+      }
     ],
-    step5Title: "Шаг 5 из 5. Твой персональный маршрут готов!",
-    step5SelectedLabel: "Выбранные предметы:",
-    step5Lead: "Начни с первого интерактивного урока, пройди 5-минутную проверку уровня или открой карту тем:",
-    startLessonBtn: "Начать первый урок →",
-    startDiagnosticBtn: "Пройти проверку уровня (5 мин)",
+    step5Title: "Ваши параметры обучения сохранены",
+    summaryRole: "Профиль:",
+    summaryGoal: "Цель:",
+    summarySubjects: "Выбранные предметы:",
+    summaryLevel: "Стартовый уровень:",
+    chooseStartSubjectLabel: "С какого предмета начать сейчас:",
+    startLessonBtn: (subjTitle) => `Начать первый урок: ${subjTitle} →`,
+    startDiagnosticBtn: "Пройти диагностику (5 вопросов)",
     startPracticeBtn: "Перейти к практике",
-    startMapBtn: "Открыть карту знаний"
+    startMapBtn: "Открыть карту тем",
+    editAnswersBtn: "← Изменить ответы"
   },
   kk: {
-    ruleLabel: "Сабақ ережесі:",
     stepWord: "ҚАДАМ",
     backBtn: "← Артқа",
     nextBtn: "Келесі →",
     skipBtn: "Өткізіп жіберу",
-    step1Title: "5-тен 1-қадам. Сен кімсің?",
+    restoreBtn: "Оқуды баптау",
+    skippedText:
+      "Сауалнама өткізілді. Төмендегі каталогтан кез келген пәнді таңдаңыз немесе баптауға қайта оралыңыз.",
+    skippedCatalogLink: "Пәндер каталогына өту →",
+    step1Title: "4-тен 1-қадам. Сіз кімсіз?",
+    step1Error: "Жауап нұсқасын таңдаңыз немесе «Өткізіп жіберу» түймесін басыңыз.",
     roles: [
       { id: "student", label: "Оқушы (5–11 сынып)" },
       { id: "applicant", label: "Талапкер (ҰБТ-ға дайындық)" },
-      { id: "self_learner", label: "Пәнді өз бетімше оқимын" },
+      { id: "self_learner", label: "Өз бетімше оқимын" },
       { id: "teacher", label: "Оқытушы / репетитор" }
     ],
-    step2Title: "5-тен 2-қадам. Мақсатың қандай?",
+    step2Title: "4-тен 2-қадам. Мақсатыңыз қандай?",
+    step2Error: "Пәндерді таңдау үшін оқу мақсатын көрсетіңіз.",
     goals: [
-      { id: "school", label: "Мектеп пәнін жақсарту" },
+      { id: "school", label: "Мектеп тақырыбын түсіну" },
       { id: "exam", label: "Емтиханға / ҰБТ-ға дайындалу" },
-      { id: "from_scratch", label: "Тақырыпты нөлден бастап үйрену" },
-      { id: "practice_gaps", label: "Жаттығу және қателерді талдау" }
+      { id: "from_scratch", label: "Пәнді нөлден бастап оқу" },
+      { id: "practice_gaps", label: "Қателерді талдап, олқылықты жою" }
     ],
-    step3Title: "5-тен 3-қадам. Бір немесе бірнеше пәнді таңда:",
-    step3Next: "Келесі: деңгейді таңдау →",
-    step4Title: "5-тен 4-қадам. Бастапқы деңгейді таңда:",
+    step3Title: "4-тен 3-қадам. Қай пәндерді оқығыңыз келеді?",
+    step3Hint: "Бір немесе бірнеше пәнді таңдауға болады. Қайта басу таңдауды алып тастайды.",
+    step3Error: "Жалғастыру үшін кемінде бір пәнді таңдаңыз.",
+    step3Next: "Келесі: бастапқы деңгей →",
+    step4Title: "4-тен 4-қадам. Қазіргі деңгейіңізді қалай бағалайсыз?",
+    step4Error: "Деңгейді көрсетіңіз немесе қысқа диагностиканы таңдаңыз.",
     levels: [
-      { id: "beginner", label: "Бастапқы — негізінен бастап түсіндіру" },
-      { id: "intermediate", label: "Орташа — базаны білемін, практика керек" },
-      { id: "advanced", label: "Жоғары — күрделі есептер мен тұзақтар" },
-      { id: "check_level", label: "Деңгейімді 5 минутта тексеру" }
+      {
+        id: "beginner",
+        label: "Бастапқы — негізгі ұғымдардан бастап түсіндіру",
+        badge: "Өзін-өзі бағалау"
+      },
+      {
+        id: "intermediate",
+        label: "Орташа — базаны білемін, практика керек",
+        badge: "Өзін-өзі бағалау"
+      },
+      {
+        id: "advanced",
+        label: "Жоғары — күрделі есептер мен тұзақтар",
+        badge: "Өзін-өзі бағалау"
+      },
+      {
+        id: "check_level",
+        label: "Сенімді емеспін — қысқа диагностикадан өту (5 сұрақ)",
+        badge: "Тексеру"
+      }
     ],
-    step5Title: "5-тен 5-қадам. Жеке оқу маршрутың дайын!",
-    step5SelectedLabel: "Таңдалған пәндер:",
-    step5Lead: "Алғашқы интерактивті сабақтан баста немесе 5 минуттық деңгей тексеруінен өт:",
-    startLessonBtn: "Бірінші сабақты бастау →",
-    startDiagnosticBtn: "Деңгейді тексеру (5 мин)",
+    step5Title: "Оқу параметрлері сақталды",
+    summaryRole: "Профиль:",
+    summaryGoal: "Мақсат:",
+    summarySubjects: "Таңдалған пәндер:",
+    summaryLevel: "Бастапқы деңгей:",
+    chooseStartSubjectLabel: "Қазір қай пәннен бастайсыз:",
+    startLessonBtn: (subjTitle) => `Бірінші сабақты бастау: ${subjTitle} →`,
+    startDiagnosticBtn: "Диагностикадан өту (5 сұрақ)",
     startPracticeBtn: "Практикаға өту",
-    startMapBtn: "Білім картасын ашу"
+    startMapBtn: "Тақырыптар картасын ашу",
+    editAnswersBtn: "← Жауаптарды өзгерту"
   },
   uz: {
-    ruleLabel: "Dars qoidasi:",
     stepWord: "QADAM",
     backBtn: "← Orqaga",
     nextBtn: "Keyingi →",
     skipBtn: "O‘tkazib yuborish",
-    step1Title: "5 dan 1-qadam. Siz kimsiz?",
+    restoreBtn: "O‘qishni sozlash",
+    skippedText:
+      "So‘rovnoma o‘tkazib yuborildi. Quyidagi katalogdan istalgan fanni tanlang yoki sozlashga qayting.",
+    skippedCatalogLink: "Fanlar katalogiga o‘tish →",
+    step1Title: "4 dan 1-qadam. Siz kimsiz?",
+    step1Error: "Javob variantini tanlang yoki «O‘tkazib yuborish» tugmasini bosing.",
     roles: [
       { id: "student", label: "Maktab o‘quvchisi (5–11 sinf)" },
       { id: "applicant", label: "Abituriyent (imtihonga tayyorgarlik)" },
-      { id: "self_learner", label: "Fanni mustaqil o‘rganaman" },
+      { id: "self_learner", label: "Mustaqil o‘rganaman" },
       { id: "teacher", label: "O‘qituvchi / repetitor" }
     ],
-    step2Title: "5 dan 2-qadam. Maqsadingiz nima?",
+    step2Title: "4 dan 2-qadam. Maqsadingiz nima?",
+    step2Error: "Fanlarni tanlash uchun o‘quv maqsadingizni belgilang.",
     goals: [
-      { id: "school", label: "Maktab fanini o‘zlashtirish" },
+      { id: "school", label: "Maktab mavzusini tushunib olish" },
       { id: "exam", label: "Imtihon / UBTga tayyorlanish" },
-      { id: "from_scratch", label: "Mavzuni noldan o‘rganish" },
-      { id: "practice_gaps", label: "Mashq qilish va xatolarni tahlil qilish" }
+      { id: "from_scratch", label: "Fanni noldan o‘rganish" },
+      { id: "practice_gaps", label: "Amaliyotda xatolarni tahlil qilish" }
     ],
-    step3Title: "5 dan 3-qadam. Bitta yoki bir nechta fanni tanlang:",
-    step3Next: "Keyingi: darajani tanlash →",
-    step4Title: "5 dan 4-qadam. Boshlang‘ich darajani tanlang:",
+    step3Title: "4 dan 3-qadam. Qaysi fanlarni o‘rganmoqchisiz?",
+    step3Hint: "Bitta yoki bir nechta fanni tanlash mumkin. Qayta bosish tanlovni bekor qiladi.",
+    step3Error: "Davom etish uchun kamida bitta fanni tanlang.",
+    step3Next: "Keyingi: boshlang‘ich daraja →",
+    step4Title: "4 dan 4-qadam. Hozirgi darajangizni qanday baholaysiz?",
+    step4Error: "Darajani belgilang yoki qisqa diagnostikani tanlang.",
     levels: [
-      { id: "beginner", label: "Boshlang‘ich — eng asosidan tushuntirish" },
-      { id: "intermediate", label: "O‘rta — bazani bilaman, amaliyot kerak" },
-      { id: "advanced", label: "Yuqori — murakkab masalalar va tuzoqlar" },
-      { id: "check_level", label: "Darajamni 5 daqiqada tekshirish" }
+      {
+        id: "beginner",
+        label: "Boshlang‘ich — asosiy tushunchalardan boshlash",
+        badge: "O‘zini baholash"
+      },
+      {
+        id: "intermediate",
+        label: "O‘rta — bazani bilaman, amaliyot kerak",
+        badge: "O‘zini baholash"
+      },
+      {
+        id: "advanced",
+        label: "Yuqori — murakkab masalalar va tuzoqlar",
+        badge: "O‘zini baholash"
+      },
+      {
+        id: "check_level",
+        label: "Ishonchim komil emas — qisqa diagnostikadan o‘tish (5 savol)",
+        badge: "Tekshirish"
+      }
     ],
-    step5Title: "5 dan 5-qadam. Shaxsiy o‘quv yo‘nalishingiz tayyor!",
-    step5SelectedLabel: "Tanlangan fanlar:",
-    step5Lead: "Birinchi interaktiv darsdan boshlang yoki 5 daqiqalik daraja tekshiruvidan o‘ting:",
-    startLessonBtn: "Birinchi darsni boshlash →",
-    startDiagnosticBtn: "Darajani tekshirish (5 daq)",
+    step5Title: "O‘quv parametrlaringiz saqlandi",
+    summaryRole: "Profil:",
+    summaryGoal: "Maqsad:",
+    summarySubjects: "Tanlangan fanlar:",
+    summaryLevel: "Boshlang‘ich daraja:",
+    chooseStartSubjectLabel: "Hozir qaysi fandan boshlaysiz:",
+    startLessonBtn: (subjTitle) => `Birinchi darsni boshlash: ${subjTitle} →`,
+    startDiagnosticBtn: "Diagnostikadan o‘tish (5 savol)",
     startPracticeBtn: "Amaliyotga o‘tish",
-    startMapBtn: "Bilimlar xaritasini ochish"
+    startMapBtn: "Mavzular xaritasini ochish",
+    editAnswersBtn: "← Javoblarni o‘zgartirish"
   }
 };
 
@@ -169,24 +265,39 @@ const COPY: Record<
     eyebrow: string;
     title: string;
     subtitle: string;
-    ctaChooseSubject: string;
-    ctaCheckLevel: string;
     ctaTryDemo: string;
+    ctaChooseSubject: string;
+    ctaSetupLearning: string;
     catalogLink: string;
     profileLink: string;
     demoSectionTitle: string;
     demoSectionSubtitle: string;
-    demoOpenLesson: string;
-    onboardingTitle: string;
-    onboardingSubtitle: string;
-    subjectsTitle: string;
-    subjectsNote: string;
-    openSubjectOverview: string;
-    lessonsBadge: (n: number) => string;
+    demoRemindRuleBtn: string;
+    demoHideRuleBtn: string;
+    demoRulePrefix: string;
+    demoFollowUpBadge: string;
+    demoBackToMainTaskBtn: string;
+    demoCheckBtn: string;
+    demoHintBtn: string;
+    demoHideHintBtn: string;
+    demoEmptyWarning: string;
+    demoWrongTitle: string;
+    demoRetryPrompt: string;
+    demoShowSolutionBtn: string;
+    demoHideSolutionBtn: string;
+    demoSolutionLabel: string;
+    demoCorrectTitle: string;
+    demoSimilarTaskBtn: string;
+    solveStatusLabels: Record<AttemptSolveMode, string>;
     howTitle: string;
     howSteps: Array<{ num: string; title: string; body: string }>;
-    aiTitle: string;
-    aiCapabilities: string[];
+    subjectsTitle: (count: number) => string;
+    subjectsNote: string;
+    fullCourseBadge: string;
+    starterCourseBadge: string;
+    openSubjectOverview: string;
+    onboardingTitle: string;
+    onboardingSubtitle: string;
     footerAbout: string;
     footerPrivacy: string;
     footerTeacher: string;
@@ -194,186 +305,198 @@ const COPY: Record<
   }
 > = {
   ru: {
-    eyebrow: "Универсальная образовательная ИИ-платформа · RU / ҚАЗ / OʻZB",
-    title: "BilimAI — твой персональный ИИ-преподаватель по любому предмету",
+    eyebrow: "Образовательная платформа · RU / ҚАЗ / OʻZB",
+    title: "Разберись в теме и научись решать самостоятельно",
     subtitle:
-      "Объяснения простым языком, интерактивные уроки, практика разных форматов, разбор причины ошибки, карта знаний и подготовка к урокам, контрольным и ЕНТ.",
+      "Пошаговые уроки, практика с разбором причины ошибки и закрепление на похожих задачах.",
+    ctaTryDemo: "Попробовать задачу",
     ctaChooseSubject: "Выбрать предмет",
-    ctaCheckLevel: "Проверить свой уровень",
-    ctaTryDemo: "Попробовать демо без регистрации",
+    ctaSetupLearning: "Настроить обучение",
     catalogLink: "Предметы (12)",
     profileLink: "Профиль",
-    demoSectionTitle: "Живое демо по 5 предметам прямо здесь",
-    demoSectionSubtitle:
-      "Переключайте предметы (Математика, Физика, Английский, История, Информатика), проверяйте ответ и смотрите пошаговое объяснение:",
-    demoOpenLesson: "Перейти к полному курсу предмета →",
-    onboardingTitle: "Персональная настройка обучения за 5 шагов",
-    onboardingSubtitle:
-      "Ответьте на 4 коротких вопроса, чтобы платформа подобрала стартовый предмет, уровень и первый урок.",
-    subjectsTitle: "Каталог предметов BilimAI (12 полных направлений)",
-    subjectsNote:
-      "Нажмите на любой предмет, чтобы открыть его обзор, пошаговые уроки, практику, Лабораторию ошибок, Карту тем и тренажёр ЕНТ.",
-    openSubjectOverview: "Обзор предмета и уроки →",
-    lessonsBadge: (n) => `${n} уроков`,
-    howTitle: "Как работает платформа (5 шагов)",
+    demoSectionTitle: "Попробуй задачу",
+    demoSectionSubtitle: "Выбери предмет, дай ответ и посмотри разбор шага.",
+    demoRemindRuleBtn: "Напомнить правило",
+    demoHideRuleBtn: "Скрыть правило",
+    demoRulePrefix: "Правило:",
+    demoFollowUpBadge: "Похожая задача для самостоятельной проверки",
+    demoBackToMainTaskBtn: "Вернуться к первой задаче",
+    demoCheckBtn: "Проверить ответ",
+    demoHintBtn: "Подсказка",
+    demoHideHintBtn: "Скрыть подсказку",
+    demoEmptyWarning: "Выберите вариант ответа",
+    demoWrongTitle: "Пока неверно",
+    demoRetryPrompt: "Попробуй выбрать другой вариант или открой пошаговое решение.",
+    demoShowSolutionBtn: "Показать решение",
+    demoHideSolutionBtn: "Скрыть решение",
+    demoSolutionLabel: "Пошаговый разбор:",
+    demoCorrectTitle: "Верно!",
+    demoSimilarTaskBtn: "Решить похожую задачу →",
+    solveStatusLabels: {
+      independent: "Решено самостоятельно",
+      second_try: "Решено после исправления ошибки",
+      assisted: "Решено с подсказкой",
+      after_solution: "После просмотра решения"
+    },
+    howTitle: "Как устроено обучение",
     howSteps: [
       {
-        num: "01",
-        title: "Выбираешь предмет и цель",
-        body: "Школьная программа, изучение с нуля, закрытие пробелов или подготовка к экзамену / ЕНТ."
+        num: "1",
+        title: "Выбери тему",
+        body: "Открой нужный предмет, прочитай короткое объяснение и разбери пример по шагам."
       },
       {
-        num: "02",
-        title: "Проходишь быструю диагностику или начинаешь с первого урока",
-        body: "За 5 минут определяем знакомые темы и точки потери баллов без лишнего стресса."
+        num: "2",
+        title: "Реши и разбери ошибку",
+        body: "При неверном ответе платформа объясняет, в чём именно ловушка выбранного варианта, и даёт исправить шаг."
       },
       {
-        num: "03",
-        title: "Изучаешь тему через понятные объяснения и практику",
-        body: "Короткая теория, разобранный по шагам пример, переключение «Объясни проще» и интерактивные задачи."
-      },
-      {
-        num: "04",
-        title: "Разбираешь ошибки с ИИ-репетитором",
-        body: "Платформа показывает не просто «неверно», а объясняет причину ошибки и даёт задачу на закрепление."
-      },
-      {
-        num: "05",
-        title: "Двигаешься по персональному плану и видишь прогресс",
-        body: "Карта знаний и очередь занятий показывают, что изучать сегодня и какие темы уже освоены."
+        num: "3",
+        title: "Проверь себя на новой задаче",
+        body: "Закрепи правило на аналогичном примере и открой следующую тему на карте предмета."
       }
     ],
-    aiTitle: "Что реально умеет ИИ-репетитор BilimAI",
-    aiCapabilities: [
-      "Объясняет тему проще или глубже на русском, казахском и узбекском языках",
-      "Даёт пошаговую наводящую подсказку вместо готового ответа для списывания",
-      "Находит первую ошибочную строку в черновике и честно маркирует статус проверки",
-      "Подбирает аналогичную задачу на закрепление после исправления ошибки"
-    ],
+    subjectsTitle: (count) => `Доступные предметы (${count})`,
+    subjectsNote:
+      "В профильной математике доступен расширенный курс (16 уроков), по остальным 11 предметам — стартовые модули (по 3 базовых урока и практика).",
+    fullCourseBadge: "Расширенный курс",
+    starterCourseBadge: "Стартовый курс",
+    openSubjectOverview: "Открыть предмет →",
+    onboardingTitle: "Настроить обучение под свою цель",
+    onboardingSubtitle:
+      "Необязательная анкета из 4 вопросов: выберите предметы и уровень или сразу перейдите в каталог.",
     footerAbout: "О платформе и методике",
     footerPrivacy: "Конфиденциальность и хранение данных",
     footerTeacher: "Кабинет преподавателя",
     footerGithub: "Исходный код на GitHub ↗"
   },
   kk: {
-    eyebrow: "Әмбебап білім беру ЖИ-платформасы · RU / ҚАЗ / OʻZB",
-    title: "BilimAI — кез келген пән бойынша сенің жеке ЖИ-оқытушың",
+    eyebrow: "Білім беру платформасы · RU / ҚАЗ / OʻZB",
+    title: "Тақырыпты түсініп, өз бетіңше шығаруды үйрен",
     subtitle:
-      "Қарапайым тілмен түсіндіру, интерактивті сабақтар, түрлі форматтағы практика, қателерді талдау, білім картасы және сабақ пен ҰБТ-ға дайындық.",
+      "Қадамдық сабақтар, қатенің себебін талдайтын практика және ұқсас есептермен бекіту.",
+    ctaTryDemo: "Тапсырманы орындап көру",
     ctaChooseSubject: "Пәнді таңдау",
-    ctaCheckLevel: "Деңгейді тексеру",
-    ctaTryDemo: "Тіркеусіз демоны көру",
+    ctaSetupLearning: "Оқуды баптау",
     catalogLink: "Пәндер (12)",
     profileLink: "Профиль",
-    demoSectionTitle: "5 пән бойынша интерактивті демо",
-    demoSectionSubtitle:
-      "Пәнді таңдап (Математика, Физика, Ағылшын тілі, Тарих, Информатика), жауапты тексеріңіз және қадамдық түсіндірмені көріңіз:",
-    demoOpenLesson: "Пәннің толық курсына өту →",
-    onboardingTitle: "5 қадаммен жеке оқу маршрутын баптау",
-    onboardingSubtitle:
-      "Платформа сізге лайықты пән мен алғашқы сабақты таңдап беруі үшін 4 сұраққа жауап беріңіз.",
-    subjectsTitle: "BilimAI пәндер каталогы (12 бағыт)",
-    subjectsNote:
-      "Кез келген пәнді басып, оның шолуын, сабақтарын, практикасын, Қателер зертханасын және Білім картасын ашыңыз.",
-    openSubjectOverview: "Пән шолуы мен сабақтар →",
-    lessonsBadge: (n) => `${n} сабақ`,
-    howTitle: "Платформа қалай жұмыс істейді (5 қадам)",
+    demoSectionTitle: "Тапсырманы орындап көр",
+    demoSectionSubtitle: "Пәнді таңдап, жауап беріңіз және қадамдық талдауды көріңіз.",
+    demoRemindRuleBtn: "Ережені еске салу",
+    demoHideRuleBtn: "Ережені жасыру",
+    demoRulePrefix: "Ереже:",
+    demoFollowUpBadge: "Өзін-өзі тексеруге арналған ұқсас есеп",
+    demoBackToMainTaskBtn: "Бірінші есепке оралу",
+    demoCheckBtn: "Жауапты тексеру",
+    demoHintBtn: "Кеңес",
+    demoHideHintBtn: "Кеңесті жасыру",
+    demoEmptyWarning: "Жауап нұсқасын таңдаңыз",
+    demoWrongTitle: "Әзірге қате",
+    demoRetryPrompt: "Басқа нұсқаны таңдап көріңіз немесе шешімді ашыңыз.",
+    demoShowSolutionBtn: "Шешімді көрсету",
+    demoHideSolutionBtn: "Шешімді жасыру",
+    demoSolutionLabel: "Қадамдық шешім:",
+    demoCorrectTitle: "Дұрыс!",
+    demoSimilarTaskBtn: "Ұқсас есепті шығару →",
+    solveStatusLabels: {
+      independent: "Өз бетінше шығарылды",
+      second_try: "Қатені түзеткен соң шығарылды",
+      assisted: "Кеңеспен шығарылды",
+      after_solution: "Шешімді көргеннен кейін"
+    },
+    howTitle: "Оқыту қалай құрылған",
     howSteps: [
       {
-        num: "01",
-        title: "Пән мен мақсатты таңдайсың",
-        body: "Мектеп бағдарламасы, нөлден бастап оқу немесе ҰБТ-ға дайындық."
+        num: "1",
+        title: "Тақырыпты таңда",
+        body: "Қажетті пәнді ашып, қысқа түсіндірмені оқып, мысалды қадамдап талда."
       },
       {
-        num: "02",
-        title: "Қысқа диагностикадан өтесің немесе 1-сабақтан бастайсың",
-        body: "5 минут ішінде деңгейді анықтап, оқу ретін құрамыз."
+        num: "2",
+        title: "Шығар және қатені талда",
+        body: "Қате жауап болса, жүйе таңдалған нұсқаның тұзағын түсіндіріп, қайта көруге мүмкіндік береді."
       },
       {
-        num: "03",
-        title: "Түсінікті мысалдар мен практика арқылы меңгересің",
-        body: "Қысқа теория, қадамдық үлгі және интерактивті тапсырмалар."
-      },
-      {
-        num: "04",
-        title: "ЖИ-репетитормен қателерді талдайсың",
-        body: "Қатенің себебін түсініп, бекіту есебін шығарасың."
-      },
-      {
-        num: "05",
-        title: "Жеке жоспармен алға жылжисың",
-        body: "Білім картасы әр пән бойынша прогресті бөлек сақтайды."
+        num: "3",
+        title: "Жаңа есепте өзіңді тексер",
+        body: "Ережені ұқсас тапсырмада бекітіп, келесі тақырыпқа өт."
       }
     ],
-    aiTitle: "BilimAI ЖИ-репетиторының мүмкіндіктері",
-    aiCapabilities: [
-      "Тақырыпты орыс, қазақ және өзбек тілдерінде қарапайым тілмен түсіндіреді",
-      "Дайын жауаптың орнына бағыттаушы кеңес береді",
-      "Шешімдегі қате жолды тауып, тексеру мәртебесін адал көрсетеді",
-      "Қатені түзеткен соң ұқсас бекіту тапсырмасын ұсынады"
-    ],
+    subjectsTitle: (count) => `Қолжетімді пәндер (${count})`,
+    subjectsNote:
+      "Профильдік математикада кеңейтілген курс (16 сабақ), ал қалған 11 пәнде бастапқы модульдер (3 базалық сабақ пен практика) қолжетімді.",
+    fullCourseBadge: "Кеңейтілген курс",
+    starterCourseBadge: "Бастапқы курс",
+    openSubjectOverview: "Пәнді ашу →",
+    onboardingTitle: "Оқуды өз мақсатыңа сай баптау",
+    onboardingSubtitle:
+      "4 сұрақтан тұратын қосымша сауалнама: пәндер мен деңгейді таңдаңыз немесе бірден каталогқа өтіңіз.",
     footerAbout: "Жоба және әдістеме туралы",
     footerPrivacy: "Құпиялылық және деректерді сақтау",
     footerTeacher: "Оқытушы кабинеті",
     footerGithub: "GitHub бастапқы коды ↗"
   },
   uz: {
-    eyebrow: "Universal ta’limiy SI-platformasi · RU / ҚАЗ / OʻZB",
-    title: "BilimAI — har qanday fan bo‘yicha shaxsiy SI-o‘qituvchingiz",
+    eyebrow: "Ta’lim platformasi · RU / ҚАЗ / OʻZB",
+    title: "Mavzuni tushunib, mustaqil yechishni o‘rganing",
     subtitle:
-      "Sodda tilda tushuntirishlar, interaktiv darslar, turli formatdagi amaliyot, xatolar tahlili, bilimlar xaritasi va imtihonlarga tayyorgarlik.",
+      "Qadamma-qadam darslar, xato sababini tahlil qiluvchi amaliyot va o‘xshash masalalarda mustahkamlash.",
+    ctaTryDemo: "Masalani yechib ko‘rish",
     ctaChooseSubject: "Fanni tanlash",
-    ctaCheckLevel: "Darajani tekshirish",
-    ctaTryDemo: "Ro‘yxatdan o‘tmasdan demoni ko‘rish",
+    ctaSetupLearning: "O‘qishni sozlash",
     catalogLink: "Fanlar (12)",
     profileLink: "Profil",
-    demoSectionTitle: "5 ta fan bo‘yicha jonli demo",
-    demoSectionSubtitle:
-      "Fanni tanlang (Matematika, Fizika, Ingliz tili, Tarix, Informatika), javobni tekshiring va qadamma-qadam izohni ko‘ring:",
-    demoOpenLesson: "Fanning to‘liq kursiga o‘tish →",
-    onboardingTitle: "5 qadamda shaxsiy o‘quv yo‘nalishini sozlash",
-    onboardingSubtitle:
-      "Platforma sizga mos fan va birinchi darsni tanlab berishi uchun 4 ta qisqa savolga javob bering.",
-    subjectsTitle: "BilimAI fanlar katalogi (12 ta yo‘nalish)",
-    subjectsNote:
-      "Istalgan fanni bosib, uning sharhi, darslari, amaliyoti, Xatolar laboratoriyasi va Bilimlar xaritasini oching.",
-    openSubjectOverview: "Fan sharhi va darslar →",
-    lessonsBadge: (n) => `${n} dars`,
-    howTitle: "Platforma qanday ishlaydi (5 qadam)",
+    demoSectionTitle: "Masalani yechib ko‘ring",
+    demoSectionSubtitle: "Fanni tanlang, javob bering va qadam tahlilini ko‘ring.",
+    demoRemindRuleBtn: "Qoidani eslatish",
+    demoHideRuleBtn: "Qoidani yashirish",
+    demoRulePrefix: "Qoida:",
+    demoFollowUpBadge: "Mustaqil tekshirish uchun o‘xshash masala",
+    demoBackToMainTaskBtn: "Birinchi masalaga qaytish",
+    demoCheckBtn: "Javobni tekshirish",
+    demoHintBtn: "Maslahat",
+    demoHideHintBtn: "Maslahatni yashirish",
+    demoEmptyWarning: "Javob variantini tanlang",
+    demoWrongTitle: "Hozircha noto‘g‘ri",
+    demoRetryPrompt: "Boshqa variantni tanlab ko‘ring yoki yechimni oching.",
+    demoShowSolutionBtn: "Yechimni ko‘rsatish",
+    demoHideSolutionBtn: "Yechimni yashirish",
+    demoSolutionLabel: "Qadamma-qadam yechim:",
+    demoCorrectTitle: "To‘g‘ri!",
+    demoSimilarTaskBtn: "O‘xshash masalani yechish →",
+    solveStatusLabels: {
+      independent: "Mustaqil yechildi",
+      second_try: "Xatoni tuzatgach yechildi",
+      assisted: "Maslahat yordamida yechildi",
+      after_solution: "Yechim ko‘rilgandan so‘ng"
+    },
+    howTitle: "Ta’lim qanday tuzilgan",
     howSteps: [
       {
-        num: "01",
-        title: "Fan va maqsadni tanlaysiz",
-        body: "Maktab dasturi, noldan o‘rganish yoki imtihonga tayyorgarlik."
+        num: "1",
+        title: "Mavzuni tanlang",
+        body: "Kerakli fanni oching, qisqa tushuntirishni o‘qing va namunani qadamma-qadam ko‘rib chiqing."
       },
       {
-        num: "02",
-        title: "Qisqa diagnostikadan o‘tasiz yoki 1-darsdan boshlaysiz",
-        body: "5 daqiqada boshlang‘ich darajani aniqlaymiz."
+        num: "2",
+        title: "Yeching va xatoni tahlil qiling",
+        body: "Xato javobda tizim tanlangan variant tuzog‘ini tushuntiradi va qayta urinib ko‘rish imkonini beradi."
       },
       {
-        num: "03",
-        title: "Tushunarli misollar va amaliyot orqali o‘rganasiz",
-        body: "Qisqa nazariya, qadamma-qadam namuna va interaktiv topshiriqlar."
-      },
-      {
-        num: "04",
-        title: "SI-repetitor bilan xatolarni tahlil qilasiz",
-        body: "Xato sababini tushunib, mustahkamlash masalasini yechasiz."
-      },
-      {
-        num: "05",
-        title: "Shaxsiy reja bo‘yicha oldinga borasiz",
-        body: "Bilimlar xaritasi har bir fan bo‘yicha progressni alohida saqlaydi."
+        num: "3",
+        title: "Yangi masalada o‘zingizni синаб ko‘ring",
+        body: "Qoidani o‘xshash misolda mustahkamlang va keyingi mavzuga o‘ting."
       }
     ],
-    aiTitle: "BilimAI SI-repetitorining imkoniyatlari",
-    aiCapabilities: [
-      "Mavzuni rus, qozoq va o‘zbek tillarida sodda tilda tushuntiradi",
-      "Tayyor javob o‘rniga yo‘naltiruvchi maslahat beradi",
-      "Qoralamadagi xato qatorni topib, tekshirish holatini halol ko‘rsatadi",
-      "Xatoni tuzatgach, o‘xshash mustahkamlash masalasini beradi"
-    ],
+    subjectsTitle: (count) => `Mavjud fanlar (${count})`,
+    subjectsNote:
+      "chuqurlashtirilgan matematikada kengaytirilgan kurs (16 dars), qolgan 11 fanda boshlang‘ich modullar (3 ta bazaviy dars va amaliyot) mavjud.",
+    fullCourseBadge: "Kengaytirilgan kurs",
+    starterCourseBadge: "Boshlang‘ich kurs",
+    openSubjectOverview: "Fanni ochish →",
+    onboardingTitle: "O‘qishni o‘z maqsadingizga moslash",
+    onboardingSubtitle:
+      "4 ta savoldan iborat ixtiyoriy so‘rovnoma: fan va darajani tanlang yoki darhol katalogga o‘ting.",
     footerAbout: "Loyiha va metodika haqida",
     footerPrivacy: "Maxfiylik va ma’lumotlarni saqlash",
     footerTeacher: "O‘qituvchi kabineti",
@@ -387,26 +510,45 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
   const t = COPY[lang];
   const ob = ONBOARDING_COPY[lang];
 
-  const [demoSubjectIndex, setDemoSubjectIndex] = useState(0);
   const allCurricula = getAllSubjectCurricula();
 
-  // 5-Step Onboarding state
+  // Interactive 5-Subject Demo state
+  const [demoSubjectIndex, setDemoSubjectIndex] = useState(0);
+  const [isFollowUp, setIsFollowUp] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [emptyWarning, setEmptyWarning] = useState(false);
+  const [ruleOpen, setRuleOpen] = useState(false);
+  const [hintOpen, setHintOpen] = useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [usedRuleOrHint, setUsedRuleOrHint] = useState(false);
+  const [wrongAttemptsCount, setWrongAttemptsCount] = useState(0);
+  const [checkedState, setCheckedState] = useState<"idle" | "wrong" | "correct">("idle");
+  const [solveMode, setSolveMode] = useState<AttemptSolveMode>("independent");
+
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  // Honest Onboarding state (nothing pre-selected until user chooses or loads saved completed state)
   const [onboardingStep, setOnboardingStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [role, setRole] = useState<UserLearnerRole>("student");
-  const [goal, setGoal] = useState<UserLearningGoal>("school");
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>(["math"]);
-  const [level, setLevel] = useState<UserInitialLevel>("beginner");
+  const [onboardingSkipped, setOnboardingSkipped] = useState(false);
+  const [role, setRole] = useState<UserLearnerRole | null>(null);
+  const [goal, setGoal] = useState<UserLearningGoal | null>(null);
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [primaryStartSubject, setPrimaryStartSubject] = useState<string | null>(null);
+  const [level, setLevel] = useState<UserInitialLevel | null>(null);
+  const [stepError, setStepError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(UNIVERSAL_PROGRESS_STORAGE_KEY);
       if (raw) {
         const state = migrateUniversalProgressState(raw);
-        if (state.onboarding.selectedSubjects.length > 0) {
-          setSelectedSubjects(state.onboarding.selectedSubjects);
+        if (state.onboarding.completed && state.onboarding.selectedSubjects.length > 0) {
           setRole(state.onboarding.role);
           setGoal(state.onboarding.goal);
+          setSelectedSubjects(state.onboarding.selectedSubjects);
+          setPrimaryStartSubject(state.onboarding.selectedSubjects[0] ?? null);
           setLevel(state.onboarding.level);
+          setOnboardingStep(5);
         }
       }
     } catch {
@@ -414,53 +556,194 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
     }
   }, []);
 
-  const toggleOnboardingSubject = (subjId: string) => {
-    setSelectedSubjects((prev) => {
-      if (prev.includes(subjId)) {
-        if (prev[0] !== subjId) {
-          return [subjId, ...prev.filter((id) => id !== subjId)];
-        }
-        return prev.length > 1 ? prev.filter((id) => id !== subjId) : prev;
+  const resetDemoTaskState = (nextFollowUp = false) => {
+    setIsFollowUp(nextFollowUp);
+    setSelectedOption(null);
+    setEmptyWarning(false);
+    setRuleOpen(false);
+    setHintOpen(false);
+    setSolutionRevealed(false);
+    setUsedRuleOrHint(false);
+    setWrongAttemptsCount(0);
+    setCheckedState("idle");
+    setSolveMode("independent");
+  };
+
+  const selectDemoSubject = (idx: number, focusTab = false) => {
+    setDemoSubjectIndex(idx);
+    resetDemoTaskState(false);
+    if (focusTab) {
+      tabRefs.current[idx]?.focus();
+    }
+  };
+
+  const handleDemoTabKeyDown = (e: KeyboardEvent<HTMLButtonElement>, idx: number) => {
+    const count = WELCOME_DEMO_ITEMS.length;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      selectDemoSubject((idx + 1) % count, true);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      selectDemoSubject((idx - 1 + count) % count, true);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      selectDemoSubject(0, true);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      selectDemoSubject(count - 1, true);
+    }
+  };
+
+  const activeDemo = WELCOME_DEMO_ITEMS[demoSubjectIndex] ?? WELCOME_DEMO_ITEMS[0];
+  const activeQuestion = isFollowUp ? activeDemo.followUpQuestion : activeDemo.question;
+  const optionsList = activeQuestion.options?.[lang] ?? [];
+
+  const handleToggleRule = () => {
+    const next = !ruleOpen;
+    setRuleOpen(next);
+    if (next && checkedState !== "correct") {
+      setUsedRuleOrHint(true);
+    }
+  };
+
+  const handleToggleHint = () => {
+    const next = !hintOpen;
+    setHintOpen(next);
+    if (next && checkedState !== "correct") {
+      setUsedRuleOrHint(true);
+    }
+  };
+
+  const handleCheckDemoAnswer = () => {
+    if (selectedOption === null) {
+      setEmptyWarning(true);
+      return;
+    }
+    setEmptyWarning(false);
+
+    if (selectedOption === activeQuestion.correctIndex) {
+      let mode: AttemptSolveMode = "independent";
+      if (solutionRevealed) {
+        mode = "after_solution";
+      } else if (usedRuleOrHint) {
+        mode = "assisted";
+      } else if (wrongAttemptsCount > 0) {
+        mode = "second_try";
       }
-      return [subjId, ...prev];
+      setSolveMode(mode);
+      setCheckedState("correct");
+    } else {
+      setWrongAttemptsCount((prev) => prev + 1);
+      setCheckedState("wrong");
+    }
+  };
+
+  const toggleOnboardingSubject = (subjId: string) => {
+    setStepError(null);
+    setSelectedSubjects((prev) => {
+      const next = prev.includes(subjId)
+        ? prev.filter((id) => id !== subjId)
+        : [...prev, subjId];
+      setPrimaryStartSubject((currPrimary) => {
+        if (next.length === 0) return null;
+        if (currPrimary && next.includes(currPrimary)) return currPrimary;
+        return next[0];
+      });
+      return next;
     });
   };
 
-  const finishOnboardingAndNavigate = (
-    targetMode: "lesson" | "diagnostic" | "practice" | "map"
+  const canReachOnboardingStep = (targetStep: 1 | 2 | 3 | 4 | 5): boolean => {
+    if (targetStep === 1) return true;
+    if (targetStep === 2) return role !== null;
+    if (targetStep === 3) return role !== null && goal !== null;
+    if (targetStep === 4) return role !== null && goal !== null && selectedSubjects.length > 0;
+    return role !== null && goal !== null && selectedSubjects.length > 0 && level !== null;
+  };
+
+  const persistOnboardingIfComplete = (
+    nextRole: UserLearnerRole,
+    nextGoal: UserLearningGoal,
+    nextSubjects: string[],
+    nextLevel: UserInitialLevel,
+    preferredPrimary?: string | null
   ) => {
-    const primarySubject = selectedSubjects[0] ?? "math";
+    const orderedSubjects =
+      preferredPrimary && nextSubjects.includes(preferredPrimary)
+        ? [preferredPrimary, ...nextSubjects.filter((id) => id !== preferredPrimary)]
+        : nextSubjects;
     try {
       const raw = window.localStorage.getItem(UNIVERSAL_PROGRESS_STORAGE_KEY);
       const current = raw ? migrateUniversalProgressState(raw) : createDefaultUniversalProgressState();
       const updated = saveOnboardingSelection(current, {
-        role,
-        goal,
-        selectedSubjects,
-        level
+        role: nextRole,
+        goal: nextGoal,
+        selectedSubjects: orderedSubjects,
+        level: nextLevel
       });
       window.localStorage.setItem(UNIVERSAL_PROGRESS_STORAGE_KEY, JSON.stringify(updated));
     } catch {
       // ignore
     }
-    window.location.href = `/subjects/${primarySubject}?start=${targetMode}&lang=${lang}`;
   };
 
-  const activeDemo = WELCOME_DEMO_ITEMS[demoSubjectIndex] ?? WELCOME_DEMO_ITEMS[0];
+  const finishOnboardingAndNavigate = (
+    targetMode: "lesson" | "diagnostic" | "practice" | "map"
+  ) => {
+    if (!role || !goal || selectedSubjects.length === 0 || !level) return;
+    const targetSubject =
+      primaryStartSubject && selectedSubjects.includes(primaryStartSubject)
+        ? primaryStartSubject
+        : selectedSubjects[0];
+    persistOnboardingIfComplete(role, goal, selectedSubjects, level, targetSubject);
+    window.location.href = `/subjects/${targetSubject}?start=${targetMode}&lang=${lang}`;
+  };
+
+  const activeStartSubjectId =
+    primaryStartSubject && selectedSubjects.includes(primaryStartSubject)
+      ? primaryStartSubject
+      : selectedSubjects[0] ?? "math";
+  const activeStartSubjectTitle =
+    UNT_SUBJECTS.find((s) => s.id === activeStartSubjectId)?.title[lang] ?? activeStartSubjectId;
+
+  const wrongOptionDiagnosis =
+    selectedOption !== null
+      ? activeQuestion.optionDiagnoses?.[lang]?.[selectedOption] ?? activeQuestion.hint[lang]
+      : activeQuestion.hint[lang];
 
   return (
-    <div className="study-root welcome-standalone-root">
-      <header className="study-topbar">
+    <div
+      className="study-root welcome-standalone-root"
+      style={{
+        background: "var(--bilimai-bg)",
+        color: "var(--bilimai-text)",
+        minHeight: "100vh"
+      }}
+    >
+      <header
+        className="study-topbar"
+        style={{
+          background: "var(--bilimai-header-bg)",
+          borderBottom: "1px solid var(--bilimai-border)"
+        }}
+      >
         <div className="study-topbar-inner">
           <div className="study-brand-row">
-            <Link href="/welcome" className="brand-link" aria-label="BilimAI">
+            <Link href={`/welcome?lang=${lang}`} className="brand-link" aria-label="BilimAI">
               <PixelBrandMark size={26} />
-              <span className="brand-title">BilimAI</span>
+              <span className="brand-title" style={{ color: "var(--bilimai-text)", fontWeight: 700 }}>
+                BilimAI
+              </span>
             </Link>
             <span className="brand-Sep hide-on-narrow-mobile" aria-hidden="true">
               /
             </span>
-            <span className="brand-subtitle hide-on-narrow-mobile">{t.eyebrow}</span>
+            <span
+              className="brand-subtitle hide-on-narrow-mobile"
+              style={{ color: "var(--bilimai-text-muted)" }}
+            >
+              {t.eyebrow}
+            </span>
           </div>
 
           <div className="study-controls-row">
@@ -471,29 +754,52 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                   ["kk", "ҚАЗ"],
                   ["uz", "OʻZB"]
                 ] as [Language, string][]
-              ).map(([code, label]) => (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => handleLangChange(code)}
-                  className={`lang-pill ${lang === code ? "active" : ""}`}
-                >
-                  {label}
-                </button>
-              ))}
+              ).map(([code, label]) => {
+                const isActive = lang === code;
+                return (
+                  <button
+                    key={code}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => handleLangChange(code)}
+                    className={`lang-pill ${isActive ? "active" : ""}`}
+                    style={{
+                      background: isActive ? "var(--bilimai-brand)" : "transparent",
+                      color: isActive ? "var(--bilimai-on-brand)" : "var(--bilimai-text-muted)"
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
             <ThemeToggleButton dark={dark} onToggle={toggleTheme} />
 
-            <Link href={`/subjects?lang=${lang}`} className="top-UtilityLink hide-on-narrow-mobile">
+            <Link
+              href={`/subjects?lang=${lang}`}
+              className="top-UtilityLink hide-on-narrow-mobile"
+              style={{ color: "var(--bilimai-text-muted)" }}
+            >
               {t.catalogLink}
             </Link>
 
-            <Link href={`/?tab=profile&lang=${lang}`} className="top-UtilityLink hide-on-narrow-mobile">
+            <Link
+              href={`/?tab=profile&lang=${lang}`}
+              className="top-UtilityLink hide-on-narrow-mobile"
+              style={{ color: "var(--bilimai-text-muted)" }}
+            >
               {t.profileLink}
             </Link>
 
-            <a href="#subjects-catalog" className="btn-primary welcome-top-cta hide-on-narrow-mobile">
+            <a
+              href="#subjects-catalog"
+              className="btn-primary welcome-top-cta hide-on-narrow-mobile"
+              style={{
+                background: "var(--bilimai-brand)",
+                color: "var(--bilimai-on-brand)"
+              }}
+            >
               {t.ctaChooseSubject}
             </a>
           </div>
@@ -501,47 +807,110 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
       </header>
 
       <main className="welcome-standalone-main">
-        {/* 1. HERO + 5-SUBJECT INTERACTIVE DEMO */}
+        {/* 1. HERO + INTERACTIVE MINI LEARNING LOOP DEMO */}
         <section className="welcome-hero-grid" aria-labelledby="welcome-h1">
           <div className="welcome-hero-copy">
-            <h1 id="welcome-h1" className="welcome-main-title">
+            <span
+              className="lesson-kicker"
+              style={{ color: "var(--bilimai-brand-text)" }}
+            >
+              {t.eyebrow}
+            </span>
+            <h1
+              id="welcome-h1"
+              className="welcome-main-title"
+              style={{ color: "var(--bilimai-text)" }}
+            >
               {t.title}
             </h1>
-            <p className="welcome-main-lead">{t.subtitle}</p>
-
-            <PixelKnowledgeMosaic className="mt-1 hide-on-narrow-mobile" />
+            <p
+              className="welcome-main-lead"
+              style={{ color: "var(--bilimai-text-muted)" }}
+            >
+              {t.subtitle}
+            </p>
 
             <div className="welcome-cta-row">
-              <a href="#subjects-catalog" className="btn-primary" data-testid="hero-cta-choose-subject">
+              <a
+                href="#interactive-multi-demo"
+                className="btn-primary"
+                data-testid="hero-cta-try-demo"
+                style={{
+                  background: "var(--bilimai-brand)",
+                  color: "var(--bilimai-on-brand)",
+                  minHeight: 44
+                }}
+              >
+                {t.ctaTryDemo}
+              </a>
+              <a
+                href="#subjects-catalog"
+                className="btn-ghost"
+                data-testid="hero-cta-choose-subject"
+                style={{
+                  background: "var(--bilimai-surface)",
+                  color: "var(--bilimai-text)",
+                  border: "1px solid var(--bilimai-border)",
+                  minHeight: 44
+                }}
+              >
                 {t.ctaChooseSubject}
               </a>
-              <a href="#onboarding-wizard" className="btn-ghost" data-testid="hero-cta-check-level">
-                {t.ctaCheckLevel}
-              </a>
-              <a href="#interactive-multi-demo" className="btn-ghost" data-testid="hero-cta-try-demo">
-                {t.ctaTryDemo}
+              <a
+                href="#onboarding-wizard"
+                className="btn-ghost"
+                data-testid="hero-cta-setup-learning"
+                onClick={() => setOnboardingSkipped(false)}
+                style={{
+                  background: "var(--bilimai-surface)",
+                  color: "var(--bilimai-text)",
+                  border: "1px solid var(--bilimai-border)",
+                  minHeight: 44
+                }}
+              >
+                {t.ctaSetupLearning}
               </a>
             </div>
           </div>
 
-          {/* Interactive 5-Subject Live Demo Card */}
+          {/* Interactive 5-Subject Mini Learning Loop Card */}
           <div
             id="interactive-multi-demo"
             className="welcome-mini-card"
             data-testid="welcome-5subject-demo"
-            style={{ display: "grid", gap: 12 }}
+            style={{
+              display: "grid",
+              gap: 14,
+              background: "var(--bilimai-surface)",
+              border: "1px solid var(--bilimai-border)",
+              color: "var(--bilimai-text)"
+            }}
           >
             <div>
-              <span className="section-num">{t.demoSectionTitle}</span>
-              <p className="muted-note" style={{ margin: "4px 0 0" }}>
+              <h2
+                id="demo-heading"
+                style={{
+                  margin: 0,
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: "var(--bilimai-text)"
+                }}
+              >
+                {t.demoSectionTitle}
+              </h2>
+              <p
+                className="muted-note"
+                style={{ margin: "4px 0 0", color: "var(--bilimai-text-muted)" }}
+              >
                 {t.demoSectionSubtitle}
               </p>
             </div>
 
-            {/* 5 Subject Switcher Pills */}
+            {/* WAI-ARIA Subject Switcher Tablist */}
             <div
               role="tablist"
-              aria-label={t.demoSectionTitle}
+              aria-labelledby="demo-heading"
+              className="welcome-demo-tablist"
               style={{ display: "flex", flexWrap: "wrap", gap: 6 }}
             >
               {WELCOME_DEMO_ITEMS.map((item, idx) => {
@@ -549,20 +918,30 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
                 return (
                   <button
                     key={item.subjectId}
+                    ref={(el) => {
+                      tabRefs.current[idx] = el;
+                    }}
+                    id={`demo-tab-${item.subjectId}`}
                     type="button"
                     role="tab"
                     aria-selected={active}
+                    aria-controls="welcome-demo-tabpanel"
+                    tabIndex={active ? 0 : -1}
                     data-testid={`welcome-demo-tab-${item.subjectId}`}
-                    onClick={() => setDemoSubjectIndex(idx)}
+                    onClick={() => selectDemoSubject(idx)}
+                    onKeyDown={(e) => handleDemoTabKeyDown(e, idx)}
                     style={{
-                      padding: "6px 11px",
+                      minHeight: 40,
+                      padding: "7px 13px",
                       borderRadius: 999,
                       border: active
-                        ? "1px solid var(--accent, #3856f5)"
-                        : "1px solid var(--border, #dcd8ce)",
-                      background: active ? "var(--accent, #3856f5)" : "var(--surface, #fff)",
-                      color: active ? "#fff" : "inherit",
-                      fontSize: 12.5,
+                        ? "1.5px solid var(--bilimai-brand)"
+                        : "1px solid var(--bilimai-border)",
+                      background: active
+                        ? "var(--bilimai-brand)"
+                        : "var(--bilimai-surface-raised)",
+                      color: active ? "var(--bilimai-on-brand)" : "var(--bilimai-text)",
+                      fontSize: 13,
                       fontWeight: 700,
                       cursor: "pointer"
                     }}
@@ -573,404 +952,530 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
               })}
             </div>
 
+            {/* Tabpanel: Task Prompt First -> Optional Rule Toggle -> Radio Options -> Feedback */}
             <div
+              id="welcome-demo-tabpanel"
+              role="tabpanel"
+              aria-labelledby={`demo-tab-${activeDemo.subjectId}`}
               style={{
-                padding: "9px 12px",
-                borderRadius: 10,
-                background: "rgba(56, 86, 245, 0.07)",
-                fontSize: 13.5,
-                lineHeight: 1.45
+                display: "grid",
+                gap: 12,
+                padding: "14px 16px",
+                borderRadius: 12,
+                background: "var(--bilimai-surface-raised)",
+                border: "1px solid var(--bilimai-border)"
               }}
             >
-              <strong>{ob.ruleLabel}</strong> {activeDemo.contextNote[lang]}
+              {isFollowUp && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: 8
+                  }}
+                >
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      padding: "3px 9px",
+                      borderRadius: 6,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      background: "var(--bilimai-selected-bg)",
+                      color: "var(--bilimai-selected-text)"
+                    }}
+                  >
+                    {t.demoFollowUpBadge}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => resetDemoTaskState(false)}
+                    style={{
+                      background: "transparent",
+                      border: 0,
+                      padding: "2px 4px",
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      color: "var(--bilimai-brand-text)",
+                      textDecoration: "underline",
+                      cursor: "pointer"
+                    }}
+                  >
+                    {t.demoBackToMainTaskBtn}
+                  </button>
+                </div>
+              )}
+
+              {/* 1. Task Prompt First */}
+              <div
+                data-testid="demo-task-prompt"
+                style={{
+                  fontSize: 15.5,
+                  fontWeight: 700,
+                  lineHeight: 1.45,
+                  color: "var(--bilimai-text)"
+                }}
+              >
+                {activeQuestion.prompt[lang]}
+              </div>
+
+              {/* 2. Rule Hidden Behind Toggle Button */}
+              <div>
+                <button
+                  type="button"
+                  data-testid="demo-toggle-rule-btn"
+                  aria-expanded={ruleOpen}
+                  onClick={handleToggleRule}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    minHeight: 36,
+                    padding: "5px 11px",
+                    borderRadius: 8,
+                    border: "1px solid var(--bilimai-border)",
+                    background: "var(--bilimai-surface)",
+                    color: "var(--bilimai-brand-text)",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  {ruleOpen ? t.demoHideRuleBtn : t.demoRemindRuleBtn}
+                </button>
+
+                {ruleOpen && (
+                  <div
+                    data-testid="demo-rule-box"
+                    style={{
+                      marginTop: 8,
+                      padding: "10px 12px",
+                      borderRadius: 9,
+                      background: "var(--bilimai-selected-bg)",
+                      border: "1px solid var(--bilimai-selected-border)",
+                      color: "var(--bilimai-text)",
+                      fontSize: 13.5,
+                      lineHeight: 1.45
+                    }}
+                  >
+                    <strong>{t.demoRulePrefix}</strong> {activeDemo.contextNote[lang]}
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Native Radio Options Group */}
+              <fieldset
+                style={{
+                  border: 0,
+                  margin: 0,
+                  padding: 0,
+                  display: "grid",
+                  gap: 8
+                }}
+              >
+                <legend className="sr-only">{activeQuestion.prompt[lang]}</legend>
+                {optionsList.map((opt, idx) => {
+                  const selected = selectedOption === idx;
+                  return (
+                    <label
+                      key={idx}
+                      data-testid={`demo-option-${idx}`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        minHeight: 44,
+                        padding: "10px 13px",
+                        borderRadius: 10,
+                        border: selected
+                          ? "2px solid var(--bilimai-selected-border)"
+                          : "1px solid var(--bilimai-border)",
+                        background: selected
+                          ? "var(--bilimai-selected-bg)"
+                          : "var(--bilimai-surface)",
+                        color: selected
+                          ? "var(--bilimai-selected-text)"
+                          : "var(--bilimai-text)",
+                        fontWeight: selected ? 600 : 500,
+                        fontSize: 14,
+                        lineHeight: 1.4,
+                        cursor: "pointer"
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name={`demo-q-${activeQuestion.id}`}
+                        checked={selected}
+                        onChange={() => {
+                          setSelectedOption(idx);
+                          setEmptyWarning(false);
+                          if (checkedState === "wrong") {
+                            setCheckedState("idle");
+                          }
+                        }}
+                        style={{
+                          width: 18,
+                          height: 18,
+                          margin: 0,
+                          accentColor: "var(--bilimai-brand)",
+                          flexShrink: 0,
+                          cursor: "pointer"
+                        }}
+                      />
+                      <span>
+                        <strong>{String.fromCharCode(65 + idx)}.</strong> {opt}
+                      </span>
+                    </label>
+                  );
+                })}
+              </fieldset>
+
+              {/* 4. Check & Hint Buttons */}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                <button
+                  type="button"
+                  data-testid="demo-check-btn"
+                  onClick={handleCheckDemoAnswer}
+                  style={{
+                    minHeight: 44,
+                    padding: "9px 18px",
+                    borderRadius: 9,
+                    border: "1px solid var(--bilimai-brand)",
+                    background: "var(--bilimai-brand)",
+                    color: "var(--bilimai-on-brand)",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    cursor: "pointer"
+                  }}
+                >
+                  {t.demoCheckBtn}
+                </button>
+
+                <button
+                  type="button"
+                  data-testid="demo-hint-btn"
+                  aria-expanded={hintOpen}
+                  onClick={handleToggleHint}
+                  style={{
+                    minHeight: 44,
+                    padding: "9px 14px",
+                    borderRadius: 9,
+                    border: "1px solid var(--bilimai-border)",
+                    background: "var(--bilimai-surface)",
+                    color: "var(--bilimai-text)",
+                    fontWeight: 600,
+                    fontSize: 13.5,
+                    cursor: "pointer"
+                  }}
+                >
+                  {hintOpen ? t.demoHideHintBtn : t.demoHintBtn}
+                </button>
+              </div>
+
+              {hintOpen && (
+                <div
+                  data-testid="demo-hint-box"
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 9,
+                    background: "var(--bilimai-warning-bg)",
+                    border: "1px solid var(--bilimai-warning-border)",
+                    color: "var(--bilimai-warning-text)",
+                    fontSize: 13.5,
+                    lineHeight: 1.45
+                  }}
+                >
+                  {activeQuestion.hint[lang]}
+                </div>
+              )}
+
+              {/* 5. Empty Submission Inline Alert */}
+              {emptyWarning && (
+                <div
+                  role="alert"
+                  data-testid="demo-empty-warning"
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 9,
+                    background: "var(--bilimai-warning-bg)",
+                    border: "1px solid var(--bilimai-warning-border)",
+                    color: "var(--bilimai-warning-text)",
+                    fontSize: 13.5,
+                    fontWeight: 600
+                  }}
+                >
+                  {t.demoEmptyWarning}
+                </div>
+              )}
+
+              {/* 6. Wrong Answer Diagnostic Feedback (Option-Specific Trap + Retry + Optional Solution) */}
+              {checkedState === "wrong" && (
+                <div
+                  role="status"
+                  data-testid="demo-feedback-wrong"
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 10,
+                    background: "var(--bilimai-error-bg)",
+                    border: "1px solid var(--bilimai-error-border)",
+                    color: "var(--bilimai-error-text)",
+                    display: "grid",
+                    gap: 8,
+                    fontSize: 13.5,
+                    lineHeight: 1.45
+                  }}
+                >
+                  <strong style={{ fontSize: 14.5 }}>{t.demoWrongTitle}</strong>
+                  <p style={{ margin: 0 }}>{wrongOptionDiagnosis}</p>
+                  <p style={{ margin: 0, fontWeight: 600 }}>{t.demoRetryPrompt}</p>
+
+                  <div>
+                    <button
+                      type="button"
+                      data-testid="demo-show-solution-btn"
+                      aria-expanded={solutionRevealed}
+                      onClick={() => setSolutionRevealed((prev) => !prev)}
+                      style={{
+                        minHeight: 38,
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-error-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text)",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {solutionRevealed ? t.demoHideSolutionBtn : t.demoShowSolutionBtn}
+                    </button>
+                  </div>
+
+                  {solutionRevealed && (
+                    <div
+                      data-testid="demo-solution-box"
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 8,
+                        background: "var(--bilimai-surface)",
+                        border: "1px solid var(--bilimai-border)",
+                        color: "var(--bilimai-text)"
+                      }}
+                    >
+                      <strong>{t.demoSolutionLabel}</strong> {activeQuestion.explanation[lang]}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 7. Correct Answer Feedback + Solve Mode Badge + Similar Task Button */}
+              {checkedState === "correct" && (
+                <div
+                  role="status"
+                  data-testid="demo-feedback-correct"
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 10,
+                    background: "var(--bilimai-success-bg)",
+                    border: "1px solid var(--bilimai-success-border)",
+                    color: "var(--bilimai-success-text)",
+                    display: "grid",
+                    gap: 8,
+                    fontSize: 13.5,
+                    lineHeight: 1.45
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: 8
+                    }}
+                  >
+                    <strong style={{ fontSize: 15 }}>{t.demoCorrectTitle}</strong>
+                    <span
+                      data-testid="demo-attempt-status"
+                      style={{
+                        padding: "3px 9px",
+                        borderRadius: 999,
+                        background: "var(--bilimai-surface)",
+                        border: "1px solid var(--bilimai-success-border)",
+                        color: "var(--bilimai-success-text)",
+                        fontSize: 12,
+                        fontWeight: 700
+                      }}
+                    >
+                      {t.solveStatusLabels[solveMode]}
+                    </span>
+                  </div>
+
+                  <p style={{ margin: 0 }}>{activeQuestion.explanation[lang]}</p>
+
+                  {!isFollowUp && (
+                    <div>
+                      <button
+                        type="button"
+                        data-testid="demo-similar-task-btn"
+                        onClick={() => resetDemoTaskState(true)}
+                        style={{
+                          minHeight: 40,
+                          padding: "7px 14px",
+                          borderRadius: 8,
+                          border: "1px solid var(--bilimai-success-border)",
+                          background: "var(--bilimai-surface)",
+                          color: "var(--bilimai-text)",
+                          fontSize: 13,
+                          fontWeight: 700,
+                          cursor: "pointer"
+                        }}
+                      >
+                        {t.demoSimilarTaskBtn}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <UniversalQuestionRenderer question={activeDemo.question} locale={lang} />
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            {/* 8. Bottom Subject-Specific CTA */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 8
+              }}
+            >
               <Link
                 href={`/subjects/${activeDemo.subjectId}?lang=${lang}`}
                 className="inline-action-link"
                 data-testid="welcome-demo-open-subject-link"
+                style={{
+                  color: "var(--bilimai-brand-text)",
+                  fontWeight: 700,
+                  fontSize: 14
+                }}
               >
-                {t.demoOpenLesson} ({activeDemo.subjectTitle[lang]})
+                {activeDemo.subjectCtaLabel[lang]} →
               </Link>
             </div>
           </div>
         </section>
 
-        {/* 2. 5-STEP INTERACTIVE ONBOARDING WIZARD (Part VI) */}
+        {/* 2. HOW LEARNING WORKS (3 CONCISE STEPS) */}
         <section
-          id="onboarding-wizard"
-          data-testid="welcome-onboarding-wizard"
-          style={{
-            background: "var(--surface, #fff)",
-            border: "1px solid var(--border, #e4e1d8)",
-            borderRadius: 20,
-            padding: "22px 24px",
-            display: "grid",
-            gap: 16
-          }}
+          id="how-it-works"
+          className="welcome-tools-section"
+          aria-labelledby="welcome-how-h2"
         >
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-            <div>
-              <h2 className="section-title" style={{ margin: 0 }}>
-                {t.onboardingTitle}
-              </h2>
-              <p className="muted-note" style={{ margin: "4px 0 0" }}>
-                {t.onboardingSubtitle}
-              </p>
-            </div>
-            <div style={{ display: "flex", gap: 6 }}>
-              {([1, 2, 3, 4, 5] as const).map((stepNum) => (
-                <button
-                  key={stepNum}
-                  type="button"
-                  data-testid={`onboarding-step-btn-${stepNum}`}
-                  onClick={() => setOnboardingStep(stepNum)}
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 999,
-                    border:
-                      onboardingStep === stepNum
-                        ? "2px solid var(--accent, #3856f5)"
-                        : "1px solid var(--border, #dcd8ce)",
-                    background:
-                      onboardingStep === stepNum ? "var(--accent, #3856f5)" : "var(--bg, #f7f5ef)",
-                    color: onboardingStep === stepNum ? "#fff" : "inherit",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    cursor: "pointer"
-                  }}
+          <h2
+            id="welcome-how-h2"
+            className="section-title"
+            style={{ color: "var(--bilimai-text)" }}
+          >
+            {t.howTitle}
+          </h2>
+          <div className="welcome-tools-grid">
+            {t.howSteps.map((step) => (
+              <article
+                key={step.num}
+                className="welcome-tool-card"
+                style={{
+                  background: "var(--bilimai-surface)",
+                  border: "1px solid var(--bilimai-border)",
+                  color: "var(--bilimai-text)"
+                }}
+              >
+                <span
+                  className="section-num"
+                  style={{ color: "var(--bilimai-brand-text)" }}
                 >
-                  {stepNum}
-                </button>
-              ))}
-            </div>
+                  {ob.stepWord} {step.num}
+                </span>
+                <h3 style={{ color: "var(--bilimai-text)" }}>{step.title}</h3>
+                <p style={{ color: "var(--bilimai-text-muted)" }}>{step.body}</p>
+              </article>
+            ))}
           </div>
-
-          {onboardingStep === 1 && (
-            <div style={{ display: "grid", gap: 12 }}>
-              <strong style={{ fontSize: 16 }}>{ob.step1Title}</strong>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
-                {ob.roles.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    data-testid={`onboarding-role-${item.id}`}
-                    onClick={() => {
-                      setRole(item.id);
-                      setOnboardingStep(2);
-                    }}
-                    style={{
-                      padding: "13px 15px",
-                      borderRadius: 12,
-                      border:
-                        role === item.id
-                          ? "2px solid var(--accent, #3856f5)"
-                          : "1px solid var(--border, #dcd8ce)",
-                      background: role === item.id ? "rgba(56, 86, 245, 0.08)" : "var(--bg, #f7f5ef)",
-                      fontWeight: 600,
-                      textAlign: "left",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-skip"
-                  onClick={() => setOnboardingStep(5)}
-                >
-                  {ob.skipBtn}
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-next"
-                  onClick={() => setOnboardingStep(2)}
-                >
-                  {ob.nextBtn}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {onboardingStep === 2 && (
-            <div style={{ display: "grid", gap: 12 }}>
-              <strong style={{ fontSize: 16 }}>{ob.step2Title}</strong>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
-                {ob.goals.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    data-testid={`onboarding-goal-${item.id}`}
-                    onClick={() => {
-                      setGoal(item.id);
-                      setOnboardingStep(3);
-                    }}
-                    style={{
-                      padding: "13px 15px",
-                      borderRadius: 12,
-                      border:
-                        goal === item.id
-                          ? "2px solid var(--accent, #3856f5)"
-                          : "1px solid var(--border, #dcd8ce)",
-                      background: goal === item.id ? "rgba(56, 86, 245, 0.08)" : "var(--bg, #f7f5ef)",
-                      fontWeight: 600,
-                      textAlign: "left",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-back"
-                  onClick={() => setOnboardingStep(1)}
-                >
-                  {ob.backBtn}
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-next"
-                  onClick={() => setOnboardingStep(3)}
-                >
-                  {ob.nextBtn}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {onboardingStep === 3 && (
-            <div style={{ display: "grid", gap: 12 }}>
-              <strong style={{ fontSize: 16 }}>{ob.step3Title}</strong>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {UNT_SUBJECTS.map((s) => {
-                  const picked = selectedSubjects.includes(s.id);
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      data-testid={`onboarding-subject-${s.id}`}
-                      onClick={() => toggleOnboardingSubject(s.id)}
-                      style={{
-                        padding: "9px 13px",
-                        borderRadius: 999,
-                        border: picked
-                          ? "2px solid var(--accent, #3856f5)"
-                          : "1px solid var(--border, #dcd8ce)",
-                        background: picked ? "rgba(56, 86, 245, 0.1)" : "var(--bg, #f7f5ef)",
-                        fontWeight: 600,
-                        fontSize: 13.5,
-                        cursor: "pointer"
-                      }}
-                    >
-                      {picked ? "✓ " : ""}
-                      {s.title[lang]}
-                    </button>
-                  );
-                })}
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-back"
-                  onClick={() => setOnboardingStep(2)}
-                >
-                  {ob.backBtn}
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  data-testid="onboarding-next"
-                  onClick={() => setOnboardingStep(4)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {ob.step3Next}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {onboardingStep === 4 && (
-            <div style={{ display: "grid", gap: 12 }}>
-              <strong style={{ fontSize: 16 }}>{ob.step4Title}</strong>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
-                {ob.levels.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    data-testid={`onboarding-level-${item.id}`}
-                    onClick={() => {
-                      setLevel(item.id);
-                      setOnboardingStep(5);
-                    }}
-                    style={{
-                      padding: "13px 15px",
-                      borderRadius: 12,
-                      border:
-                        level === item.id
-                          ? "2px solid var(--accent, #3856f5)"
-                          : "1px solid var(--border, #dcd8ce)",
-                      background: level === item.id ? "rgba(56, 86, 245, 0.08)" : "var(--bg, #f7f5ef)",
-                      fontWeight: 600,
-                      textAlign: "left",
-                      cursor: "pointer"
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-back"
-                  onClick={() => setOnboardingStep(3)}
-                >
-                  {ob.backBtn}
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-next"
-                  onClick={() => setOnboardingStep(5)}
-                >
-                  {ob.nextBtn}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {onboardingStep === 5 && (
-            <div
-              style={{
-                padding: "16px 18px",
-                borderRadius: 14,
-                background: "rgba(56, 86, 245, 0.07)",
-                border: "1px solid rgba(56, 86, 245, 0.28)",
-                display: "grid",
-                gap: 12
-              }}
-            >
-              <strong style={{ fontSize: 17 }}>{ob.step5Title}</strong>
-              <p style={{ margin: 0, fontSize: 14.5 }}>
-                {ob.step5SelectedLabel}{" "}
-                <strong>
-                  {selectedSubjects
-                    .map((id) => UNT_SUBJECTS.find((s) => s.id === id)?.title[lang] ?? id)
-                    .join(", ")}
-                </strong>
-                . {ob.step5Lead}
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  data-testid="onboarding-finish-lesson"
-                  onClick={() => finishOnboardingAndNavigate("lesson")}
-                  style={{ cursor: "pointer" }}
-                >
-                  {ob.startLessonBtn}
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-finish-diagnostic"
-                  onClick={() => finishOnboardingAndNavigate("diagnostic")}
-                  style={{ cursor: "pointer" }}
-                >
-                  {ob.startDiagnosticBtn}
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-finish-practice"
-                  onClick={() => finishOnboardingAndNavigate("practice")}
-                  style={{ cursor: "pointer" }}
-                >
-                  {ob.startPracticeBtn}
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-finish-map"
-                  onClick={() => finishOnboardingAndNavigate("map")}
-                  style={{ cursor: "pointer" }}
-                >
-                  {ob.startMapBtn}
-                </button>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  data-testid="onboarding-back"
-                  onClick={() => setOnboardingStep(4)}
-                >
-                  {ob.backBtn}
-                </button>
-              </div>
-            </div>
-          )}
         </section>
 
-        {/* 3. FULL 12-SUBJECT CATALOG (CASE G: Every card links to /subjects/[subject]) */}
+        {/* 3. HONEST 12-SUBJECT CATALOG (Visible descriptions on mobile & desktop, honest course badges) */}
         <section
           id="subjects-catalog"
           className="welcome-subjects-section"
           aria-labelledby="welcome-subjects-h2"
         >
           <div className="welcome-subjects-head">
-            <h2 id="welcome-subjects-h2" className="section-title">
-              {t.subjectsTitle}
+            <h2
+              id="welcome-subjects-h2"
+              className="section-title"
+              style={{ color: "var(--bilimai-text)" }}
+            >
+              {t.subjectsTitle(allCurricula.length)}
             </h2>
-            <p className="muted-note">{t.subjectsNote}</p>
+            <p className="muted-note" style={{ color: "var(--bilimai-text-muted)" }}>
+              {t.subjectsNote}
+            </p>
           </div>
 
           <div className="welcome-subject-grid profile">
             {allCurricula.map((subj) => {
               const totalQuestions = subj.lessons.reduce((acc, l) => acc + l.questions.length, 0);
+              const isFullCourse = subj.lessons.length >= 10;
               return (
                 <Link
                   key={subj.id}
                   href={`/subjects/${subj.id}?lang=${lang}`}
                   data-testid={`welcome-subject-card-${subj.id}`}
                   className="welcome-subject-card"
+                  style={{
+                    background: "var(--bilimai-surface)",
+                    border: "1px solid var(--bilimai-border)",
+                    color: "var(--bilimai-text)"
+                  }}
                 >
                   <div className="welcome-subject-top">
-                    <SubjectIcon subjectId={subj.id as import("@/lib/unt-all-subjects").UntSubjectId} size={18} />
-                    <strong>{subj.title[lang]}</strong>
+                    <SubjectIcon
+                      subjectId={subj.id as import("@/lib/unt-all-subjects").UntSubjectId}
+                      size={18}
+                    />
+                    <strong style={{ color: "var(--bilimai-text)" }}>{subj.title[lang]}</strong>
                   </div>
                   <p
                     className="welcome-subject-subtitle"
                     style={{
                       margin: "6px 0 10px",
-                      fontSize: 13,
-                      color: "var(--muted, #57544e)",
-                      lineHeight: 1.4
+                      fontSize: 13.5,
+                      color: "var(--bilimai-text-muted)",
+                      lineHeight: 1.45
                     }}
                   >
-                    {subj.subtitle[lang]}
+                    {subj.shortDescription?.[lang] ?? subj.subtitle[lang]}
                   </p>
                   <div className="welcome-subject-badges">
-                    <span className="welcome-subj-badge official">
-                      {formatLessonsCountLabel(subj.lessons.length, lang)} · {formatQuestionsCountLabel(totalQuestions, lang)}
+                    <span
+                      className="welcome-subj-badge official"
+                      style={{
+                        background: isFullCourse
+                          ? "var(--bilimai-selected-bg)"
+                          : "var(--bilimai-surface-raised)",
+                        color: isFullCourse
+                          ? "var(--bilimai-selected-text)"
+                          : "var(--bilimai-text-muted)",
+                        border: "1px solid var(--bilimai-border)",
+                        fontWeight: 600
+                      }}
+                    >
+                      {isFullCourse ? t.fullCourseBadge : t.starterCourseBadge} ·{" "}
+                      {formatLessonsCountLabel(subj.lessons.length, lang)} ·{" "}
+                      {formatQuestionsCountLabel(totalQuestions, lang)}
                     </span>
-                    <span className="welcome-subj-badge welcome-subj-cta-badge">{t.openSubjectOverview}</span>
                   </div>
                 </Link>
               );
@@ -978,35 +1483,884 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
           </div>
         </section>
 
-        {/* 4. HOW PLATFORM WORKS + AI CAPABILITIES (Unified process section) */}
-        <section className="welcome-tools-section" aria-label={t.howTitle}>
-          <h2 className="section-title">{t.howTitle}</h2>
-          <div className="welcome-tools-grid">
-            {t.howSteps.map((step) => (
-              <article key={step.num} className="welcome-tool-card">
-                <span className="section-num">
-                  {ob.stepWord} {step.num}
-                </span>
-                <h3>{step.title}</h3>
-                <p>{step.body}</p>
-              </article>
-            ))}
+        {/* 4. HONEST ONBOARDING WIZARD (No pre-selected defaults, honest skip, single primary CTA) */}
+        <section
+          id="onboarding-wizard"
+          data-testid="welcome-onboarding-wizard"
+          aria-labelledby="welcome-onboarding-h2"
+          style={{
+            background: "var(--bilimai-surface)",
+            border: "1px solid var(--bilimai-border)",
+            color: "var(--bilimai-text)",
+            borderRadius: 16,
+            padding: "22px 24px",
+            display: "grid",
+            gap: 16
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10
+            }}
+          >
+            <div>
+              <h2
+                id="welcome-onboarding-h2"
+                className="section-title"
+                style={{ margin: 0, color: "var(--bilimai-text)" }}
+              >
+                {t.onboardingTitle}
+              </h2>
+              <p
+                className="muted-note"
+                style={{ margin: "4px 0 0", color: "var(--bilimai-text-muted)" }}
+              >
+                {t.onboardingSubtitle}
+              </p>
+            </div>
+
+            {!onboardingSkipped && (
+              <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Onboarding steps">
+                {([1, 2, 3, 4, 5] as const).map((stepNum) => {
+                  const isCurrent = onboardingStep === stepNum;
+                  const reachable = canReachOnboardingStep(stepNum);
+                  return (
+                    <button
+                      key={stepNum}
+                      type="button"
+                      disabled={!reachable}
+                      data-testid={`onboarding-step-btn-${stepNum}`}
+                      onClick={() => {
+                        if (reachable) {
+                          setStepError(null);
+                          setOnboardingStep(stepNum);
+                        }
+                      }}
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 999,
+                        border: isCurrent
+                          ? "2px solid var(--bilimai-brand)"
+                          : "1px solid var(--bilimai-border)",
+                        background: isCurrent
+                          ? "var(--bilimai-brand)"
+                          : "var(--bilimai-surface-raised)",
+                        color: isCurrent
+                          ? "var(--bilimai-on-brand)"
+                          : reachable
+                            ? "var(--bilimai-text)"
+                            : "var(--bilimai-text-muted)",
+                        opacity: reachable ? 1 : 0.5,
+                        fontWeight: 700,
+                        fontSize: 13,
+                        cursor: reachable ? "pointer" : "not-allowed"
+                      }}
+                    >
+                      {stepNum}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
+
+          {onboardingSkipped ? (
+            <div
+              data-testid="onboarding-skipped-banner"
+              style={{
+                padding: "14px 16px",
+                borderRadius: 12,
+                background: "var(--bilimai-surface-raised)",
+                border: "1px solid var(--bilimai-border)",
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12
+              }}
+            >
+              <p style={{ margin: 0, fontSize: 14, color: "var(--bilimai-text-muted)" }}>
+                {ob.skippedText}
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                <a
+                  href="#subjects-catalog"
+                  className="inline-action-link"
+                  style={{ color: "var(--bilimai-brand-text)", fontWeight: 700 }}
+                >
+                  {ob.skippedCatalogLink}
+                </a>
+                <button
+                  type="button"
+                  data-testid="onboarding-restore-btn"
+                  onClick={() => {
+                    setOnboardingSkipped(false);
+                    setStepError(null);
+                  }}
+                  style={{
+                    minHeight: 40,
+                    padding: "7px 14px",
+                    borderRadius: 8,
+                    border: "1px solid var(--bilimai-border)",
+                    background: "var(--bilimai-surface)",
+                    color: "var(--bilimai-text)",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}
+                >
+                  {ob.restoreBtn}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {stepError && (
+                <div
+                  role="alert"
+                  data-testid="onboarding-step-error"
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 9,
+                    background: "var(--bilimai-warning-bg)",
+                    border: "1px solid var(--bilimai-warning-border)",
+                    color: "var(--bilimai-warning-text)",
+                    fontSize: 13.5,
+                    fontWeight: 600
+                  }}
+                >
+                  {stepError}
+                </div>
+              )}
+
+              {onboardingStep === 1 && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <strong style={{ fontSize: 16, color: "var(--bilimai-text)" }}>
+                    {ob.step1Title}
+                  </strong>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+                      gap: 10
+                    }}
+                  >
+                    {ob.roles.map((item) => {
+                      const active = role === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          aria-pressed={active}
+                          data-testid={`onboarding-role-${item.id}`}
+                          onClick={() => {
+                            setRole(item.id);
+                            setStepError(null);
+                            setOnboardingStep(2);
+                          }}
+                          style={{
+                            minHeight: 46,
+                            padding: "12px 15px",
+                            borderRadius: 10,
+                            border: active
+                              ? "2px solid var(--bilimai-selected-border)"
+                              : "1px solid var(--bilimai-border)",
+                            background: active
+                              ? "var(--bilimai-selected-bg)"
+                              : "var(--bilimai-surface-raised)",
+                            color: active
+                              ? "var(--bilimai-selected-text)"
+                              : "var(--bilimai-text)",
+                            fontWeight: 600,
+                            textAlign: "left",
+                            cursor: "pointer"
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <button
+                      type="button"
+                      data-testid="onboarding-skip"
+                      onClick={() => {
+                        setStepError(null);
+                        setOnboardingSkipped(true);
+                      }}
+                      style={{
+                        minHeight: 42,
+                        padding: "8px 14px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text-muted)",
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.skipBtn}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="onboarding-next"
+                      onClick={() => {
+                        if (!role) {
+                          setStepError(ob.step1Error);
+                          return;
+                        }
+                        setStepError(null);
+                        setOnboardingStep(2);
+                      }}
+                      style={{
+                        minHeight: 42,
+                        padding: "8px 16px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-brand)",
+                        background: "var(--bilimai-brand)",
+                        color: "var(--bilimai-on-brand)",
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.nextBtn}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {onboardingStep === 2 && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <strong style={{ fontSize: 16, color: "var(--bilimai-text)" }}>
+                    {ob.step2Title}
+                  </strong>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+                      gap: 10
+                    }}
+                  >
+                    {ob.goals.map((item) => {
+                      const active = goal === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          aria-pressed={active}
+                          data-testid={`onboarding-goal-${item.id}`}
+                          onClick={() => {
+                            setGoal(item.id);
+                            setStepError(null);
+                            setOnboardingStep(3);
+                          }}
+                          style={{
+                            minHeight: 46,
+                            padding: "12px 15px",
+                            borderRadius: 10,
+                            border: active
+                              ? "2px solid var(--bilimai-selected-border)"
+                              : "1px solid var(--bilimai-border)",
+                            background: active
+                              ? "var(--bilimai-selected-bg)"
+                              : "var(--bilimai-surface-raised)",
+                            color: active
+                              ? "var(--bilimai-selected-text)"
+                              : "var(--bilimai-text)",
+                            fontWeight: 600,
+                            textAlign: "left",
+                            cursor: "pointer"
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <button
+                      type="button"
+                      data-testid="onboarding-back"
+                      onClick={() => {
+                        setStepError(null);
+                        setOnboardingStep(1);
+                      }}
+                      style={{
+                        minHeight: 42,
+                        padding: "8px 14px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text)",
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.backBtn}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="onboarding-next"
+                      onClick={() => {
+                        if (!goal) {
+                          setStepError(ob.step2Error);
+                          return;
+                        }
+                        setStepError(null);
+                        setOnboardingStep(3);
+                      }}
+                      style={{
+                        minHeight: 42,
+                        padding: "8px 16px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-brand)",
+                        background: "var(--bilimai-brand)",
+                        color: "var(--bilimai-on-brand)",
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.nextBtn}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {onboardingStep === 3 && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div>
+                    <strong style={{ fontSize: 16, color: "var(--bilimai-text)" }}>
+                      {ob.step3Title}
+                    </strong>
+                    <p
+                      style={{
+                        margin: "4px 0 0",
+                        fontSize: 13,
+                        color: "var(--bilimai-text-muted)"
+                      }}
+                    >
+                      {ob.step3Hint}
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {UNT_SUBJECTS.map((s) => {
+                      const picked = selectedSubjects.includes(s.id);
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          aria-pressed={picked}
+                          data-testid={`onboarding-subject-${s.id}`}
+                          onClick={() => toggleOnboardingSubject(s.id)}
+                          style={{
+                            minHeight: 42,
+                            padding: "8px 14px",
+                            borderRadius: 999,
+                            border: picked
+                              ? "2px solid var(--bilimai-selected-border)"
+                              : "1px solid var(--bilimai-border)",
+                            background: picked
+                              ? "var(--bilimai-selected-bg)"
+                              : "var(--bilimai-surface-raised)",
+                            color: picked
+                              ? "var(--bilimai-selected-text)"
+                              : "var(--bilimai-text)",
+                            fontWeight: 600,
+                            fontSize: 13.5,
+                            cursor: "pointer"
+                          }}
+                        >
+                          {picked ? "✓ " : ""}
+                          {s.title[lang]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <button
+                      type="button"
+                      data-testid="onboarding-back"
+                      onClick={() => {
+                        setStepError(null);
+                        setOnboardingStep(2);
+                      }}
+                      style={{
+                        minHeight: 42,
+                        padding: "8px 14px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text)",
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.backBtn}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="onboarding-next"
+                      onClick={() => {
+                        if (selectedSubjects.length === 0) {
+                          setStepError(ob.step3Error);
+                          return;
+                        }
+                        setStepError(null);
+                        setOnboardingStep(4);
+                      }}
+                      style={{
+                        minHeight: 42,
+                        padding: "8px 16px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-brand)",
+                        background: "var(--bilimai-brand)",
+                        color: "var(--bilimai-on-brand)",
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.step3Next}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {onboardingStep === 4 && (
+                <div style={{ display: "grid", gap: 12 }}>
+                  <strong style={{ fontSize: 16, color: "var(--bilimai-text)" }}>
+                    {ob.step4Title}
+                  </strong>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                      gap: 10
+                    }}
+                  >
+                    {ob.levels.map((item) => {
+                      const active = level === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          aria-pressed={active}
+                          data-testid={`onboarding-level-${item.id}`}
+                          onClick={() => {
+                            setLevel(item.id);
+                            setStepError(null);
+                            if (role && goal && selectedSubjects.length > 0) {
+                              persistOnboardingIfComplete(
+                                role,
+                                goal,
+                                selectedSubjects,
+                                item.id,
+                                primaryStartSubject
+                              );
+                            }
+                            setOnboardingStep(5);
+                          }}
+                          style={{
+                            minHeight: 54,
+                            padding: "12px 15px",
+                            borderRadius: 10,
+                            border: active
+                              ? "2px solid var(--bilimai-selected-border)"
+                              : "1px solid var(--bilimai-border)",
+                            background: active
+                              ? "var(--bilimai-selected-bg)"
+                              : "var(--bilimai-surface-raised)",
+                            color: active
+                              ? "var(--bilimai-selected-text)"
+                              : "var(--bilimai-text)",
+                            fontWeight: 600,
+                            textAlign: "left",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 4,
+                            cursor: "pointer"
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              color: "var(--bilimai-brand-text)"
+                            }}
+                          >
+                            {item.badge}
+                          </span>
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      flexWrap: "wrap"
+                    }}
+                  >
+                    <button
+                      type="button"
+                      data-testid="onboarding-back"
+                      onClick={() => {
+                        setStepError(null);
+                        setOnboardingStep(3);
+                      }}
+                      style={{
+                        minHeight: 42,
+                        padding: "8px 14px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text)",
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.backBtn}
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="onboarding-next"
+                      onClick={() => {
+                        if (!level) {
+                          setStepError(ob.step4Error);
+                          return;
+                        }
+                        if (role && goal && selectedSubjects.length > 0) {
+                          persistOnboardingIfComplete(
+                            role,
+                            goal,
+                            selectedSubjects,
+                            level,
+                            primaryStartSubject
+                          );
+                        }
+                        setStepError(null);
+                        setOnboardingStep(5);
+                      }}
+                      style={{
+                        minHeight: 42,
+                        padding: "8px 16px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-brand)",
+                        background: "var(--bilimai-brand)",
+                        color: "var(--bilimai-on-brand)",
+                        fontWeight: 700,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.nextBtn}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {onboardingStep === 5 && role && goal && selectedSubjects.length > 0 && level && (
+                <div
+                  data-testid="onboarding-summary-card"
+                  style={{
+                    padding: "18px 20px",
+                    borderRadius: 12,
+                    background: "var(--bilimai-surface-raised)",
+                    border: "1px solid var(--bilimai-border)",
+                    display: "grid",
+                    gap: 14
+                  }}
+                >
+                  <strong style={{ fontSize: 17, color: "var(--bilimai-text)" }}>
+                    {ob.step5Title}
+                  </strong>
+
+                  <dl
+                    style={{
+                      margin: 0,
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                      gap: 10,
+                      fontSize: 13.5
+                    }}
+                  >
+                    <div
+                      style={{
+                        padding: "9px 12px",
+                        borderRadius: 8,
+                        background: "var(--bilimai-surface)",
+                        border: "1px solid var(--bilimai-border)"
+                      }}
+                    >
+                      <dt style={{ color: "var(--bilimai-text-muted)", fontSize: 12 }}>
+                        {ob.summaryRole}
+                      </dt>
+                      <dd style={{ margin: "2px 0 0", fontWeight: 700 }}>
+                        {ob.roles.find((r) => r.id === role)?.label ?? role}
+                      </dd>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "9px 12px",
+                        borderRadius: 8,
+                        background: "var(--bilimai-surface)",
+                        border: "1px solid var(--bilimai-border)"
+                      }}
+                    >
+                      <dt style={{ color: "var(--bilimai-text-muted)", fontSize: 12 }}>
+                        {ob.summaryGoal}
+                      </dt>
+                      <dd style={{ margin: "2px 0 0", fontWeight: 700 }}>
+                        {ob.goals.find((g) => g.id === goal)?.label ?? goal}
+                      </dd>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "9px 12px",
+                        borderRadius: 8,
+                        background: "var(--bilimai-surface)",
+                        border: "1px solid var(--bilimai-border)"
+                      }}
+                    >
+                      <dt style={{ color: "var(--bilimai-text-muted)", fontSize: 12 }}>
+                        {ob.summarySubjects}
+                      </dt>
+                      <dd style={{ margin: "2px 0 0", fontWeight: 700 }}>
+                        {selectedSubjects
+                          .map((id) => UNT_SUBJECTS.find((s) => s.id === id)?.title[lang] ?? id)
+                          .join(", ")}
+                      </dd>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: "9px 12px",
+                        borderRadius: 8,
+                        background: "var(--bilimai-surface)",
+                        border: "1px solid var(--bilimai-border)"
+                      }}
+                    >
+                      <dt style={{ color: "var(--bilimai-text-muted)", fontSize: 12 }}>
+                        {ob.summaryLevel}
+                      </dt>
+                      <dd style={{ margin: "2px 0 0", fontWeight: 700 }}>
+                        {ob.levels.find((l) => l.id === level)?.label ?? level}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {selectedSubjects.length > 1 && (
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <span
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "var(--bilimai-text-muted)"
+                        }}
+                      >
+                        {ob.chooseStartSubjectLabel}
+                      </span>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {selectedSubjects.map((subjId) => {
+                          const active = activeStartSubjectId === subjId;
+                          const subjTitle =
+                            UNT_SUBJECTS.find((s) => s.id === subjId)?.title[lang] ?? subjId;
+                          return (
+                            <button
+                              key={subjId}
+                              type="button"
+                              aria-pressed={active}
+                              data-testid={`onboarding-start-subject-${subjId}`}
+                              onClick={() => setPrimaryStartSubject(subjId)}
+                              style={{
+                                minHeight: 38,
+                                padding: "6px 12px",
+                                borderRadius: 999,
+                                border: active
+                                  ? "2px solid var(--bilimai-brand)"
+                                  : "1px solid var(--bilimai-border)",
+                                background: active
+                                  ? "var(--bilimai-selected-bg)"
+                                  : "var(--bilimai-surface)",
+                                color: active
+                                  ? "var(--bilimai-selected-text)"
+                                  : "var(--bilimai-text)",
+                                fontWeight: 600,
+                                fontSize: 13,
+                                cursor: "pointer"
+                              }}
+                            >
+                              {subjTitle}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ONE Primary CTA + Secondary Actions */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
+                    <button
+                      type="button"
+                      data-testid="onboarding-finish-lesson"
+                      onClick={() => finishOnboardingAndNavigate("lesson")}
+                      style={{
+                        minHeight: 44,
+                        padding: "10px 18px",
+                        borderRadius: 9,
+                        border: "1px solid var(--bilimai-brand)",
+                        background: "var(--bilimai-brand)",
+                        color: "var(--bilimai-on-brand)",
+                        fontWeight: 700,
+                        fontSize: 14,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.startLessonBtn(activeStartSubjectTitle)}
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="onboarding-finish-diagnostic"
+                      onClick={() => finishOnboardingAndNavigate("diagnostic")}
+                      style={{
+                        minHeight: 44,
+                        padding: "10px 15px",
+                        borderRadius: 9,
+                        border: "1px solid var(--bilimai-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text)",
+                        fontWeight: 600,
+                        fontSize: 13.5,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.startDiagnosticBtn}
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="onboarding-finish-practice"
+                      onClick={() => finishOnboardingAndNavigate("practice")}
+                      style={{
+                        minHeight: 44,
+                        padding: "10px 14px",
+                        borderRadius: 9,
+                        border: "1px solid var(--bilimai-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text)",
+                        fontWeight: 600,
+                        fontSize: 13.5,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.startPracticeBtn}
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="onboarding-finish-map"
+                      onClick={() => finishOnboardingAndNavigate("map")}
+                      style={{
+                        minHeight: 44,
+                        padding: "10px 14px",
+                        borderRadius: 9,
+                        border: "1px solid var(--bilimai-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text)",
+                        fontWeight: 600,
+                        fontSize: 13.5,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.startMapBtn}
+                    </button>
+                  </div>
+
+                  <div>
+                    <button
+                      type="button"
+                      data-testid="onboarding-back"
+                      onClick={() => setOnboardingStep(4)}
+                      style={{
+                        minHeight: 38,
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        border: "1px solid var(--bilimai-border)",
+                        background: "var(--bilimai-surface)",
+                        color: "var(--bilimai-text-muted)",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {ob.editAnswersBtn}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </section>
 
-        <footer className="welcome-footer">
-          <Link href={`/subjects`}>{t.catalogLink}</Link>
+        <footer
+          className="welcome-footer"
+          style={{
+            borderTop: "1px solid var(--bilimai-border)",
+            color: "var(--bilimai-text-muted)"
+          }}
+        >
+          <Link href={`/subjects?lang=${lang}`} style={{ color: "var(--bilimai-text-muted)" }}>
+            {t.catalogLink}
+          </Link>
           <span aria-hidden="true">·</span>
-          <Link href={`/about?lang=${lang}`}>{t.footerAbout}</Link>
+          <Link href={`/about?lang=${lang}`} style={{ color: "var(--bilimai-text-muted)" }}>
+            {t.footerAbout}
+          </Link>
           <span aria-hidden="true">·</span>
-          <Link href={`/privacy?lang=${lang}`}>{t.footerPrivacy}</Link>
+          <Link href={`/privacy?lang=${lang}`} style={{ color: "var(--bilimai-text-muted)" }}>
+            {t.footerPrivacy}
+          </Link>
           <span aria-hidden="true">·</span>
-          <Link href="/teacher">{t.footerTeacher}</Link>
+          <Link href="/teacher" style={{ color: "var(--bilimai-text-muted)" }}>
+            {t.footerTeacher}
+          </Link>
           <span aria-hidden="true">·</span>
           <a
             href="https://github.com/nur667-7/bilimai"
             target="_blank"
             rel="noopener noreferrer"
+            style={{ color: "var(--bilimai-text-muted)" }}
           >
             {t.footerGithub}
           </a>

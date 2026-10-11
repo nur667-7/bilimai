@@ -30,14 +30,14 @@ export default async function SubjectOverviewPage({
   searchParams
 }: {
   params: Promise<{ subject: string }>;
-  searchParams?: Promise<{ start?: string; lesson?: string; lang?: string }>;
+  searchParams?: Promise<{ start?: string; mode?: string; lesson?: string; lang?: string }>;
 }) {
   const { subject } = await params;
   const resolvedSearch = searchParams ? await searchParams : {};
   return (
     <SubjectOverviewClient
       subjectId={subject}
-      initialStartMode={resolvedSearch.start}
+      initialStartMode={resolvedSearch.start ?? resolvedSearch.mode}
       initialLessonId={resolvedSearch.lesson}
       initialLang={resolvedSearch.lang}
     />

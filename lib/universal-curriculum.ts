@@ -2,6 +2,7 @@ import { lessons, type Language } from "./lessons.ts";
 import { UNT_SUBJECTS, type UntSubjectId } from "./unt-all-subjects.ts";
 import { UNT_GRAPH_NODES } from "./knowledge-graph.ts";
 import type { UniversalQuestion } from "./question-engine.ts";
+import { ADDITIONAL_LESSON_QUESTIONS, SECOND_ERROR_LAB_CASES } from "./subject-course-completions.ts";
 
 export type UniversalDifficulty = "basic" | "intermediate" | "advanced";
 
@@ -534,6 +535,12 @@ const NON_MATH_BLUEPRINTS: NonMathBlueprint[] = [
             difficulty: "basic",
             maxPoints: 1,
             prompt: tr("Верно ли утверждение: если равнодействующая всех приложенных к телу сил равна нулю, тело движется с постоянным ненулевым ускорением?", "Тұжырым дұрыс па: егер денеге әсер ететін барлық күштердің теңәрекеттісі нөлге тең болса, дене тұрақты нөлдік емес үдеумен қозғалады?", "Tasdiq to‘g‘rimi: agar jismga qo‘yilgan barcha kuchlarning teng ta’sir etuvchisi nolga teng bo‘lsa, jism o‘zgarmas nolmas tezlanish bilan harakatlanadi?"),
+            options: {
+              ru: ["Верно", "Неверно"],
+              kk: ["Дұрыс", "Қате"],
+              uz: ["To‘g‘ri", "Noto‘g‘ri"]
+            },
+            correctIndex: 1,
             booleanAnswer: false,
             explanation: tr("Неверно (False): по I закону Ньютона при F_рез = 0 ускорение равно нулю (a = 0), а скорость тела постоянна.", "Қате (False): Ньютонның I заңы бойынша F = 0 болғанда үдеу нөлге тең (a = 0).", "Noto‘g‘ri (False): Nyutonning I qonuniga ko‘ra F = 0 bo‘lganda tezlanish nolga teng (a = 0)."),
             hint: tr("Вспомните первый закон Ньютона и связь F = m · a.", "Ньютонның бірінші заңын еске түсіріңіз.", "Nyutonning birinchi qonunini eslang."),
@@ -1819,6 +1826,7 @@ const NON_MATH_BLUEPRINTS: NonMathBlueprint[] = [
               uz: ["To‘g‘ri", "Noto‘g‘ri"]
             },
             correctIndex: 0,
+            booleanAnswer: true,
             explanation: tr("Верно: после газообмена в альвеолах лёгких кровь становится артериальной и по четырём лёгочным венам поступает в левое предсердие.", "Рас: өкпеде оттекке қаныққан артериялық қан өкпе веналары арқылы сол жақ жүрекшеге құяды.", "To‘g‘ri: o‘pkada kislorodga to‘yingan arterial qon o‘pka venalari orqali chap bo‘lmachaga quyiladi."),
             hint: tr("Кровь возвращается из лёгких уже после насыщения кислородом.", "Қан өкпеден оттекке қанығып оралады.", "Qon o‘pkadan kislorodga to‘yinib qaytadi."),
             errorCategory: "pulmonary_vessels"
@@ -3003,32 +3011,35 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
   const badge = meta?.shortTitle.ru.toUpperCase() ?? bp.id.toUpperCase();
   const accentColor = meta ? `rgb(${meta.accentRgb})` : "#3856f5";
 
-  const lessons: UniversalLesson[] = bp.lessonsData.map((l) => ({
-    id: `${bp.id}-lesson-${l.topicId}`,
-    subjectId: bp.id,
-    moduleId: `${bp.id}-module-core`,
-    topicId: l.topicId,
-    sectionTitle: l.sectionTitle,
-    version: "2.0.0",
-    updatedAt: "2026-10-10",
-    title: l.title,
-    difficulty: l.difficulty,
-    estimatedMinutes: 12,
-    goal: l.goal,
-    learningGoal: l.goal,
-    prerequisites: l.prereqs,
-    simpleExplanation: l.simpleExplanation,
-    detailedExplanation: l.detailedExplanation,
-    workedExample: l.workedExample,
-    contentBlocks: [l.block],
-    summary: l.summary,
-    nextStepNote: tr(
-      "Закрепите тему на практических заданиях и проверьте понимание в Лаборатории ошибок.",
-      "Тақырыпты практикалық тапсырмаларда бекітіп, Қателер зертханасында тексеріңіз.",
-      "Mavzuni amaliy topshiriqlarda mustahkamlang va Xatolar laboratoriyasida tekshiring."
-    ),
-    questions: l.questions
-  }));
+  const lessons: UniversalLesson[] = bp.lessonsData.map((l) => {
+    const extraQuestions = ADDITIONAL_LESSON_QUESTIONS[l.topicId] ?? [];
+    return {
+      id: `${bp.id}-lesson-${l.topicId}`,
+      subjectId: bp.id,
+      moduleId: `${bp.id}-module-core`,
+      topicId: l.topicId,
+      sectionTitle: l.sectionTitle,
+      version: "2.0.0",
+      updatedAt: "2026-10-10",
+      title: l.title,
+      difficulty: l.difficulty,
+      estimatedMinutes: 12,
+      goal: l.goal,
+      learningGoal: l.goal,
+      prerequisites: l.prereqs,
+      simpleExplanation: l.simpleExplanation,
+      detailedExplanation: l.detailedExplanation,
+      workedExample: l.workedExample,
+      contentBlocks: [l.block],
+      summary: l.summary,
+      nextStepNote: tr(
+        "Закрепите тему на практических заданиях и проверьте понимание в Лаборатории ошибок.",
+        "Тақырыпты практикалық тапсырмаларда бекітіп, Қателер зертханасында тексеріңіз.",
+        "Mavzuni amaliy topshiriqlarda mustahkamlang va Xatolar laboratoriyasida tekshiring."
+      ),
+      questions: [...l.questions, ...extraQuestions]
+    };
+  });
 
   const topics: UniversalTopicNode[] = bp.lessonsData.map((l, idx) => ({
     id: l.topicId,
@@ -3062,43 +3073,60 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
   if (lessons.length >= 2 && lessons[1].questions.length >= 1) {
     const secondLesson = lessons[1];
     const transferQ = secondLesson.questions[0];
-    errorLabCases.push({
-      id: `${bp.id}-err-${secondLesson.topicId}`,
-      subjectId: bp.id,
-      topicId: secondLesson.topicId,
-      title: {
-        ru: `Типичная ловушка: ${secondLesson.title.ru}`,
-        kk: `Типтік қате: ${secondLesson.title.kk}`,
-        uz: `Tipik xato: ${secondLesson.title.uz}`
-      },
-      taskPrompt: secondLesson.workedExample.problem,
-      steps: {
-        ru: [
-          secondLesson.workedExample.steps.ru[0] ?? "1) Запишем исходное условие и правило темы",
-          `2) Ошибочный шаг: пропущено ключевое ограничение правила (${secondLesson.learningGoal.ru})`,
-          secondLesson.workedExample.steps.ru[1] ?? "3) Итоговый вывод без проверки условия"
-        ],
-        kk: [
-          secondLesson.workedExample.steps.kk[0] ?? "1) Бастапқы шарт пен ережені жазамыз",
-          `2) Қате қадам: негізгі шектеу ескерілмеді (${secondLesson.learningGoal.kk})`,
-          secondLesson.workedExample.steps.kk[1] ?? "3) Шартты тексерусіз қорытынды"
-        ],
-        uz: [
-          secondLesson.workedExample.steps.uz[0] ?? "1) Dastlabki shart va qoidani yozamiz",
-          `2) Xato qadam: asosiy cheklov hisobga olinmadi (${secondLesson.learningGoal.uz})`,
-          secondLesson.workedExample.steps.uz[1] ?? "3) Shartni tekshirmasdan xulosa"
-        ]
-      },
-      brokenStepIndex: 1,
-      errorCategory: transferQ.errorCategory || `${bp.id}_rule_trap`,
-      whyBroken: secondLesson.workedExample.takeaway,
-      correctedStep: {
-        ru: secondLesson.workedExample.steps.ru[1] ?? secondLesson.summary.ru,
-        kk: secondLesson.workedExample.steps.kk[1] ?? secondLesson.summary.kk,
-        uz: secondLesson.workedExample.steps.uz[1] ?? secondLesson.summary.uz
-      },
-      transferQuestion: transferQ
-    });
+    const customSecondCase = SECOND_ERROR_LAB_CASES[bp.id as Exclude<UntSubjectId, "math">];
+    if (customSecondCase) {
+      errorLabCases.push({
+        id: `${bp.id}-err-${secondLesson.topicId}`,
+        subjectId: bp.id,
+        topicId: secondLesson.topicId,
+        title: customSecondCase.title,
+        taskPrompt: customSecondCase.taskPrompt,
+        steps: customSecondCase.steps,
+        brokenStepIndex: customSecondCase.brokenStepIndex,
+        errorCategory: customSecondCase.errorCategory,
+        whyBroken: customSecondCase.whyBroken,
+        correctedStep: customSecondCase.correctedStep,
+        transferQuestion: transferQ
+      });
+    } else {
+      errorLabCases.push({
+        id: `${bp.id}-err-${secondLesson.topicId}`,
+        subjectId: bp.id,
+        topicId: secondLesson.topicId,
+        title: {
+          ru: `Типичная ловушка: ${secondLesson.title.ru}`,
+          kk: `Типтік қате: ${secondLesson.title.kk}`,
+          uz: `Tipik xato: ${secondLesson.title.uz}`
+        },
+        taskPrompt: secondLesson.workedExample.problem,
+        steps: {
+          ru: [
+            secondLesson.workedExample.steps.ru[0] ?? "1) Запишем исходное условие и правило темы",
+            `2) Ошибочный шаг: пропущено ключевое ограничение правила (${secondLesson.learningGoal.ru})`,
+            secondLesson.workedExample.steps.ru[1] ?? "3) Итоговый вывод без проверки условия"
+          ],
+          kk: [
+            secondLesson.workedExample.steps.kk[0] ?? "1) Бастапқы шарт пен ережені жазамыз",
+            `2) Қате қадам: негізгі шектеу ескерілмеді (${secondLesson.learningGoal.kk})`,
+            secondLesson.workedExample.steps.kk[1] ?? "3) Шартты тексерусіз қорытынды"
+          ],
+          uz: [
+            secondLesson.workedExample.steps.uz[0] ?? "1) Dastlabki shart va qoidani yozamiz",
+            `2) Xato qadam: asosiy cheklov hisobga olinmadi (${secondLesson.learningGoal.uz})`,
+            secondLesson.workedExample.steps.uz[1] ?? "3) Shartni tekshirmasdan xulosa"
+          ]
+        },
+        brokenStepIndex: 1,
+        errorCategory: transferQ.errorCategory || `${bp.id}_rule_trap`,
+        whyBroken: secondLesson.workedExample.takeaway,
+        correctedStep: {
+          ru: secondLesson.workedExample.steps.ru[1] ?? secondLesson.summary.ru,
+          kk: secondLesson.workedExample.steps.kk[1] ?? secondLesson.summary.kk,
+          uz: secondLesson.workedExample.steps.uz[1] ?? secondLesson.summary.uz
+        },
+        transferQuestion: transferQ
+      });
+    }
   }
 
   return {
@@ -3381,8 +3409,10 @@ export interface WelcomeSubjectDemoItem {
   subjectId: UntSubjectId;
   badge: string;
   subjectTitle: Record<Language, string>;
+  subjectCtaLabel: Record<Language, string>;
   contextNote: Record<Language, string>;
   question: UniversalQuestion;
+  followUpQuestion: UniversalQuestion;
 }
 
 export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
@@ -3390,10 +3420,15 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
     subjectId: "math",
     badge: "MATH",
     subjectTitle: tr("Математика", "Математика", "Matematika"),
+    subjectCtaLabel: tr(
+      "Продолжить изучать математику",
+      "Математиканы оқуды жалғастыру",
+      "Matematikani o‘rganishni davom ettirish"
+    ),
     contextNote: tr(
-      "Линейные уравнения: при делении обеих частей на коэффициент знак сохраняется.",
-      "Сызықтық теңдеулер: теңдеудің екі жағын коэффициентке бөлу.",
-      "Chiziqli tenglamalar: tenglamaning ikkala qismini koeffitsiyentga bo‘lish."
+      "Линейные уравнения: при переносе слагаемого через знак «=» его знак меняется на противоположный, после чего обе части делят на коэффициент при x.",
+      "Сызықтық теңдеулер: қосылғышты «=» таңбасы арқылы көшіргенде оның таңбасы қарама-қарсыға өзгереді, содан кейін екі жағын x алдындағы коэффициентке бөледі.",
+      "Chiziqli tenglamalar: hadni «=» belgisidan o‘tkazganda uning ishorasi qarama-qarshisiga o‘zgaradi, so‘ngra ikkala qism x oldidagi koeffitsiyentga bo‘linadi."
     ),
     question: {
       id: "demo-math-1",
@@ -3403,15 +3438,98 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
       type: "single_choice",
       difficulty: "basic",
       maxPoints: 1,
-      prompt: tr("Решите уравнение: 3x − 7 = 14. Чему равен x?", "Теңдеуді шешіңіз: 3x − 7 = 14. x неге тең?", "Tenglamani yeching: 3x − 7 = 14. x nimaga teng?"),
+      prompt: tr(
+        "Решите уравнение: 3x − 7 = 14. Чему равен x?",
+        "Теңдеуді шешіңіз: 3x − 7 = 14. x неге тең?",
+        "Tenglamani yeching: 3x − 7 = 14. x nimaga teng?"
+      ),
       options: {
-        ru: ["x = 7", "x = 7/3", "x = −7", "x = 21"],
-        kk: ["x = 7", "x = 7/3", "x = −7", "x = 21"],
-        uz: ["x = 7", "x = 7/3", "x = −7", "x = 21"]
+        ru: ["x = 7/3", "x = 7", "x = −7", "x = 21"],
+        kk: ["x = 7/3", "x = 7", "x = −7", "x = 21"],
+        uz: ["x = 7/3", "x = 7", "x = −7", "x = 21"]
       },
-      correctIndex: 0,
-      explanation: tr("Переносим −7 вправо с плюсом: 3x = 14 + 7 = 21. Делим на 3: x = 7.", "−7-ні оң жаққа плюс таңбасымен шығарамыз: 3x = 21 ⇒ x = 7.", "−7 ni o‘ng tomonga plyus bilan o‘tkazamiz: 3x = 21 ⇒ x = 7."),
-      hint: tr("При переносе −7 через знак равенства знак меняется на противоположный (+7).", "−7-ні теңдік таңбасынан өткізгенде таңбасы +7 болады.", "−7 ni tenglik belgisidan o‘tkazganda ishorasi +7 bo‘ladi."),
+      correctIndex: 1,
+      optionDiagnoses: {
+        ru: [
+          "Похоже, при переносе −7 в правую часть вы вычли 7 из 14 вместо сложения. При переносе через «=» знак «−» меняется на «+». Попробуйте ещё раз.",
+          "Переносим −7 вправо с плюсом: 3x = 14 + 7 = 21. Делим обе части на 3 и получаем x = 7.",
+          "Знак корня изменился на отрицательный, хотя в правой части после переноса получается положительное число (14 + 7), которое делится на +3. Попробуйте ещё раз.",
+          "Вы верно перенесли −7 вправо и получили 3x = 21, но остановились до деления на коэффициент 3 при x. Попробуйте ещё раз."
+        ],
+        kk: [
+          "−7 санын оң жаққа көшіргенде 14-ке қосудың орнына азайтқан сияқтысыз. Теңдік таңбасынан өткенде «−» таңбасы «+» болады. Қайта көріңіз.",
+          "−7-ні оң жаққа плюс таңбасымен шығарамыз: 3x = 14 + 7 = 21. 3-ке бөліп, x = 7 аламыз.",
+          "Оң жақта оң сан (14 + 7) шығады және ол +3-ке бөлінеді, сондықтан жауап теріс болмайды. Қайта көріңіз.",
+          "Сіз 3x = 21 мәнін дұрыс таптыңыз, бірақ x алдындағы 3 коэффициентіне бөлу қадамы қалды. Қайта көріңіз."
+        ],
+        uz: [
+          "−7 ni o‘ng tomonga o‘tkazishda 14 ga qo‘shish o‘rniga ayirganga o‘xshaysiz. Tenglikdan o‘tganda «−» ishorasi «+» ga o‘zgaradi. Qayta urinib ko‘ring.",
+          "−7 ni o‘ng tomonga plyus bilan o‘tkazamiz: 3x = 14 + 7 = 21. 3 ga bo‘lib, x = 7 olamiz.",
+          "O‘ng tomonda musbat son (14 + 7) hosil bo‘ladi va +3 ga bo‘linadi, shuning uchun ildiz manfiy bo‘lmaydi. Qayta urinib ko‘ring.",
+          "Siz 3x = 21 ni to‘g‘ri topdingiz, lekin x oldidagi 3 koeffitsiyentiga bo‘lish qadami qoldi. Qayta urinib ko‘ring."
+        ]
+      },
+      explanation: tr(
+        "Переносим −7 вправо с противоположным знаком: 3x = 14 + 7 = 21. Делим обе части на 3: x = 7.",
+        "−7-ні оң жаққа плюс таңбасымен шығарамыз: 3x = 14 + 7 = 21 ⇒ x = 7.",
+        "−7 ni o‘ng tomonga plyus bilan o‘tkazamiz: 3x = 14 + 7 = 21 ⇒ x = 7."
+      ),
+      hint: tr(
+        "При переносе −7 через знак равенства знак меняется на противоположный (+7), затем разделите сумму на 3.",
+        "−7-ні теңдік таңбасынан өткізгенде таңбасы +7 болады, содан соң қосындыны 3-ке бөліңіз.",
+        "−7 ni tenglik belgisidan o‘tkazganda ishorasi +7 bo‘ladi, so‘ngra yig‘indini 3 ga bo‘ling."
+      ),
+      errorCategory: "sign_flip"
+    },
+    followUpQuestion: {
+      id: "demo-math-2",
+      subjectId: "math",
+      topicId: "linear_equations",
+      lessonId: "math-lesson-linear",
+      type: "single_choice",
+      difficulty: "basic",
+      maxPoints: 1,
+      prompt: tr(
+        "Похожая задача: решите уравнение 2x + 5 = 19. Чему равен x?",
+        "Ұқсас есеп: 2x + 5 = 19 теңдеуін шешіңіз. x неге тең?",
+        "O‘xshash masala: 2x + 5 = 19 tenglamani yeching. x nimaga teng?"
+      ),
+      options: {
+        ru: ["x = 12", "x = 14", "x = 7", "x = −7"],
+        kk: ["x = 12", "x = 14", "x = 7", "x = −7"],
+        uz: ["x = 12", "x = 14", "x = 7", "x = −7"]
+      },
+      correctIndex: 2,
+      optionDiagnoses: {
+        ru: [
+          "Похоже, при переносе +5 вправо вы прибавили 5 к 19 (получив 24) вместо вычитания. При переносе +5 меняет знак на −5. Попробуйте ещё раз.",
+          "Вы верно нашли 2x = 19 − 5 = 14, но ещё не разделили обе части на коэффициент 2. Попробуйте ещё раз.",
+          "Переносим +5 вправо с минусом: 2x = 19 − 5 = 14. Делим на 2: x = 7.",
+          "После вычитания 19 − 5 получается положительное число 14, поэтому при делении на 2 корень остаётся положительным. Попробуйте ещё раз."
+        ],
+        kk: [
+          "+5-ті оң жаққа көшіргенде 19-дан азайтудың орнына қосып жібердіңіз. +5 таңбасы −5-ке өзгереді. Қайта көріңіз.",
+          "Сіз 2x = 14 екенін дұрыс таптыңыз, енді екі жағын 2-ге бөлу керек. Қайта көріңіз.",
+          "+5-ті минус таңбасымен көшіреміз: 2x = 19 − 5 = 14. 2-ге бөліп, x = 7 аламыз.",
+          "19 − 5 = 14 оң сан, сондықтан 2-ге бөлгенде түбір оң болады. Қайта көріңіз."
+        ],
+        uz: [
+          "+5 ni o‘ng tomonga o‘tkazishda 19 dan ayirish o‘rniga qo‘shib yubordingiz. +5 ishorasi −5 ga o‘zgaradi. Qayta urinib ko‘ring.",
+          "Siz 2x = 14 ni to‘g‘ri topdingiz, endi ikkala qismni 2 ga bo‘lish kerak. Qayta urinib ko‘ring.",
+          "+5 ni minus bilan o‘tkazamiz: 2x = 19 − 5 = 14. 2 ga bo‘lib, x = 7 olamiz.",
+          "19 − 5 = 14 musbat son, shuning uchun 2 ga bo‘lganda ildiz musbat bo‘ladi. Qayta urinib ko‘ring."
+        ]
+      },
+      explanation: tr(
+        "Переносим +5 вправо с минусом: 2x = 19 − 5 = 14. Делим обе части на 2: x = 7.",
+        "+5-ті оң жаққа минус таңбасымен көшіреміз: 2x = 19 − 5 = 14 ⇒ x = 7.",
+        "+5 ni o‘ng tomonga minus bilan o‘tkazamiz: 2x = 19 − 5 = 14 ⇒ x = 7."
+      ),
+      hint: tr(
+        "Сначала вычтите 5 из 19, а затем разделите результат на 2.",
+        "Алдымен 19-дан 5-ті азайтып, нәтижені 2-ге бөліңіз.",
+        "Avval 19 dan 5 ni ayiring, so‘ng natijani 2 ga bo‘ling."
+      ),
       errorCategory: "sign_flip"
     }
   },
@@ -3419,10 +3537,15 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
     subjectId: "physics",
     badge: "PHYS",
     subjectTitle: tr("Физика", "Физика", "Fizika"),
+    subjectCtaLabel: tr(
+      "Продолжить изучать физику",
+      "Физиканы оқуды жалғастыру",
+      "Fizikani o‘rganishni davom ettirish"
+    ),
     contextNote: tr(
-      "Второй закон Ньютона: ускорение прямо пропорционально равнодействующей силе и обратно пропорционально массе (a = F / m).",
-      "Ньютонның екінші заңы: үдеу қорытқы күшке тура пропорционал, ал массаға кері пропорционал (a = F / m).",
-      "Nyutonning ikkinchi qonuni: tezlanish natijaviy kuchga to‘g‘ri, massaga teskari proporsional (a = F / m)."
+      "Второй закон Ньютона: сила F = m · a. Чтобы найти ускорение тела, нужно разделить равнодействующую силу на массу: a = F / m.",
+      "Ньютонның екінші заңы: F = m · a. Дененің үдеуін табу үшін қорытқы күшті массаға бөлу керек: a = F / m.",
+      "Nyutonning ikkinchi qonuni: F = m · a. Jism tezlanishini topish uchun natijaviy kuchni massaga bo‘lish kerak: a = F / m."
     ),
     question: {
       id: "demo-phys-1",
@@ -3432,15 +3555,98 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
       type: "single_choice",
       difficulty: "basic",
       maxPoints: 1,
-      prompt: tr("На тележку массой m = 4 кг действует равнодействующая сила F = 12 Н. С каким ускорением движется тележка?", "Массасы m = 4 кг арбашаға F = 12 Н қорытқы күш әсер етеді. Арбаша қандай үдеумен қозғалады?", "Massasi m = 4 kg aravachaga F = 12 N natijaviy kuch ta’sir qiladi. Aravacha qanday tezlanish bilan harakatlanadi?"),
+      prompt: tr(
+        "На тележку массой m = 4 кг действует равнодействующая сила F = 12 Н. С каким ускорением движется тележка?",
+        "Массасы m = 4 кг арбашаға F = 12 Н қорытқы күш әсер етеді. Арбаша қандай үдеумен қозғалады?",
+        "Massasi m = 4 kg aravachaga F = 12 N natijaviy kuch ta’sir qiladi. Aravacha qanday tezlanish bilan harakatlanadi?"
+      ),
       options: {
-        ru: ["3 м/с²", "48 м/с²", "8 м/с²", "0.33 м/с²"],
-        kk: ["3 м/с²", "48 м/с²", "8 м/с²", "0.33 м/с²"],
-        uz: ["3 м/с²", "48 м/с²", "8 м/с²", "0.33 м/с²"]
+        ru: ["48 м/с²", "8 м/с²", "3 м/с²", "0.33 м/с²"],
+        kk: ["48 м/с²", "8 м/с²", "3 м/с²", "0.33 м/с²"],
+        uz: ["48 m/s²", "8 m/s²", "3 m/s²", "0.33 m/s²"]
       },
-      correctIndex: 0,
-      explanation: tr("По II закону Ньютона a = F / m = 12 Н / 4 кг = 3 м/с².", "Ньютонның II заңы бойынша: a = F / m = 12 / 4 = 3 м/с².", "Nyutonning II qonuniga ko‘ra: a = F / m = 12 / 4 = 3 m/s²."),
-      hint: tr("Разделите силу F (12 Н) на массу m (4 кг).", "Күшті (12 Н) массаға (4 кг) бөліңіз.", "Kuchni (12 N) massaga (4 kg) bo‘ling."),
+      correctIndex: 2,
+      optionDiagnoses: {
+        ru: [
+          "Сила была умножена на массу (12 · 4 = 48), хотя из закона F = m · a ускорение выражается делением силы на массу: a = F / m. Попробуйте ещё раз.",
+          "Из значения силы вычли массу (12 − 4 = 8), но силу и массу нельзя вычитать: ускорение находится через отношение a = F / m. Попробуйте ещё раз.",
+          "По II закону Ньютона ускорение равно отношению силы к массе: a = F / m = 12 Н / 4 кг = 3 м/с².",
+          "Масса была разделена на силу (m / F = 4 / 12 ≈ 0.33), тогда как по формуле a = F / m нужно делить силу на массу. Попробуйте ещё раз."
+        ],
+        kk: [
+          "Күш массаға көбейтілген (12 · 4 = 48), бірақ F = m · a заңынан үдеу a = F / m қатынасымен табылады. Қайта көріңіз.",
+          "Күштен масса азайтылған (12 − 4 = 8), бірақ үдеуді табу үшін күшті массаға бөлу керек: a = F / m. Қайта көріңіз.",
+          "Ньютонның II заңы бойынша: a = F / m = 12 Н / 4 кг = 3 м/с².",
+          "Масса күшке бөлінген (4 / 12 ≈ 0.33), ал формула бойынша күшті массаға бөлу қажет (a = F / m). Қайта көріңіз."
+        ],
+        uz: [
+          "Kuch massaga ko‘paytirilgan (12 · 4 = 48), ammo F = m · a qonunidan tezlanish a = F / m nisbat orqali topiladi. Qayta urinib ko‘ring.",
+          "Kuchdan massa ayirilgan (12 − 4 = 8), lekin tezlanishni topish uchun kuchni massaga bo‘lish kerak: a = F / m. Qayta urinib ko‘ring.",
+          "Nyutonning II qonuniga ko‘ra: a = F / m = 12 N / 4 kg = 3 m/s².",
+          "Massa kuchga bo‘lingan (4 / 12 ≈ 0.33), holbuki a = F / m formulasiga ko‘ra kuchni massaga bo‘lish зарур. Qayta urinib ko‘ring."
+        ]
+      },
+      explanation: tr(
+        "По II закону Ньютона a = F / m = 12 Н / 4 кг = 3 м/с².",
+        "Ньютонның II заңы бойынша: a = F / m = 12 / 4 = 3 м/с².",
+        "Nyutonning II qonuniga ko‘ra: a = F / m = 12 / 4 = 3 m/s²."
+      ),
+      hint: tr(
+        "Из формулы F = m · a выразите ускорение: разделите силу F (12 Н) на массу m (4 кг).",
+        "F = m · a формуласынан үдеуді табыңыз: күшті (12 Н) массаға (4 кг) бөліңіз.",
+        "F = m · a formulasidan tezlanishni toping: kuchni (12 N) massaga (4 kg) bo‘ling."
+      ),
+      errorCategory: "formula_inversion"
+    },
+    followUpQuestion: {
+      id: "demo-phys-2",
+      subjectId: "physics",
+      topicId: "phys_dynamics",
+      lessonId: "physics-lesson-phys_dynamics",
+      type: "single_choice",
+      difficulty: "basic",
+      maxPoints: 1,
+      prompt: tr(
+        "Похожая задача: тело массой m = 5 кг разгоняется под действием силы F = 20 Н. Чему равно ускорение тела?",
+        "Ұқсас есеп: массасы m = 5 кг дене F = 20 Н күш әсерінен үдейді. Дененің үдеуі неге тең?",
+        "O‘xshash masala: massasi m = 5 kg jism F = 20 N kuch ta’sirida tezlanadi. Jism tezlanishi nimaga teng?"
+      ),
+      options: {
+        ru: ["100 м/с²", "4 м/с²", "15 м/с²", "0.25 м/с²"],
+        kk: ["100 м/с²", "4 м/с²", "15 м/с²", "0.25 м/с²"],
+        uz: ["100 m/s²", "4 m/s²", "15 m/s²", "0.25 m/s²"]
+      },
+      correctIndex: 1,
+      optionDiagnoses: {
+        ru: [
+          "Вы умножили силу на массу (20 · 5 = 100), а из F = m · a нужно разделить силу на массу: a = F / m. Попробуйте ещё раз.",
+          "Верно: по II закону Ньютона a = F / m = 20 Н / 5 кг = 4 м/с².",
+          "Вы вычли массу из силы (20 − 5 = 15), а нужно применить отношение a = F / m. Попробуйте ещё раз.",
+          "Вы разделили массу на силу (5 / 20 = 0.25), а ускорение равно отношению силы к массе: a = F / m. Попробуйте ещё раз."
+        ],
+        kk: [
+          "Сіз күшті массаға көбейттіңіз (20 · 5 = 100), ал F = m · a бойынша күшті массаға бөлу керек. Қайта көріңіз.",
+          "Дұрыс: Ньютонның II заңы бойынша a = F / m = 20 / 5 = 4 м/с².",
+          "Күштен массаны азайтудың орнына a = F / m формуласын қолданыңыз. Қайта көріңіз.",
+          "Массаны күшке емес, күшті массаға бөлу керек (a = F / m). Қайта көріңіз."
+        ],
+        uz: [
+          "Siz kuchni massaga ko‘paytirdingiz (20 · 5 = 100), F = m · a bo‘yicha esa kuchni massaga bo‘lish kerak. Qayta urinib ko‘ring.",
+          "To‘g‘ri: Nyutonning II qonuniga ko‘ra a = F / m = 20 / 5 = 4 m/s².",
+          "Kuchdan massani ayirish o‘rniga a = F / m formulasini qo‘llang. Qayta urinib ko‘ring.",
+          "Massani kuchga emas, kuchni massaga bo‘lish kerak (a = F / m). Qayta urinib ko‘ring."
+        ]
+      },
+      explanation: tr(
+        "По II закону Ньютона a = F / m = 20 Н / 5 кг = 4 м/с².",
+        "Ньютонның II заңы бойынша: a = F / m = 20 / 5 = 4 м/с².",
+        "Nyutonning II qonuniga ko‘ra: a = F / m = 20 / 5 = 4 m/s²."
+      ),
+      hint: tr(
+        "Разделите равнодействующую силу F = 20 Н на массу тела m = 5 кг.",
+        "F = 20 Н қорытқы күшті m = 5 кг массаға бөліңіз.",
+        "F = 20 N natijaviy kuchni m = 5 kg massaga bo‘ling."
+      ),
       errorCategory: "formula_inversion"
     }
   },
@@ -3448,10 +3654,15 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
     subjectId: "english",
     badge: "ENG",
     subjectTitle: tr("Английский язык", "Ағылшын тілі", "Ingliz tili"),
+    subjectCtaLabel: tr(
+      "Продолжить изучать английский язык",
+      "Ағылшын тілін оқуды жалғастыру",
+      "Ingliz tilini o‘rganishni davom ettirish"
+    ),
     contextNote: tr(
-      "First Conditional: в придаточном условия после if используется Present Simple, а не будущее время will.",
-      "First Conditional: if жалғаулығынан кейін келер шақ (will) емес, Present Simple қолданылады.",
-      "First Conditional: if bog‘lovchisidan keyin will emas, Present Simple ishlatiladi."
+      "First Conditional (реальное условие в будущем): в части с if используется Present Simple (he/she/it + глагол-s), а will ставится только в главной части.",
+      "First Conditional (болашақтағы нақты шарт): if бөлігінде Present Simple (he/she/it + етістік-s) қолданылады, ал will тек басыңқы сөйлемде тұрады.",
+      "First Conditional (kelajakdagi real shart): if qismida Present Simple (he/she/it + fe’l-s) ishlatiladi, will esa faqat bosh gapda qo‘yiladi."
     ),
     question: {
       id: "demo-eng-1",
@@ -3461,15 +3672,98 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
       type: "single_choice",
       difficulty: "basic",
       maxPoints: 1,
-      prompt: tr("Выберите грамматически верную форму: «If she ___ early tomorrow, we will catch the morning train.»", "Дұрыс грамматикалық форманы таңдаңыз: «If she ___ early tomorrow, we will catch the morning train.»", "To‘g‘ri grammatik shaklni tanlang: «If she ___ early tomorrow, we will catch the morning train.»"),
+      prompt: tr(
+        "Выберите грамматически верную форму: «If she ___ early tomorrow, we will catch the morning train.»",
+        "Дұрыс грамматикалық форманы таңдаңыз: «If she ___ early tomorrow, we will catch the morning train.»",
+        "To‘g‘ri grammatik shaklni tanlang: «If she ___ early tomorrow, we will catch the morning train.»"
+      ),
       options: {
         ru: ["arrives", "will arrive", "arrived", "would arrive"],
         kk: ["arrives", "will arrive", "arrived", "would arrive"],
         uz: ["arrives", "will arrive", "arrived", "would arrive"]
       },
       correctIndex: 0,
-      explanation: tr("В условных предложениях I типа после if используется Present Simple (she arrives).", "I типті шартты сөйлемде if-тен кейін Present Simple (she arrives) қолданылады.", "I turdagi shart gapda if dan keyin Present Simple (she arrives) ishlatiladi."),
-      hint: tr("После if нельзя ставить will; для местоимения she в Present Simple добавляется окончание -s.", "If-тен кейін will қойылмайды; she үшін -s жалғауы жалғанады.", "If dan keyin will qo‘yilmaydi; she uchun -s qo‘shimchasi qo‘shiladi."),
+      optionDiagnoses: {
+        ru: [
+          "Верно! В First Conditional после if используется Present Simple, а для подлежащего she добавляется окончание -s (arrives).",
+          "Типичная ловушка: в английском языке после условного союза if в First Conditional не ставится will — будущее время уже выражено в главной части (we will catch). Попробуйте ещё раз.",
+          "Форма arrived (Past Simple) используется во втором типе условных предложений (Second Conditional), когда в главной части стоит would. Здесь в главной части стоит will catch. Попробуйте ещё раз.",
+          "Конструкция would arrive не употребляется в придаточном предложении после if. Выберите форму Present Simple. Попробуйте ещё раз."
+        ],
+        kk: [
+          "Дұрыс! First Conditional құрылымында if-тен кейін Present Simple қолданылады, ал she үшін -s жалғауы жалғанады (arrives).",
+          "Жиі кездесетін қате: First Conditional-да if-тен кейін will қойылмайды — келер шақ басыңқы бөлікте (we will catch) берілген. Қайта көріңіз.",
+          "arrived (Past Simple) Second Conditional-да (would болғанда) қолданылады, ал мұнда басыңқы бөлікте will catch тұр. Қайта көріңіз.",
+          "If-тен кейінгі шартты бағыныңқы сөйлемде would arrive қолданылмайды. Present Simple формасын таңдаңыз. Қайта көріңіз."
+        ],
+        uz: [
+          "To‘g‘ri! First Conditional tuzilmasida if dan keyin Present Simple ishlatiladi va she uchun -s qo‘shimchasi qo‘shiladi (arrives).",
+          "Ko‘p uchraydigan xato: First Conditional gaplarda if dan keyin will qo‘yilmaydi — kelasi zamon bosh gapda (we will catch) ifodalangan. Qayta urinib ko‘ring.",
+          "arrived (Past Simple) Second Conditional (bosh gapda would bo‘lganda) uchun ishlatiladi, bu yerda esa will catch turibdi. Qayta urinib ko‘ring.",
+          "If dan keyingi ergash gapda would arrive ishlatilmaydi. Present Simple shaklini tanlang. Qayta urinib ko‘ring."
+        ]
+      },
+      explanation: tr(
+        "В условных предложениях I типа (First Conditional) после if используется Present Simple: для местоимения she — форма arrives.",
+        "I типті шартты сөйлемде (First Conditional) if-тен кейін Present Simple (she arrives) қолданылады.",
+        "I turdagi shart gapda (First Conditional) if dan keyin Present Simple (she arrives) ishlatiladi."
+      ),
+      hint: tr(
+        "После if нельзя ставить will; для местоимения she в Present Simple к глаголу добавляется окончание -s.",
+        "If-тен кейін will қойылмайды; she үшін Present Simple-де етістікке -s жалғауы жалғанады.",
+        "If dan keyin will qo‘yilmaydi; she uchun Present Simple zamonida fe’lga -s qo‘shimchasi qo‘shiladi."
+      ),
+      errorCategory: "conditional_will"
+    },
+    followUpQuestion: {
+      id: "demo-eng-2",
+      subjectId: "english",
+      topicId: "eng_conditionals",
+      lessonId: "english-lesson-eng_conditionals",
+      type: "single_choice",
+      difficulty: "basic",
+      maxPoints: 1,
+      prompt: tr(
+        "Похожая задача: «If it ___ tomorrow, we will move the picnic indoors.»",
+        "Ұқсас тапсырма: «If it ___ tomorrow, we will move the picnic indoors.»",
+        "O‘xshash topshiriq: «If it ___ tomorrow, we will move the picnic indoors.»"
+      ),
+      options: {
+        ru: ["will rain", "rained", "rain", "rains"],
+        kk: ["will rain", "rained", "rain", "rains"],
+        uz: ["will rain", "rained", "rain", "rains"]
+      },
+      correctIndex: 3,
+      optionDiagnoses: {
+        ru: [
+          "После союза if в First Conditional не используется will, даже если речь о завтрашнем дне (tomorrow). Попробуйте ещё раз.",
+          "Форма rained (Past Simple) относится ко второму типу условных предложений, а в главной части здесь стоит will move. Попробуйте ещё раз.",
+          "Вы верно выбрали настоящее время без will, но для подлежащего it в Present Simple глагол требует окончания -s. Попробуйте ещё раз.",
+          "Верно! После if используем Present Simple с окончанием -s для местоимения it: If it rains."
+        ],
+        kk: [
+          "First Conditional-да if-тен кейін will қолданылмайды. Қайта көріңіз.",
+          "rained (Past Simple) екінші типті шартты сөйлемге жатады, ал мұнда will move тұр. Қайта көріңіз.",
+          "Шақты дұрыс таңдадыңыз, бірақ it есімдігінен кейін Present Simple-де етістікке -s жалғанады. Қайта көріңіз.",
+          "Дұрыс! If-тен кейін it үшін -s жалғауы бар Present Simple қолданылады: If it rains."
+        ],
+        uz: [
+          "First Conditional gaplarda if dan keyin will ishlatilmaydi. Qayta urinib ko‘ring.",
+          "rained (Past Simple) ikkinchi turdagi shart gapga tegishli, bu yerda esa will move turibdi. Qayta urinib ko‘ring.",
+          "Zamonni to‘g‘ri tanladingiz, ammo it olmoshidan keyin Present Simple da fe’lga -s qo‘shimchasi kerak. Qayta urinib ko‘ring.",
+          "To‘g‘ri! If dan keyin it uchun -s qo‘shimchali Present Simple ishlatiladi: If it rains."
+        ]
+      },
+      explanation: tr(
+        "В придаточном условия после if с подлежащим it используется Present Simple с окончанием -s: rains.",
+        "Шартты бағыныңқы сөйлемде if пен it-тен кейін -s жалғауы бар Present Simple қолданылады: rains.",
+        "Shart ergash gapda if va it dan keyin -s qo‘shimchali Present Simple ishlatiladi: rains."
+      ),
+      hint: tr(
+        "Найдите форму Present Simple для местоимения 3-го лица единственного числа (it).",
+        "3-жақ жекеше түрдегі (it) Present Simple формасын таңдаңыз.",
+        "3-shaxs birlikdagi (it) Present Simple shaklini tanlang."
+      ),
       errorCategory: "conditional_will"
     }
   },
@@ -3477,10 +3771,15 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
     subjectId: "history_kz",
     badge: "HIST KZ",
     subjectTitle: tr("История Казахстана", "Қазақстан тарихы", "Qozog‘iston tarixi"),
+    subjectCtaLabel: tr(
+      "Продолжить изучать историю Казахстана",
+      "Қазақстан тарихын оқуды жалғастыру",
+      "Qozog‘iston tarixini o‘rganishni davom ettirish"
+    ),
     contextNote: tr(
-      "Образование Казахского ханства: в 1465 году султаны Керей и Жанибек основали ханство в Западном Жетысу (Козыбасы).",
-      "Қазақ хандығының құрылуы: 1465 жылы Керей мен Жәнібек сұлтандар Батыс Жетісуда (Қозыбасы) хандықтың негізін қалады.",
-      "Qozoq xonligining tashkil topishi: 1465-yilda Kerey va Janibek sultonlar G‘arbiy Jetisuvda (Qo‘ziboshi) xonlikka asos soldilar."
+      "Своды законов Казахского ханства: при Касым-хане действовал «Қасқа жол» («Светлый путь»), при Есим-хане — «Ескі жол» («Древний путь»), а при Тауке-хане с участием трёх биев был принят свод «Жеті жарғы» («Семь установлений»).",
+      "Қазақ хандығының заңдар жинағы: Қасым хан тұсында — «Қасқа жол», Есім ханда — «Ескі жол», ал Тәуке хан тұсында үш ұлы бидің қатысуымен «Жеті жарғы» («Жеті жарғы заңы») қабылданды.",
+      "Qozoq xonligi qonunlar to‘plami: Qosim xon davrida — «Qasqa yo‘l», Yesim xonda — «Eski yo‘l», Tauke xon davrida esa uch biy ishtirokida «Jeti jarg‘i» («Yetti nizom») qabul qilingan."
     ),
     question: {
       id: "demo-hkz-1",
@@ -3490,15 +3789,98 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
       type: "single_choice",
       difficulty: "basic",
       maxPoints: 1,
-      prompt: tr("При каком хане в конце XVII — начале XVIII века был принят свод законов «Жеті жарғы» («Семь установлений»)?", "XVII ғ. соңы — XVIII ғ. басында «Жеті жарғы» заңдар жинағы қай ханның тұсында қабылданды?", "XVII asr oxiri — XVIII asr boshida «Jeti jarg‘i» qonunlar to‘plami qaysi xon davrida qabul qilingan?"),
+      prompt: tr(
+        "При каком хане в конце XVII — начале XVIII века был принят свод законов «Жеті жарғы» («Семь установлений»)?",
+        "XVII ғ. соңы — XVIII ғ. басында «Жеті жарғы» заңдар жинағы қай ханның тұсында қабылданды?",
+        "XVII asr oxiri — XVIII asr boshida «Jeti jarg‘i» qonunlar to‘plami qaysi xon davrida qabul qilingan?"
+      ),
       options: {
-        ru: ["Тауке-хан", "Касым-хан", "Есим-хан", "Хакназар-хан"],
-        kk: ["Тәуке хан", "Қасым хан", "Есім хан", "Хақназар хан"],
-        uz: ["Tauke xon", "Qosim xon", "Yesim xon", "Haqnazar xon"]
+        ru: ["Касым-хан", "Есим-хан", "Хакназар-хан", "Тауке-хан"],
+        kk: ["Қасым хан", "Есім хан", "Хақназар хан", "Тәуке хан"],
+        uz: ["Qosim xon", "Yesim xon", "Haqnazar xon", "Tauke xon"]
       },
-      correctIndex: 0,
-      explanation: tr("Свод законов «Жеті жарғы» был разработан и принят при Тауке-хане с участием Толе би, Казыбек би и Айтеке би.", "«Жеті жарғы» Тәуке хан тұсында үш ұлы бидің қатысуымен қабылданды.", "«Jeti jarg‘i» Tauke xon davrida uch buyuk biy ishtirokida qabul qilingan."),
-      hint: tr("При Касым-хане был «Қасқа жол», при Есим-хане — «Ескі жол», а «Жеті жарғы»...", "Қасым ханда — «Қасқа жол», Есім ханда — «Ескі жол», ал «Жеті жарғы»...", "Qosim xonda — «Qasqa yo‘l», Yesim xonda — «Eski yo‘l», «Jeti jarg‘i» esa..."),
+      correctIndex: 3,
+      optionDiagnoses: {
+        ru: [
+          "При Касым-хане (начало XVI века) был создан свод обычного права «Қасқа жол» («Светлый путь»), а «Жеті жарғы» относится к рубежу XVII–XVIII веков. Попробуйте ещё раз.",
+          "С именем Есим-хана (XVII век) связан правовой свод «Ескі жол» («Древний путь»), а не «Жеті жарғы». Попробуйте ещё раз.",
+          "Хакназар-хан прославился укреплением границ ханства во второй половине XVI века, но свод «Жеті жарғы» был принят позже. Попробуйте ещё раз.",
+          "Верно! Свод законов «Жеті жарғы» был принят при Тауке-хане с участием Толе би, Казыбек би и Айтеке би."
+        ],
+        kk: [
+          "Қасым хан тұсында (XVI ғ. басы) «Қасқа жол» заңдар жинағы шықты, ал «Жеті жарғы» XVII–XVIII ғғ. шегінде қабылданды. Қайта көріңіз.",
+          "Есім хан есімімен «Ескі жол» заңдар жинағы байланысты. Қайта көріңіз.",
+          "Хақназар хан XVI ғасырдың екінші жартысында хандықты нығайтты, ал «Жеті жарғы» кейінірек қабылданды. Қайта көріңіз.",
+          "Дұрыс! «Жеті жарғы» Тәуке хан тұсында Төле би, Қазыбек би және Әйтеке бидің қатысуымен қабылданды."
+        ],
+        uz: [
+          "Qosim xon davrida (XVI asr boshi) «Qasqa yo‘l» qonunlar to‘plami yaratilgan, «Jeti jarg‘i» esa XVII–XVIII asrlar chegarasiga oid. Qayta urinib ko‘ring.",
+          "Yesim xon nomi bilan «Eski yo‘l» huquqiy to‘plami bog‘liq. Qayta urinib ko‘ring.",
+          "Haqnazar xon XVI asrning ikkinchi yarmida xonlik chegaralarini mustahkamlagan, «Jeti jarg‘i» esa keyinroq qabul qilingan. Qayta urinib ko‘ring.",
+          "To‘g‘ri! «Jeti jarg‘i» Tauke xon davrida Tole biy, Qazibek biy va Ayteke biy ishtirokida qabul qilingan."
+        ]
+      },
+      explanation: tr(
+        "Свод законов «Жеті жарғы» был разработан и принят при Тауке-хане с участием Толе би, Казыбек би и Айтеке би.",
+        "«Жеті жарғы» Тәуке хан тұсында үш ұлы бидің қатысуымен қабылданды.",
+        "«Jeti jarg‘i» Tauke xon davrida uch buyuk biy ishtirokida qabul qilingan."
+      ),
+      hint: tr(
+        "При Касым-хане действовал «Қасқа жол», при Есим-хане — «Ескі жол», а «Жеті жарғы» был составлен при участии Толе би, Казыбек би и Айтеке би.",
+        "Қасым ханда — «Қасқа жол», Есім ханда — «Ескі жол», ал «Жеті жарғы» үш бидің қатысуымен қабылданды.",
+        "Qosim xonda — «Qasqa yo‘l», Yesim xonda — «Eski yo‘l», «Jeti jarg‘i» esa uch biy ishtirokida tuzilgan."
+      ),
+      errorCategory: "chronology_order"
+    },
+    followUpQuestion: {
+      id: "demo-hkz-2",
+      subjectId: "history_kz",
+      topicId: "hkz_khanate",
+      lessonId: "history_kz-lesson-hkz_khanate",
+      type: "single_choice",
+      difficulty: "basic",
+      maxPoints: 1,
+      prompt: tr(
+        "Похожая задача: с именем какого правителя начала XVI века связан правовой свод «Қасқа жол» («Светлый путь»)?",
+        "Ұқсас тапсырма: XVI ғасырдың басындағы «Қасқа жол» заңдар жинағы қай ханның есімімен байланысты?",
+        "O‘xshash topshiriq: XVI asr boshidagi «Qasqa yo‘l» huquqiy to‘plami qaysi xon nomi bilan bog‘liq?"
+      ),
+      options: {
+        ru: ["Тауке-хан", "Касым-хан", "Есим-хан", "Жангир-хан"],
+        kk: ["Тәуке хан", "Қасым хан", "Есім хан", "Жәңгір хан"],
+        uz: ["Tauke xon", "Qosim xon", "Yesim xon", "Jangir xon"]
+      },
+      correctIndex: 1,
+      optionDiagnoses: {
+        ru: [
+          "При Тауке-хане был принят свод «Жеті жарғы» («Семь установлений»), а «Қасқа жол» появился раньше — в начале XVI века. Попробуйте ещё раз.",
+          "Верно! Свод законов «Қасқа жол» («Светлый путь Касым-хана») из пяти разделов был принят при Касым-хане.",
+          "С Есим-ханом связан свод «Ескі жол» («Древний путь»), а «Қасқа жол» относится к правлению его предшественника начала XVI века. Попробуйте ещё раз.",
+          "Жангир-хан прославился Орбулакской битвой (1643 г.), а свод «Қасқа жол» был создан в начале XVI века. Попробуйте ещё раз."
+        ],
+        kk: [
+          "Тәуке хан тұсында «Жеті жарғы» қабылданды, ал «Қасқа жол» XVI ғасырдың басында шықты. Қайта көріңіз.",
+          "Дұрыс! Бес тараудан тұратын «Қасым ханның қасқа жолы» заңдар жинағы Қасым хан тұсында қабылданды.",
+          "Есім ханмен «Ескі жол» байланысты, ал «Қасқа жол» XVI ғ. басында қабылданған. Қайта көріңіз.",
+          "Жәңгір хан Орбұлақ шайқасымен (1643 ж.) танымал, ал «Қасқа жол» XVI ғ. басында жасалды. Қайта көріңіз."
+        ],
+        uz: [
+          "Tauke xon davrida «Jeti jarg‘i» qabul qilingan, «Qasqa yo‘l» esa XVI asr boshida paydo bo‘lgan. Qayta urinib ko‘ring.",
+          "To‘g‘ri! Besh bo‘limdan iborat «Qosim xonning qasqa yo‘li» qonunlar to‘plami Qosim xon davrida qabul qilingan.",
+          "Yesim xon bilan «Eski yo‘l» bog‘liq, «Qasqa yo‘l» esa XVI asr boshiga tegishli. Qayta urinib ko‘ring.",
+          "Jangir xon Orbulog‘ jangi (1643-y.) bilan mashhur, «Qasqa yo‘l» esa XVI asr boshida yaratilgan. Qayta urinib ko‘ring."
+        ]
+      },
+      explanation: tr(
+        "Правовой свод «Қасқа жол» («Светлый путь Касым-хана») был создан в начале XVI века при Касым-хане.",
+        "«Қасым ханның қасқа жолы» заңдар жинағы XVI ғасырдың басында Қасым хан тұсында жасалды.",
+        "«Qosim xonning qasqa yo‘li» huquqiy to‘plami XVI asr boshida Qosim xon davrida yaratilgan."
+      ),
+      hint: tr(
+        "Вспомните полное историческое название этого свода: «... ханның қасқа жолы».",
+        "Бұл заңдар жинағының толық атауын еске түсіріңіз: «... ханның қасқа жолы».",
+        "Ushbu qonunlar to‘plamining to‘liq nomini eslang: «... xonning qasqa yo‘li»."
+      ),
       errorCategory: "chronology_order"
     }
   },
@@ -3506,10 +3888,15 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
     subjectId: "informatics",
     badge: "INFO",
     subjectTitle: tr("Информатика", "Информатика", "Informatika"),
+    subjectCtaLabel: tr(
+      "Продолжить изучать информатику",
+      "Информатиканы оқуды жалғастыру",
+      "Informatikani o‘rganishni davom ettirish"
+    ),
     contextNote: tr(
-      "Python range(start, stop): левая граница start включается, а правая граница stop НЕ включается.",
-      "Python range(start, stop): сол жақ start шекарасы кіреді, ал оң жақ stop шекарасы КІРМЕЙДІ.",
-      "Python range(start, stop): chap start chegarasi kiradi, o‘ng stop chegarasi esa KIRMAYDI."
+      "Python range(start, stop): левая граница start включается в последовательность, а правая граница stop НЕ включается (идут числа от start до stop − 1).",
+      "Python range(start, stop): сол жақ start шекарасы тізбекке кіреді, ал оң жақ stop шекарасы КІРМЕЙДІ (start-тан stop − 1-ге дейінгі сандар).",
+      "Python range(start, stop): chap start chegarasi ketma-ketlikka kiradi, o‘ng stop chegarasi esa KIRMAYDI (start dan stop − 1 gacha bo‘lgan sonlar)."
     ),
     question: {
       id: "demo-inf-1",
@@ -3519,15 +3906,98 @@ export const WELCOME_DEMO_ITEMS: WelcomeSubjectDemoItem[] = [
       type: "single_choice",
       difficulty: "basic",
       maxPoints: 1,
-      prompt: tr("Что выведет код на Python: print(sum(range(1, 5)))?", "Python коды не шығарады: print(sum(range(1, 5)))?", "Python kodi nimani chiqaradi: print(sum(range(1, 5)))?"),
+      prompt: tr(
+        "Что выведет код на Python: print(sum(range(1, 5)))?",
+        "Python коды не шығарады: print(sum(range(1, 5)))?",
+        "Python kodi nimani chiqaradi: print(sum(range(1, 5)))?"
+      ),
       options: {
-        ru: ["10 (сумма 1 + 2 + 3 + 4)", "15 (сумма 1 + 2 + 3 + 4 + 5)", "4", "5"],
-        kk: ["10 (1 + 2 + 3 + 4 қосындысы)", "15 (1 + 2 + 3 + 4 + 5 қосындысы)", "4", "5"],
-        uz: ["10 (1 + 2 + 3 + 4 yig‘indisi)", "15 (1 + 2 + 3 + 4 + 5 yig‘indisi)", "4", "5"]
+        ru: ["15 (сумма 1 + 2 + 3 + 4 + 5)", "10 (сумма 1 + 2 + 3 + 4)", "4", "5"],
+        kk: ["15 (1 + 2 + 3 + 4 + 5 қосындысы)", "10 (1 + 2 + 3 + 4 қосындысы)", "4", "5"],
+        uz: ["15 (1 + 2 + 3 + 4 + 5 yig‘indisi)", "10 (1 + 2 + 3 + 4 yig‘indisi)", "4", "5"]
       },
-      correctIndex: 0,
-      explanation: tr("range(1, 5) возвращает числа 1, 2, 3, 4 (число 5 не входит). Их сумма равна 1 + 2 + 3 + 4 = 10.", "range(1, 5) тек 1, 2, 3, 4 сандарын береді. Қосындысы: 10.", "range(1, 5) faqat 1, 2, 3, 4 sonlarini beradi. Yig‘indisi: 10."),
-      hint: tr("Вспомните, включается ли верхняя граница 5 в range(1, 5).", "range(1, 5) ішіне жоғарғы шекара 5 кіре ме?", "range(1, 5) ichiga yuqori chegara 5 kiradimi?"),
+      correctIndex: 1,
+      optionDiagnoses: {
+        ru: [
+          "В сумму было включено число 5, но в функции range(1, 5) правая граница 5 не входит в последовательность. Попробуйте ещё раз.",
+          "Верно! range(1, 5) генерирует числа 1, 2, 3, 4 (верхняя граница 5 не включается), и их сумма равна 10.",
+          "Число 4 — это количество элементов (или последнее число последовательности), а функция sum(...) вычисляет их сумму. Попробуйте ещё раз.",
+          "Число 5 — это правая граница range(1, 5), которая не входит в диапазон, тогда как код считает сумму элементов sum(...). Попробуйте ещё раз."
+        ],
+        kk: [
+          "Қосындыға 5 саны қосылып кеткен, бірақ range(1, 5) функциясында оң жақ шекара 5 тізбекке кірмейді. Қайта көріңіз.",
+          "Дұрыс! range(1, 5) тек 1, 2, 3, 4 сандарын береді, олардың қосындысы 10-ға тең.",
+          "4 — тізбектегі элементтер саны (немесе соңғы сан), ал sum(...) олардың қосындысын есептейді. Қайта көріңіз.",
+          "5 — range(1, 5) жоғарғы шекарасы (тізбекке кірмейді), ал код sum(...) қосындысын шығарады. Қайта көріңіз."
+        ],
+        uz: [
+          "Yig‘indiga 5 soni qo‘shib yuborilgan, ammo range(1, 5) funksiyasida o‘ng chegara 5 ketma-ketlikka kirmaydi. Qayta urinib ko‘ring.",
+          "To‘g‘ri! range(1, 5) faqat 1, 2, 3, 4 sonlarini hosil qiladi va ularning yig‘indisi 10 ga teng.",
+          "4 — elementlar soni (yoki oxirgi son), sum(...) esa ularning yig‘indisini hisoblaydi. Qayta urinib ko‘ring.",
+          "5 — range(1, 5) ning yuqori chegarasi (ketma-ketlikka kirmaydi), kod esa sum(...) yig‘indisini chiqaradi. Qayta urinib ko‘ring."
+        ]
+      },
+      explanation: tr(
+        "range(1, 5) возвращает числа 1, 2, 3, 4 (число 5 не входит). Их сумма равна 1 + 2 + 3 + 4 = 10.",
+        "range(1, 5) тек 1, 2, 3, 4 сандарын береді. Қосындысы: 10.",
+        "range(1, 5) faqat 1, 2, 3, 4 sonlarini beradi. Yig‘indisi: 10."
+      ),
+      hint: tr(
+        "Вспомните, включается ли верхняя граница 5 в range(1, 5), и сложите только входящие числа.",
+        "range(1, 5) ішіне жоғарғы шекара 5 кіре ме, соны ескеріп тек кіретін сандарды қосыңыз.",
+        "range(1, 5) ichiga yuqori chegara 5 kiradimi, shuni hisobga olib faqat kiruvchi sonlarni qo‘shing."
+      ),
+      errorCategory: "off_by_one_range"
+    },
+    followUpQuestion: {
+      id: "demo-inf-2",
+      subjectId: "informatics",
+      topicId: "inf_python_loops",
+      lessonId: "informatics-lesson-inf_python_loops",
+      type: "single_choice",
+      difficulty: "basic",
+      maxPoints: 1,
+      prompt: tr(
+        "Похожая задача: что выведет код на Python: print(sum(range(2, 6)))?",
+        "Ұқсас есеп: Python коды не шығарады: print(sum(range(2, 6)))?",
+        "O‘xshash masala: Python kodi nimani chiqaradi: print(sum(range(2, 6)))?"
+      ),
+      options: {
+        ru: ["20 (сумма 2 + 3 + 4 + 5 + 6)", "4 (количество чисел)", "14 (сумма 2 + 3 + 4 + 5)", "12 (сумма 3 + 4 + 5)"],
+        kk: ["20 (2 + 3 + 4 + 5 + 6 қосындысы)", "4 (сандар саны)", "14 (2 + 3 + 4 + 5 қосындысы)", "12 (3 + 4 + 5 қосындысы)"],
+        uz: ["20 (2 + 3 + 4 + 5 + 6 yig‘indisi)", "4 (sonlar soni)", "14 (2 + 3 + 4 + 5 yig‘indisi)", "12 (3 + 4 + 5 yig‘indisi)"]
+      },
+      correctIndex: 2,
+      optionDiagnoses: {
+        ru: [
+          "Правая граница 6 не входит в range(2, 6) — последовательность заканчивается на числе 5. Попробуйте ещё раз.",
+          "В range(2, 6) действительно 4 числа (2, 3, 4, 5), но функция sum(...) складывает сами эти числа. Попробуйте ещё раз.",
+          "Верно! range(2, 6) даёт числа 2, 3, 4, 5, а их сумма равна 2 + 3 + 4 + 5 = 14.",
+          "Левая граница 2 включается в range(2, 6), поэтому её тоже нужно прибавить к сумме. Попробуйте ещё раз."
+        ],
+        kk: [
+          "Оң жақ шекара 6 range(2, 6) тізбегіне кірмейді — тізбек 5 санымен аяқталады. Қайта көріңіз.",
+          "Тізбекте 4 сан бар (2, 3, 4, 5), бірақ sum(...) олардың қосындысын есептейді. Қайта көріңіз.",
+          "Дұрыс! range(2, 6) → 2, 3, 4, 5 сандарын береді, қосындысы: 2 + 3 + 4 + 5 = 14.",
+          "Сол жақ шекара 2 тізбекке кіреді, сондықтан оны да қосу керек. Қайта көріңіз."
+        ],
+        uz: [
+          "O‘ng chegara 6 range(2, 6) ketma-ketligiga kirmaydi — ketma-ketlik 5 bilan tugaydi. Qayta urinib ko‘ring.",
+          "Ketma-ketlikda 4 ta son bor (2, 3, 4, 5), lekin sum(...) ularning yig‘indisini hisoblaydi. Qayta urinib ko‘ring.",
+          "To‘g‘ri! range(2, 6) → 2, 3, 4, 5 sonlarini beradi, yig‘indisi: 2 + 3 + 4 + 5 = 14.",
+          "Chap chegara 2 ketma-ketlikka kiradi, shuning uchun uni ham qo‘shish kerak. Qayta urinib ko‘ring."
+        ]
+      },
+      explanation: tr(
+        "range(2, 6) включает числа 2, 3, 4, 5 (без 6). Сумма: 2 + 3 + 4 + 5 = 14.",
+        "range(2, 6) ішіне 2, 3, 4, 5 кіреді (6 кірмейді). Қосындысы: 14.",
+        "range(2, 6) ichiga 2, 3, 4, 5 kiradi (6 kirmaydi). Yig‘indisi: 14."
+      ),
+      hint: tr(
+        "Левая граница 2 входит, правая граница 6 не входит: сложите числа от 2 до 5.",
+        "Сол жақ шекара 2 кіреді, оң жақ 6 кірмейді: 2-ден 5-ке дейінгі сандарды қосыңыз.",
+        "Chap chegara 2 kiradi, o‘ng chegara 6 kirmaydi: 2 dan 5 gacha sonlarni qo‘shing."
+      ),
       errorCategory: "off_by_one_range"
     }
   }

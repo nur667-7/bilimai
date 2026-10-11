@@ -149,7 +149,10 @@ const CATALOG_I18N: Record<
   }
 };
 
+import { useAniqTheme, ThemeToggleButton } from "@/components/hero-canvas";
+
 export default function SubjectsCatalogPage() {
+  const { dark, toggleTheme } = useAniqTheme();
   const [locale, setLocale] = useState<Locale>("ru");
   const [categoryFilter, setCategoryFilter] = useState<
     UniversalSubjectCurriculum["category"] | "all"
@@ -166,9 +169,13 @@ export default function SubjectsCatalogPage() {
 
   useEffect(() => {
     try {
+      const params = new URLSearchParams(window.location.search);
+      const urlLang = params.get("lang");
       const savedLocale =
-        window.localStorage.getItem(LOCALE_STORAGE_KEY) ??
-        window.localStorage.getItem(LEGACY_LANG_STORAGE_KEY);
+        urlLang === "ru" || urlLang === "kk" || urlLang === "uz"
+          ? urlLang
+          : window.localStorage.getItem(LOCALE_STORAGE_KEY) ??
+            window.localStorage.getItem(LEGACY_LANG_STORAGE_KEY);
       if (savedLocale === "ru" || savedLocale === "kk" || savedLocale === "uz") {
         setLocale(savedLocale);
       }
@@ -193,6 +200,18 @@ export default function SubjectsCatalogPage() {
   };
 
   const ui = CATALOG_I18N[locale];
+  const themeLightAction =
+    locale === "kk"
+      ? "Жарық тақырыпты қосу"
+      : locale === "uz"
+        ? "Yorug‘ mavzuni yoqish"
+        : "Включить светлую тему";
+  const themeDarkAction =
+    locale === "kk"
+      ? "Қараңғы тақырыпты қосу"
+      : locale === "uz"
+        ? "Qorong‘i mavzuni yoqish"
+        : "Включить тёмную тему";
 
   const filteredCurricula = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -215,15 +234,21 @@ export default function SubjectsCatalogPage() {
   }, [curricula, categoryFilter, levelFilter, searchQuery, locale]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg, #f7f5ef)", color: "var(--ink, #171717)" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "var(--bilimai-bg, #F6F7FB)",
+        color: "var(--bilimai-text, #0F172A)"
+      }}
+    >
       <header
         style={{
           position: "sticky",
           top: 0,
           zIndex: 20,
-          background: "rgba(247, 245, 239, 0.94)",
+          background: "var(--bilimai-header-bg, rgba(246, 247, 251, 0.94))",
           backdropFilter: "blur(10px)",
-          borderBottom: "1px solid var(--border, #e4e1d8)",
+          borderBottom: "1px solid var(--bilimai-border, #D8E0EE)",
           padding: "12px 16px"
         }}
       >
@@ -238,14 +263,14 @@ export default function SubjectsCatalogPage() {
             gap: 12
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
             <Link
-              href="/welcome"
+              href={`/welcome?lang=${locale}`}
               style={{
                 fontWeight: 800,
                 fontSize: 19,
                 textDecoration: "none",
-                color: "var(--ink, #171717)",
+                color: "var(--bilimai-text, #0F172A)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8
@@ -256,8 +281,8 @@ export default function SubjectsCatalogPage() {
                   width: 30,
                   height: 30,
                   borderRadius: 9,
-                  background: "var(--accent, #3856f5)",
-                  color: "#fff",
+                  background: "var(--bilimai-brand, #254EDB)",
+                  color: "var(--bilimai-on-brand, #fff)",
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -271,10 +296,10 @@ export default function SubjectsCatalogPage() {
             </Link>
 
             <Link
-              href="/welcome"
+              href={`/welcome?lang=${locale}`}
               style={{
                 fontSize: 13.5,
-                color: "var(--muted, #65635d)",
+                color: "var(--bilimai-text-muted, #475569)",
                 textDecoration: "none",
                 fontWeight: 600
               }}
@@ -286,7 +311,7 @@ export default function SubjectsCatalogPage() {
               href="/teacher"
               style={{
                 fontSize: 13.5,
-                color: "var(--muted, #65635d)",
+                color: "var(--bilimai-text-muted, #475569)",
                 textDecoration: "none",
                 fontWeight: 600
               }}
@@ -298,7 +323,7 @@ export default function SubjectsCatalogPage() {
               href="/"
               style={{
                 fontSize: 13.5,
-                color: "var(--muted, #65635d)",
+                color: "var(--bilimai-text-muted, #475569)",
                 textDecoration: "none",
                 fontWeight: 600
               }}
@@ -307,36 +332,49 @@ export default function SubjectsCatalogPage() {
             </Link>
           </div>
 
-          <div
-            role="group"
-            aria-label="Язык интерфейса"
-            style={{
-              display: "inline-flex",
-              borderRadius: 10,
-              border: "1px solid var(--border, #dcd8ce)",
-              overflow: "hidden",
-              background: "var(--surface, #fff)"
-            }}
-          >
-            {(["ru", "kk", "uz"] as const).map((lang) => (
-              <button
-                key={lang}
-                type="button"
-                data-testid={`catalog-lang-${lang}`}
-                onClick={() => handleLocaleChange(lang)}
-                style={{
-                  padding: "6px 10px",
-                  border: "none",
-                  background: locale === lang ? "var(--accent, #3856f5)" : "transparent",
-                  color: locale === lang ? "#fff" : "inherit",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: "pointer"
-                }}
-              >
-                {lang === "ru" ? "RU" : lang === "kk" ? "ҚАЗ" : "OʻZB"}
-              </button>
-            ))}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              role="group"
+              aria-label="Язык интерфейса"
+              style={{
+                display: "inline-flex",
+                borderRadius: 10,
+                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                overflow: "hidden",
+                background: "var(--bilimai-surface, #fff)"
+              }}
+            >
+              {(["ru", "kk", "uz"] as const).map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  data-testid={`catalog-lang-${lang}`}
+                  aria-pressed={locale === lang}
+                  onClick={() => handleLocaleChange(lang)}
+                  style={{
+                    padding: "6px 10px",
+                    border: "none",
+                    background: locale === lang ? "var(--bilimai-brand, #254EDB)" : "transparent",
+                    color:
+                      locale === lang
+                        ? "var(--bilimai-on-brand, #fff)"
+                        : "var(--bilimai-text, #0F172A)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer"
+                  }}
+                >
+                  {lang === "ru" ? "RU" : lang === "kk" ? "ҚАЗ" : "OʻZB"}
+                </button>
+              ))}
+            </div>
+
+            <ThemeToggleButton
+              dark={dark}
+              onToggle={toggleTheme}
+              lightActionLabel={themeLightAction}
+              darkActionLabel={themeDarkAction}
+            />
           </div>
         </div>
       </header>
@@ -358,7 +396,7 @@ export default function SubjectsCatalogPage() {
             style={{
               margin: 0,
               fontSize: 15.5,
-              color: "var(--muted, #57544e)",
+              color: "var(--bilimai-text-muted, #475569)",
               maxWidth: 780,
               lineHeight: 1.5
             }}
@@ -386,8 +424,9 @@ export default function SubjectsCatalogPage() {
               flex: "1 1 280px",
               padding: "10px 14px",
               borderRadius: 12,
-              border: "1px solid var(--border, #dcd8ce)",
-              background: "var(--surface, #fff)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
+              background: "var(--bilimai-surface, #fff)",
+              color: "var(--bilimai-text, #0F172A)",
               fontSize: 14.5
             }}
           />
@@ -402,8 +441,9 @@ export default function SubjectsCatalogPage() {
             style={{
               padding: "10px 14px",
               borderRadius: 12,
-              border: "1px solid var(--border, #dcd8ce)",
-              background: "var(--surface, #fff)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
+              background: "var(--bilimai-surface, #fff)",
+              color: "var(--bilimai-text, #0F172A)",
               fontSize: 14,
               fontWeight: 600
             }}
@@ -425,15 +465,20 @@ export default function SubjectsCatalogPage() {
                   key={cat}
                   type="button"
                   data-testid={`catalog-category-${cat}`}
+                  aria-pressed={active}
                   onClick={() => setCategoryFilter(cat)}
                   style={{
                     padding: "8px 14px",
                     borderRadius: 999,
                     border: active
-                      ? "1px solid var(--accent, #3856f5)"
-                      : "1px solid var(--border, #dcd8ce)",
-                    background: active ? "var(--accent, #3856f5)" : "var(--surface, #fff)",
-                    color: active ? "#fff" : "inherit",
+                      ? "1px solid var(--bilimai-brand, #254EDB)"
+                      : "1px solid var(--bilimai-border, #D8E0EE)",
+                    background: active
+                      ? "var(--bilimai-brand, #254EDB)"
+                      : "var(--bilimai-surface, #fff)",
+                    color: active
+                      ? "var(--bilimai-on-brand, #fff)"
+                      : "var(--bilimai-text, #0F172A)",
                     fontSize: 13.5,
                     fontWeight: 600,
                     cursor: "pointer"
@@ -452,10 +497,10 @@ export default function SubjectsCatalogPage() {
             style={{
               padding: 24,
               borderRadius: 16,
-              background: "var(--surface, #fff)",
-              border: "1px solid var(--border, #e4e1d8)",
+              background: "var(--bilimai-surface, #fff)",
+              border: "1px solid var(--bilimai-border, #D8E0EE)",
               fontSize: 15,
-              color: "var(--muted, #57544e)"
+              color: "var(--bilimai-text-muted, #475569)"
             }}
           >
             {ui.noMatches}
@@ -487,8 +532,8 @@ export default function SubjectsCatalogPage() {
                   key={subj.id}
                   data-testid={`subject-card-${subj.id}`}
                   style={{
-                    background: "var(--surface, #ffffff)",
-                    border: "1px solid var(--border, #e4e1d8)",
+                    background: "var(--bilimai-surface, #ffffff)",
+                    border: "1px solid var(--bilimai-border, #D8E0EE)",
                     borderRadius: 18,
                     padding: "18px 20px",
                     display: "flex",
@@ -512,8 +557,8 @@ export default function SubjectsCatalogPage() {
                           style={{
                             padding: "4px 10px",
                             borderRadius: 999,
-                            background: `${subj.accentColor}18`,
-                            color: subj.accentColor,
+                            background: "var(--bilimai-selected-bg, #E0E7FF)",
+                            color: "var(--bilimai-selected-text, #1E3A8A)",
                             fontSize: 11.5,
                             fontWeight: 800
                           }}
@@ -526,9 +571,11 @@ export default function SubjectsCatalogPage() {
                             padding: "3px 8px",
                             borderRadius: 999,
                             background: isExpandedCourse
-                              ? "rgba(22, 163, 74, 0.12)"
-                              : "rgba(56, 86, 245, 0.1)",
-                            color: isExpandedCourse ? "#15803d" : "var(--accent, #3856f5)",
+                              ? "var(--bilimai-success-bg, #ECFDF5)"
+                              : "var(--bilimai-surface-raised, #EEF2F9)",
+                            color: isExpandedCourse
+                              ? "var(--bilimai-success-text, #065F46)"
+                              : "var(--bilimai-text-muted, #475569)",
                             fontSize: 11,
                             fontWeight: 700
                           }}
@@ -536,7 +583,7 @@ export default function SubjectsCatalogPage() {
                           {isExpandedCourse ? ui.expandedBadge : ui.starterBadge}
                         </span>
                       </div>
-                      <span style={{ fontSize: 12, color: "var(--muted, #65635d)" }}>
+                      <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #475569)" }}>
                         {formatModulesCountLabel(subj.modules.length, locale)} ·{" "}
                         {formatLessonsCountLabel(subj.lessons.length, locale)} ·{" "}
                         {formatQuestionsCountLabel(totalQuestions, locale)}
@@ -551,7 +598,7 @@ export default function SubjectsCatalogPage() {
                         margin: 0,
                         fontSize: 14,
                         lineHeight: 1.48,
-                        color: "var(--muted, #57544e)"
+                        color: "var(--bilimai-text-muted, #475569)"
                       }}
                     >
                       {subj.shortDescription[locale]}
@@ -562,7 +609,7 @@ export default function SubjectsCatalogPage() {
                     <div
                       style={{
                         fontSize: 12.5,
-                        color: "var(--muted, #65635d)",
+                        color: "var(--bilimai-text-muted, #475569)",
                         display: "flex",
                         justifyContent: "space-between"
                       }}
@@ -589,8 +636,8 @@ export default function SubjectsCatalogPage() {
                           justifyContent: "center",
                           padding: "10px 14px",
                           borderRadius: 12,
-                          background: "var(--accent, #3856f5)",
-                          color: "#ffffff",
+                          background: "var(--bilimai-brand, #254EDB)",
+                          color: "var(--bilimai-on-brand, #ffffff)",
                           textDecoration: "none",
                           fontWeight: 700,
                           fontSize: 14
@@ -606,9 +653,9 @@ export default function SubjectsCatalogPage() {
                           justifyContent: "center",
                           padding: "10px 12px",
                           borderRadius: 12,
-                          border: "1px solid var(--border, #dcd8ce)",
-                          background: "var(--surface, #fff)",
-                          color: "inherit",
+                          border: "1px solid var(--bilimai-border, #D8E0EE)",
+                          background: "var(--bilimai-surface, #fff)",
+                          color: "var(--bilimai-text, #0F172A)",
                           textDecoration: "none",
                           fontWeight: 600,
                           fontSize: 13
@@ -625,9 +672,9 @@ export default function SubjectsCatalogPage() {
                             justifyContent: "center",
                             padding: "10px 12px",
                             borderRadius: 12,
-                            border: "1px solid var(--border, #dcd8ce)",
-                            background: "var(--surface, #fff)",
-                            color: "inherit",
+                            border: "1px solid var(--bilimai-border, #D8E0EE)",
+                            background: "var(--bilimai-surface, #fff)",
+                            color: "var(--bilimai-text, #0F172A)",
                             textDecoration: "none",
                             fontWeight: 600,
                             fontSize: 13

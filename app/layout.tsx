@@ -121,9 +121,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const themeInitScript = `(function(){try{var s=localStorage.getItem("aniq-theme")||localStorage.getItem("bilim-theme");var d=s==="dark"?true:s==="light"?false:(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",Boolean(d));document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();`;
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
