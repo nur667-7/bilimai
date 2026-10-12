@@ -49,6 +49,7 @@ import {
   type UntVariantMode
 } from "@/lib/unt-all-subjects";
 import { topicName } from "@/lib/error-lab";
+import { getSubjectCurriculum } from "@/lib/universal-curriculum";
 import type { Language, TopicId } from "@/lib/lessons";
 
 const EXAM_COPY = {
@@ -98,6 +99,7 @@ const EXAM_COPY = {
     prevBtn: "Предыдущая",
     nextBtn: "Следующая задача",
     submitExam: "Завершить и проверить",
+    continueUnansweredBtn: "Дорешать пропущенные задания",
     resetExam: "Пройти вариант заново",
     chooseAnotherExam: "Другой предмет или вариант",
     answeredStat: "Отвечено",
@@ -106,14 +108,14 @@ const EXAM_COPY = {
     rawScoreLabel: "Первичный балл",
     incompleteTitle: "Вы ответили на {answered} из {total} заданий. Тест не завершён.",
     incompleteSub:
-      "В список ошибок включены только разделы, где дан неверный ответ ({wrong}). Пропущенные задания ({skipped}) показаны отдельно и не считаются проверенными ошибками.",
+      "В список ошибок включены только разделы, где дан неверный ответ ({wrong}). Пропущенные задания ({skipped}) показаны отдельно и не считаются проверенными ошибками. Нажмите на любой пропущенный раздел ниже, чтобы дорешать его.",
     completeBadge: "Все задания варианта проверены",
     partialNote: "Частичный балл (1 из 2 б.) в двухбалльных заданиях",
     partialTip: "Резерв быстрого роста: вы знаете тему, но потеряли по 1 баллу на полноте ответа или ОДЗ.",
     verifiedWeakTitle: "Разделы с ошибками в ваших ответах",
     noVerifiedWeakYet: "В отвеченных заданиях ошибок нет.",
     noAnswersGiven: "Вы ещё не ответили ни на одно задание — ошибки по темам не определены.",
-    skippedTopicsTitle: "Не проверено (пропущенные разделы без ответа)",
+    skippedTopicsTitle: "Не проверено (пропущенные разделы без ответа — нажмите, чтобы дорешать)",
     skippedBadge: "пропущено",
     openGraphBtn: "Открыть Карту тем",
     openLessonBtn: "Перейти к уроку темы",
@@ -177,6 +179,7 @@ const EXAM_COPY = {
     prevBtn: "Алдыңғы",
     nextBtn: "Келесі есеп",
     submitExam: "Аяқтап, тексеру",
+    continueUnansweredBtn: "Жауапсыз тапсырмаларды жалғастыру",
     resetExam: "Қайта тапсыру",
     chooseAnotherExam: "Басқа пән немесе нұсқа",
     answeredStat: "Жауап берілді",
@@ -185,14 +188,14 @@ const EXAM_COPY = {
     rawScoreLabel: "Бастапқы балл",
     incompleteTitle: "Сіз {total} тапсырманың {answered}-іне жауап бердіңіз. Тест толық аяқталмады.",
     incompleteSub:
-      "Қателер тізіміне тек қате жауап берілген бөлімдер ({wrong}) енгізілді. Жауапсыз қалған тапсырмалар ({skipped}) бөлек көрсетіледі.",
+      "Қателер тізіміне тек қате жауап берілген бөлімдер ({wrong}) енгізілді. Жауапсыз қалған тапсырмалар ({skipped}) бөлек көрсетіледі. Кез келген жауапсыз бөлімді басып, жалғастырыңыз.",
     completeBadge: "Нұсқаның барлық тапсырмасы тексерілді",
     partialNote: "2 балдық тапсырмалардағы ішінара балл (2-ден 1 б.)",
     partialTip: "Жылдам өсу резерві: тақырыпты білесіз, бірақ ММО немесе толық жауапта 1 балл жоғалттыңыз.",
     verifiedWeakTitle: "Жауаптарыңызда қате кеткен бөлімдер",
     noVerifiedWeakYet: "Жауап берілген тапсырмаларда қате жоқ.",
     noAnswersGiven: "Сіз бірде-бір тапсырмаға жауап бермедіңіз — тақырыптар бойынша қателер анықталмады.",
-    skippedTopicsTitle: "Тексерілмеген (жауапсыз қалған бөлімдер)",
+    skippedTopicsTitle: "Тексерілмеген (жауапсыз қалған бөлімдер — жалғастыру үшін басыңыз)",
     skippedBadge: "жауапсыз",
     openGraphBtn: "Тақырыптар картасын ашу",
     openLessonBtn: "Тақырып сабағына өту",
@@ -256,6 +259,7 @@ const EXAM_COPY = {
     prevBtn: "Oldingi",
     nextBtn: "Keyingi masala",
     submitExam: "Yakunlash va tekshirish",
+    continueUnansweredBtn: "Javobsiz savollarni davom ettirish",
     resetExam: "Qayta boshlash",
     chooseAnotherExam: "Boshqa fan yoki variant",
     answeredStat: "Javob berildi",
@@ -264,14 +268,14 @@ const EXAM_COPY = {
     rawScoreLabel: "Birlamchi ball",
     incompleteTitle: "Siz {total} topshiriqdan {answered} tasiga javob berdingiz. Test yakunlanmadi.",
     incompleteSub:
-      "Xatolar ro‘yxatiga faqat noto‘g‘ri javob berilgan bo‘limlar ({wrong}) kiritildi. Javobsiz qolgan topshiriqlar ({skipped}) alohida ko‘rsatilgan.",
+      "Xatolar ro‘yxatiga faqat noto‘g‘ri javob berilgan bo‘limlar ({wrong}) kiritildi. Javobsiz qolgan topshiriqlar ({skipped}) alohida ko‘rsatilgan. Davom ettirish uchun bo‘limni bosing.",
     completeBadge: "Variantning barcha topshiriqlari tekshirildi",
     partialNote: "2 balli topshiriqlarda qisman ball (2 dan 1 b.)",
     partialTip: "Tez o‘sish zaxirasi: mavzuni bilasiz, lekin AS yoki to‘liq javobda 1 ball yo‘qotdingiz.",
     verifiedWeakTitle: "Javoblaringizda xato ketgan bo‘limlar",
     noVerifiedWeakYet: "Javob berilgan topshiriqlarda xato yo‘q.",
     noAnswersGiven: "Siz birorta ham topshiriqqa javob bermadingiz — mavzular bo‘yicha xatolar aniqlanmadi.",
-    skippedTopicsTitle: "Tekshirilmagan (javobsiz qolgan bo‘limlar)",
+    skippedTopicsTitle: "Tekshirilmagan (javobsiz qolgan bo‘limlar — davom ettirish uchun bosing)",
     skippedBadge: "javobsiz",
     openGraphBtn: "Mavzular xaritasini ochish",
     openLessonBtn: "Mavzu darsiga o‘tish",
@@ -436,6 +440,225 @@ export function UntExamView({
     setActiveIdx(0);
   }
 
+  const subjectCurriculum = useMemo(() => getSubjectCurriculum(subjectId), [subjectId]);
+
+  function getQuestionSectionMeta(
+    q: UntQuestion | undefined,
+    qIdx: number
+  ): {
+    key: string;
+    title: string;
+    topicId: TopicId;
+    lessonId: string;
+  } {
+    const fallbackTopic: TopicId = q?.topic ?? "linear";
+    if (subjectId === "math") {
+      const mathLesson =
+        subjectCurriculum?.lessons.find((l) => l.topicId === fallbackTopic) ??
+        subjectCurriculum?.lessons[0];
+      return {
+        key: fallbackTopic,
+        title: topicName(fallbackTopic, lang),
+        topicId: fallbackTopic,
+        lessonId: mathLesson?.id ?? `math-${fallbackTopic}`
+      };
+    }
+
+    const lessons = subjectCurriculum?.lessons ?? [];
+    if (lessons.length > 0) {
+      const totalQ = Math.max(1, activeQuestions.length);
+      const lessonIdx = Math.min(
+        lessons.length - 1,
+        Math.floor((Math.max(0, qIdx) / totalQ) * lessons.length)
+      );
+      const lesson = lessons[lessonIdx] ?? lessons[0];
+      return {
+        key: lesson.id,
+        title: lesson.title[lang],
+        topicId: fallbackTopic,
+        lessonId: lesson.id
+      };
+    }
+
+    const secList = subjectMeta.sections[lang];
+    const secIdx = Math.max(0, qIdx) % Math.max(1, secList.length);
+    const secTitle = secList[secIdx] ?? subjectMeta.title[lang];
+    return {
+      key: `${subjectId}-sec-${secIdx}`,
+      title: secTitle,
+      topicId: fallbackTopic,
+      lessonId: `${subjectId}-sec-${secIdx}`
+    };
+  }
+
+  const sectionBreakdown = useMemo(() => {
+    if (!submittedEval) {
+      return {
+        all: [] as Array<{
+          key: string;
+          title: string;
+          topicId: TopicId;
+          lessonId: string;
+          earned: number;
+          max: number;
+          answeredCount: number;
+          unansweredCount: number;
+          wrongOrPartialCount: number;
+          firstQuestionIdx: number;
+          firstWrongQuestionIdx: number;
+          firstUnansweredQuestionIdx: number;
+        }>,
+        verifiedWeakSections: [] as Array<{
+          key: string;
+          title: string;
+          topicId: TopicId;
+          lessonId: string;
+          earned: number;
+          max: number;
+          answeredCount: number;
+          unansweredCount: number;
+          wrongOrPartialCount: number;
+          firstQuestionIdx: number;
+          firstWrongQuestionIdx: number;
+          firstUnansweredQuestionIdx: number;
+        }>,
+        unansweredSections: [] as Array<{
+          key: string;
+          title: string;
+          topicId: TopicId;
+          lessonId: string;
+          earned: number;
+          max: number;
+          answeredCount: number;
+          unansweredCount: number;
+          wrongOrPartialCount: number;
+          firstQuestionIdx: number;
+          firstWrongQuestionIdx: number;
+          firstUnansweredQuestionIdx: number;
+        }>
+      };
+    }
+
+    const map = new Map<
+      string,
+      {
+        key: string;
+        title: string;
+        topicId: TopicId;
+        lessonId: string;
+        earned: number;
+        max: number;
+        answeredCount: number;
+        unansweredCount: number;
+        wrongOrPartialCount: number;
+        firstQuestionIdx: number;
+        firstWrongQuestionIdx: number;
+        firstUnansweredQuestionIdx: number;
+      }
+    >();
+
+    activeQuestions.forEach((q, qIdx) => {
+      const meta = getQuestionSectionMeta(q, qIdx);
+      const sc = submittedEval.questionScores[q.id] ?? scoreUntQuestion(q, answers[q.id]);
+      let entry = map.get(meta.key);
+      if (!entry) {
+        entry = {
+          key: meta.key,
+          title: meta.title,
+          topicId: meta.topicId,
+          lessonId: meta.lessonId,
+          earned: 0,
+          max: 0,
+          answeredCount: 0,
+          unansweredCount: 0,
+          wrongOrPartialCount: 0,
+          firstQuestionIdx: qIdx,
+          firstWrongQuestionIdx: -1,
+          firstUnansweredQuestionIdx: -1
+        };
+        map.set(meta.key, entry);
+      }
+
+      entry.earned += sc.earned;
+      entry.max += sc.max;
+      if (sc.status === "unanswered") {
+        entry.unansweredCount += 1;
+        if (entry.firstUnansweredQuestionIdx === -1) {
+          entry.firstUnansweredQuestionIdx = qIdx;
+        }
+      } else {
+        entry.answeredCount += 1;
+        if (sc.status === "zero" || sc.status === "partial") {
+          entry.wrongOrPartialCount += 1;
+          if (entry.firstWrongQuestionIdx === -1) {
+            entry.firstWrongQuestionIdx = qIdx;
+          }
+        }
+      }
+    });
+
+    const all = Array.from(map.values());
+    const verifiedWeakSections = all.filter(
+      (sec) => sec.answeredCount > 0 && (sec.wrongOrPartialCount > 0 || sec.earned < sec.max)
+    );
+    const unansweredSections = all.filter((sec) => sec.unansweredCount > 0);
+
+    return {
+      all,
+      verifiedWeakSections,
+      unansweredSections
+    };
+  }, [submittedEval, activeQuestions, answers, subjectId, lang, subjectCurriculum, subjectMeta]);
+
+  function handleResumeUnanswered(targetQuestionIdx?: number) {
+    let idx = targetQuestionIdx;
+    if (typeof idx !== "number" || idx < 0) {
+      const foundIdx = activeQuestions.findIndex((q) => {
+        const sc = scoreUntQuestion(q, answers[q.id]);
+        return sc.status === "unanswered";
+      });
+      idx = foundIdx >= 0 ? foundIdx : 0;
+    }
+    setSubmittedEval(null);
+    setShowSubmittedReview(false);
+    setShowQuestionGrid(false);
+    setActiveIdx(idx);
+    setExamStage("active");
+    scrollToStageTop();
+  }
+
+  function handleOpenSectionLesson(topicId: TopicId, lessonId?: string) {
+    if (subjectId === "math") {
+      onOpenLesson(topicId);
+      return;
+    }
+    if (typeof window !== "undefined") {
+      const targetLesson = lessonId ?? subjectCurriculum?.lessons[0]?.id ?? "";
+      const url = targetLesson
+        ? `/subjects/${subjectId}?lang=${lang}&start=lesson&lesson=${encodeURIComponent(targetLesson)}`
+        : `/subjects/${subjectId}?lang=${lang}&start=lesson`;
+      window.location.assign(url);
+    }
+  }
+
+  function handleOpenSubjectMap(topicId?: TopicId) {
+    if (subjectId === "math") {
+      onOpenGraph(topicId);
+      return;
+    }
+    if (typeof window !== "undefined") {
+      window.location.assign(`/subjects/${subjectId}?lang=${lang}&start=map`);
+    }
+  }
+
+  function handleInspectFormatQuestions(format: UntQuestion["format"]) {
+    const idx = activeQuestions.findIndex((q) => q.format === format);
+    if (idx >= 0) {
+      setActiveIdx(idx);
+    }
+    setShowSubmittedReview(true);
+  }
+
   function handleStartExam() {
     setSubmittedEval(null);
     setShowSubmittedReview(false);
@@ -546,10 +769,14 @@ export function UntExamView({
 
     const summary: UntAttemptSummary = {
       completedAt: new Date().toISOString(),
+      subjectId,
+      variantNumber,
+      questionCount: activeQuestions.length,
+      answeredCount: evaluation.answeredCount,
       earnedPoints: evaluation.earnedPoints,
       maxPoints: evaluation.maxPoints,
       scaledScore50: evaluation.scaledScore50,
-      weakTopics: evaluation.verifiedWeakTopics,
+      weakTopics: subjectId === "math" ? evaluation.verifiedWeakTopics : [],
       topicRatios
     };
     onCompleteExam(summary, evaluation);
@@ -607,7 +834,7 @@ export function UntExamView({
               <button
                 type="button"
                 className="underline font-semibold text-xs inline-flex items-center gap-1"
-                onClick={() => onOpenGraph(lastSavedAttempt.weakTopics[0])}
+                onClick={() => handleOpenSubjectMap(lastSavedAttempt.weakTopics[0])}
               >
                 <span>{t.openGraphBtn}</span>
                 <ChevronRight size={13} />
@@ -844,10 +1071,24 @@ export function UntExamView({
                   </span>
                 </strong>
                 <div className="flex flex-wrap gap-1.5">
-                  {subjectMeta.sections[lang].map((sec) => (
-                    <span key={sec} className="section-pill">
+                  {subjectMeta.sections[lang].map((sec, secIdx) => (
+                    <button
+                      key={sec}
+                      type="button"
+                      className="section-pill cursor-pointer transition-colors hover:border-primary/60"
+                      onClick={() => {
+                        const targetIdx = Math.min(
+                          activeQuestions.length - 1,
+                          Math.floor(
+                            (secIdx / Math.max(1, subjectMeta.sections[lang].length)) *
+                              activeQuestions.length
+                          )
+                        );
+                        setActiveIdx(targetIdx);
+                      }}
+                    >
                       {sec}
-                    </span>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -948,7 +1189,8 @@ export function UntExamView({
                   {currentQuestion.maxPoints === 2 ? t.points2 : t.points1}
                 </span>
                 <span className="small font-semibold text-muted-foreground">
-                  · {subjectMeta.title[lang]} ({topicName(currentQuestion.topic ?? "linear", lang)})
+                  · {subjectMeta.title[lang]} (
+                  {getQuestionSectionMeta(currentQuestion, activeIdx).title})
                 </span>
               </div>
               <Button
@@ -1140,20 +1382,33 @@ export function UntExamView({
         <section className="exam-report-card" aria-live="polite">
           {/* Early / Incomplete submission warning */}
           {!submittedEval.isComplete ? (
-            <div className="callout warn mb-4" role="status">
-              <strong className="flex items-center gap-2 text-sm sm:text-base">
-                <AlertTriangle size={18} className="text-amber-700 shrink-0" />
+            <div className="callout warn mb-4 flex flex-wrap items-center justify-between gap-3" role="status">
+              <div className="min-w-[240px] flex-1">
+                <strong className="flex items-center gap-2 text-sm sm:text-base">
+                  <AlertTriangle size={18} className="text-amber-700 shrink-0" />
+                  <span>
+                    {t.incompleteTitle
+                      .replace("{answered}", String(submittedEval.answeredCount))
+                      .replace("{total}", String(activeQuestions.length))}
+                  </span>
+                </strong>
+                <p className="small mt-1 mb-0">
+                  {t.incompleteSub
+                    .replace("{wrong}", String(submittedEval.answeredWrongCount))
+                    .replace("{skipped}", String(submittedEval.unansweredCount))}
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                className="min-h-10 shrink-0"
+                onClick={() => handleResumeUnanswered()}
+              >
+                <Play size={14} />
                 <span>
-                  {t.incompleteTitle
-                    .replace("{answered}", String(submittedEval.answeredCount))
-                    .replace("{total}", String(activeQuestions.length))}
+                  {t.continueUnansweredBtn} ({submittedEval.unansweredCount})
                 </span>
-              </strong>
-              <p className="small mt-1 mb-0">
-                {t.incompleteSub
-                  .replace("{wrong}", String(submittedEval.answeredWrongCount))
-                  .replace("{skipped}", String(submittedEval.unansweredCount))}
-              </p>
+              </Button>
             </div>
           ) : (
             <div className="callout ok mb-4 flex items-center gap-2">
@@ -1186,35 +1441,51 @@ export function UntExamView({
           </div>
 
           <div className="exam-format-breakdown mt-3">
-            <div className="exam-stat-box">
+            <button
+              type="button"
+              className="exam-stat-box cursor-pointer text-left transition-colors hover:border-primary/60"
+              onClick={() => handleInspectFormatQuestions("single")}
+            >
               <span className="small">1 {t.ptShort} (A–D)</span>
               <strong className="tabular-nums">
                 {submittedEval.byFormat.single.earned}/{submittedEval.byFormat.single.max}
               </strong>
-            </div>
+            </button>
             {submittedEval.byFormat.context.max > 0 && (
-              <div className="exam-stat-box">
+              <button
+                type="button"
+                className="exam-stat-box cursor-pointer text-left transition-colors hover:border-primary/60"
+                onClick={() => handleInspectFormatQuestions("context")}
+              >
                 <span className="small">Контекст (1 {t.ptShort})</span>
                 <strong className="tabular-nums">
                   {submittedEval.byFormat.context.earned}/{submittedEval.byFormat.context.max}
                 </strong>
-              </div>
+              </button>
             )}
             {submittedEval.byFormat.matching.max > 0 && (
-              <div className="exam-stat-box">
+              <button
+                type="button"
+                className="exam-stat-box cursor-pointer text-left transition-colors hover:border-primary/60"
+                onClick={() => handleInspectFormatQuestions("matching")}
+              >
                 <span className="small">Соотв. (2 {t.ptShort})</span>
                 <strong className="tabular-nums">
                   {submittedEval.byFormat.matching.earned}/{submittedEval.byFormat.matching.max}
                 </strong>
-              </div>
+              </button>
             )}
             {submittedEval.byFormat.multiple.max > 0 && (
-              <div className="exam-stat-box">
+              <button
+                type="button"
+                className="exam-stat-box cursor-pointer text-left transition-colors hover:border-primary/60"
+                onClick={() => handleInspectFormatQuestions("multiple")}
+              >
                 <span className="small">Множ. (2 {t.ptShort})</span>
                 <strong className="tabular-nums">
                   {submittedEval.byFormat.multiple.earned}/{submittedEval.byFormat.multiple.max}
                 </strong>
-              </div>
+              </button>
             )}
           </div>
 
@@ -1233,77 +1504,92 @@ export function UntExamView({
             <strong className="block text-sm mb-2">{t.verifiedWeakTitle}:</strong>
             {submittedEval.answeredCount === 0 ? (
               <p className="small text-muted-foreground m-0">{t.noAnswersGiven}</p>
-            ) : submittedEval.verifiedWeakTopics.length === 0 ? (
+            ) : sectionBreakdown.verifiedWeakSections.length === 0 ? (
               <p className="small text-emerald-700 font-semibold m-0">{t.noVerifiedWeakYet}</p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {submittedEval.verifiedWeakTopics.map((topicId) => {
-                  const st = submittedEval.byTopic[topicId];
-                  return (
-                    <button
-                      key={topicId}
-                      type="button"
-                      className="exam-gap-pill"
-                      onClick={() =>
-                        subjectId === "math" ? onOpenLesson(topicId) : setShowSubmittedReview(true)
-                      }
-                    >
-                      <span>{topicName(topicId, lang)}</span>
-                      <strong className="tabular-nums">
-                        {st.earned}/{st.max} {t.ptShort}
-                      </strong>
-                    </button>
-                  );
-                })}
+                {sectionBreakdown.verifiedWeakSections.map((sec) => (
+                  <button
+                    key={sec.key}
+                    type="button"
+                    className="exam-gap-pill"
+                    onClick={() => {
+                      const targetIdx =
+                        sec.firstWrongQuestionIdx >= 0
+                          ? sec.firstWrongQuestionIdx
+                          : sec.firstQuestionIdx;
+                      setActiveIdx(targetIdx);
+                      setShowSubmittedReview(true);
+                    }}
+                  >
+                    <span>{sec.title}</span>
+                    <strong className="tabular-nums">
+                      {sec.earned}/{sec.max} {t.ptShort}
+                    </strong>
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
-          {/* Блок 2: Пропущенные темы без ответа (отдельно от ошибок) */}
-          {submittedEval.unansweredTopics.length > 0 && (
+          {/* Блок 2: Пропущенные темы без ответа (отдельно от ошибок, кликабельны для дорешивания) */}
+          {sectionBreakdown.unansweredSections.length > 0 && (
             <div className="mt-3 pt-3 border-t border-border">
               <strong className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
                 {t.skippedTopicsTitle}:
               </strong>
               <div className="flex flex-wrap gap-1.5">
-                {submittedEval.unansweredTopics.map((topicId) => {
-                  const st = submittedEval.byTopic[topicId];
-                  return (
-                    <span key={topicId} className="section-pill">
-                      {topicName(topicId, lang)} ({st.unansweredCount} {t.skippedBadge})
-                    </span>
-                  );
-                })}
+                {sectionBreakdown.unansweredSections.map((sec) => (
+                  <button
+                    key={sec.key}
+                    type="button"
+                    className="section-pill cursor-pointer transition-colors hover:border-primary/60"
+                    onClick={() =>
+                      handleResumeUnanswered(
+                        sec.firstUnansweredQuestionIdx >= 0
+                          ? sec.firstUnansweredQuestionIdx
+                          : sec.firstQuestionIdx
+                      )
+                    }
+                  >
+                    {sec.title} ({sec.unansweredCount} {t.skippedBadge}) →
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
-          {/* Действия после результата */}
+          {/* Действия после результата (работают для всех 12 предметов ЕНТ) */}
           <div className="mt-4 pt-3 border-t border-border flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap gap-2">
-              {subjectId === "math" && (
-                <>
-                  <Button
-                    type="button"
-                    className="min-h-11"
-                    onClick={() =>
-                      onOpenLesson(submittedEval.verifiedWeakTopics[0] ?? "linear")
-                    }
-                  >
-                    <BookOpen size={15} />
-                    <span>{t.openLessonBtn}</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="min-h-11"
-                    onClick={() => onOpenGraph(submittedEval.verifiedWeakTopics[0])}
-                  >
-                    <GitBranch size={15} />
-                    <span>{t.openGraphBtn}</span>
-                  </Button>
-                </>
-              )}
+              <Button
+                type="button"
+                className="min-h-11"
+                onClick={() => {
+                  const primarySec =
+                    sectionBreakdown.verifiedWeakSections[0] ?? sectionBreakdown.all[0];
+                  handleOpenSectionLesson(
+                    primarySec?.topicId ?? "linear",
+                    primarySec?.lessonId
+                  );
+                }}
+              >
+                <BookOpen size={15} />
+                <span>{t.openLessonBtn}</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={() => {
+                  const primarySec =
+                    sectionBreakdown.verifiedWeakSections[0] ?? sectionBreakdown.all[0];
+                  handleOpenSubjectMap(primarySec?.topicId);
+                }}
+              >
+                <GitBranch size={15} />
+                <span>{t.openGraphBtn}</span>
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -1316,6 +1602,19 @@ export function UntExamView({
             </div>
 
             <div className="flex flex-wrap gap-2">
+              {!submittedEval.isComplete && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="min-h-11"
+                  onClick={() => handleResumeUnanswered()}
+                >
+                  <Play size={15} />
+                  <span>
+                    {t.continueUnansweredBtn} ({submittedEval.unansweredCount})
+                  </span>
+                </Button>
+              )}
               <Button type="button" variant="outline" className="min-h-11" onClick={handleResetExam}>
                 <RotateCcw size={15} />
                 <span>{t.resetExam}</span>
@@ -1382,16 +1681,17 @@ export function UntExamView({
                             ? t.statusUnanswered
                             : `${t.statusZero} (0/${currentScore.max})`}
                     </strong>
-                    {subjectId === "math" && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => onOpenLesson(currentQuestion.topic ?? "linear")}
-                      >
-                        {t.openLessonBtn}
-                      </Button>
-                    )}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const meta = getQuestionSectionMeta(currentQuestion, activeIdx);
+                        handleOpenSectionLesson(meta.topicId, meta.lessonId);
+                      }}
+                    >
+                      {t.openLessonBtn}
+                    </Button>
                   </div>
                   <p className="small mb-1.5">
                     <strong>{t.ruleTitle}</strong> {currentQuestion.rule[lang]}

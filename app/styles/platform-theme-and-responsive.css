@@ -306,6 +306,11 @@ input[type="range"] {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
 }
 
 .today-subject-meta {
@@ -877,7 +882,7 @@ html.dark .pixel-mosaic-banner {
 
 .profile-uni-card {
   border: 0;
-  background: #F5F7FC;
+  background: var(--bilimai-surface-raised, #F0F2EF);
   border-radius: 10px;
 }
 
@@ -887,11 +892,11 @@ html.dark .pixel-mosaic-banner {
 .equation,
 .practice-math-stem,
 .step-expr {
-  background: #F8FAFC;
+  background: var(--bilimai-surface-raised, #F0F2EF);
   background-image: none !important;
-  border: 1px solid rgba(23, 32, 51, 0.08);
+  border: 1px solid var(--bilimai-border, #DCE2DD);
   border-radius: 10px;
-  color: #172033;
+  color: var(--bilimai-text, #202522);
   font-family: var(--font-math);
 }
 
@@ -907,16 +912,17 @@ html.dark .pixel-mosaic-banner {
 }
 
 .option {
-  background: #FFFFFF;
-  border: 1px solid rgba(23, 32, 51, 0.11);
+  background: var(--bilimai-surface, #FFFFFF);
+  border: 1px solid var(--bilimai-border, #DCE2DD);
   border-radius: 10px;
   box-shadow: none;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 
 .option:hover,
 .option[data-selected="true"] {
-  border-color: var(--primary);
-  background: var(--accent);
+  border-color: var(--bilimai-brand, #2563EB);
+  background: var(--bilimai-selected-bg, #EAF1FF);
 }
 
 /* 18.5 Strong Visual Hierarchy: Dominant WCAG AA Primary CTA vs Calm Secondary */
@@ -925,40 +931,46 @@ html.dark .pixel-mosaic-banner {
 .aniq-btn-primary,
 .btn-primary,
 button[data-slot="button"].bg-primary {
-  background-color: var(--bilimai-brand, #254EDB) !important;
+  background-color: var(--bilimai-brand, #2563EB) !important;
   background-image: none !important;
   color: var(--bilimai-on-brand, #FFFFFF) !important;
-  border-color: var(--bilimai-brand, #254EDB) !important;
+  border-color: var(--bilimai-brand, #2563EB) !important;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(37, 78, 219, 0.22);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  transition: background-color 160ms ease, transform 160ms ease;
 }
 
 .aniq-primary-link-btn:hover,
 .aniq-btn-primary:hover,
 .btn-primary:hover,
 button[data-slot="button"].bg-primary:hover {
-  background-color: var(--bilimai-brand-hover, #1D41C2) !important;
-  border-color: var(--bilimai-brand-hover, #1D41C2) !important;
+  background-color: var(--bilimai-brand-hover, #1D4ED8) !important;
+  border-color: var(--bilimai-brand-hover, #1D4ED8) !important;
 }
 
 .welcome-standalone-root a:focus-visible,
 .welcome-standalone-root button:focus-visible,
 .welcome-standalone-root input:focus-visible,
-.welcome-standalone-root label:has(input:focus-visible) {
-  outline: 2px solid var(--bilimai-focus, #254EDB);
+.welcome-standalone-root label:has(input:focus-visible),
+.editorial-shell a:focus-visible,
+.editorial-shell button:focus-visible,
+.editorial-shell input:focus-visible,
+.editorial-shell select:focus-visible,
+.editorial-shell textarea:focus-visible {
+  outline: 2px solid var(--bilimai-focus, #2563EB);
   outline-offset: 2px;
 }
 
 .btn-ghost-sm {
   background: transparent;
-  border: 1px solid var(--bilimai-border, rgba(23, 32, 51, 0.16));
-  color: var(--bilimai-text-muted, var(--muted-foreground));
+  border: 1px solid var(--bilimai-border, #E5E9EF);
+  color: var(--bilimai-text-muted, #657185);
   font-weight: 500;
 }
 
 .btn-ghost-sm:hover {
-  background: var(--secondary);
-  color: var(--foreground);
+  background: var(--bilimai-surface-raised, #F1F5F9);
+  color: var(--bilimai-text, #172334);
 }
 
 /* 18.6 Compact 16-Row Topic Map (/?tab=graph) */
@@ -986,16 +998,16 @@ button[data-slot="button"].bg-primary:hover {
   box-shadow: none !important;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  transition: background-color 160ms ease;
 }
 
 .kg-step-card.kg-compact-row:hover {
-  background: rgba(53, 92, 255, 0.05) !important;
+  background: rgba(37, 99, 235, 0.06) !important;
 }
 
 .kg-step-card.kg-compact-row.active,
 .kg-step-card.kg-compact-row.selected {
-  background: rgba(53, 92, 255, 0.06) !important;
+  background: rgba(37, 99, 235, 0.1) !important;
 }
 
 .kg-compact-row-head {
@@ -1037,7 +1049,7 @@ button[data-slot="button"].bg-primary:hover {
   padding: 12px 14px;
 }
 
-/* 18.7 Cool Dark Mode Overrides (Replacing Legacy Warm Brown Selectors) */
+/* 18.7 Figma BilimAI 2.0 Dark Mode Overrides */
 
 html.dark body {
   background-color: #0B111E !important;
@@ -1048,8 +1060,8 @@ html.dark body {
 html.dark .surface,
 html.dark .aniq-auth-card,
 html.dark .mobile-bottom-nav {
-  background-color: #121B2E !important;
-  border-color: rgba(148, 163, 184, 0.16) !important;
+  background-color: #131C2E !important;
+  border-color: #22304A !important;
   color: #F1F5F9 !important;
 }
 
@@ -1059,21 +1071,70 @@ html.dark .practice-math-stem,
 html.dark .step-expr,
 html.dark .profile-uni-card,
 html.dark .kg-inline-inspector {
-  background-color: #17223B !important;
-  border-color: rgba(148, 163, 184, 0.18) !important;
+  background-color: #1E293B !important;
+  border-color: #22304A !important;
   color: #F1F5F9 !important;
 }
 
 html.dark .option {
-  background-color: #152036 !important;
-  border-color: rgba(148, 163, 184, 0.2) !important;
+  background-color: #131C2E !important;
+  border-color: #22304A !important;
   color: #F1F5F9 !important;
 }
 
 html.dark .option:hover,
 html.dark .option[data-selected="true"] {
-  background-color: rgba(82, 115, 255, 0.18) !important;
-  border-color: #6382FF !important;
+  background-color: rgba(37, 99, 235, 0.22) !important;
+  border-color: #60A5FA !important;
+}
+
+/* 18.9 Quiet Interactive Editorial Typography, Reading Column & Micro-Interactions */
+
+.editorial-reading-column {
+  max-width: 780px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.editorial-prose {
+  max-width: 68ch;
+  font-size: 16.5px;
+  line-height: 1.65;
+  color: var(--bilimai-text, #202522);
+}
+
+.editorial-fade-in {
+  animation: editorialFadeIn 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes editorialFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.editorial-interactive-btn {
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 140ms ease;
+}
+
+.editorial-interactive-btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editorial-fade-in {
+    animation: none !important;
+  }
+  .editorial-interactive-btn,
+  .option {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 
 /* 18.8 Mobile Ergonomics for Welcome Page (390x844 & 320x740) */

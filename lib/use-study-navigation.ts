@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { untTopicIds, type Language, type TopicId } from "./lessons.ts";
 import { UNT_SUBJECTS, type UntSubjectId } from "./unt-all-subjects.ts";
+import { validateSubjectTopicPair } from "./universal-curriculum.ts";
 import { loadNavContext, loadUserProfile, saveNavContext } from "./user-profile.ts";
 import {
   buildStudyHref,
@@ -33,6 +34,7 @@ export interface UseStudyNavigationOptions {
   initialLang?: Language;
   initialTab?: WorkspaceTab;
   initialTopic?: TopicId;
+  initialRawTopic?: string | null;
   initialSubjectId?: UntSubjectId;
   initialVariantNumber?: number;
   onBeforeNavigate?: () => void;
@@ -43,6 +45,7 @@ export function useStudyNavigation({
   initialLang = "ru",
   initialTab = "today",
   initialTopic = "linear",
+  initialRawTopic = null,
   initialSubjectId = "math",
   initialVariantNumber = 1,
   onBeforeNavigate,
@@ -52,6 +55,9 @@ export function useStudyNavigation({
   const [lang, setLang] = useState<Language>(initialLang);
   const [tab, setTab] = useState<WorkspaceTab>(initialTab);
   const [topic, setTopic] = useState<TopicId>(initialTopic);
+  const [rawUrlTopic, setRawUrlTopic] = useState<string | null>(
+    initialRawTopic ?? (initialSubjectId !== "math" && initialTopic !== "linear" ? initialTopic : null)
+  );
   const [examSubjectId, setExamSubjectId] = useState<UntSubjectId>(initialSubjectId);
   const [examVariantNumber, setExamVariantNumber] = useState<number>(initialVariantNumber);
 
@@ -155,6 +161,7 @@ export function useStudyNavigation({
         setExamVariantNumber(qVariant);
       }
       const qTopic = params.get("topic");
+      setRawUrlTopic(qTopic);
       if (qTopic && (untTopicIds as readonly string[]).includes(qTopic)) {
         setTopic(qTopic as TopicId);
       }
@@ -186,6 +193,7 @@ export function useStudyNavigation({
       }
 
       const qTopic = params.get("topic");
+      setRawUrlTopic(qTopic);
       if (qTopic && (untTopicIds as readonly string[]).includes(qTopic)) {
         setTopic(qTopic as TopicId);
       } else {
@@ -206,6 +214,11 @@ export function useStudyNavigation({
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
+  const subjectTopicValidation = useMemo(
+    () => validateSubjectTopicPair(examSubjectId, rawUrlTopic),
+    [examSubjectId, rawUrlTopic]
+  );
+
   const handleTabChange = useCallback(
     (nextTabRaw: string) => {
       const nextTab: WorkspaceTab = isValidWorkspaceTab(nextTabRaw) ? nextTabRaw : "today";
@@ -222,9 +235,14 @@ export function useStudyNavigation({
       onBeforeNavigate?.();
       onMarkInteracted?.();
       setTopic(id);
+      setRawUrlTopic(id);
+      const nextSubject: UntSubjectId = examSubjectId !== "math" ? "math" : examSubjectId;
+      if (examSubjectId !== "math") {
+        setExamSubjectId("math");
+      }
       const nextTab: WorkspaceTab = isLessonOrPracticeOrAi ? tab : "lesson";
       if (!isLessonOrPracticeOrAi) setTab("lesson");
-      commitNavigation(lang, nextTab, id, examSubjectId, "push");
+      commitNavigation(lang, nextTab, id, nextSubject, "push");
       scrollWorkspaceTop();
     },
     [lang, tab, examSubjectId, isLessonOrPracticeOrAi, commitNavigation, onBeforeNavigate, onMarkInteracted]
@@ -235,8 +253,13 @@ export function useStudyNavigation({
       onBeforeNavigate?.();
       onMarkInteracted?.();
       setTopic(id);
+      setRawUrlTopic(id);
+      const nextSubject: UntSubjectId = examSubjectId !== "math" ? "math" : examSubjectId;
+      if (examSubjectId !== "math") {
+        setExamSubjectId("math");
+      }
       setTab("lesson");
-      commitNavigation(lang, "lesson", id, examSubjectId, "push");
+      commitNavigation(lang, "lesson", id, nextSubject, "push");
       scrollWorkspaceTop();
     },
     [lang, examSubjectId, commitNavigation, onBeforeNavigate, onMarkInteracted]
@@ -246,9 +269,42 @@ export function useStudyNavigation({
     (nextSubject: UntSubjectId) => {
       onMarkInteracted?.();
       setExamSubjectId(nextSubject);
-      commitNavigation(lang, tab, topic, nextSubject, "replace");
+      const safeTopic: TopicId = nextSubject === "math" ? topic : "linear";
+      if (nextSubject !== "math") {
+        setTopic("linear");
+        setRawUrlTopic(null);
+      }
+      commitNavigation(lang, tab, safeTopic, nextSubject, "replace");
     },
     [lang, tab, topic, commitNavigation, onMarkInteracted]
+  );
+
+  const resolveSubjectTopicMismatch = useCallback(
+    (mode: "switch_to_owner_subject" | "clear_mismatch") => {
+      onMarkInteracted?.();
+      if (mode === "switch_to_owner_subject" && subjectTopicValidation.ownerSubjectId === "math") {
+        setExamSubjectId("math");
+        commitNavigation(lang, "lesson", topic, "math", "replace");
+        return;
+      }
+      setRawUrlTopic(null);
+      setTopic("linear");
+      const safeTab: WorkspaceTab = isLessonOrPracticeOrAi ? "today" : tab;
+      if (isLessonOrPracticeOrAi) {
+        setTab("today");
+      }
+      commitNavigation(lang, safeTab, "linear", examSubjectId, "replace");
+    },
+    [
+      lang,
+      tab,
+      topic,
+      examSubjectId,
+      isLessonOrPracticeOrAi,
+      subjectTopicValidation.ownerSubjectId,
+      commitNavigation,
+      onMarkInteracted
+    ]
   );
 
   const selectLanguage = useCallback(
@@ -275,8 +331,10 @@ export function useStudyNavigation({
     lang,
     tab,
     topic,
+    rawUrlTopic,
     examSubjectId,
     examVariantNumber,
+    subjectTopicValidation,
     isTodaySection,
     isLearnSection,
     isLessonOrPracticeOrAi,
@@ -288,6 +346,7 @@ export function useStudyNavigation({
     selectTopic,
     openTopicLesson,
     handleSubjectChange,
+    resolveSubjectTopicMismatch,
     selectLanguage
   };
 }

@@ -3,6 +3,9 @@ import { UNT_SUBJECTS, type UntSubjectId } from "./unt-all-subjects.ts";
 import { UNT_GRAPH_NODES } from "./knowledge-graph.ts";
 import type { UniversalQuestion } from "./question-engine.ts";
 import { ADDITIONAL_LESSON_QUESTIONS, SECOND_ERROR_LAB_CASES } from "./subject-course-completions.ts";
+import { MATH_SHYN_KITAP_ENRICHMENTS, SHYN_KITAP_GUIDEBOOKS } from "./shyn-kitap-kb.ts";
+import { MATH_TOPIC_SHYN_KITAP_NOTES, SHYN_KITAP_MODULES_BY_SUBJECT } from "./shyn-kitap-lessons.ts";
+import { SHYN_KITAP_EXTRA_LESSONS } from "./shyn-kitap-extra-lessons.ts";
 
 export type UniversalDifficulty = "basic" | "intermediate" | "advanced";
 
@@ -193,11 +196,13 @@ function buildMathUniversalCurriculum(): UniversalSubjectCurriculum {
         kk: kkLesson.rule,
         uz: uzLesson.rule
       },
-      detailedExplanation: {
-        ru: `${ruLesson.intro} Ключевой инвариант: ${ruLesson.rule}`,
-        kk: `${kkLesson.intro} Негізгі ереже: ${kkLesson.rule}`,
-        uz: `${uzLesson.intro} Asosiy qoida: ${uzLesson.rule}`
-      },
+      detailedExplanation:
+        MATH_SHYN_KITAP_ENRICHMENTS[ruLesson.id]?.detailedExplanation ??
+        MATH_TOPIC_SHYN_KITAP_NOTES[ruLesson.id]?.detailedExplanation ?? {
+          ru: `${ruLesson.intro} Ключевой инвариант: ${ruLesson.rule}`,
+          kk: `${kkLesson.intro} Негізгі ереже: ${kkLesson.rule}`,
+          uz: `${uzLesson.intro} Asosiy qoida: ${uzLesson.rule}`
+        },
       workedExample: {
         problem: {
           ru: ruLesson.example,
@@ -224,7 +229,9 @@ function buildMathUniversalCurriculum(): UniversalSubjectCurriculum {
             kk: kkLesson.rule,
             uz: uzLesson.rule
           }
-        }
+        },
+        ...(MATH_SHYN_KITAP_ENRICHMENTS[ruLesson.id]?.extraBlocks ?? []),
+        ...(MATH_TOPIC_SHYN_KITAP_NOTES[ruLesson.id]?.extraBlocks ?? [])
       ],
       summary: {
         ru: ruLesson.intro,
@@ -3010,27 +3017,74 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
   const subtitle = meta?.description ?? tr("Учебный курс", "Оқу курсы", "O‘quv kursi");
   const badge = meta?.shortTitle.ru.toUpperCase() ?? bp.id.toUpperCase();
   const accentColor = meta ? `rgb(${meta.accentRgb})` : "#3856f5";
+  const subjectKey = bp.id as Exclude<UntSubjectId, "math">;
+  const shynModules = SHYN_KITAP_MODULES_BY_SUBJECT[subjectKey] ?? [];
+  const extraSpecs = SHYN_KITAP_EXTRA_LESSONS[subjectKey] ?? [];
+  const guidebooks = SHYN_KITAP_GUIDEBOOKS[bp.id] ?? [];
 
-  const lessons: UniversalLesson[] = bp.lessonsData.map((l) => {
+  const resolveModuleIdForTopic = (topicId: string, fallbackIndex: number): string => {
+    const matchedMod = shynModules.find((m) => m.topicIds.includes(topicId));
+    if (matchedMod) return matchedMod.id;
+    if (shynModules[fallbackIndex]) return shynModules[fallbackIndex].id;
+    return `${bp.id}-module-core`;
+  };
+
+  const buildGuidebookBlocksForModule = (modIndex: number): ContentBlock[] => {
+    const gb = guidebooks[modIndex] ?? guidebooks[0];
+    if (!gb) return [];
+    const rulesBody: Record<Language, string> = {
+      ru: gb.goldenRules.map((r) => `• ${r.title.ru}: ${r.formulaOrRule.ru} (${r.example.ru})`).join("\n"),
+      kk: gb.goldenRules.map((r) => `• ${r.title.kk}: ${r.formulaOrRule.kk} (${r.example.kk})`).join("\n"),
+      uz: gb.goldenRules.map((r) => `• ${r.title.uz}: ${r.formulaOrRule.uz} (${r.example.uz})`).join("\n")
+    };
+    const trapsBody: Record<Language, string> = {
+      ru: gb.untTraps.map((t) => `⚠ ${t.trap.ru} → ${t.howToAvoid.ru}`).join("\n"),
+      kk: gb.untTraps.map((t) => `⚠ ${t.trap.kk} → ${t.howToAvoid.kk}`).join("\n"),
+      uz: gb.untTraps.map((t) => `⚠ ${t.trap.uz} → ${t.howToAvoid.uz}`).join("\n")
+    };
+    return [
+      {
+        type: "rich_text",
+        title: tr(
+          `Алтын ережелер (Шың-кітап · Раздел ${gb.unitNumber})`,
+          `Алтын ережелер (Шың-кітап · ${gb.unitNumber}-бөлім)`,
+          `Oltin qoidalar (Shyn-kitap · ${gb.unitNumber}-bo‘lim)`
+        ),
+        body: rulesBody
+      },
+      {
+        type: "diagram_note",
+        title: tr(
+          "Ловушки НЦТ («ҰБТ қақпандары» по Шың-кітап)",
+          "ҰБТ қақпандары (Шың-кітап бойынша)",
+          "UNT tuzoqlari (Shyn-kitap bo‘yicha)"
+        ),
+        body: trapsBody
+      }
+    ];
+  };
+
+  const coreLessons: UniversalLesson[] = bp.lessonsData.map((l, idx) => {
     const extraQuestions = ADDITIONAL_LESSON_QUESTIONS[l.topicId] ?? [];
+    const moduleId = resolveModuleIdForTopic(l.topicId, idx);
     return {
       id: `${bp.id}-lesson-${l.topicId}`,
       subjectId: bp.id,
-      moduleId: `${bp.id}-module-core`,
+      moduleId,
       topicId: l.topicId,
       sectionTitle: l.sectionTitle,
-      version: "2.0.0",
-      updatedAt: "2026-10-10",
+      version: "3.5.0",
+      updatedAt: "2026-10-12",
       title: l.title,
       difficulty: l.difficulty,
-      estimatedMinutes: 12,
+      estimatedMinutes: 14,
       goal: l.goal,
       learningGoal: l.goal,
       prerequisites: l.prereqs,
       simpleExplanation: l.simpleExplanation,
       detailedExplanation: l.detailedExplanation,
       workedExample: l.workedExample,
-      contentBlocks: [l.block],
+      contentBlocks: [l.block, ...buildGuidebookBlocksForModule(idx)],
       summary: l.summary,
       nextStepNote: tr(
         "Закрепите тему на практических заданиях и проверьте понимание в Лаборатории ошибок.",
@@ -3041,31 +3095,66 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
     };
   });
 
-  const topics: UniversalTopicNode[] = bp.lessonsData.map((l, idx) => ({
+  const extraLessons: UniversalLesson[] = extraSpecs.map((spec) => {
+    const moduleId = resolveModuleIdForTopic(spec.topicId, spec.moduleIndex);
+    return {
+      id: `${bp.id}-lesson-${spec.topicId}`,
+      subjectId: bp.id,
+      moduleId,
+      topicId: spec.topicId,
+      sectionTitle: spec.sectionTitle,
+      version: "3.5.0",
+      updatedAt: "2026-10-12",
+      title: spec.title,
+      difficulty: spec.difficulty,
+      estimatedMinutes: 15,
+      goal: spec.goal,
+      learningGoal: spec.goal,
+      prerequisites: spec.prereqs,
+      simpleExplanation: spec.simpleExplanation,
+      detailedExplanation: spec.detailedExplanation,
+      workedExample: spec.workedExample,
+      contentBlocks: [...spec.blocks, ...buildGuidebookBlocksForModule(spec.moduleIndex)],
+      summary: spec.summary,
+      nextStepNote: tr(
+        "Сверьте опорную таблицу «Шың-кітап» и выполните 3 контрольных задания по теме.",
+        "«Шың-кітап» кестесін тексеріп, тақырып бойынша 3 бақылау тапсырмасын орындаңыз.",
+        "«Shyn-kitap» jadvalini tekshirib, 3 ta nazorat topshirig‘ini bajaring."
+      ),
+      questions: spec.questions
+    };
+  });
+
+  const lessons: UniversalLesson[] = [...coreLessons, ...extraLessons];
+
+  const topics: UniversalTopicNode[] = lessons.map((l, idx) => ({
     id: l.topicId,
     subjectId: bp.id,
-    moduleId: `${bp.id}-module-core`,
+    moduleId: l.moduleId,
     title: l.title,
     sectionTitle: l.sectionTitle,
     difficulty: l.difficulty,
     level: l.difficulty,
-    prerequisites: l.prereqs,
-    unlocks: bp.lessonsData.filter((other) => other.prereqs.includes(l.topicId)).map((other) => other.topicId),
-    lessonId: `${bp.id}-lesson-${l.topicId}`,
-    lessonIds: [`${bp.id}-lesson-${l.topicId}`],
-    weight: Math.max(2, 4 - idx)
+    prerequisites: l.prerequisites,
+    unlocks: lessons.filter((other) => other.prerequisites.includes(l.topicId)).map((other) => other.topicId),
+    lessonId: l.id,
+    lessonIds: [l.id],
+    weight: Math.max(2, 6 - Math.floor(idx / 2))
   }));
 
-  const modules: UniversalModule[] = [
-    {
-      id: `${bp.id}-module-core`,
-      subjectId: bp.id,
-      title: tr("Базовый и профильный модуль", "Базалық және бейіндік модуль", "Bazaviy va profil moduli"),
-      summary: subtitle,
-      description: subtitle,
-      topicIds: topics.map((t) => t.id)
-    }
-  ];
+  const modules: UniversalModule[] =
+    shynModules.length > 0
+      ? shynModules
+      : [
+          {
+            id: `${bp.id}-module-core`,
+            subjectId: bp.id,
+            title: tr("Базовый и профильный модуль", "Базалық және бейіндік модуль", "Bazaviy va profil moduli"),
+            summary: subtitle,
+            description: subtitle,
+            topicIds: topics.map((t) => t.id)
+          }
+        ];
 
   const diagnosticQuestionIds = lessons.flatMap((l) => l.questions.map((q) => q.id));
 
@@ -3073,7 +3162,7 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
   if (lessons.length >= 2 && lessons[1].questions.length >= 1) {
     const secondLesson = lessons[1];
     const transferQ = secondLesson.questions[0];
-    const customSecondCase = SECOND_ERROR_LAB_CASES[bp.id as Exclude<UntSubjectId, "math">];
+    const customSecondCase = SECOND_ERROR_LAB_CASES[subjectKey];
     if (customSecondCase) {
       errorLabCases.push({
         id: `${bp.id}-err-${secondLesson.topicId}`,
@@ -3088,45 +3177,48 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
         correctedStep: customSecondCase.correctedStep,
         transferQuestion: transferQ
       });
-    } else {
-      errorLabCases.push({
-        id: `${bp.id}-err-${secondLesson.topicId}`,
-        subjectId: bp.id,
-        topicId: secondLesson.topicId,
-        title: {
-          ru: `Типичная ловушка: ${secondLesson.title.ru}`,
-          kk: `Типтік қате: ${secondLesson.title.kk}`,
-          uz: `Tipik xato: ${secondLesson.title.uz}`
-        },
-        taskPrompt: secondLesson.workedExample.problem,
-        steps: {
-          ru: [
-            secondLesson.workedExample.steps.ru[0] ?? "1) Запишем исходное условие и правило темы",
-            `2) Ошибочный шаг: пропущено ключевое ограничение правила (${secondLesson.learningGoal.ru})`,
-            secondLesson.workedExample.steps.ru[1] ?? "3) Итоговый вывод без проверки условия"
-          ],
-          kk: [
-            secondLesson.workedExample.steps.kk[0] ?? "1) Бастапқы шарт пен ережені жазамыз",
-            `2) Қате қадам: негізгі шектеу ескерілмеді (${secondLesson.learningGoal.kk})`,
-            secondLesson.workedExample.steps.kk[1] ?? "3) Шартты тексерусіз қорытынды"
-          ],
-          uz: [
-            secondLesson.workedExample.steps.uz[0] ?? "1) Dastlabki shart va qoidani yozamiz",
-            `2) Xato qadam: asosiy cheklov hisobga olinmadi (${secondLesson.learningGoal.uz})`,
-            secondLesson.workedExample.steps.uz[1] ?? "3) Shartni tekshirmasdan xulosa"
-          ]
-        },
-        brokenStepIndex: 1,
-        errorCategory: transferQ.errorCategory || `${bp.id}_rule_trap`,
-        whyBroken: secondLesson.workedExample.takeaway,
-        correctedStep: {
-          ru: secondLesson.workedExample.steps.ru[1] ?? secondLesson.summary.ru,
-          kk: secondLesson.workedExample.steps.kk[1] ?? secondLesson.summary.kk,
-          uz: secondLesson.workedExample.steps.uz[1] ?? secondLesson.summary.uz
-        },
-        transferQuestion: transferQ
-      });
     }
+  }
+  if (lessons.length >= 4 && lessons[3].questions.length >= 1) {
+    const fourthLesson = lessons[3];
+    const transferQ = fourthLesson.questions[0];
+    errorLabCases.push({
+      id: `${bp.id}-err-${fourthLesson.topicId}`,
+      subjectId: bp.id,
+      topicId: fourthLesson.topicId,
+      title: {
+        ru: `Ловушка Шың-кітап: ${fourthLesson.title.ru}`,
+        kk: `Шың-кітап қақпаны: ${fourthLesson.title.kk}`,
+        uz: `Shyn-kitap tuzog‘i: ${fourthLesson.title.uz}`
+      },
+      taskPrompt: fourthLesson.workedExample.problem,
+      steps: {
+        ru: [
+          fourthLesson.workedExample.steps.ru[0] ?? "1) Запишем исходное условие и правило темы",
+          `2) Ошибочный шаг черновика: нарушен ключевой инвариант («${fourthLesson.workedExample.takeaway.ru}»)`,
+          fourthLesson.workedExample.steps.ru[2] ?? fourthLesson.workedExample.steps.ru[1] ?? "3) Итоговый вывод"
+        ],
+        kk: [
+          fourthLesson.workedExample.steps.kk[0] ?? "1) Бастапқы шарт пен ережені жазамыз",
+          `2) Қате қадам: негізгі инвариант бұзылды («${fourthLesson.workedExample.takeaway.kk}»)`,
+          fourthLesson.workedExample.steps.kk[2] ?? fourthLesson.workedExample.steps.kk[1] ?? "3) Қорытынды"
+        ],
+        uz: [
+          fourthLesson.workedExample.steps.uz[0] ?? "1) Dastlabki shart va qoidani yozamiz",
+          `2) Xato qadam: asosiy invariant buzildi («${fourthLesson.workedExample.takeaway.uz}»)`,
+          fourthLesson.workedExample.steps.uz[1] ?? "3) Xulosa"
+        ]
+      },
+      brokenStepIndex: 1,
+      errorCategory: transferQ.errorCategory || `${bp.id}_shyn_kitap_trap`,
+      whyBroken: fourthLesson.workedExample.takeaway,
+      correctedStep: {
+        ru: fourthLesson.workedExample.steps.ru[1] ?? fourthLesson.summary.ru,
+        kk: fourthLesson.workedExample.steps.kk[1] ?? fourthLesson.summary.kk,
+        uz: fourthLesson.workedExample.steps.uz[1] ?? fourthLesson.summary.uz
+      },
+      transferQuestion: transferQ
+    });
   }
 
   return {
@@ -3136,13 +3228,13 @@ function compileBlueprintToCurriculum(bp: NonMathBlueprint): UniversalSubjectCur
     badge,
     accentColor,
     iconName: bp.iconName,
-    version: "3.0.0",
-    updatedAt: "2026-10-10",
-    readinessStatus: "starter_course",
+    version: "3.5.0",
+    updatedAt: "2026-10-12",
+    readinessStatus: "full_course",
     readinessLabel: tr(
-      "Стартовый курс · 3 урока + мультиформатная практика + Лаборатория ошибок",
-      "Бастапқы курс · 3 сабақ + практика + Қателер зертханасы",
-      "Boshlang‘ich kurs · 3 dars + amaliyot + Xatolar laboratoriyasi"
+      "Полный курс Шың-кітап · 3 раздела · 6 уроков + практика + Лаборатория ошибок",
+      "Толық курс Шың-кітап · 3 бөлім · 6 сабақ + практика + Қателер зертханасы",
+      "To‘liq kurs Shyn-kitap · 3 bo‘lim · 6 dars + amaliyot + Xatolar laboratoriyasi"
     ),
     title,
     subtitle,
@@ -3187,6 +3279,88 @@ export function getAllSubjectCurricula(): UniversalSubjectCurriculum[] {
   return Array.from(DYNAMIC_SUBJECT_REGISTRY.values());
 }
 
+export interface SubjectShynKitapGuidebookView {
+  subjectId: UntSubjectId;
+  editionNote: Record<Language, string>;
+  goldenRules: Array<{
+    id: string;
+    gradeBand: string;
+    title: Record<Language, string>;
+    formulaOrFact: Record<Language, string>;
+    mnemonicOrTip: Record<Language, string>;
+  }>;
+  referenceTables: Array<{
+    id: string;
+    title: Record<Language, string>;
+    rows: Array<{
+      key: string;
+      value: Record<Language, string>;
+    }>;
+  }>;
+  untTraps: Array<{
+    id: string;
+    trapTitle: Record<Language, string>;
+    wrongHabit: Record<Language, string>;
+    correctStrategy: Record<Language, string>;
+  }>;
+}
+
+export function getSubjectShynKitapGuidebook(
+  subjectId: string
+): SubjectShynKitapGuidebookView | null {
+  const normalized =
+    subjectId === "math_literacy"
+      ? "math_lit"
+      : subjectId === "reading_literacy"
+        ? "reading_lit"
+        : subjectId;
+  const units = SHYN_KITAP_GUIDEBOOKS[normalized as UntSubjectId];
+  if (!units || units.length === 0) return null;
+  const first = units[0];
+  return {
+    subjectId: normalized as UntSubjectId,
+    editionNote: {
+      ru: `${first.title.ru} · ${first.gradeRange}`,
+      kk: `${first.title.kk} · ${first.gradeRange}`,
+      uz: `${first.title.uz} · ${first.gradeRange}`
+    },
+    goldenRules: units.flatMap((u, uIdx) => {
+      const band = u.gradeRange.split("·")[0]?.trim() || "5–11 кл.";
+      return u.goldenRules.map((r, rIdx) => ({
+        id: `${normalized}-rule-${uIdx}-${rIdx}`,
+        gradeBand: band,
+        title: r.title,
+        formulaOrFact: r.formulaOrRule,
+        mnemonicOrTip: r.example
+      }));
+    }),
+    referenceTables: units.map((u) => ({
+      id: `${u.unitId}-table`,
+      title: u.referenceTable.caption,
+      rows: u.referenceTable.rows.ru.map((ruRow, rIdx) => {
+        const kkRow = u.referenceTable.rows.kk[rIdx] ?? ruRow;
+        const uzRow = u.referenceTable.rows.uz[rIdx] ?? ruRow;
+        return {
+          key: ruRow[0],
+          value: {
+            ru: `${ruRow[1]} — ${ruRow[2]}`,
+            kk: `${kkRow[1]} — ${kkRow[2]}`,
+            uz: `${uzRow[1]} — ${uzRow[2]}`
+          }
+        };
+      })
+    })),
+    untTraps: units.flatMap((u, uIdx) =>
+      u.untTraps.map((t, tIdx) => ({
+        id: `${normalized}-trap-${uIdx}-${tIdx}`,
+        trapTitle: t.trap,
+        wrongHabit: t.whyWrong,
+        correctStrategy: t.howToAvoid
+      }))
+    )
+  };
+}
+
 /**
  * Resolves a lesson within a subject curriculum by full lesson ID (e.g. `physics-lesson-phys_kinematics`),
  * topicId (`phys_kinematics`), or hyphen/underscore-normalized slug (`phys-kinematics`) (P1-004 & E2E-013).
@@ -3210,12 +3384,245 @@ export function findSubjectLessonByIdOrSlug(
       lid.replace(/[-_]+/g, "_") === norm ||
       tid.replace(/[-_]+/g, "_") === norm ||
       lid.endsWith(`_${norm}`) ||
-      lid.endsWith(`-${raw}`)
+      lid.endsWith(`-${raw}`) ||
+      tid.startsWith(`${norm}_`)
     ) {
       return { lesson: l, index: i };
     }
   }
   return null;
+}
+
+export interface SubjectTopicValidationResult {
+  valid: boolean;
+  subjectId: string;
+  requestedTopicOrLessonId: string | null;
+  subjectCurriculum: UniversalSubjectCurriculum | null;
+  matchedLesson: UniversalLesson | null;
+  matchedLessonIndex: number;
+  ownerSubjectId: string | null;
+  ownerSubjectTitle: Record<Language, string> | null;
+  ownerLesson: UniversalLesson | null;
+  fallbackLesson: UniversalLesson | null;
+  reason:
+    | "valid"
+    | "empty_topic"
+    | "unknown_subject"
+    | "cross_subject_mismatch"
+    | "unknown_topic";
+  message: Record<Language, string> | null;
+}
+
+/**
+ * Validates that a requested topic or lesson slug belongs to the selected subject.
+ * Prevents cross-subject mismatches such as `subject=history_kz&topic=stereometry`
+ * and provides deterministic owner-subject and fallback-lesson resolution.
+ */
+export function validateSubjectTopicPair(
+  subjectId: string | null | undefined,
+  topicOrLessonId: string | null | undefined
+): SubjectTopicValidationResult {
+  const cleanSubjectId = (subjectId ?? "math").trim() || "math";
+  const subjectCurriculum = getSubjectCurriculum(cleanSubjectId);
+  const rawTopic =
+    typeof topicOrLessonId === "string" && topicOrLessonId.trim()
+      ? decodeURIComponent(topicOrLessonId).trim()
+      : null;
+
+  if (!subjectCurriculum) {
+    return {
+      valid: false,
+      subjectId: cleanSubjectId,
+      requestedTopicOrLessonId: rawTopic,
+      subjectCurriculum: null,
+      matchedLesson: null,
+      matchedLessonIndex: 0,
+      ownerSubjectId: null,
+      ownerSubjectTitle: null,
+      ownerLesson: null,
+      fallbackLesson: null,
+      reason: "unknown_subject",
+      message: tr(
+        `Предмет «${cleanSubjectId}» не найден в учебной программе BilimAI.`,
+        `«${cleanSubjectId}» пәні BilimAI оқу бағдарламасынан табылмады.`,
+        `«${cleanSubjectId}» fani BilimAI o‘quv dasturidan topilmadi.`
+      )
+    };
+  }
+
+  const fallbackLesson = subjectCurriculum.lessons[0] ?? null;
+
+  if (!rawTopic) {
+    return {
+      valid: true,
+      subjectId: subjectCurriculum.id,
+      requestedTopicOrLessonId: null,
+      subjectCurriculum,
+      matchedLesson: fallbackLesson,
+      matchedLessonIndex: 0,
+      ownerSubjectId: subjectCurriculum.id,
+      ownerSubjectTitle: subjectCurriculum.title,
+      ownerLesson: fallbackLesson,
+      fallbackLesson,
+      reason: "empty_topic",
+      message: null
+    };
+  }
+
+  const directMatch = findSubjectLessonByIdOrSlug(subjectCurriculum, rawTopic);
+  if (directMatch) {
+    return {
+      valid: true,
+      subjectId: subjectCurriculum.id,
+      requestedTopicOrLessonId: rawTopic,
+      subjectCurriculum,
+      matchedLesson: directMatch.lesson,
+      matchedLessonIndex: directMatch.index,
+      ownerSubjectId: subjectCurriculum.id,
+      ownerSubjectTitle: subjectCurriculum.title,
+      ownerLesson: directMatch.lesson,
+      fallbackLesson,
+      reason: "valid",
+      message: null
+    };
+  }
+
+  // Check if the requested topic/lesson belongs to another subject in the platform
+  const allCurricula = getAllSubjectCurricula();
+  for (const otherCurriculum of allCurricula) {
+    if (otherCurriculum.id === subjectCurriculum.id) continue;
+    const otherMatch = findSubjectLessonByIdOrSlug(otherCurriculum, rawTopic);
+    if (otherMatch) {
+      return {
+        valid: false,
+        subjectId: subjectCurriculum.id,
+        requestedTopicOrLessonId: rawTopic,
+        subjectCurriculum,
+        matchedLesson: null,
+        matchedLessonIndex: 0,
+        ownerSubjectId: otherCurriculum.id,
+        ownerSubjectTitle: otherCurriculum.title,
+        ownerLesson: otherMatch.lesson,
+        fallbackLesson,
+        reason: "cross_subject_mismatch",
+        message: tr(
+          `Несоответствие предмета и темы: тема «${otherMatch.lesson.title.ru}» (${rawTopic}) относится к предмету «${otherCurriculum.title.ru}», а не к выбранному предмету «${subjectCurriculum.title.ru}».`,
+          `Пән мен тақырып сәйкессіздігі: «${otherMatch.lesson.title.kk}» (${rawTopic}) тақырыбы таңдалған «${subjectCurriculum.title.kk}» пәніне емес, «${otherCurriculum.title.kk}» пәніне жатады.`,
+          `Fan va mavzu nomuvofiqligi: «${otherMatch.lesson.title.uz}» (${rawTopic}) mavzusi tanlangan «${subjectCurriculum.title.uz}» faniga emas, «${otherCurriculum.title.uz}» faniga tegishli.`
+        )
+      };
+    }
+  }
+
+  return {
+    valid: false,
+    subjectId: subjectCurriculum.id,
+    requestedTopicOrLessonId: rawTopic,
+    subjectCurriculum,
+    matchedLesson: null,
+    matchedLessonIndex: 0,
+    ownerSubjectId: null,
+    ownerSubjectTitle: null,
+    ownerLesson: null,
+    fallbackLesson,
+    reason: "unknown_topic",
+    message: tr(
+      `Тема «${rawTopic}» не найдена в курсе «${subjectCurriculum.title.ru}». Показан актуальный раздел выбранного предмета.`,
+      `«${rawTopic}» тақырыбы «${subjectCurriculum.title.kk}» курсынан табылмады. Таңдалған пәннің өзекті бөлімі көрсетілді.`,
+      `«${rawTopic}» mavzusi «${subjectCurriculum.title.uz}» kursidan topilmadi. Tanlangan fanning dolzarb bo‘limi ko‘rsatildi.`
+    )
+  };
+}
+
+export interface PlatformSearchResultItem {
+  id: string;
+  kind: "subject" | "lesson";
+  subjectId: string;
+  subjectTitle: string;
+  badge: string;
+  title: string;
+  subtitle: string;
+  href: string;
+}
+
+/**
+ * Global search across all 12 subjects and their lessons/topics.
+ */
+export function searchPlatformContent(
+  query: string,
+  lang: Language = "ru",
+  limit = 16
+): PlatformSearchResultItem[] {
+  const allCurricula = getAllSubjectCurricula();
+  const q = query.trim().toLowerCase();
+  const results: PlatformSearchResultItem[] = [];
+
+  for (const subj of allCurricula) {
+    const subjTitle = subj.title[lang] ?? subj.title.ru;
+    const subjDesc = subj.shortDescription[lang] ?? subj.shortDescription.ru;
+    const subjHaystack = `${subj.id} ${subj.badge} ${subj.title.ru} ${subj.title.kk} ${subj.title.uz} ${subjDesc}`.toLowerCase();
+
+    if (!q || subjHaystack.includes(q)) {
+      results.push({
+        id: `subj-${subj.id}`,
+        kind: "subject",
+        subjectId: subj.id,
+        subjectTitle: subjTitle,
+        badge: subj.badge,
+        title: subjTitle,
+        subtitle: subjDesc,
+        href: `/subjects/${subj.id}?lang=${lang}`
+      });
+    }
+
+    for (const lesson of subj.lessons) {
+      const lTitle = lesson.title[lang] ?? lesson.title.ru;
+      const lGoal = lesson.learningGoal[lang] ?? lesson.learningGoal.ru;
+      const lSection = lesson.sectionTitle[lang] ?? lesson.sectionTitle.ru;
+      const lessonHaystack = `${lesson.id} ${lesson.topicId} ${lesson.title.ru} ${lesson.title.kk} ${lesson.title.uz} ${lSection} ${lGoal}`.toLowerCase();
+
+      if (q && lessonHaystack.includes(q)) {
+        const href =
+          subj.id === "math"
+            ? `/?lang=${lang}&tab=lesson&topic=${encodeURIComponent(lesson.topicId)}&subject=math`
+            : `/subjects/${subj.id}/lessons/${encodeURIComponent(lesson.id)}?lang=${lang}`;
+        results.push({
+          id: `lesson-${subj.id}-${lesson.id}`,
+          kind: "lesson",
+          subjectId: subj.id,
+          subjectTitle: subjTitle,
+          badge: subj.badge,
+          title: lTitle,
+          subtitle: `${subjTitle} · ${lSection}`,
+          href
+        });
+      }
+    }
+  }
+
+  // When query is empty, also surface the first starter lesson of top subjects so the modal is immediately actionable
+  if (!q) {
+    for (const subj of allCurricula.slice(0, 6)) {
+      const firstLesson = subj.lessons[0];
+      if (!firstLesson) continue;
+      const subjTitle = subj.title[lang] ?? subj.title.ru;
+      results.push({
+        id: `lesson-${subj.id}-${firstLesson.id}`,
+        kind: "lesson",
+        subjectId: subj.id,
+        subjectTitle: subjTitle,
+        badge: subj.badge,
+        title: firstLesson.title[lang] ?? firstLesson.title.ru,
+        subtitle: `${subjTitle} · ${firstLesson.sectionTitle[lang] ?? firstLesson.sectionTitle.ru}`,
+        href:
+          subj.id === "math"
+            ? `/?lang=${lang}&tab=lesson&topic=${encodeURIComponent(firstLesson.topicId)}&subject=math`
+            : `/subjects/${subj.id}/lessons/${encodeURIComponent(firstLesson.id)}?lang=${lang}`
+      });
+    }
+  }
+
+  return results.slice(0, limit);
 }
 
 export interface UniversalGraphNodeView {

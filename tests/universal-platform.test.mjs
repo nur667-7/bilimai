@@ -14,6 +14,8 @@ import {
   registerSubjectCurriculum,
   buildUniversalSubjectGraph,
   findSubjectLessonByIdOrSlug,
+  validateSubjectTopicPair,
+  searchPlatformContent,
   computeRecommendedLessonForSubject,
   formatLessonsCountLabel,
   formatQuestionsCountLabel,
@@ -928,6 +930,49 @@ test("Subject AI Tutor /api/tutor route supports all 9 modes across ru/kk/uz wit
   assert.equal(json.mode, "exam_prep");
   assert.ok(json.reply.length > 40);
 });
+
+test("CASE G: Strict Subject-Topic Pair Validation (subject=history_kz&topic=stereometry mismatch guard) & Global Search", () => {
+  // 1. Cross-subject mismatch: subject=history_kz&topic=stereometry
+  const mismatch = validateSubjectTopicPair("history_kz", "stereometry");
+  assert.equal(mismatch.valid, false);
+  assert.equal(mismatch.reason, "cross_subject_mismatch");
+  assert.equal(mismatch.subjectId, "history_kz");
+  assert.equal(mismatch.ownerSubjectId, "math");
+  assert.ok(mismatch.ownerLesson);
+  assert.equal(mismatch.ownerLesson.topicId, "stereometry");
+  assert.ok(mismatch.fallbackLesson);
+  assert.equal(mismatch.fallbackLesson.subjectId, "history_kz");
+  assert.ok(mismatch.message?.ru.includes("Математика"));
+  assert.ok(mismatch.message?.ru.includes("История Казахстана"));
+
+  // 2. Valid pair: subject=math&topic=stereometry
+  const validMath = validateSubjectTopicPair("math", "stereometry");
+  assert.equal(validMath.valid, true);
+  assert.equal(validMath.reason, "valid");
+  assert.equal(validMath.matchedLesson?.topicId, "stereometry");
+
+  // 3. Valid pair: subject=history_kz&topic=hkz_ancient
+  const validHist = validateSubjectTopicPair("history_kz", "hkz_ancient");
+  assert.equal(validHist.valid, true);
+  assert.equal(validHist.reason, "valid");
+  assert.equal(validHist.matchedLesson?.subjectId, "history_kz");
+
+  // 4. Unknown topic slug
+  const unknownTopic = validateSubjectTopicPair("history_kz", "nonexistent_quantum_topic_999");
+  assert.equal(unknownTopic.valid, false);
+  assert.equal(unknownTopic.reason, "unknown_topic");
+  assert.ok(unknownTopic.fallbackLesson);
+
+  // 5. Global search finds subjects and lessons with valid subject-topic hrefs
+  const searchHist = searchPlatformContent("ханств", "ru");
+  assert.ok(searchHist.length > 0);
+  assert.ok(searchHist.some((r) => r.subjectId === "history_kz"));
+
+  const searchStereo = searchPlatformContent("стереометрия", "ru");
+  assert.ok(searchStereo.length > 0);
+  assert.ok(searchStereo.some((r) => r.subjectId === "math" && r.href.includes("subject=math")));
+});
+
 
 
 

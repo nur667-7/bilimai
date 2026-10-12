@@ -1,0 +1,869 @@
+/* =========================================================================
+   BILIMAI — DUOLINGO-STYLE SKILL PATH & MOTION GRAPHICS SYSTEM
+   Follows Emil Kowalski & animate skill curves:
+   - Enter/Exit/Transform: cubic-bezier(0.22, 1, 0.36, 1)
+   - Tactile 3D Lip Press: translateY(4px) with box-shadow compression
+   - Reduced-motion safety: @media (prefers-reduced-motion: reduce)
+   ========================================================================= */
+
+:root {
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring-snappy: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-hover-duration: 150ms;
+  --motion-press-duration: 110ms;
+  --motion-page-duration: 220ms;
+  --motion-modal-duration: 200ms;
+  --motion-feedback-duration: 190ms;
+  --motion-progress-duration: 350ms;
+}
+
+/* -------------------------------------------------------------------------
+   1. DUOLINGO SKILL PATH CONTAINER & WINDING S-CURVE
+   ------------------------------------------------------------------------- */
+.duo-path-shell {
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 0 36px;
+}
+
+.duo-unit-section {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+.duo-unit-banner {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: 18px;
+  background: var(--unit-bg, #0d6e5b);
+  color: #ffffff;
+  box-shadow: 0 5px 0 var(--unit-lip, #084c3f), 0 12px 24px -10px rgba(13, 110, 91, 0.28);
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.duo-unit-banner::after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  top: -28px;
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.duo-unit-meta {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.duo-unit-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.duo-unit-title {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.duo-unit-desc {
+  margin: 4px 0 0;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.duo-unit-progress-wrap {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.duo-unit-progress-track {
+  flex: 1;
+  max-width: 220px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+}
+
+.duo-unit-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #ffd43b;
+  transition: width var(--motion-progress-duration, 350ms) var(--motion-ease);
+}
+
+.duo-guidebook-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.24);
+  cursor: pointer;
+  transition: transform var(--motion-press-duration, 110ms) var(--motion-ease),
+    box-shadow var(--motion-press-duration, 110ms) var(--motion-ease),
+    background-color var(--motion-hover-duration, 150ms) var(--motion-ease);
+  white-space: nowrap;
+}
+
+.duo-guidebook-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.duo-guidebook-btn:active {
+  transform: translateY(2px) scale(0.985);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.24);
+}
+
+/* -------------------------------------------------------------------------
+   2. WINDING PATH STAGE & SVG CONNECTOR SPINE
+   ------------------------------------------------------------------------- */
+.duo-path-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  padding: 10px 0 14px;
+}
+
+.duo-path-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.duo-path-line-bg {
+  fill: none;
+  stroke: var(--line, #d5d0c4);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 1 18;
+}
+
+.duo-path-line-fill {
+  fill: none;
+  stroke: var(--accent-strong, #0d6e5b);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 400ms var(--motion-ease);
+}
+
+.duo-node-row {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 300ms var(--ease-out-quint);
+}
+
+.duo-node-row[data-pos="center"] {
+  transform: translateX(0);
+}
+.duo-node-row[data-pos="left"] {
+  transform: translateX(-56px);
+}
+.duo-node-row[data-pos="far-left"] {
+  transform: translateX(-92px);
+}
+.duo-node-row[data-pos="right"] {
+  transform: translateX(56px);
+}
+.duo-node-row[data-pos="far-right"] {
+  transform: translateX(92px);
+}
+
+@media (max-width: 520px) {
+  .duo-node-row[data-pos="left"] {
+    transform: translateX(-34px);
+  }
+  .duo-node-row[data-pos="far-left"] {
+    transform: translateX(-54px);
+  }
+  .duo-node-row[data-pos="right"] {
+    transform: translateX(34px);
+  }
+  .duo-node-row[data-pos="far-right"] {
+    transform: translateX(54px);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   3. 3D TACTILE SKILL NODE BUTTONS
+   ------------------------------------------------------------------------- */
+.duo-node-btn {
+  position: relative;
+  width: 72px;
+  height: 68px;
+  border-radius: 999px;
+  border: 3px solid var(--node-border, #0a5849);
+  background: var(--node-bg, #0d6e5b);
+  color: var(--node-fg, #ffffff);
+  box-shadow: 0 6px 0 var(--node-lip, #08483b), 0 10px 20px rgba(20, 26, 23, 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 110ms var(--ease-out-quart), box-shadow 110ms var(--ease-out-quart),
+    filter 150ms ease;
+}
+
+.duo-node-btn::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 14px;
+  right: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+}
+
+.duo-node-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 7px 0 var(--node-lip, #08483b), 0 12px 22px rgba(20, 26, 23, 0.18);
+}
+
+.duo-node-btn:active:not(:disabled),
+.duo-node-btn[aria-expanded="true"] {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--node-lip, #08483b), 0 4px 8px rgba(20, 26, 23, 0.12);
+}
+
+/* Node shapes */
+.duo-node-btn[data-shape="hex"] {
+  border-radius: 20px;
+}
+.duo-node-btn[data-shape="chest"] {
+  width: 76px;
+  height: 64px;
+  border-radius: 18px;
+}
+.duo-node-btn[data-shape="boss"] {
+  width: 82px;
+  height: 76px;
+  border-radius: 24px;
+}
+
+/* Node states */
+.duo-node-btn[data-state="mastered"] {
+  --node-bg: #15803d;
+  --node-border: #166534;
+  --node-lip: #14532d;
+  --node-fg: #ffffff;
+}
+
+.duo-node-btn[data-state="active"] {
+  --node-bg: #0d6e5b;
+  --node-border: #0a5849;
+  --node-lip: #074236;
+  --node-fg: #ffffff;
+}
+
+.duo-node-btn[data-state="available"] {
+  --node-bg: #2563eb;
+  --node-border: #1d4ed8;
+  --node-lip: #1e40af;
+  --node-fg: #ffffff;
+}
+
+.duo-node-btn[data-state="review"] {
+  --node-bg: #d97706;
+  --node-border: #b45309;
+  --node-lip: #92400e;
+  --node-fg: #ffffff;
+}
+
+.duo-node-btn[data-state="locked"] {
+  --node-bg: #e6e1d6;
+  --node-border: #cfc8b8;
+  --node-lip: #b8b09f;
+  --node-fg: #78716c;
+}
+
+[data-theme="dark"] .duo-node-btn[data-state="locked"] {
+  --node-bg: #262b31;
+  --node-border: #363d45;
+  --node-lip: #181c20;
+  --node-fg: #8b949e;
+}
+
+/* -------------------------------------------------------------------------
+   4. ACTIVE RING & FLOATING CALLOUT BADGE (NO INFINITE ANIMATIONS)
+   ------------------------------------------------------------------------- */
+.duo-active-ring {
+  position: absolute;
+  inset: -9px;
+  border-radius: inherit;
+  border: 3px solid var(--node-bg, #0d6e5b);
+  opacity: 0.6;
+  pointer-events: none;
+  animation: duoRingEnter var(--motion-page-duration, 220ms) var(--motion-ease);
+}
+
+@keyframes duoRingEnter {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+}
+
+.duo-floating-badge {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: var(--paper-elevated, #ffffff);
+  color: var(--accent-strong, #0d6e5b);
+  border: 2px solid var(--accent-strong, #0d6e5b);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(13, 110, 91, 0.18);
+  pointer-events: none;
+  z-index: 5;
+  animation: duoBadgeEnter var(--motion-modal-duration, 200ms) var(--motion-ease);
+}
+
+.duo-floating-badge::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--accent-strong, #0d6e5b) transparent transparent transparent;
+}
+
+@keyframes duoBadgeEnter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   5. CROWNS & NODE CAPTION
+   ------------------------------------------------------------------------- */
+.duo-crowns-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--paper-subtle, #f2efe8);
+  border: 1px solid var(--line, #dfd9cc);
+}
+
+.duo-crown {
+  color: #c4bdb0;
+  transition: transform 200ms var(--motion-ease), color 160ms var(--motion-ease);
+}
+
+.duo-crown.filled {
+  color: #f59e0b;
+  animation: duoCrownPop 220ms var(--motion-ease);
+}
+
+@keyframes duoCrownPop {
+  0% {
+    transform: scale(0.85);
+  }
+  65% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.duo-node-caption {
+  margin-top: 5px;
+  max-width: 175px;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--ink, #171c1a);
+}
+
+/* -------------------------------------------------------------------------
+   6. INLINE POPOVER CARD & SHYN KITAP GUIDEBOOK DRAWER
+   ------------------------------------------------------------------------- */
+.duo-node-popover {
+  margin-top: 12px;
+  width: min(92vw, 400px);
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--paper-elevated, #ffffff);
+  border: 2px solid var(--accent-strong, #0d6e5b);
+  box-shadow: 0 16px 36px -8px rgba(17, 24, 28, 0.22);
+  transform-origin: top center;
+  animation: duoPopoverEnter var(--motion-modal-duration, 200ms) var(--motion-ease);
+  z-index: 15;
+}
+
+@keyframes duoPopoverEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.duo-guidebook-drawer {
+  margin-bottom: 24px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--paper-elevated, #ffffff);
+  border: 2px solid var(--line-strong, #c5beaf);
+  box-shadow: 0 12px 30px -10px rgba(17, 24, 28, 0.16);
+  animation: duoPopoverEnter var(--motion-modal-duration, 200ms) var(--motion-ease);
+}
+
+.shyn-rule-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--paper-subtle, #f6f3ec);
+  border-left: 4px solid var(--accent-strong, #0d6e5b);
+}
+
+.shyn-trap-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(217, 119, 6, 0.08);
+  border-left: 4px solid #d97706;
+}
+
+/* -------------------------------------------------------------------------
+   7. BILIMAI 2.0 UNIFIED MOTION SYSTEM (HOVER, PRESS, PAGE, FEEDBACK)
+   ------------------------------------------------------------------------- */
+.anim-correct-pop {
+  animation: duoCorrectPop var(--motion-feedback-duration, 190ms) var(--motion-ease);
+}
+
+@keyframes duoCorrectPop {
+  0% {
+    transform: scale(0.98);
+  }
+  60% {
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.anim-wrong-shake {
+  animation: duoWrongShake var(--motion-feedback-duration, 190ms) var(--motion-ease);
+}
+
+@keyframes duoWrongShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  65% {
+    transform: translateX(4px);
+  }
+}
+
+.anim-step-enter,
+.section-surface {
+  animation: duoStepFadeSlide var(--motion-page-duration, 220ms) var(--motion-ease);
+}
+
+@keyframes duoStepFadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Unified Button Press (90–140ms, scale(0.985)) & Card Hover (120–180ms, -2px) */
+button:not(:disabled):not(.duo-node-btn),
+.btn-primary,
+.btn-ghost,
+.primary-nav-link,
+.learn-subnav-pill {
+  transition: transform var(--motion-press-duration, 110ms) var(--motion-ease),
+    background-color var(--motion-hover-duration, 150ms) var(--motion-ease),
+    border-color var(--motion-hover-duration, 150ms) var(--motion-ease),
+    color var(--motion-hover-duration, 150ms) var(--motion-ease),
+    box-shadow var(--motion-hover-duration, 150ms) var(--motion-ease);
+}
+
+button:not(:disabled):not(.duo-node-btn):active,
+.btn-primary:active,
+.btn-ghost:active,
+.primary-nav-link:active,
+.learn-subnav-pill:active {
+  transform: scale(0.985);
+}
+
+.interactive-card-lift {
+  transition: transform var(--motion-hover-duration, 150ms) var(--motion-ease),
+    border-color var(--motion-hover-duration, 150ms) var(--motion-ease),
+    box-shadow var(--motion-hover-duration, 150ms) var(--motion-ease);
+}
+
+.interactive-card-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* -------------------------------------------------------------------------
+   8. SUBJECT-TOPIC MISMATCH BANNER & GLOBAL SEARCH MODAL
+   ------------------------------------------------------------------------- */
+.subject-topic-mismatch-banner {
+  margin: 0 0 18px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 2px solid #d97706;
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--ink, #171c1a);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  animation: duoStepFadeSlide var(--motion-page-duration, 220ms) var(--motion-ease);
+}
+
+[data-theme="dark"] .subject-topic-mismatch-banner {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: #f59e0b;
+  color: #f4f6f8;
+}
+
+.global-search-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(15, 23, 20, 0.48);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 64px 16px 24px;
+  animation: duoStepFadeSlide var(--motion-modal-duration, 200ms) var(--motion-ease);
+}
+
+.global-search-dialog {
+  width: min(100%, 640px);
+  max-height: min(80vh, 560px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--paper-elevated, #ffffff);
+  color: var(--ink, #171c1a);
+  border: 1px solid var(--line-strong, #c5beaf);
+  box-shadow: 0 24px 48px -12px rgba(15, 23, 20, 0.28);
+  overflow: hidden;
+  animation: duoPopoverEnter var(--motion-modal-duration, 200ms) var(--motion-ease);
+}
+
+[data-theme="dark"] .global-search-dialog {
+  background: #131C2E;
+  color: #F1F5F9;
+  border-color: #22304A;
+}
+
+/* -------------------------------------------------------------------------
+   9. FIGMA BILIMAI 2.0 DESIGN SYSTEM — SIDEBAR SHELL, BREADCRUMB & CARDS
+   ------------------------------------------------------------------------- */
+.figma-app-layout {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--bilimai-bg, #F7F8FA);
+}
+
+.figma-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px 14px;
+  background: var(--bilimai-surface, #FFFFFF);
+  border-right: 1px solid var(--bilimai-border, #E5E9EF);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.figma-sidebar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--bilimai-text, #172334) !important;
+  text-decoration: none !important;
+}
+
+.figma-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.figma-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--bilimai-text-muted, #657185) !important;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
+.figma-sidebar-link:hover {
+  background: var(--bilimai-surface-raised, #F1F5F9);
+  color: var(--bilimai-text, #172334) !important;
+}
+
+.figma-sidebar-link.active {
+  background: var(--bilimai-selected-bg, #EAF1FF);
+  color: var(--bilimai-brand, #2563EB) !important;
+  font-weight: 600;
+}
+
+.figma-main-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  background: var(--bilimai-bg, #F7F8FA);
+}
+
+.figma-topbar-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--bilimai-text-muted, #657185);
+}
+
+.figma-topbar-breadcrumb strong {
+  color: var(--bilimai-text, #172334);
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .figma-app-layout .site-header {
+    background: var(--bilimai-surface, #FFFFFF);
+    border-bottom: 1px solid var(--bilimai-border, #E5E9EF);
+    margin-bottom: 24px;
+    padding: 12px 0;
+  }
+
+  .figma-app-layout .site-header .aniq-brand-logo {
+    display: none;
+  }
+
+  .figma-app-layout .site-header .primary-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .figma-app-layout {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .figma-sidebar {
+    display: none !important;
+  }
+
+  .figma-topbar-breadcrumb {
+    display: none !important;
+  }
+}
+
+.figma-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+@media (max-width: 820px) {
+  .figma-feature-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+
+.figma-feature-card {
+  background: var(--bilimai-surface, #FFFFFF);
+  border: 1px solid var(--bilimai-border, #E5E9EF);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 148px;
+  text-align: left;
+  text-decoration: none !important;
+  color: var(--bilimai-text, #172334) !important;
+  box-shadow: 0 1px 2px rgba(23, 35, 52, 0.03);
+  cursor: pointer;
+  transition: transform var(--motion-hover-duration, 150ms) var(--motion-ease),
+    border-color var(--motion-hover-duration, 150ms) var(--motion-ease),
+    box-shadow var(--motion-hover-duration, 150ms) var(--motion-ease);
+}
+
+.figma-feature-card:hover {
+  transform: translateY(-2px);
+  border-color: #CBD5E1;
+  box-shadow: 0 8px 20px -8px rgba(37, 99, 235, 0.14);
+}
+
+.figma-card-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bilimai-selected-bg, #EAF1FF);
+  color: var(--bilimai-brand, #2563EB);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.figma-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--bilimai-text, #172334);
+  margin: 0;
+}
+
+.figma-card-desc {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--bilimai-text-muted, #657185);
+  margin: 4px 0 0;
+}
+
+.figma-card-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--bilimai-brand, #2563EB);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.figma-primary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  border: 1px solid #2563EB;
+  background: #2563EB;
+  color: #FFFFFF !important;
+  font-size: 14.5px;
+  font-weight: 600;
+  text-decoration: none !important;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.22);
+}
+
+.figma-primary-cta:hover {
+  background: #1D4ED8;
+  border-color: #1D4ED8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { SiteFooter } from "@/components/site-footer";
 import { useAniqTheme } from "@/components/hero-canvas";
 import {
+  FigmaDesktopSidebar,
   LearnSubnav,
   MobileBottomNav,
   StudyHeader
@@ -45,6 +46,7 @@ export interface StudyProps {
   initialLang?: Language;
   initialTab?: WorkspaceTab;
   initialTopic?: TopicId;
+  initialRawTopic?: string | null;
   initialSubjectId?: UntSubjectId;
   initialVariantNumber?: number;
 }
@@ -53,6 +55,7 @@ export default function Study({
   initialLang = "ru",
   initialTab = "today",
   initialTopic = "linear",
+  initialRawTopic = null,
   initialSubjectId = "math",
   initialVariantNumber = 1
 }: StudyProps = {}) {
@@ -79,6 +82,7 @@ export default function Study({
     topic,
     examSubjectId,
     examVariantNumber,
+    subjectTopicValidation,
     isTodaySection,
     isLearnSection,
     isLessonOrPracticeOrAi,
@@ -90,11 +94,13 @@ export default function Study({
     selectTopic,
     openTopicLesson,
     handleSubjectChange,
+    resolveSubjectTopicMismatch,
     selectLanguage
   } = useStudyNavigation({
     initialLang,
     initialTab,
     initialTopic,
+    initialRawTopic,
     initialSubjectId,
     initialVariantNumber,
     onBeforeNavigate: handleBeforeNavigate,
@@ -434,24 +440,116 @@ export default function Study({
       : t.todayContinueModeLesson;
 
   return (
-    <div className="textbook-shell has-mobile-bottom-nav">
-      <StudyHeader
+    <div className="textbook-shell has-mobile-bottom-nav figma-app-layout">
+      <FigmaDesktopSidebar
         lang={lang}
         tab={tab}
-        topic={topic}
-        dark={dark}
-        isTodaySection={isTodaySection}
-        isLearnSection={isLearnSection}
-        isExamSection={isExamSection}
-        isProfileSection={isProfileSection}
-        t={t}
-        onToggleTheme={toggleTheme}
-        onSelectLanguage={selectLanguage}
         onTabChange={handleTabChange}
       />
+      <div className="figma-main-column">
+        <StudyHeader
+          lang={lang}
+          tab={tab}
+          topic={topic}
+          dark={dark}
+          isTodaySection={isTodaySection}
+          isLearnSection={isLearnSection}
+          isExamSection={isExamSection}
+          isProfileSection={isProfileSection}
+          t={t}
+          onToggleTheme={toggleTheme}
+          onSelectLanguage={selectLanguage}
+          onTabChange={handleTabChange}
+        />
 
       <main id="workspace-anchor" className="wrap main-container">
         <div id="workspace-stage-top" />
+
+        {!subjectTopicValidation.valid && (
+          <div
+            className="subject-topic-mismatch-banner"
+            data-testid="subject-topic-mismatch-banner"
+            role="alert"
+          >
+            <div style={{ flex: "1 1 320px" }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  color: "#b45309",
+                  marginBottom: 4
+                }}
+              >
+                {lang === "kk"
+                  ? "Пән мен тақырыпты тексеру"
+                  : lang === "uz"
+                    ? "Fan va mavzu tekshiruvi"
+                    : "Проверка соответствия предмета и темы"}
+              </div>
+              <strong style={{ display: "block", fontSize: 15, lineHeight: 1.4 }}>
+                {subjectTopicValidation.message?.[lang] ??
+                  subjectTopicValidation.message?.ru}
+              </strong>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              {subjectTopicValidation.subjectCurriculum &&
+                subjectTopicValidation.fallbackLesson && (
+                  <a
+                    href={
+                      subjectTopicValidation.subjectId === "math"
+                        ? `/?lang=${lang}&tab=lesson&topic=${encodeURIComponent(subjectTopicValidation.fallbackLesson.topicId)}&subject=math`
+                        : `/subjects/${subjectTopicValidation.subjectId}/lessons/${encodeURIComponent(subjectTopicValidation.fallbackLesson.id)}?lang=${lang}`
+                    }
+                    data-testid="mismatch-open-selected-subject-btn"
+                    className="btn-primary"
+                    style={{
+                      padding: "9px 14px",
+                      borderRadius: 10,
+                      textDecoration: "none",
+                      fontSize: 13.5,
+                      fontWeight: 700
+                    }}
+                  >
+                    {lang === "kk"
+                      ? `«${subjectTopicValidation.subjectCurriculum.title.kk}» сабақтарын ашу →`
+                      : lang === "uz"
+                        ? `«${subjectTopicValidation.subjectCurriculum.title.uz}» darslarini ochish →`
+                        : `Открыть уроки «${subjectTopicValidation.subjectCurriculum.title.ru}» →`}
+                  </a>
+                )}
+              {subjectTopicValidation.ownerSubjectId &&
+                subjectTopicValidation.ownerSubjectTitle && (
+                  <button
+                    type="button"
+                    data-testid="mismatch-switch-owner-subject-btn"
+                    className="btn-ghost"
+                    style={{
+                      padding: "9px 14px",
+                      borderRadius: 10,
+                      fontSize: 13.5,
+                      fontWeight: 700,
+                      cursor: "pointer"
+                    }}
+                    onClick={() => {
+                      if (subjectTopicValidation.ownerSubjectId === "math") {
+                        resolveSubjectTopicMismatch("switch_to_owner_subject");
+                      } else if (subjectTopicValidation.ownerLesson) {
+                        window.location.href = `/subjects/${subjectTopicValidation.ownerSubjectId}/lessons/${encodeURIComponent(subjectTopicValidation.ownerLesson.id)}?lang=${lang}`;
+                      }
+                    }}
+                  >
+                    {lang === "kk"
+                      ? `Пәнді «${subjectTopicValidation.ownerSubjectTitle.kk}» етіп ауыстыру`
+                      : lang === "uz"
+                        ? `Fanni «${subjectTopicValidation.ownerSubjectTitle.uz}» ga o‘zgartirish`
+                        : `Переключить предмет на «${subjectTopicValidation.ownerSubjectTitle.ru}»`}
+                  </button>
+                )}
+            </div>
+          </div>
+        )}
 
         {isLearnSection && (
           <LearnSubnav
@@ -509,6 +607,71 @@ export default function Study({
             onClearRoadmapError={() => dispatch({ type: "CLEAR_ROADMAP_ERROR" })}
             onAskRoadmap={() => void askRoadmap()}
           />
+        ) : isLessonOrPracticeOrAi && !subjectTopicValidation.valid && examSubjectId !== "math" ? (
+          <section
+            className="surface section-surface"
+            data-testid="cross-subject-redirect-panel"
+            aria-label={currentSubjectMeta.title[lang]}
+          >
+            <div style={{ maxWidth: 760 }}>
+              <span className="section-pill">
+                {subjectTopicValidation.subjectCurriculum?.badge ??
+                  currentSubjectMeta.id.toUpperCase()}
+              </span>
+              <h1 style={{ fontSize: 24, fontWeight: 800, margin: "10px 0 8px" }}>
+                {currentSubjectMeta.title[lang]} —{" "}
+                {lang === "kk"
+                  ? "пән бойынша тақырыптар мен сабақтар"
+                  : lang === "uz"
+                    ? "fan bo‘yicha mavzular va darslar"
+                    : "темы и уроки выбранного предмета"}
+              </h1>
+              <p className="muted" style={{ marginBottom: 18, lineHeight: 1.55 }}>
+                {subjectTopicValidation.message?.[lang] ??
+                  subjectTopicValidation.message?.ru}{" "}
+                {lang === "kk"
+                  ? "Төменде таңдалған пәннің нақты бөлімдері берілген:"
+                  : lang === "uz"
+                    ? "Quyida tanlangan fanning haqiqiy bo‘limlari keltirilgan:"
+                    : "Ниже представлены разделы выбранного предмета:"}
+              </p>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                  gap: 12,
+                  marginBottom: 18
+                }}
+              >
+                {(subjectTopicValidation.subjectCurriculum?.lessons ?? []).map((subjLesson, idx) => (
+                  <a
+                    key={subjLesson.id}
+                    href={`/subjects/${examSubjectId}/lessons/${encodeURIComponent(subjLesson.id)}?lang=${lang}`}
+                    className="interactive-card-lift"
+                    style={{
+                      display: "block",
+                      padding: "14px 16px",
+                      borderRadius: 12,
+                      border: "1px solid var(--line, #DCE2DD)",
+                      background: "var(--paper-elevated, #ffffff)",
+                      textDecoration: "none",
+                      color: "inherit"
+                    }}
+                  >
+                    <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.72, marginBottom: 4 }}>
+                      {lang === "kk" ? `${idx + 1}-сабақ` : lang === "uz" ? `${idx + 1}-dars` : `Урок ${idx + 1}`}
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>
+                      {subjLesson.title[lang]}
+                    </div>
+                    <div style={{ fontSize: 13, opacity: 0.8 }}>
+                      {subjLesson.sectionTitle[lang]}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
         ) : isLessonOrPracticeOrAi ? (
           <LessonPracticeView
             lang={lang}
@@ -626,7 +789,9 @@ export default function Study({
             onLogout={handleLogoutProfile}
           />
         )}
-      </main>
+        </main>
+        <SiteFooter lang={lang} topic={topic} compact />
+      </div>
 
       <MobileBottomNav
         isTodaySection={isTodaySection}
@@ -636,8 +801,6 @@ export default function Study({
         t={t}
         onTabChange={handleTabChange}
       />
-
-      <SiteFooter lang={lang} topic={topic} compact />
     </div>
   );
 }

@@ -8,12 +8,15 @@ import {
   getAllSubjectCurricula,
   buildUniversalSubjectGraph,
   findSubjectLessonByIdOrSlug,
+  validateSubjectTopicPair,
   computeRecommendedLessonForSubject,
   formatLessonsCountLabel,
   formatQuestionsCountLabel,
+  getSubjectShynKitapGuidebook,
   type UniversalSubjectCurriculum,
   type UniversalLesson
 } from "@/lib/universal-curriculum";
+import type { UntSubjectId } from "@/lib/unt-all-subjects";
 import {
   advanceLessonQuestionIndex,
   type UniversalQuestion,
@@ -34,6 +37,8 @@ import {
   type UniversalPlatformProgressState
 } from "@/lib/universal-progress";
 import { UniversalQuestionRenderer } from "@/components/study/universal-question-renderer";
+import { SubjectActivityAdapter } from "@/components/study/subject-activity-adapters";
+import { DuolingoSkillPath } from "@/components/study/duolingo-skill-path";
 import { useAniqTheme, ThemeToggleButton } from "@/components/hero-canvas";
 
 export type SubjectWorkspaceTab =
@@ -84,14 +89,28 @@ function parseLocaleParam(raw?: string | null): Locale | null {
 const WORKSPACE_I18N: Record<
   Locale,
   {
+    navToday: string;
     allSubjects: string;
+    navUnt: string;
+    navProgress: string;
+    navProfile: string;
     workbookLink: string;
     progressPrefix: string;
     ofWord: string;
     accuracyPrefix: string;
     notAssessedYet: string;
+    insufficientData: string;
+    metricMaterialTitle: string;
+    metricMaterialHint: string;
+    metricSkillsTitle: string;
+    metricSkillsHint: string;
+    metricDiagTitle: string;
+    metricDiagHint: string;
+    metricExamReadinessTitle: string;
+    metricExamReadinessHint: string;
     levelPrefix: string;
     ctaStartFirstLesson: string;
+    ctaContinueLesson: string;
     ctaCheckLevel: string;
     ctaOpenTopicMap: string;
     ctaGoPractice: string;
@@ -153,19 +172,33 @@ const WORKSPACE_I18N: Record<
   }
 > = {
   ru: {
-    allSubjects: "Все предметы (12)",
+    navToday: "Сегодня",
+    allSubjects: "Предметы (12)",
+    navUnt: "Пробное ЕНТ",
+    navProgress: "Мой прогресс",
+    navProfile: "Профиль",
     workbookLink: "Рабочая тетрадь",
     progressPrefix: "Прогресс по предмету:",
     ofWord: "из",
     accuracyPrefix: "Точность",
     notAssessedYet: "Ещё не оценено",
+    insufficientData: "Недостаточно данных",
+    metricMaterialTitle: "Прохождение материала",
+    metricMaterialHint: "Прочитано уроков стартового курса",
+    metricSkillsTitle: "Освоенные навыки",
+    metricSkillsHint: "Только по проверенным ответам практики",
+    metricDiagTitle: "Последняя диагностика",
+    metricDiagHint: "Стартовый срез по ключевым темам",
+    metricExamReadinessTitle: "Готовность к ЕНТ",
+    metricExamReadinessHint: "Расчёт по практике и диагностике",
     levelPrefix: "Уровень",
     ctaStartFirstLesson: "Начать с первого урока",
-    ctaCheckLevel: "Проверить уровень (5–10 минут)",
-    ctaOpenTopicMap: "Открыть карту тем",
-    ctaGoPractice: "Перейти к практике",
+    ctaContinueLesson: "Продолжить обучение",
+    ctaCheckLevel: "Проверить знания (5–10 минут)",
+    ctaOpenTopicMap: "Карта тем",
+    ctaGoPractice: "К практике",
     tabs: {
-      overview: "Обзор курса",
+      overview: "Изучать · Обзор",
       lesson: "Урок",
       practice: "Практика",
       error_lab: "Лаборатория ошибок",
@@ -173,14 +206,14 @@ const WORKSPACE_I18N: Record<
       tutor: "ИИ-репетитор",
       diagnostic: "Диагностика"
     },
-    untSimulatorBtn: "Тренажёр ЕНТ по предмету →",
+    untSimulatorBtn: "Пробное ЕНТ по предмету →",
     recommendedNextKicker: "РЕКОМЕНДУЕМЫЙ СЛЕДУЮЩИЙ ШАГ",
     openLessonBtn: "Открыть урок →",
     startRecommendedLessonBtn: "Начать рекомендуемый урок →",
-    programTitle: "Программа предмета",
+    programTitle: "Учебная программа и модули",
     lessonWord: "Урок",
     lessonCompletedBadge: "✓ Урок прочитан",
-    lessonReadBadge: "📖 Урок прочитан",
+    lessonReadBadge: "✓ Урок прочитан",
     goalPrefix: "Цель:",
     repeatLessonBtn: "Повторить урок",
     studyLessonBtn: "Изучить →",
@@ -188,7 +221,7 @@ const WORKSPACE_I18N: Record<
     explainSimplerBtn: "Объясни проще",
     deepBreakdownBtn: "Глубокий разбор",
     workedExampleTitle: "2. Пошаговый пример с разбором",
-    takeawayPrefix: "📌 Вывод:",
+    takeawayPrefix: "Ключевой вывод:",
     understandingCheckTitle: "3. Проверка понимания",
     allLessonQuestionsDone: "Все задания урока пройдены ✓",
     nextLessonQuestionBtn: "Следующий вопрос урока →",
@@ -232,19 +265,33 @@ const WORKSPACE_I18N: Record<
     diagViewMapBtn: "Посмотреть карту знаний"
   },
   kk: {
-    allSubjects: "Барлық пәндер (12)",
+    navToday: "Бүгін",
+    allSubjects: "Пәндер (12)",
+    navUnt: "Байқау ҰБТ",
+    navProgress: "Менің прогресім",
+    navProfile: "Профиль",
     workbookLink: "Жұмыс дәптері",
     progressPrefix: "Пән бойынша прогресс:",
     ofWord: "/",
     accuracyPrefix: "Дәлдік",
     notAssessedYet: "Әлі бағаланбаған",
+    insufficientData: "Деректер жеткіліксіз",
+    metricMaterialTitle: "Материалды өту",
+    metricMaterialHint: "Оқылған сабақтар үлесі",
+    metricSkillsTitle: "Меңгерілген дағдылар",
+    metricSkillsHint: "Тек тексерілген жауаптар бойынша",
+    metricDiagTitle: "Соңғы диагностика",
+    metricDiagHint: "Бастапқы білім деңгейі",
+    metricExamReadinessTitle: "ҰБТ-ға дайындық",
+    metricExamReadinessHint: "Практика мен диагностика негізінде",
     levelPrefix: "Деңгей",
     ctaStartFirstLesson: "Бірінші сабақтан бастау",
+    ctaContinueLesson: "Оқуды жалғастыру",
     ctaCheckLevel: "Деңгейді тексеру (5–10 минут)",
-    ctaOpenTopicMap: "Тақырыптар картасын ашу",
+    ctaOpenTopicMap: "Тақырыптар картасы",
     ctaGoPractice: "Практикаға өту",
     tabs: {
-      overview: "Курсқа шолу",
+      overview: "Оқу · Шолу",
       lesson: "Сабақ",
       practice: "Практика",
       error_lab: "Қателер зертханасы",
@@ -256,10 +303,10 @@ const WORKSPACE_I18N: Record<
     recommendedNextKicker: "ҰСЫНЫЛАТЫН КЕЛЕСІ ҚАДАМ",
     openLessonBtn: "Сабақты ашу →",
     startRecommendedLessonBtn: "Ұсынылған сабақты бастау →",
-    programTitle: "Пән бағдарламасы",
+    programTitle: "Пән бағдарламасы мен модульдер",
     lessonWord: "Сабақ",
     lessonCompletedBadge: "✓ Сабақ оқылды",
-    lessonReadBadge: "📖 Сабақ оқылды",
+    lessonReadBadge: "✓ Сабақ оқылды",
     goalPrefix: "Мақсаты:",
     repeatLessonBtn: "Сабақты қайталау",
     studyLessonBtn: "Оқу →",
@@ -267,7 +314,7 @@ const WORKSPACE_I18N: Record<
     explainSimplerBtn: "Қарапайым тілмен",
     deepBreakdownBtn: "Терең талдау",
     workedExampleTitle: "2. Қадамдық мысал мен талдау",
-    takeawayPrefix: "📌 Қорытынды:",
+    takeawayPrefix: "Негізгі қорытынды:",
     understandingCheckTitle: "3. Түсінгенді тексеру",
     allLessonQuestionsDone: "Сабақтың барлық тапсырмасы орындалды ✓",
     nextLessonQuestionBtn: "Келесі сұрақ →",
@@ -311,19 +358,33 @@ const WORKSPACE_I18N: Record<
     diagViewMapBtn: "Білім картасын көру"
   },
   uz: {
-    allSubjects: "Barcha fanlar (12)",
+    navToday: "Bugun",
+    allSubjects: "Fanlar (12)",
+    navUnt: "Sinov imtihoni",
+    navProgress: "Mening progressim",
+    navProfile: "Profil",
     workbookLink: "Ish daftari",
     progressPrefix: "Fan bo‘yicha progress:",
     ofWord: "/",
     accuracyPrefix: "Aniqlik",
     notAssessedYet: "Hali baholanmagan",
+    insufficientData: "Ma’lumot yetarli emas",
+    metricMaterialTitle: "Materialni o‘tish",
+    metricMaterialHint: "O‘qilgan darslar ulushi",
+    metricSkillsTitle: "O‘zlashtirilgan ko‘nikmalar",
+    metricSkillsHint: "Faqat tekshirilgan javoblar bo‘yicha",
+    metricDiagTitle: "So‘nggi diagnostika",
+    metricDiagHint: "Boshlang‘ich daraja",
+    metricExamReadinessTitle: "Imtihonga tayyorlik",
+    metricExamReadinessHint: "Amaliyot va diagnostika asosida",
     levelPrefix: "Daraja",
     ctaStartFirstLesson: "Birinchi darsdan boshlash",
-    ctaCheckLevel: "Darajani tekshirish (5–10 daqiqa)",
-    ctaOpenTopicMap: "Mavzular xaritasini ochish",
+    ctaContinueLesson: "O‘qishni davom ettirish",
+    ctaCheckLevel: "Bilimni tekshirish (5–10 daqiqa)",
+    ctaOpenTopicMap: "Mavzular xaritasi",
     ctaGoPractice: "Amaliyotga o‘tish",
     tabs: {
-      overview: "Kurs шарhi",
+      overview: "O‘rganish · Sharh",
       lesson: "Dars",
       practice: "Amaliyot",
       error_lab: "Xatolar laboratoriyasi",
@@ -335,10 +396,10 @@ const WORKSPACE_I18N: Record<
     recommendedNextKicker: "TAVSIYA ETILGAN KEYINGI QADAM",
     openLessonBtn: "Darsni ochish →",
     startRecommendedLessonBtn: "Tavsiya etilgan darsni boshlash →",
-    programTitle: "Fan dasturi",
+    programTitle: "Fan dasturi va modullar",
     lessonWord: "Dars",
     lessonCompletedBadge: "✓ Dars o‘qildi",
-    lessonReadBadge: "📖 Dars o‘qildi",
+    lessonReadBadge: "✓ Dars o‘qildi",
     goalPrefix: "Maqsad:",
     repeatLessonBtn: "Darsni takrorlash",
     studyLessonBtn: "O‘rganish →",
@@ -346,7 +407,7 @@ const WORKSPACE_I18N: Record<
     explainSimplerBtn: "Oddiyroq tushuntir",
     deepBreakdownBtn: "Chuqur tahlil",
     workedExampleTitle: "2. Qadam-baqadam misol tahlili",
-    takeawayPrefix: "📌 Xulosa:",
+    takeawayPrefix: "Asosiy xulosa:",
     understandingCheckTitle: "3. Tushunishni tekshirish",
     allLessonQuestionsDone: "Darsning barcha topshiriqlari bajarildi ✓",
     nextLessonQuestionBtn: "Keyingi savol →",
@@ -416,6 +477,15 @@ export function SubjectOverviewClient({
     return found ? found.index : 0;
   }, [curriculum, initialLessonId]);
 
+  const [requestedLessonOrTopic, setRequestedLessonOrTopic] = useState<string | null>(
+    initialLessonId ?? null
+  );
+
+  const topicValidation = useMemo(
+    () => validateSubjectTopicPair(subjectId, requestedLessonOrTopic),
+    [subjectId, requestedLessonOrTopic]
+  );
+
   const [locale, setLocale] = useState<Locale>(() => parseLocaleParam(initialLang) ?? "ru");
   const [activeTab, setActiveTab] = useState<SubjectWorkspaceTab>(() =>
     initialLessonId && !initialStartMode
@@ -456,6 +526,8 @@ export function SubjectOverviewClient({
       verificationBadge?: string;
     }>
   >([]);
+  const [workedExampleStepLimit, setWorkedExampleStepLimit] = useState<number | null>(null);
+  const [showShynKitapGuide, setShowShynKitapGuide] = useState<boolean>(false);
 
   const syncBrowserUrl = useCallback(
     (
@@ -515,7 +587,8 @@ export function SubjectOverviewClient({
       window.localStorage.setItem(LEGACY_LANG_STORAGE_KEY, resolvedLocale);
 
       const urlStart = params.get("start") ?? params.get("mode") ?? initialStartMode;
-      const urlLesson = params.get("lesson") ?? initialLessonId;
+      const urlLesson = params.get("lesson") ?? params.get("topic") ?? initialLessonId;
+      setRequestedLessonOrTopic(urlLesson ?? null);
 
       if (urlLesson) {
         const found = findSubjectLessonByIdOrSlug(curriculum, urlLesson);
@@ -679,6 +752,7 @@ export function SubjectOverviewClient({
     const safeIdx = Math.max(0, Math.min(idx, curriculum.lessons.length - 1));
     const targetLesson = curriculum.lessons[safeIdx];
     setSelectedLessonIndex(safeIdx);
+    setRequestedLessonOrTopic(targetLesson?.id ?? null);
     setLessonQuestionIndex(0);
     setLessonQuestionsFinished(false);
     setActiveTab("lesson");
@@ -942,23 +1016,44 @@ export function SubjectOverviewClient({
 
   const lastDiag = subjectProgress.lastDiagnostic;
 
+  const examReadinessPercent: number | null =
+    summaryMetrics.averageAccuracyPercent !== null && lastDiag
+      ? Math.round(summaryMetrics.averageAccuracyPercent * 0.6 + lastDiag.scorePercent * 0.4)
+      : summaryMetrics.averageAccuracyPercent !== null
+        ? summaryMetrics.averageAccuracyPercent
+        : lastDiag
+          ? lastDiag.scorePercent
+          : null;
+
+  const isMandatoryUntSubject =
+    curriculum.id === "history_kz" ||
+    curriculum.id === "math_lit" ||
+    curriculum.id === "math_literacy" ||
+    curriculum.id === "reading_lit" ||
+    curriculum.id === "reading_literacy";
+
+  const officialUntQuestionsCount =
+    curriculum.id === "history_kz" ? 20 : isMandatoryUntSubject ? 10 : 40;
+  const officialUntPointsCount =
+    curriculum.id === "history_kz" ? 20 : isMandatoryUntSubject ? 10 : 50;
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "var(--bilimai-bg, #F6F7FB)",
-        color: "var(--bilimai-text, #0F172A)"
+        background: "var(--bilimai-bg, #FAFAF8)",
+        color: "var(--bilimai-text, #202522)"
       }}
     >
-      {/* Top Universal Navigation Bar */}
+      {/* Top Universal Navigation Bar (5 Global Destinations + Subject Switcher + Lang/Theme) */}
       <header
         style={{
           position: "sticky",
           top: 0,
           zIndex: 30,
-          background: "var(--bilimai-header-bg, rgba(246, 247, 251, 0.94))",
+          background: "var(--bilimai-header-bg, rgba(250, 250, 248, 0.94))",
           backdropFilter: "blur(10px)",
-          borderBottom: "1px solid var(--bilimai-border, #D8E0EE)",
+          borderBottom: "1px solid var(--bilimai-border, #DCE2DD)",
           padding: "10px 16px"
         }}
       >
@@ -973,14 +1068,14 @@ export function SubjectOverviewClient({
             gap: 12
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <Link
               href={`/welcome?lang=${locale}`}
               style={{
                 fontWeight: 800,
                 fontSize: 18,
                 textDecoration: "none",
-                color: "var(--bilimai-text, #0F172A)",
+                color: "var(--bilimai-text, #202522)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8
@@ -991,7 +1086,7 @@ export function SubjectOverviewClient({
                   width: 28,
                   height: 28,
                   borderRadius: 8,
-                  background: "var(--bilimai-brand, #254EDB)",
+                  background: "var(--bilimai-brand, #156D5D)",
                   color: "var(--bilimai-on-brand, #fff)",
                   display: "inline-flex",
                   alignItems: "center",
@@ -1005,21 +1100,76 @@ export function SubjectOverviewClient({
               <span>BilimAI</span>
             </Link>
 
-            <Link
-              href={`/subjects?lang=${locale}`}
-              style={{
-                fontSize: 13.5,
-                color: "var(--bilimai-text-muted, #475569)",
-                textDecoration: "none",
-                fontWeight: 600,
-                padding: "8px 10px",
-                minHeight: 38,
-                display: "inline-flex",
-                alignItems: "center"
-              }}
+            <nav
+              aria-label="Глобальная навигация"
+              style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}
             >
-              {ui.allSubjects}
-            </Link>
+              <Link
+                href={`/?tab=today&subject=${curriculum.id}&lang=${locale}`}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-text-muted, #525D56)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.navToday}
+              </Link>
+              <Link
+                href={`/subjects?lang=${locale}`}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-brand-text, #0F5346)",
+                  background: "var(--bilimai-selected-bg, #E6F2EF)",
+                  textDecoration: "none",
+                  fontWeight: 700,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.allSubjects}
+              </Link>
+              <Link
+                href={`/?tab=exam&subject=${curriculum.id}&lang=${locale}`}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-text-muted, #525D56)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.navUnt}
+              </Link>
+              <Link
+                href={`/?tab=roadmap&subject=${curriculum.id}&lang=${locale}`}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-text-muted, #525D56)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.navProgress}
+              </Link>
+            </nav>
 
             <select
               aria-label="Выбор предмета"
@@ -1031,9 +1181,9 @@ export function SubjectOverviewClient({
                 padding: "7px 10px",
                 minHeight: 38,
                 borderRadius: 10,
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 background: "var(--bilimai-surface, #fff)",
-                color: "var(--bilimai-text, #0F172A)",
+                color: "var(--bilimai-text, #202522)",
                 fontSize: 13.5,
                 fontWeight: 600
               }}
@@ -1053,7 +1203,7 @@ export function SubjectOverviewClient({
               style={{
                 display: "inline-flex",
                 borderRadius: 10,
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 overflow: "hidden",
                 background: "var(--bilimai-surface, #fff)"
               }}
@@ -1069,11 +1219,11 @@ export function SubjectOverviewClient({
                     padding: "7px 11px",
                     minHeight: 38,
                     border: "none",
-                    background: locale === lang ? "var(--bilimai-brand, #254EDB)" : "transparent",
+                    background: locale === lang ? "var(--bilimai-brand, #156D5D)" : "transparent",
                     color:
                       locale === lang
                         ? "var(--bilimai-on-brand, #fff)"
-                        : "var(--bilimai-text, #0F172A)",
+                        : "var(--bilimai-text, #202522)",
                     fontSize: 12,
                     fontWeight: 700,
                     cursor: "pointer"
@@ -1092,22 +1242,22 @@ export function SubjectOverviewClient({
             />
 
             <Link
-              href={`/?subject=${curriculum.id}&lang=${locale}`}
+              href={`/login?lang=${locale}`}
               style={{
                 padding: "8px 12px",
                 minHeight: 38,
                 display: "inline-flex",
                 alignItems: "center",
                 borderRadius: 10,
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 background: "var(--bilimai-surface, #fff)",
                 textDecoration: "none",
-                color: "var(--bilimai-text, #0F172A)",
+                color: "var(--bilimai-text, #202522)",
                 fontSize: 13,
                 fontWeight: 600
               }}
             >
-              {ui.workbookLink}
+              {ui.navProfile}
             </Link>
           </div>
         </div>
@@ -1122,16 +1272,97 @@ export function SubjectOverviewClient({
           gap: 18
         }}
       >
-        {/* Subject Hero (Full on overview, compact context bar on active study tabs) */}
+        {!topicValidation.valid && (
+          <div
+            className="subject-topic-mismatch-banner"
+            data-testid="subject-topic-mismatch-banner"
+            role="alert"
+          >
+            <div style={{ flex: "1 1 320px" }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 800,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  color: "#b45309",
+                  marginBottom: 4
+                }}
+              >
+                {locale === "kk"
+                  ? "Пән мен тақырыпты тексеру"
+                  : locale === "uz"
+                    ? "Fan va mavzu tekshiruvi"
+                    : "Проверка соответствия предмета и темы"}
+              </div>
+              <strong style={{ display: "block", fontSize: 15, lineHeight: 1.4 }}>
+                {topicValidation.message?.[locale] ?? topicValidation.message?.ru}
+              </strong>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              <button
+                type="button"
+                data-testid="mismatch-open-selected-subject-btn"
+                onClick={() => openLessonByIndex(0)}
+                style={{
+                  padding: "9px 14px",
+                  borderRadius: 10,
+                  border: "none",
+                  background: "var(--bilimai-brand, #156D5D)",
+                  color: "var(--bilimai-on-brand, #fff)",
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  cursor: "pointer"
+                }}
+              >
+                {locale === "kk"
+                  ? `«${curriculum.title.kk}» сабақтарын оқу →`
+                  : locale === "uz"
+                    ? `«${curriculum.title.uz}» darslarini o‘qish →`
+                    : `Изучать «${curriculum.title.ru}» →`}
+              </button>
+              {topicValidation.ownerSubjectId &&
+                topicValidation.ownerSubjectTitle &&
+                topicValidation.ownerLesson && (
+                  <Link
+                    href={
+                      topicValidation.ownerSubjectId === "math"
+                        ? `/?lang=${locale}&tab=lesson&topic=${encodeURIComponent(topicValidation.ownerLesson.topicId)}&subject=math`
+                        : `/subjects/${topicValidation.ownerSubjectId}/lessons/${encodeURIComponent(topicValidation.ownerLesson.id)}?lang=${locale}`
+                    }
+                    data-testid="mismatch-switch-owner-subject-btn"
+                    style={{
+                      padding: "9px 14px",
+                      borderRadius: 10,
+                      border: "1px solid var(--bilimai-border, #DCE2DD)",
+                      background: "var(--bilimai-surface, #fff)",
+                      color: "var(--bilimai-text, #202522)",
+                      textDecoration: "none",
+                      fontSize: 13.5,
+                      fontWeight: 700
+                    }}
+                  >
+                    {locale === "kk"
+                      ? `«${topicValidation.ownerSubjectTitle.kk}» пәніне өту`
+                      : locale === "uz"
+                        ? `«${topicValidation.ownerSubjectTitle.uz}» faniga o‘tish`
+                        : `Перейти к предмету «${topicValidation.ownerSubjectTitle.ru}»`}
+                  </Link>
+                )}
+            </div>
+          </div>
+        )}
+
+        {/* Subject Hero (Focused Editorial First Screen on overview, compact context bar on active study tabs) */}
         <section
           data-testid="subject-overview-hero"
           style={{
             background: "var(--bilimai-surface, #ffffff)",
-            border: "1px solid var(--bilimai-border, #D8E0EE)",
+            border: "1px solid var(--bilimai-border, #DCE2DD)",
             borderRadius: activeTab === "overview" ? 20 : 14,
-            padding: activeTab === "overview" ? "20px 22px" : "12px 16px",
+            padding: activeTab === "overview" ? "22px 24px" : "12px 16px",
             display: "grid",
-            gap: activeTab === "overview" ? 14 : 8
+            gap: activeTab === "overview" ? 16 : 8
           }}
         >
           <div
@@ -1148,8 +1379,8 @@ export function SubjectOverviewClient({
                 style={{
                   padding: "4px 10px",
                   borderRadius: 999,
-                  background: "var(--bilimai-selected-bg, #E0E7FF)",
-                  color: "var(--bilimai-selected-text, #1E3A8A)",
+                  background: "var(--bilimai-selected-bg, #E6F2EF)",
+                  color: "var(--bilimai-selected-text, #0F5346)",
                   fontWeight: 800,
                   fontSize: 12
                 }}
@@ -1161,8 +1392,19 @@ export function SubjectOverviewClient({
                   {curriculum.title[locale]}
                 </h1>
               ) : (
-                <span style={{ fontSize: 13, color: "var(--bilimai-text-muted, #475569)" }}>
-                  {formatLessonsCountLabel(curriculum.lessons.length, locale)} ·{" "}
+                <span style={{ fontSize: 13, color: "var(--bilimai-text-muted, #525D56)", fontWeight: 600 }}>
+                  {isMandatoryUntSubject
+                    ? locale === "kk"
+                      ? `ҰБТ міндетті пәні (${officialUntQuestionsCount} сұрақ)`
+                      : locale === "uz"
+                        ? `Majburiy fan (${officialUntQuestionsCount} savol)`
+                        : `Обязательный предмет ЕНТ (${officialUntQuestionsCount} вопросов)`
+                    : locale === "kk"
+                      ? "ҰБТ бейіндік пәні (40 сұрақ)"
+                      : locale === "uz"
+                        ? "ixtisoslik fani (40 savol)"
+                        : "Профильный предмет ЕНТ (40 вопросов)"}{" "}
+                  · {formatLessonsCountLabel(curriculum.lessons.length, locale)} ·{" "}
                   {formatQuestionsCountLabel(allPracticeQuestions.length, locale)}
                 </span>
               )}
@@ -1170,11 +1412,11 @@ export function SubjectOverviewClient({
                 <span
                   style={{
                     fontSize: 12,
-                    fontWeight: 700,
+                    fontWeight: 600,
                     padding: "3px 9px",
                     borderRadius: 999,
-                    background: "var(--bilimai-surface-raised, #EEF2F9)",
-                    color: "var(--bilimai-text-muted, #475569)"
+                    background: "var(--bilimai-surface-raised, #F0F2EF)",
+                    color: "var(--bilimai-text-muted, #525D56)"
                   }}
                 >
                   {curriculum.readinessLabel[locale]}
@@ -1184,14 +1426,24 @@ export function SubjectOverviewClient({
 
             <div
               data-testid="subject-isolated-progress-pill"
+              role="button"
+              tabIndex={0}
+              onClick={() => switchTab("map")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  switchTab("map");
+                }
+              }}
               style={{
                 fontSize: 12.5,
                 fontWeight: 600,
                 padding: "5px 11px",
                 borderRadius: 999,
-                background: "var(--bilimai-surface-raised, #EEF2F9)",
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
-                color: "var(--bilimai-text, #0F172A)"
+                background: "var(--bilimai-surface-raised, #F0F2EF)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
+                color: "var(--bilimai-text, #202522)",
+                cursor: "pointer"
               }}
             >
               {ui.progressPrefix} {summaryMetrics.completedLessons} {ui.ofWord}{" "}
@@ -1205,115 +1457,334 @@ export function SubjectOverviewClient({
 
           {activeTab === "overview" && (
             <>
-              <div>
-                <h1 style={{ margin: "0 0 8px", fontSize: "clamp(22px, 3vw, 30px)", lineHeight: 1.2 }}>
+              <div style={{ maxWidth: "74ch" }}>
+                <h1
+                  style={{
+                    margin: "0 0 8px",
+                    fontSize: "clamp(24px, 3vw, 32px)",
+                    lineHeight: 1.18,
+                    letterSpacing: "-0.02em"
+                  }}
+                >
                   {curriculum.title[locale]}
                 </h1>
-                <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.5, color: "var(--bilimai-text-muted, #475569)" }}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 16,
+                    lineHeight: 1.55,
+                    color: "var(--bilimai-text-muted, #525D56)"
+                  }}
+                >
                   {curriculum.description[locale]}
                 </p>
               </div>
 
-              {/* Available levels */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {(curriculum.levels[locale] ?? curriculum.levels.ru).map((lvl, idx) => (
+              {/* 4 Separated Honest Progress Metrics (Section 6 & Section 16) */}
+              <div
+                data-testid="subject-honest-metrics-grid"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gap: 10
+                }}
+              >
+                <div
+                  data-testid="metric-material-completion"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => openLessonByIndex(recommendedLessonInfo.index)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openLessonByIndex(recommendedLessonInfo.index);
+                    }
+                  }}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    background: "var(--bilimai-surface-raised, #F0F2EF)",
+                    border: "1px solid var(--bilimai-border, #DCE2DD)",
+                    display: "grid",
+                    gap: 3,
+                    cursor: "pointer"
+                  }}
+                >
                   <span
-                    key={idx}
                     style={{
-                      fontSize: 12.5,
-                      padding: "5px 11px",
-                      borderRadius: 999,
-                      background: "var(--bilimai-surface-raised, #EEF2F9)",
-                      color: "var(--bilimai-text, #0F172A)"
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--bilimai-text-muted, #525D56)"
                     }}
                   >
-                    {ui.levelPrefix} {idx + 1}: {lvl}
+                    {ui.metricMaterialTitle}
                   </span>
-                ))}
+                  <strong style={{ fontSize: 19, color: "var(--bilimai-text, #202522)" }}>
+                    {summaryMetrics.completionPercent}%{" "}
+                    <span
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 500,
+                        color: "var(--bilimai-text-muted, #525D56)"
+                      }}
+                    >
+                      ({summaryMetrics.completedLessons}/{summaryMetrics.totalLessons})
+                    </span>
+                  </strong>
+                  <span style={{ fontSize: 11.5, color: "var(--bilimai-text-muted, #525D56)" }}>
+                    {ui.metricMaterialHint} →
+                  </span>
+                </div>
+
+                <div
+                  data-testid="metric-skill-mastery"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => switchTab("practice")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      switchTab("practice");
+                    }
+                  }}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    background: "var(--bilimai-surface-raised, #F0F2EF)",
+                    border: "1px solid var(--bilimai-border, #DCE2DD)",
+                    display: "grid",
+                    gap: 3,
+                    cursor: "pointer"
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--bilimai-text-muted, #525D56)"
+                    }}
+                  >
+                    {ui.metricSkillsTitle}
+                  </span>
+                  <strong
+                    style={{
+                      fontSize: summaryMetrics.averageAccuracyPercent !== null ? 19 : 15,
+                      color:
+                        summaryMetrics.averageAccuracyPercent !== null
+                          ? "var(--bilimai-brand-text, #0F5346)"
+                          : "var(--bilimai-text-muted, #525D56)"
+                    }}
+                  >
+                    {summaryMetrics.averageAccuracyPercent !== null
+                      ? `${summaryMetrics.averageAccuracyPercent}%`
+                      : ui.insufficientData}
+                  </strong>
+                  <span style={{ fontSize: 11.5, color: "var(--bilimai-text-muted, #525D56)" }}>
+                    {ui.metricSkillsHint} →
+                  </span>
+                </div>
+
+                <div
+                  data-testid="metric-last-diagnostic"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => switchTab("diagnostic")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      switchTab("diagnostic");
+                    }
+                  }}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    background: "var(--bilimai-surface-raised, #F0F2EF)",
+                    border: "1px solid var(--bilimai-border, #DCE2DD)",
+                    display: "grid",
+                    gap: 3,
+                    cursor: "pointer"
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--bilimai-text-muted, #525D56)"
+                    }}
+                  >
+                    {ui.metricDiagTitle}
+                  </span>
+                  <strong
+                    style={{
+                      fontSize: lastDiag ? 19 : 15,
+                      color: lastDiag
+                        ? "var(--bilimai-text, #202522)"
+                        : "var(--bilimai-text-muted, #525D56)"
+                    }}
+                  >
+                    {lastDiag ? `${lastDiag.scorePercent}%` : ui.insufficientData}
+                  </strong>
+                  <span style={{ fontSize: 11.5, color: "var(--bilimai-text-muted, #525D56)" }}>
+                    {ui.metricDiagHint} →
+                  </span>
+                </div>
+
+                <div
+                  data-testid="metric-exam-readiness"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.location.assign(
+                        `/?tab=exam&subject=${curriculum.id}&lang=${locale}`
+                      );
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      if (typeof window !== "undefined") {
+                        window.location.assign(
+                          `/?tab=exam&subject=${curriculum.id}&lang=${locale}`
+                        );
+                      }
+                    }
+                  }}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    background: "var(--bilimai-surface-raised, #F0F2EF)",
+                    border: "1px solid var(--bilimai-border, #DCE2DD)",
+                    display: "grid",
+                    gap: 3,
+                    cursor: "pointer"
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "var(--bilimai-text-muted, #525D56)"
+                    }}
+                  >
+                    {ui.metricExamReadinessTitle}
+                  </span>
+                  <strong
+                    style={{
+                      fontSize: examReadinessPercent !== null ? 19 : 15,
+                      color:
+                        examReadinessPercent !== null
+                          ? "var(--bilimai-brand-text, #0F5346)"
+                          : "var(--bilimai-text-muted, #525D56)"
+                    }}
+                  >
+                    {examReadinessPercent !== null ? `${examReadinessPercent}%` : ui.insufficientData}
+                  </strong>
+                  <span style={{ fontSize: 11.5, color: "var(--bilimai-text-muted, #525D56)" }}>
+                    {ui.metricExamReadinessHint} →
+                  </span>
+                </div>
               </div>
 
-              {/* 4 Required Primary Buttons */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, paddingTop: 4 }}>
-                <button
-                  type="button"
-                  data-testid="cta-start-first-lesson"
-                  onClick={() => openLessonByIndex(0)}
-                  style={{
-                    padding: "12px 18px",
-                    minHeight: 44,
-                    borderRadius: 12,
-                    border: "none",
-                    background: "var(--bilimai-brand, #254EDB)",
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: 15,
-                    cursor: "pointer"
-                  }}
-                >
-                  {ui.ctaStartFirstLesson}
-                </button>
+              {/* 1 Primary CTA + 1 Secondary CTA + subtle quick links (preserving all data-testids) */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  paddingTop: 4
+                }}
+              >
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  <button
+                    type="button"
+                    data-testid="cta-start-first-lesson"
+                    onClick={() => openLessonByIndex(recommendedLessonInfo.index)}
+                    className="editorial-interactive-btn"
+                    style={{
+                      padding: "12px 20px",
+                      minHeight: 44,
+                      borderRadius: 12,
+                      border: "none",
+                      background: "var(--bilimai-brand, #156D5D)",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      cursor: "pointer"
+                    }}
+                  >
+                    {summaryMetrics.completedLessons > 0
+                      ? ui.ctaContinueLesson
+                      : ui.ctaStartFirstLesson}
+                  </button>
 
-                <button
-                  type="button"
-                  data-testid="cta-check-level"
-                  onClick={() => {
-                    setDiagIndex(0);
-                    setDiagResponses([]);
-                    setDiagDone(false);
-                    switchTab("diagnostic");
-                  }}
-                  style={{
-                    padding: "12px 16px",
-                    minHeight: 44,
-                    borderRadius: 12,
-                    border: "1px solid var(--bilimai-selected-border, #254EDB)",
-                    background: "var(--bilimai-selected-bg, #E0E7FF)",
-                    color: "var(--bilimai-selected-text, #1E3A8A)",
-                    fontWeight: 700,
-                    fontSize: 14.5,
-                    cursor: "pointer"
-                  }}
-                >
-                  {ui.ctaCheckLevel}
-                </button>
+                  <button
+                    type="button"
+                    data-testid="cta-check-level"
+                    onClick={() => {
+                      setDiagIndex(0);
+                      setDiagResponses([]);
+                      setDiagDone(false);
+                      switchTab("diagnostic");
+                    }}
+                    className="editorial-interactive-btn"
+                    style={{
+                      padding: "12px 16px",
+                      minHeight: 44,
+                      borderRadius: 12,
+                      border: "1px solid var(--bilimai-selected-border, #156D5D)",
+                      background: "var(--bilimai-selected-bg, #E6F2EF)",
+                      color: "var(--bilimai-selected-text, #0F5346)",
+                      fontWeight: 700,
+                      fontSize: 14.5,
+                      cursor: "pointer"
+                    }}
+                  >
+                    {ui.ctaCheckLevel}
+                  </button>
+                </div>
 
-                <button
-                  type="button"
-                  data-testid="cta-open-topic-map"
-                  onClick={() => switchTab("map")}
-                  style={{
-                    padding: "12px 16px",
-                    minHeight: 44,
-                    borderRadius: 12,
-                    border: "1px solid var(--bilimai-border, #D8E0EE)",
-                    background: "var(--bilimai-surface, #fff)",
-                    color: "var(--bilimai-text, #0F172A)",
-                    fontWeight: 600,
-                    fontSize: 14.5,
-                    cursor: "pointer"
-                  }}
-                >
-                  {ui.ctaOpenTopicMap}
-                </button>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  <button
+                    type="button"
+                    data-testid="cta-open-topic-map"
+                    onClick={() => switchTab("map")}
+                    style={{
+                      padding: "10px 14px",
+                      minHeight: 40,
+                      borderRadius: 10,
+                      border: "1px solid var(--bilimai-border, #DCE2DD)",
+                      background: "transparent",
+                      color: "var(--bilimai-text-muted, #525D56)",
+                      fontWeight: 600,
+                      fontSize: 13.5,
+                      cursor: "pointer"
+                    }}
+                  >
+                    {ui.ctaOpenTopicMap}
+                  </button>
 
-                <button
-                  type="button"
-                  data-testid="cta-go-practice"
-                  onClick={() => switchTab("practice")}
-                  style={{
-                    padding: "12px 16px",
-                    minHeight: 44,
-                    borderRadius: 12,
-                    border: "1px solid var(--bilimai-border, #D8E0EE)",
-                    background: "var(--bilimai-surface, #fff)",
-                    color: "var(--bilimai-text, #0F172A)",
-                    fontWeight: 600,
-                    fontSize: 14.5,
-                    cursor: "pointer"
-                  }}
-                >
-                  {ui.ctaGoPractice}
-                </button>
+                  <button
+                    type="button"
+                    data-testid="cta-go-practice"
+                    onClick={() => switchTab("practice")}
+                    style={{
+                      padding: "10px 14px",
+                      minHeight: 40,
+                      borderRadius: 10,
+                      border: "1px solid var(--bilimai-border, #DCE2DD)",
+                      background: "transparent",
+                      color: "var(--bilimai-text-muted, #525D56)",
+                      fontWeight: 600,
+                      fontSize: 13.5,
+                      cursor: "pointer"
+                    }}
+                  >
+                    {ui.ctaGoPractice}
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -1327,7 +1798,7 @@ export function SubjectOverviewClient({
             flexWrap: "nowrap",
             overflowX: "auto",
             gap: 6,
-            borderBottom: "1px solid var(--bilimai-border, #D8E0EE)",
+            borderBottom: "1px solid var(--bilimai-border, #DCE2DD)",
             paddingBottom: 8,
             scrollbarWidth: "thin"
           }}
@@ -1349,10 +1820,12 @@ export function SubjectOverviewClient({
                   minHeight: 40,
                   borderRadius: 10,
                   border: active
-                    ? "1px solid var(--bilimai-selected-border, #254EDB)"
-                    : "1px solid var(--bilimai-border, #D8E0EE)",
-                  background: active ? "var(--bilimai-brand, #254EDB)" : "var(--bilimai-surface, #fff)",
-                  color: active ? "#fff" : "var(--bilimai-text, #0F172A)",
+                    ? "1px solid var(--bilimai-selected-border, #156D5D)"
+                    : "1px solid var(--bilimai-border, #DCE2DD)",
+                  background: active
+                    ? "var(--bilimai-brand, #156D5D)"
+                    : "var(--bilimai-surface, #fff)",
+                  color: active ? "#fff" : "var(--bilimai-text, #202522)",
                   fontWeight: 600,
                   fontSize: 13.5,
                   cursor: "pointer"
@@ -1376,12 +1849,12 @@ export function SubjectOverviewClient({
               display: "inline-flex",
               alignItems: "center",
               borderRadius: 10,
-              border: "1px dashed var(--bilimai-border, #D8E0EE)",
-              background: "transparent",
-              color: "var(--bilimai-text-muted, #475569)",
+              border: "1px solid var(--bilimai-border, #DCE2DD)",
+              background: "var(--bilimai-surface-raised, #F0F2EF)",
+              color: "var(--bilimai-brand-text, #0F5346)",
               textDecoration: "none",
               fontSize: 13,
-              fontWeight: 600
+              fontWeight: 700
             }}
           >
             {ui.untSimulatorBtn}
@@ -1391,13 +1864,14 @@ export function SubjectOverviewClient({
         {/* TAB 1: OVERVIEW */}
         {activeTab === "overview" && (
           <div style={{ display: "grid", gap: 18 }}>
+            {/* Recommended Next Step Card */}
             <div
               data-testid="recommended-next-step-card"
               style={{
                 padding: "16px 20px",
                 borderRadius: 16,
-                background: "rgba(56, 86, 245, 0.07)",
-                border: "1px solid rgba(56, 86, 245, 0.25)",
+                background: "var(--bilimai-selected-bg, #E6F2EF)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "center",
@@ -1406,13 +1880,26 @@ export function SubjectOverviewClient({
               }}
             >
               <div>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--bilimai-brand-text, #1D4ED8)" }}>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: "0.04em",
+                    color: "var(--bilimai-brand-text, #0F5346)"
+                  }}
+                >
                   {ui.recommendedNextKicker}
                 </span>
                 <div style={{ fontSize: 17, fontWeight: 700, marginTop: 2 }}>
                   {recommendedLessonInfo.lesson.title[locale]}
                 </div>
-                <div style={{ fontSize: 13.5, color: "var(--bilimai-text-muted, #475569)", marginTop: 2 }}>
+                <div
+                  style={{
+                    fontSize: 13.5,
+                    color: "var(--bilimai-text-muted, #525D56)",
+                    marginTop: 2
+                  }}
+                >
                   {recommendedLessonInfo.reason[locale]}
                 </div>
               </div>
@@ -1420,12 +1907,13 @@ export function SubjectOverviewClient({
                 type="button"
                 data-testid="open-recommended-lesson-btn"
                 onClick={() => openLessonByIndex(recommendedLessonInfo.index)}
+                className="editorial-interactive-btn"
                 style={{
                   padding: "10px 16px",
                   minHeight: 42,
                   borderRadius: 10,
                   border: "none",
-                  background: "var(--bilimai-brand, #254EDB)",
+                  background: "var(--bilimai-brand, #156D5D)",
                   color: "#fff",
                   fontWeight: 600,
                   cursor: "pointer"
@@ -1435,19 +1923,215 @@ export function SubjectOverviewClient({
               </button>
             </div>
 
+            {/* Interactive Subject Activity Studio (History of KZ Timeline/Map/Comparison/Sources/Cause-Effect & 12-Subject Labs) */}
+            <SubjectActivityAdapter subjectId={curriculum.id} locale={locale} />
+
+            {/* Duolingo-Style Interactive Skill Path Roadmap with Shyn Kitap Guidebook */}
             <section
+              data-testid="overview-duolingo-roadmap"
               style={{
                 background: "var(--bilimai-surface, #fff)",
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 borderRadius: 18,
                 padding: "18px 20px",
                 display: "grid",
                 gap: 12
               }}
             >
-              <h2 style={{ margin: 0, fontSize: 19 }}>
-                {ui.programTitle} ({formatLessonsCountLabel(curriculum.lessons.length, locale)})
-              </h2>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10
+                }}
+              >
+                <div>
+                  <span
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--bilimai-brand-text, #0F5346)"
+                    }}
+                  >
+                    Шың-кітап · Интерактивный маршрут Duolingo
+                  </span>
+                  <h2 style={{ margin: "2px 0 0", fontSize: 19 }}>
+                    {locale === "kk"
+                      ? "Оқу маршруты және Шың-кітап анықтамалығы"
+                      : locale === "uz"
+                        ? "O‘quv yo‘nalishi va Shyn-kitap ma’lumotnomasi"
+                        : "Пошаговый маршрут разделов и конспект Шың-кітап"}
+                  </h2>
+                </div>
+              </div>
+
+              <DuolingoSkillPath
+                subjectId={curriculum.id as UntSubjectId}
+                lang={locale}
+                completedLessonIds={subjectProgress.completedLessonIds}
+                topicStats={subjectProgress.topicStats}
+                activeLessonId={currentLesson?.id}
+                onSelectLesson={(lesson, mode) => {
+                  const idx = curriculum.lessons.findIndex((l) => l.id === lesson.id);
+                  if (mode === "lesson") {
+                    openLessonByIndex(idx >= 0 ? idx : 0);
+                  } else if (mode === "practice") {
+                    switchTab("practice");
+                  } else if (mode === "error_lab") {
+                    switchTab("error_lab");
+                  } else if (mode === "exam") {
+                    if (typeof window !== "undefined") {
+                      window.location.href = `/?tab=exam&subject=${curriculum.id}&lang=${locale}`;
+                    }
+                  }
+                }}
+              />
+            </section>
+
+            {/* Structured Course Modules & Lessons */}
+            <section
+              id="modules"
+              style={{
+                background: "var(--bilimai-surface, #fff)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
+                borderRadius: 18,
+                padding: "18px 20px",
+                display: "grid",
+                gap: 14
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10
+                }}
+              >
+                <h2 style={{ margin: 0, fontSize: 19 }}>
+                  {ui.programTitle} ({formatLessonsCountLabel(curriculum.lessons.length, locale)})
+                </h2>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {(curriculum.levels[locale] ?? curriculum.levels.ru).map((lvl, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        fontSize: 12,
+                        padding: "4px 10px",
+                        borderRadius: 999,
+                        background: "var(--bilimai-surface-raised, #F0F2EF)",
+                        color: "var(--bilimai-text-muted, #525D56)"
+                      }}
+                    >
+                      {ui.levelPrefix} {idx + 1}: {lvl}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {curriculum.modules && curriculum.modules.length > 0 && (
+                <div
+                  data-testid="subject-modules-grid"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                    gap: 10
+                  }}
+                >
+                  {curriculum.modules.map((mod, mIdx) => {
+                    const modLessons = curriculum.lessons
+                      .map((l, lIdx) => ({ lesson: l, lIdx }))
+                      .filter(
+                        ({ lesson }) =>
+                          mod.topicIds.includes(lesson.topicId) ||
+                          mod.topicIds.includes(lesson.id) ||
+                          lesson.moduleId === mod.id
+                      );
+                    const firstIdx = modLessons[0]?.lIdx ?? Math.min(mIdx * 2, curriculum.lessons.length - 1);
+
+                    return (
+                      <div
+                        key={mod.id}
+                        style={{
+                          padding: "14px 16px",
+                          borderRadius: 12,
+                          background: "var(--bilimai-surface-raised, #F0F2EF)",
+                          border: "1px solid var(--bilimai-border, #DCE2DD)",
+                          display: "grid",
+                          gap: 6
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span
+                            style={{
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              color: "var(--bilimai-brand-text, #0F5346)"
+                            }}
+                          >
+                            {locale === "kk"
+                              ? `Модуль ${mIdx + 1} · Шың-кітап`
+                              : locale === "uz"
+                                ? `Modul ${mIdx + 1} · Shyn-kitap`
+                                : `Модуль ${mIdx + 1} · Шың-кітап`}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => openLessonByIndex(firstIdx)}
+                            style={{
+                              padding: "4px 10px",
+                              borderRadius: 8,
+                              border: "1px solid var(--bilimai-selected-border, #156D5D)",
+                              background: "var(--bilimai-surface, #fff)",
+                              color: "var(--bilimai-brand-text, #0F5346)",
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              cursor: "pointer"
+                            }}
+                          >
+                            {ui.openLessonBtn} →
+                          </button>
+                        </div>
+                        <strong style={{ fontSize: 14.5 }}>{mod.title[locale]}</strong>
+                        {(mod.description || mod.summary) && (
+                          <span style={{ fontSize: 12.5, color: "var(--bilimai-text-muted, #525D56)" }}>
+                            {(mod.description ?? mod.summary)?.[locale]}
+                          </span>
+                        )}
+                        {modLessons.length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+                            {modLessons.map(({ lesson, lIdx }) => (
+                              <button
+                                key={lesson.id}
+                                type="button"
+                                onClick={() => openLessonByIndex(lIdx)}
+                                style={{
+                                  padding: "4px 9px",
+                                  borderRadius: 999,
+                                  border: "1px solid var(--bilimai-border, #DCE2DD)",
+                                  background: "var(--bilimai-surface, #fff)",
+                                  color: "var(--bilimai-text, #202522)",
+                                  fontSize: 11.5,
+                                  fontWeight: 600,
+                                  cursor: "pointer"
+                                }}
+                              >
+                                #{lIdx + 1} {lesson.title[locale]}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               <div style={{ display: "grid", gap: 10 }}>
                 {curriculum.lessons.map((lesson, idx) => {
                   const isDone = subjectProgress.completedLessonIds.includes(lesson.id);
@@ -1461,15 +2145,15 @@ export function SubjectOverviewClient({
                         alignItems: "center",
                         justifyContent: "space-between",
                         gap: 12,
-                        padding: "12px 14px",
+                        padding: "14px 16px",
                         borderRadius: 14,
-                        border: "1px solid var(--bilimai-border, #D8E0EE)",
+                        border: "1px solid var(--bilimai-border, #DCE2DD)",
                         background: isDone
-                          ? "rgba(22, 163, 74, 0.07)"
-                          : "var(--bilimai-surface-raised, #EEF2F9)"
+                          ? "var(--bilimai-selected-bg, #E6F2EF)"
+                          : "var(--bilimai-surface-raised, #F0F2EF)"
                       }}
                     >
-                      <div style={{ display: "grid", gap: 3 }}>
+                      <div style={{ display: "grid", gap: 4 }}>
                         <div
                           style={{
                             display: "flex",
@@ -1482,10 +2166,11 @@ export function SubjectOverviewClient({
                             style={{
                               fontSize: 12,
                               fontWeight: 700,
-                              color: "var(--bilimai-text-muted, #475569)"
+                              color: "var(--bilimai-text-muted, #525D56)"
                             }}
                           >
-                            {ui.lessonWord} {idx + 1} · {lesson.sectionTitle[locale]}
+                            {ui.lessonWord} {idx + 1} · {lesson.sectionTitle[locale]} · ~
+                            {lesson.estimatedMinutes} min
                           </span>
                           {isDone && (
                             <span
@@ -1494,25 +2179,36 @@ export function SubjectOverviewClient({
                                 fontWeight: 700,
                                 padding: "2px 8px",
                                 borderRadius: 999,
-                                background: "var(--bilimai-success-bg, #DCFCE7)",
-                                color: "var(--bilimai-success-text, #166534)"
+                                background: "var(--bilimai-success-bg, #ECFDF5)",
+                                color: "var(--bilimai-success-text, #065F46)"
                               }}
                             >
                               {ui.lessonCompletedBadge}
                             </span>
                           )}
                           {topicStat && topicStat.max > 0 ? (
-                            <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #475569)" }}>
-                              {ui.accuracyPrefix}: {Math.round((topicStat.earned / topicStat.max) * 100)}%
+                            <span
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "var(--bilimai-brand-text, #0F5346)"
+                              }}
+                            >
+                              {ui.accuracyPrefix}:{" "}
+                              {Math.round((topicStat.earned / topicStat.max) * 100)}%
                             </span>
                           ) : (
-                            <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #475569)" }}>
+                            <span
+                              style={{ fontSize: 12, color: "var(--bilimai-text-muted, #525D56)" }}
+                            >
                               {ui.notAssessedYet}
                             </span>
                           )}
                         </div>
                         <strong style={{ fontSize: 16 }}>{lesson.title[locale]}</strong>
-                        <span style={{ fontSize: 13.5, color: "var(--bilimai-text-muted, #475569)" }}>
+                        <span
+                          style={{ fontSize: 13.5, color: "var(--bilimai-text-muted, #525D56)" }}
+                        >
                           {ui.goalPrefix} {lesson.learningGoal[locale]}
                         </span>
                       </div>
@@ -1521,13 +2217,14 @@ export function SubjectOverviewClient({
                         type="button"
                         data-testid={`open-lesson-idx-${idx}`}
                         onClick={() => openLessonByIndex(idx)}
+                        className="editorial-interactive-btn"
                         style={{
                           padding: "10px 15px",
                           minHeight: 42,
                           borderRadius: 10,
-                          border: "1px solid var(--bilimai-selected-border, #254EDB)",
+                          border: "1px solid var(--bilimai-selected-border, #156D5D)",
                           background: "var(--bilimai-surface, #fff)",
-                          color: "var(--bilimai-brand-text, #1D4ED8)",
+                          color: "var(--bilimai-brand-text, #0F5346)",
                           fontWeight: 600,
                           fontSize: 13.5,
                           cursor: "pointer"
@@ -1540,6 +2237,72 @@ export function SubjectOverviewClient({
                 })}
               </div>
             </section>
+
+            {/* Official NCT Exam Format & Simulator Bridge Card (Section 13) */}
+            <section
+              data-testid="subject-unt-format-card"
+              style={{
+                background: "var(--bilimai-surface, #fff)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
+                borderRadius: 16,
+                padding: "16px 20px",
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 14
+              }}
+            >
+              <div style={{ display: "grid", gap: 4, maxWidth: "70ch" }}>
+                <span
+                  style={{
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    letterSpacing: "0.04em",
+                    color: "var(--bilimai-brand-text, #0F5346)",
+                    textTransform: "uppercase"
+                  }}
+                >
+                  {locale === "kk"
+                    ? "ҰТК РЕСМИ ҰБТ ФОРМАТЫ ЖӘНЕ ТРЕНАЖЕР"
+                    : locale === "uz"
+                      ? "RASMIY IMTIHON FORMATI VA TRENAJYOR"
+                      : "ОФИЦИАЛЬНАЯ СПЕЦИФИКАЦИЯ НЦТ РК И ПРОБНОЕ ЕНТ"}
+                </span>
+                <strong style={{ fontSize: 16 }}>
+                  {locale === "kk"
+                    ? `${curriculum.title.kk}: ресми формат — ${officialUntQuestionsCount} сұрақ (${officialUntPointsCount} балл), кеңейтілген жаттығу банкі — 40 сұрақ`
+                    : locale === "uz"
+                      ? `${curriculum.title.uz}: rasmiy format — ${officialUntQuestionsCount} savol (${officialUntPointsCount} ball), kengaytirilgan mashq banki — 40 savol`
+                      : `${curriculum.title.ru}: официальный формат НЦТ — ${officialUntQuestionsCount} вопросов (${officialUntPointsCount} баллов), расширенная тренировка — 40 вопросов`}
+                </strong>
+                <span style={{ fontSize: 13.5, color: "var(--bilimai-text-muted, #525D56)" }}>
+                  {locale === "kk"
+                    ? "Тренажерде бір жауапты, мәнмәтіндік (контекст), сәйкестендіру (A/B) және көп таңдаулы тапсырмалар қолжетімді."
+                    : locale === "uz"
+                      ? "Trenajyorda bitta javobli, kontekstli, moslashtirish (A/B) va ko‘p tanlovli topshiriqlar mavjud."
+                      : "В симуляторе доступны стандартные, контекстные задания, установление соответствия (A/B) и множественный выбор с мгновенной диагностикой пробелов."}
+                </span>
+              </div>
+
+              <Link
+                href={`/?tab=exam&subject=${curriculum.id}&lang=${locale}`}
+                style={{
+                  padding: "11px 16px",
+                  minHeight: 42,
+                  borderRadius: 10,
+                  background: "var(--bilimai-brand, #156D5D)",
+                  color: "#fff",
+                  textDecoration: "none",
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  display: "inline-flex",
+                  alignItems: "center"
+                }}
+              >
+                {ui.untSimulatorBtn}
+              </Link>
+            </section>
           </div>
         )}
 
@@ -1550,7 +2313,7 @@ export function SubjectOverviewClient({
             data-lesson-id={currentLesson.id}
             style={{
               background: "var(--bilimai-surface, #fff)",
-              border: "1px solid var(--bilimai-border, #D8E0EE)",
+              border: "1px solid var(--bilimai-border, #DCE2DD)",
               borderRadius: 20,
               padding: "22px 24px",
               display: "grid",
@@ -1568,10 +2331,16 @@ export function SubjectOverviewClient({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--bilimai-brand-text, #1D4ED8)" }}>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "var(--bilimai-brand-text, #0F5346)"
+                  }}
+                >
                   {ui.lessonWord} {selectedLessonIndex + 1} {ui.ofWord} {curriculum.lessons.length}
                 </span>
-                <span style={{ fontSize: 13, color: "var(--bilimai-text-muted, #475569)" }}>
+                <span style={{ fontSize: 13, color: "var(--bilimai-text-muted, #525D56)" }}>
                   · {currentLesson.sectionTitle[locale]} · ~{currentLesson.estimatedMinutes} min
                 </span>
               </div>
@@ -1589,13 +2358,13 @@ export function SubjectOverviewClient({
                       borderRadius: 8,
                       border:
                         idx === selectedLessonIndex
-                          ? "1px solid var(--bilimai-selected-border, #254EDB)"
-                          : "1px solid var(--bilimai-border, #D8E0EE)",
+                          ? "1px solid var(--bilimai-selected-border, #156D5D)"
+                          : "1px solid var(--bilimai-border, #DCE2DD)",
                       background:
                         idx === selectedLessonIndex
-                          ? "var(--bilimai-brand, #254EDB)"
-                          : "var(--bilimai-surface-raised, #EEF2F9)",
-                      color: idx === selectedLessonIndex ? "#fff" : "var(--bilimai-text, #0F172A)",
+                          ? "var(--bilimai-brand, #156D5D)"
+                          : "var(--bilimai-surface-raised, #F0F2EF)",
+                      color: idx === selectedLessonIndex ? "#fff" : "var(--bilimai-text, #202522)",
                       fontSize: 12.5,
                       fontWeight: 600,
                       cursor: "pointer"
@@ -1607,22 +2376,23 @@ export function SubjectOverviewClient({
               </div>
             </div>
 
-            <div>
-              <h2 data-testid="active-lesson-title" style={{ margin: "0 0 6px", fontSize: 23 }}>
+            <div className="editorial-reading-column">
+              <h2 data-testid="active-lesson-title" style={{ margin: "0 0 6px", fontSize: 24 }}>
                 {currentLesson.title[locale]}
               </h2>
-              <p style={{ margin: 0, fontSize: 15, color: "var(--bilimai-text-muted, #475569)" }}>
+              <p style={{ margin: 0, fontSize: 15.5, color: "var(--bilimai-text-muted, #525D56)" }}>
                 <strong>{ui.goalPrefix}</strong> {currentLesson.learningGoal[locale]}
               </p>
             </div>
 
-            {/* Step 1: Theory & Explanation Toggle */}
+            {/* Step 1: Theory & Explanation Toggle (Editorial Reading Width 60-75ch) */}
             <div
+              className="editorial-reading-column"
               style={{
-                padding: "16px 18px",
+                padding: "18px 20px",
                 borderRadius: 16,
-                background: "var(--bilimai-surface-raised, #EEF2F9)",
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                background: "var(--bilimai-surface-raised, #F0F2EF)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 display: "grid",
                 gap: 12
               }}
@@ -1646,13 +2416,13 @@ export function SubjectOverviewClient({
                       padding: "7px 12px",
                       minHeight: 38,
                       borderRadius: 8,
-                      border: "1px solid var(--bilimai-border, #D8E0EE)",
+                      border: "1px solid var(--bilimai-border, #DCE2DD)",
                       background:
                         explanationDepth === "simple"
-                          ? "var(--bilimai-brand, #254EDB)"
+                          ? "var(--bilimai-brand, #156D5D)"
                           : "var(--bilimai-surface, #fff)",
                       color:
-                        explanationDepth === "simple" ? "#fff" : "var(--bilimai-text, #0F172A)",
+                        explanationDepth === "simple" ? "#fff" : "var(--bilimai-text, #202522)",
                       fontSize: 12.5,
                       fontWeight: 600,
                       cursor: "pointer"
@@ -1668,13 +2438,13 @@ export function SubjectOverviewClient({
                       padding: "7px 12px",
                       minHeight: 38,
                       borderRadius: 8,
-                      border: "1px solid var(--bilimai-border, #D8E0EE)",
+                      border: "1px solid var(--bilimai-border, #DCE2DD)",
                       background:
                         explanationDepth === "detailed"
-                          ? "var(--bilimai-brand, #254EDB)"
+                          ? "var(--bilimai-brand, #156D5D)"
                           : "var(--bilimai-surface, #fff)",
                       color:
-                        explanationDepth === "detailed" ? "#fff" : "var(--bilimai-text, #0F172A)",
+                        explanationDepth === "detailed" ? "#fff" : "var(--bilimai-text, #202522)",
                       fontSize: 12.5,
                       fontWeight: 600,
                       cursor: "pointer"
@@ -1685,7 +2455,7 @@ export function SubjectOverviewClient({
                 </div>
               </div>
 
-              <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55 }}>
+              <p className="editorial-prose" style={{ margin: 0, fontSize: 16.5, lineHeight: 1.65 }}>
                 {explanationDepth === "simple"
                   ? currentLesson.simpleExplanation[locale]
                   : currentLesson.detailedExplanation[locale]}
@@ -1697,9 +2467,9 @@ export function SubjectOverviewClient({
                   style={{
                     padding: "12px 14px",
                     borderRadius: 12,
-                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    border: "1px solid var(--bilimai-border, #DCE2DD)",
                     background: block.type === "code" ? "#161922" : "var(--bilimai-surface, #fff)",
-                    color: block.type === "code" ? "#f8f8f2" : "var(--bilimai-text, #0F172A)"
+                    color: block.type === "code" ? "#f8f8f2" : "var(--bilimai-text, #202522)"
                   }}
                 >
                   <strong style={{ display: "block", fontSize: 13.5, marginBottom: 4 }}>
@@ -1714,7 +2484,7 @@ export function SubjectOverviewClient({
                           ? "var(--font-mono, monospace)"
                           : "inherit",
                       fontSize: 14.5,
-                      lineHeight: 1.5
+                      lineHeight: 1.55
                     }}
                   >
                     {block.body[locale]}
@@ -1723,42 +2493,243 @@ export function SubjectOverviewClient({
               ))}
             </div>
 
-            {/* Step 2: Worked Example */}
+            {/* Step 2: Interactive Worked Example + Shyn Kitap Guidebook */}
             <div
+              className="editorial-reading-column"
               style={{
-                padding: "16px 18px",
+                padding: "18px 20px",
                 borderRadius: 16,
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 background: "var(--bilimai-surface, #fff)",
                 display: "grid",
                 gap: 10
               }}
             >
-              <strong style={{ fontSize: 15 }}>{ui.workedExampleTitle}</strong>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8
+                }}
+              >
+                <strong style={{ fontSize: 15 }}>{ui.workedExampleTitle}</strong>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    data-testid="toggle-step-by-step-worked-example"
+                    onClick={() =>
+                      setWorkedExampleStepLimit((prev) => (prev === null ? 1 : null))
+                    }
+                    style={{
+                      padding: "5px 10px",
+                      borderRadius: 8,
+                      border: "1px solid var(--bilimai-border, #DCE2DD)",
+                      background:
+                        workedExampleStepLimit !== null
+                          ? "var(--bilimai-brand, #156D5D)"
+                          : "var(--bilimai-surface-raised, #F0F2EF)",
+                      color:
+                        workedExampleStepLimit !== null ? "#fff" : "var(--bilimai-text, #202522)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer"
+                    }}
+                  >
+                    {workedExampleStepLimit !== null
+                      ? locale === "kk"
+                        ? "Барлық қадамды көрсету"
+                        : locale === "uz"
+                          ? "Barcha qadamlarni ko‘rsatish"
+                          : "Показать все шаги"
+                      : locale === "kk"
+                        ? "Қадамдап ашу"
+                        : locale === "uz"
+                          ? "Qadam-baqadam ochish"
+                          : "Пошаговый интерактивный разбор"}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="toggle-lesson-shyn-kitap-guide"
+                    onClick={() => setShowShynKitapGuide((prev) => !prev)}
+                    style={{
+                      padding: "5px 10px",
+                      borderRadius: 8,
+                      border: "1px solid var(--bilimai-selected-border, #156D5D)",
+                      background: showShynKitapGuide
+                        ? "var(--bilimai-brand, #156D5D)"
+                        : "var(--bilimai-surface, #fff)",
+                      color: showShynKitapGuide ? "#fff" : "var(--bilimai-brand-text, #0F5346)",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: "pointer"
+                    }}
+                  >
+                    {locale === "kk"
+                      ? "Шың-кітап конспектісі"
+                      : locale === "uz"
+                        ? "Shyn-kitap konspekti"
+                        : "Справочник Шың-кітап"}
+                  </button>
+                </div>
+              </div>
+
+              {showShynKitapGuide &&
+                (() => {
+                  const gb = getSubjectShynKitapGuidebook(curriculum.id as UntSubjectId);
+                  if (!gb) return null;
+                  return (
+                    <div
+                      className="anim-step-enter"
+                      style={{
+                        padding: "12px 14px",
+                        borderRadius: 12,
+                        background: "var(--bilimai-selected-bg, #E6F2EF)",
+                        border: "1px solid var(--bilimai-selected-border, #156D5D)",
+                        display: "grid",
+                        gap: 8
+                      }}
+                    >
+                      <strong style={{ fontSize: 13.5 }}>{gb.editionNote[locale]}</strong>
+                      <div style={{ display: "grid", gap: 6 }}>
+                        {gb.goldenRules.slice(0, 3).map((r) => (
+                          <div
+                            key={r.id}
+                            style={{
+                              padding: "8px 10px",
+                              borderRadius: 8,
+                              background: "var(--bilimai-surface, #fff)",
+                              fontSize: 13
+                            }}
+                          >
+                            <strong>{r.title[locale]}:</strong>{" "}
+                            <code>{r.formulaOrFact[locale]}</code> — {r.mnemonicOrTip[locale]}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
               <div style={{ fontSize: 15.5, fontWeight: 600 }}>
                 {currentLesson.workedExample.problem[locale]}
               </div>
-              <div style={{ display: "grid", gap: 6 }}>
-                {(
+              {(() => {
+                const allSteps =
                   currentLesson.workedExample.steps[locale] ??
-                  currentLesson.workedExample.steps.ru
-                ).map((stepText, sIdx) => (
-                  <div
-                    key={sIdx}
+                  currentLesson.workedExample.steps.ru;
+                const visibleSteps =
+                  workedExampleStepLimit === null
+                    ? allSteps
+                    : allSteps.slice(0, workedExampleStepLimit);
+                return (
+                  <>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      {visibleSteps.map((stepText, sIdx) => (
+                        <div
+                          key={sIdx}
+                          className="anim-step-enter"
+                          style={{
+                            padding: "10px 13px",
+                            borderRadius: 10,
+                            background: "var(--bilimai-surface-raised, #F0F2EF)",
+                            color: "var(--bilimai-text, #202522)",
+                            fontSize: 14.5,
+                            lineHeight: 1.5
+                          }}
+                        >
+                          {stepText}
+                        </div>
+                      ))}
+                    </div>
+                    {workedExampleStepLimit !== null &&
+                      workedExampleStepLimit < allSteps.length && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setWorkedExampleStepLimit((prev) =>
+                              Math.min(allSteps.length, (prev ?? 1) + 1)
+                            )
+                          }
+                          style={{
+                            padding: "8px 12px",
+                            borderRadius: 8,
+                            border: "1px solid var(--bilimai-selected-border, #156D5D)",
+                            background: "var(--bilimai-selected-bg, #E6F2EF)",
+                            color: "var(--bilimai-brand-text, #0F5346)",
+                            fontSize: 13,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            justifySelf: "start"
+                          }}
+                        >
+                          {locale === "kk"
+                            ? `Келесі қадамды ашу (${workedExampleStepLimit}/${allSteps.length}) →`
+                            : locale === "uz"
+                              ? `Keyingi qadamni ochish (${workedExampleStepLimit}/${allSteps.length}) →`
+                              : `Открыть следующий шаг (${workedExampleStepLimit}/${allSteps.length}) →`}
+                        </button>
+                      )}
+                  </>
+                );
+              })()}
+              <div
+                style={{
+                  fontSize: 14,
+                  color: "var(--bilimai-brand-text, #0F5346)",
+                  fontWeight: 600,
+                  paddingTop: 4
+                }}
+              >
+                {ui.takeawayPrefix} {currentLesson.workedExample.takeaway[locale]}
+              </div>
+
+              {/* Contextual AI Tutor Quick Actions inside Lesson (Section 12) */}
+              <div
+                data-testid="lesson-contextual-tutor-bar"
+                style={{
+                  marginTop: 6,
+                  paddingTop: 10,
+                  borderTop: "1px solid var(--bilimai-border, #DCE2DD)",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: 8
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--bilimai-text-muted, #525D56)"
+                  }}
+                >
+                  {ui.tutorTitle}:
+                </span>
+                {tutorModeButtons.slice(0, 4).map((btn) => (
+                  <button
+                    key={btn.mode}
+                    type="button"
+                    onClick={() => {
+                      switchTab("tutor");
+                      void askTutor(btn.prompt, btn.label[locale], btn.mode);
+                    }}
                     style={{
-                      padding: "9px 12px",
-                      borderRadius: 10,
-                      background: "var(--bilimai-surface-raised, #EEF2F9)",
-                      color: "var(--bilimai-text, #0F172A)",
-                      fontSize: 14.5
+                      padding: "6px 11px",
+                      minHeight: 34,
+                      borderRadius: 999,
+                      border: "1px solid var(--bilimai-border, #DCE2DD)",
+                      background: "var(--bilimai-surface-raised, #F0F2EF)",
+                      color: "var(--bilimai-text, #202522)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer"
                     }}
                   >
-                    {stepText}
-                  </div>
+                    {btn.label[locale]}
+                  </button>
                 ))}
-              </div>
-              <div style={{ fontSize: 14, color: "var(--bilimai-brand-text, #1D4ED8)", fontWeight: 600 }}>
-                {ui.takeawayPrefix} {currentLesson.workedExample.takeaway[locale]}
               </div>
             </div>
 
@@ -1792,14 +2763,14 @@ export function SubjectOverviewClient({
                         borderRadius: 8,
                         border:
                           qIdx === lessonQuestionIndex
-                            ? "1px solid var(--bilimai-selected-border, #254EDB)"
-                            : "1px solid var(--bilimai-border, #D8E0EE)",
+                            ? "1px solid var(--bilimai-selected-border, #156D5D)"
+                            : "1px solid var(--bilimai-border, #DCE2DD)",
                         background:
                           qIdx === lessonQuestionIndex
-                            ? "var(--bilimai-brand, #254EDB)"
-                            : "var(--bilimai-surface-raised, #EEF2F9)",
+                            ? "var(--bilimai-brand, #156D5D)"
+                            : "var(--bilimai-surface-raised, #F0F2EF)",
                         color:
-                          qIdx === lessonQuestionIndex ? "#fff" : "var(--bilimai-text, #0F172A)",
+                          qIdx === lessonQuestionIndex ? "#fff" : "var(--bilimai-text, #202522)",
                         fontSize: 12,
                         fontWeight: 700,
                         cursor: "pointer"
@@ -1817,8 +2788,8 @@ export function SubjectOverviewClient({
                         fontWeight: 700,
                         padding: "4px 10px",
                         borderRadius: 999,
-                        background: "var(--bilimai-success-bg, #DCFCE7)",
-                        color: "var(--bilimai-success-text, #166534)"
+                        background: "var(--bilimai-success-bg, #ECFDF5)",
+                        color: "var(--bilimai-success-text, #065F46)"
                       }}
                     >
                       {ui.allLessonQuestionsDone}
@@ -1849,8 +2820,8 @@ export function SubjectOverviewClient({
               style={{
                 padding: "16px 18px",
                 borderRadius: 16,
-                background: "rgba(22, 163, 74, 0.08)",
-                border: "1px solid rgba(22, 163, 74, 0.3)",
+                background: "var(--bilimai-selected-bg, #E6F2EF)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "center",
@@ -1873,7 +2844,7 @@ export function SubjectOverviewClient({
                     minHeight: 44,
                     borderRadius: 10,
                     border: "none",
-                    background: "#15803d",
+                    background: "var(--bilimai-brand, #156D5D)",
                     color: "#fff",
                     fontWeight: 700,
                     cursor: "pointer"
@@ -1893,9 +2864,9 @@ export function SubjectOverviewClient({
                       padding: "11px 16px",
                       minHeight: 44,
                       borderRadius: 10,
-                      border: "1px solid var(--bilimai-selected-border, #254EDB)",
+                      border: "1px solid var(--bilimai-selected-border, #156D5D)",
                       background: "var(--bilimai-surface, #fff)",
-                      color: "var(--bilimai-brand-text, #1D4ED8)",
+                      color: "var(--bilimai-brand-text, #0F5346)",
                       fontWeight: 600,
                       cursor: "pointer"
                     }}
@@ -1911,9 +2882,9 @@ export function SubjectOverviewClient({
                       padding: "11px 16px",
                       minHeight: 44,
                       borderRadius: 10,
-                      border: "1px solid var(--bilimai-selected-border, #254EDB)",
+                      border: "1px solid var(--bilimai-selected-border, #156D5D)",
                       background: "var(--bilimai-surface, #fff)",
-                      color: "var(--bilimai-brand-text, #1D4ED8)",
+                      color: "var(--bilimai-brand-text, #0F5346)",
                       fontWeight: 600,
                       cursor: "pointer"
                     }}
@@ -1955,14 +2926,14 @@ export function SubjectOverviewClient({
                       borderRadius: 8,
                       border:
                         idx === practiceQuestionIndex
-                          ? "1px solid var(--bilimai-selected-border, #254EDB)"
-                          : "1px solid var(--bilimai-border, #D8E0EE)",
+                          ? "1px solid var(--bilimai-selected-border, #156D5D)"
+                          : "1px solid var(--bilimai-border, #DCE2DD)",
                       background:
                         idx === practiceQuestionIndex
-                          ? "var(--bilimai-brand, #254EDB)"
+                          ? "var(--bilimai-brand, #156D5D)"
                           : "var(--bilimai-surface, #fff)",
                       color:
-                        idx === practiceQuestionIndex ? "#fff" : "var(--bilimai-text, #0F172A)",
+                        idx === practiceQuestionIndex ? "#fff" : "var(--bilimai-text, #202522)",
                       fontSize: 12.5,
                       fontWeight: 600,
                       cursor: "pointer"
@@ -2173,8 +3144,34 @@ export function SubjectOverviewClient({
               </p>
             </div>
 
+            <DuolingoSkillPath
+              subjectId={curriculum.id as UntSubjectId}
+              lang={locale}
+              completedLessonIds={subjectProgress.completedLessonIds}
+              topicStats={subjectProgress.topicStats}
+              activeLessonId={currentLesson?.id}
+              onSelectLesson={(lesson, mode) => {
+                const idx = curriculum.lessons.findIndex((l) => l.id === lesson.id);
+                if (mode === "lesson") {
+                  openLessonByIndex(idx >= 0 ? idx : 0);
+                } else if (mode === "practice") {
+                  switchTab("practice");
+                } else if (mode === "error_lab") {
+                  switchTab("error_lab");
+                } else if (mode === "exam") {
+                  if (typeof window !== "undefined") {
+                    window.location.href = `/?tab=exam&subject=${curriculum.id}&lang=${locale}`;
+                  }
+                }
+              }}
+            />
+
             <div style={{ display: "grid", gap: 12 }}>
               {graphNodes.map((node, idx) => {
+                const resolveNodeTitle = (rawId: string) =>
+                  graphNodes.find((n) => n.id === rawId)?.title[locale] ??
+                  curriculum.topics.find((t) => t.id === rawId)?.title[locale] ??
+                  rawId;
                 const statusLabels: Record<
                   typeof node.status,
                   { text: string; color: string; bg: string }
@@ -2266,10 +3263,10 @@ export function SubjectOverviewClient({
                       <strong style={{ fontSize: 16 }}>{node.title[locale]}</strong>
                       <div style={{ fontSize: 13, color: "var(--bilimai-text-muted, #475569)" }}>
                         {node.prerequisites.length > 0
-                          ? `${ui.prereqPrefix} ${node.prerequisites.join(", ")}`
+                          ? `${ui.prereqPrefix} ${node.prerequisites.map(resolveNodeTitle).join(", ")}`
                           : ui.noPrereqs}
                         {node.unlocks.length > 0
-                          ? ` → ${ui.unlocksPrefix} ${node.unlocks.join(", ")}`
+                          ? ` → ${ui.unlocksPrefix} ${node.unlocks.map(resolveNodeTitle).join(", ")}`
                           : ""}
                       </div>
                     </div>

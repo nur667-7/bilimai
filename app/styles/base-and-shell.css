@@ -1,54 +1,55 @@
 /* Base Tokens, Resets, Layout Shell & Top Navigation */
 
 :root {
-  --background: #F6F7FB;
-  --foreground: #0F172A;
+  --background: #F7F8FA;
+  --foreground: #172334;
   --card: #FFFFFF;
-  --card-foreground: #0F172A;
+  --card-foreground: #172334;
   --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #254EDB;
+  --popover-foreground: #172334;
+  --primary: #2563EB;
   --primary-foreground: #FFFFFF;
-  --brand: #254EDB;
-  --brand-2: #1E40AF;
-  --accent-warm: #755FF8;
-  --ink: #0F172A;
-  --secondary: #EAEFF8;
-  --secondary-foreground: #0F172A;
-  --muted: #EDF1FA;
-  --muted-foreground: #475569;
-  --accent: #EBF0FF;
-  --accent-foreground: #1D4ED8;
+  --brand: #2563EB;
+  --brand-2: #1D4ED8;
+  --accent-warm: #D97706;
+  --ink: #172334;
+  --secondary: #EEF2F7;
+  --secondary-foreground: #172334;
+  --muted: #EEF2F7;
+  --muted-foreground: #657185;
+  --accent: #EAF1FF;
+  --accent-foreground: #2563EB;
   --destructive: #DC2626;
-  --border: #D8E0EE;
-  --input: #CBD5E1;
-  --ring: #254EDB;
-  --radius: 0.65rem;
-  --font-serif: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  --border: #E5E9EF;
+  --input: #D5DCE6;
+  --ring: #2563EB;
+  --radius: 0.75rem;
+  --font-serif: "Inter", "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   --font-math: "STIX Two Math", "Cambria Math", "Times New Roman", Georgia, serif;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  --font-sans: "Inter", "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 
-  /* Unambiguous BilimAI surface & text token pairs (WCAG AA >= 4.5:1 verified) */
-  --bilimai-bg: #F6F7FB;
-  --bilimai-header-bg: rgba(246, 247, 251, 0.94);
+  /* Figma BilimAI 2.0 Design System semantic palette (WCAG 2.2 AA >= 4.5:1 verified) */
+  --bilimai-bg: #F7F8FA;
+  --bilimai-header-bg: rgba(255, 255, 255, 0.96);
   --bilimai-surface: #FFFFFF;
-  --bilimai-surface-raised: #EEF2F9;
-  --bilimai-text: #0F172A;
-  --bilimai-text-muted: #475569;
-  --bilimai-text-subtle: #475569;
-  --bilimai-border: #D8E0EE;
-  --bilimai-border-strong: #64748B;
-  --bilimai-brand: #254EDB;
-  --bilimai-brand-hover: #1E40AF;
-  --bilimai-brand-text: #1D4ED8;
+  --bilimai-surface-raised: #F1F5F9;
+  --bilimai-surface-subtle: #F1F5F9;
+  --bilimai-text: #172334;
+  --bilimai-text-muted: #657185;
+  --bilimai-text-subtle: #657185;
+  --bilimai-border: #E5E9EF;
+  --bilimai-border-strong: #657185;
+  --bilimai-brand: #2563EB;
+  --bilimai-brand-hover: #1D4ED8;
+  --bilimai-brand-text: #2563EB;
   --bilimai-on-brand: #FFFFFF;
-  --bilimai-selected-bg: #E0E7FF;
-  --bilimai-selected-text: #1E3A8A;
-  --bilimai-selected-border: #254EDB;
-  --bilimai-focus: #254EDB;
+  --bilimai-selected-bg: #EAF1FF;
+  --bilimai-selected-text: #1E40AF;
+  --bilimai-selected-border: #2563EB;
+  --bilimai-focus: #2563EB;
   --bilimai-success-bg: #ECFDF5;
-  --bilimai-success-border: #059669;
-  --bilimai-success-text: #065F46;
+  --bilimai-success-border: #157F55;
+  --bilimai-success-text: #157F55;
   --bilimai-error-bg: #FEF2F2;
   --bilimai-error-border: #DC2626;
   --bilimai-error-text: #991B1B;
@@ -62,45 +63,46 @@
 }
 
 html.dark {
-  --background: #0B1020;
-  --foreground: #F8FAFC;
-  --card: #11192E;
-  --card-foreground: #F8FAFC;
-  --popover: #11192E;
-  --popover-foreground: #F8FAFC;
-  --primary: #2952E8;
+  --background: #0B111E;
+  --foreground: #F1F5F9;
+  --card: #131C2E;
+  --card-foreground: #F1F5F9;
+  --popover: #131C2E;
+  --popover-foreground: #F1F5F9;
+  --primary: #3B82F6;
   --primary-foreground: #FFFFFF;
   --brand: #60A5FA;
   --brand-2: #93C5FD;
-  --accent-warm: #8B75FF;
-  --ink: #F8FAFC;
-  --secondary: #17223B;
-  --secondary-foreground: #F8FAFC;
-  --muted: #172136;
-  --muted-foreground: #CBD5E1;
-  --accent: rgba(82, 115, 255, 0.16);
+  --accent-warm: #F59E0B;
+  --ink: #F1F5F9;
+  --secondary: #1E293B;
+  --secondary-foreground: #F1F5F9;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --accent: rgba(59, 130, 246, 0.16);
   --accent-foreground: #93C5FD;
   --destructive: #F87171;
-  --border: #263554;
+  --border: #22304A;
   --input: #334155;
   --ring: #60A5FA;
 
-  /* Unambiguous BilimAI dark surface & text token pairs (WCAG AA >= 4.5:1 verified) */
-  --bilimai-bg: #0B1020;
-  --bilimai-header-bg: rgba(11, 16, 32, 0.94);
-  --bilimai-surface: #11192E;
-  --bilimai-surface-raised: #17223B;
-  --bilimai-text: #F8FAFC;
-  --bilimai-text-muted: #CBD5E1;
+  /* Figma BilimAI 2.0 dark surface & text token pairs */
+  --bilimai-bg: #0B111E;
+  --bilimai-header-bg: rgba(19, 28, 46, 0.96);
+  --bilimai-surface: #131C2E;
+  --bilimai-surface-raised: #1E293B;
+  --bilimai-surface-subtle: #1E293B;
+  --bilimai-text: #F1F5F9;
+  --bilimai-text-muted: #94A3B8;
   --bilimai-text-subtle: #94A3B8;
-  --bilimai-border: #263554;
+  --bilimai-border: #22304A;
   --bilimai-border-strong: #60A5FA;
-  --bilimai-brand: #2952E8;
-  --bilimai-brand-hover: #3B63F6;
+  --bilimai-brand: #2563EB;
+  --bilimai-brand-hover: #1D4ED8;
   --bilimai-brand-text: #93C5FD;
   --bilimai-on-brand: #FFFFFF;
-  --bilimai-selected-bg: #1E2F5D;
-  --bilimai-selected-text: #F8FAFC;
+  --bilimai-selected-bg: rgba(37, 99, 235, 0.22);
+  --bilimai-selected-text: #F1F5F9;
   --bilimai-selected-border: #60A5FA;
   --bilimai-focus: #60A5FA;
   --bilimai-success-bg: #062E22;
@@ -192,6 +194,20 @@ a {
   color: var(--primary);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+}
+
+a[data-slot="button"] {
+  text-decoration: none;
+}
+
+a[data-slot="button"][data-variant="default"] {
+  color: var(--primary-foreground);
+}
+
+a[data-slot="button"][data-variant="outline"],
+a[data-slot="button"][data-variant="secondary"],
+a[data-slot="button"][data-variant="ghost"] {
+  color: var(--foreground);
 }
 
 button {

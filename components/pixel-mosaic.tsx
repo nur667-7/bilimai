@@ -113,9 +113,10 @@ export function PixelProgressBar({
             key={idx}
             className={`pixel-progress-cell ${isFilled ? "filled" : ""}`}
             style={
-              isFilled
-                ? ({ "--pixel-cell-color": PIXEL_PALETTE[colorIdx] } as React.CSSProperties)
-                : undefined
+              {
+                ...(isFilled ? { "--pixel-cell-color": PIXEL_PALETTE[colorIdx] } : {}),
+                transition: `background-color 240ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 18}ms, transform 240ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 18}ms`
+              } as React.CSSProperties
             }
           />
         );

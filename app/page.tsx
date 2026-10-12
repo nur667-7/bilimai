@@ -77,6 +77,7 @@ export default async function Home({
       initialLang={initialLang}
       initialTab={initialTab}
       initialTopic={initialTopic}
+      initialRawTopic={rawTopic ?? null}
       initialSubjectId={initialSubjectId}
       initialVariantNumber={initialVariantNumber}
     />

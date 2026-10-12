@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PixelProgressBar } from "@/components/pixel-mosaic";
+import { DuolingoSkillPath } from "@/components/study/duolingo-skill-path";
 import {
   buildKnowledgeGraphState,
   type ComputedGraphNode,
@@ -675,9 +676,27 @@ export function KnowledgeGraphView({
         </div>
       </div>
 
-      {/* 3. Компактные строки 16 тем вместо 16 больших карточек (подробности по нажатию) */}
+      {/* 3. Интерактивный маршрут Duolingo + компактные строки 16 тем */}
       {displayMode === "path" ? (
-        <div className="kg-path-list">
+        <div className="kg-path-list space-y-5">
+          <DuolingoSkillPath
+            subjectId="math"
+            lang={lang}
+            completedLessonIds={graphState.nodes
+              .filter((n) => n.status === "mastered")
+              .map((n) => `math-${n.id}`)}
+            activeLessonId={`math-${selectedTopic}`}
+            onSelectLesson={(selectedLesson, mode) => {
+              const tId = (selectedLesson.topicId as TopicId) || "linear";
+              if (mode === "exam") {
+                onOpenExam();
+              } else if (mode === "error_lab") {
+                window.location.href = `/lab?lang=${lang}&topic=${tId}`;
+              } else {
+                onOpenLesson(tId);
+              }
+            }}
+          />
           <div className="mb-2">
             <h3 className="font-bold text-base m-0">{t.studyPlanTitle}</h3>
             <p className="small m-0">{t.studyPlanSub}</p>

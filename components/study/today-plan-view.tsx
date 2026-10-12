@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowRight, Calendar, CheckCircle2, GitBranch, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpen, Calendar, CheckCircle2, GitBranch, Sparkles, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PixelKnowledgeMosaic, PixelProgressBar } from "@/components/pixel-mosaic";
+import { DuolingoSkillPath } from "@/components/study/duolingo-skill-path";
 import { SubjectIcon } from "@/app/unt-exam-view";
 import { untTopicIds, type Language, type Lesson, type TopicId } from "@/lib/lessons";
 import {
@@ -104,6 +105,139 @@ export function TodayPlanView({
 }: TodayPlanViewProps) {
   return (
     <div className="today-dashboard space-y-6">
+      {/* FIGMA 2.0 HOME OVERVIEW SECTION (1 · Desktop · Главная / Mobile · Главная) */}
+      <section
+        className="surface section-surface"
+        data-testid="figma-home-overview"
+        aria-label={
+          lang === "kk"
+            ? "Оқуды жалғастырамыз ба?"
+            : lang === "uz"
+              ? "Oʻqishni davom ettiramizmi?"
+              : "Продолжим обучение?"
+        }
+      >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: "clamp(1.35rem, 2.2vw, 1.75rem)",
+                fontWeight: 700,
+                letterSpacing: "-0.025em",
+                color: "var(--foreground)"
+              }}
+            >
+              {lang === "kk"
+                ? "Оқуды жалғастырамыз ба?"
+                : lang === "uz"
+                  ? "Oʻqishni davom ettiramizmi?"
+                  : "Продолжим обучение?"}
+            </h2>
+            <p className="small text-muted-foreground mt-1 mb-0">
+              {lang === "kk"
+                ? "Прогреске ықшам шолу және ағымдағы сабаққа жылдам өту."
+                : lang === "uz"
+                  ? "Progressning ixcham sharhi va joriy darsga tezkor oʻtish."
+                  : "Компактный обзор прогресса и быстрый переход к текущему уроку без перегруза."}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="figma-primary-cta"
+            data-testid="figma-home-primary-cta"
+            onClick={() => onTabChange(checkedCount > 0 ? "practice" : "lesson")}
+          >
+            <span>
+              {lang === "kk"
+                ? "Жалғастыру →"
+                : lang === "uz"
+                  ? "Davom etish →"
+                  : "Продолжить →"}
+            </span>
+          </button>
+        </div>
+
+        <div className="figma-feature-grid mt-4">
+          <div className="figma-feature-card" data-testid="figma-card-continue">
+            <div className="figma-card-icon-box" aria-hidden="true">
+              <BookOpen size={18} />
+            </div>
+            <h3 className="figma-card-title">
+              {lang === "kk"
+                ? `Жалғастыру: ${lesson.title}`
+                : lang === "uz"
+                  ? `Davom etish: ${lesson.title}`
+                  : `Продолжить: ${lesson.title}`}
+            </h3>
+            <p className="figma-card-desc">
+              {lang === "kk"
+                ? "Таңдалған тақырып бойынша қысқаша теория, мысалдар мен практика."
+                : lang === "uz"
+                  ? "Tanlangan mavzu boʻyicha qisqacha nazariya, misollar va amaliyot."
+                  : "Краткая теория, примеры и практика по выбранной теме."}
+            </p>
+            <button
+              type="button"
+              className="figma-card-link bg-transparent border-0 p-0 text-left cursor-pointer"
+              onClick={() => onTabChange(checkedCount > 0 ? "practice" : "lesson")}
+            >
+              {lang === "kk" ? "Ашу →" : lang === "uz" ? "Ochish →" : "Открыть →"}
+            </button>
+          </div>
+
+          <div className="figma-feature-card" data-testid="figma-card-subjects">
+            <div className="figma-card-icon-box" aria-hidden="true">
+              <Target size={18} />
+            </div>
+            <h3 className="figma-card-title">
+              {lang === "kk"
+                ? "Менің пәндерім"
+                : lang === "uz"
+                  ? "Mening fanlarim"
+                  : "Мои предметы"}
+            </h3>
+            <p className="figma-card-desc">
+              {lang === "kk"
+                ? "Қазақстан тарихы, математика, физика және басқа пәндер."
+                : lang === "uz"
+                  ? "Qozogʻiston tarixi, matematika, fizika va boshqa fanlar."
+                  : "История Казахстана, математика, физика и другие дисциплины."}
+            </p>
+            <a href={`/subjects?lang=${lang}`} className="figma-card-link">
+              {lang === "kk" ? "Ашу →" : lang === "uz" ? "Ochish →" : "Открыть →"}
+            </a>
+          </div>
+
+          <div className="figma-feature-card" data-testid="figma-card-progress">
+            <div className="figma-card-icon-box" aria-hidden="true">
+              <CheckCircle2 size={18} />
+            </div>
+            <h3 className="figma-card-title">
+              {lang === "kk"
+                ? "Сіздің прогресіңіз"
+                : lang === "uz"
+                  ? "Sizning progressingiz"
+                  : "Ваш прогресс"}
+            </h3>
+            <p className="figma-card-desc">
+              {lang === "kk"
+                ? `${untTopicIds.length} тақырыптың ${baseline.masteredTopics.length}-і меңгерілді. Қателермен жұмыс әлсіз тұстарды көрсетеді.`
+                : lang === "uz"
+                  ? `${untTopicIds.length} mavzudan ${baseline.masteredTopics.length} tasi oʻzlashtirildi. Xatolar tahlili boʻshliqlarni koʻrsatadi.`
+                  : `${baseline.masteredTopics.length} из ${untTopicIds.length} тем освоено. Разбор ошибок покажет слабые места.`}
+            </p>
+            <button
+              type="button"
+              className="figma-card-link bg-transparent border-0 p-0 text-left cursor-pointer"
+              onClick={() => onTabChange("profile")}
+            >
+              {lang === "kk" ? "Ашу →" : lang === "uz" ? "Ochish →" : "Открыть →"}
+            </button>
+          </div>
+        </div>
+      </section>
+
       {!hasLearningHistory && tab === "today" ? (
         /* FIRST-TIME VISITOR VIEW ON / */
         <section className="surface section-surface today-hero-card" aria-label={t.navToday}>
@@ -376,7 +510,11 @@ export function TodayPlanView({
                 key={subj.id}
                 className={`today-subject-card ${isSelected ? "active" : ""}`}
               >
-                <div className="today-subject-top">
+                <button
+                  type="button"
+                  className="today-subject-top w-full text-left cursor-pointer"
+                  onClick={() => onSubjectChange(subj.id)}
+                >
                   <span className="unt-subject-icon-badge">
                     <SubjectIcon subjectId={subj.id} size={17} />
                   </span>
@@ -389,7 +527,7 @@ export function TodayPlanView({
                       {lang === "kk" ? "балл" : lang === "uz" ? "ball" : "б."}
                     </span>
                   </div>
-                </div>
+                </button>
                 <div className="today-subject-actions mt-3">
                   {isMath ? (
                     <div className="flex flex-wrap gap-2">
@@ -414,22 +552,106 @@ export function TodayPlanView({
                       </Button>
                     </div>
                   ) : (
-                    <Button
-                      size="sm"
-                      variant={isSelected ? "default" : "outline"}
-                      onClick={() => {
-                        onSubjectChange(subj.id);
-                        onTabChange("exam");
-                      }}
-                    >
-                      {t.todayOpenSubjectExam(subj.shortTitle[lang])}
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        asChild
+                      >
+                        <a href={`/subjects/${subj.id}?start=lesson&lang=${lang}`}>
+                          <BookOpen size={14} />
+                          <span>
+                            {lang === "kk"
+                              ? "Сабақтар"
+                              : lang === "uz"
+                                ? "Darslar"
+                                : "Уроки курса"}
+                          </span>
+                        </a>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={isSelected ? "default" : "outline"}
+                        onClick={() => {
+                          onSubjectChange(subj.id);
+                          onTabChange("exam");
+                        }}
+                      >
+                        {t.todayOpenSubjectExam(subj.shortTitle[lang])}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
             );
           })}
         </div>
+      </section>
+
+      {/* DUOLINGO-STYLE SKILL PATH & SHYN KITAP GUIDEBOOK FOR ALL 12 SUBJECTS */}
+      <section className="surface section-surface" aria-label="Маршрут обучения Duolingo · Шың-кітап">
+        <header className="lesson-head mb-4">
+          <div className="lesson-meta-line">
+            <span className="rule-label">
+              <Sparkles size={13} className="inline mr-1" />
+              Шың-кітап · Duolingo Skill Path
+            </span>
+          </div>
+          <h2 className="steps-heading m-0">
+            {lang === "kk"
+              ? "Интерактивті оқу маршруты және Шың-кітап базасы"
+              : lang === "uz"
+                ? "Interaktiv o‘quv yo‘nalishi va Shyn-kitap bazasi"
+                : "Интерактивный маршрут обучения и база знаний «Шың-кітап»"}
+          </h2>
+          <p className="small mt-1 mb-3">
+            {lang === "kk"
+              ? "Пәнді таңдап, бөлімдер бойынша 3D-маршрутпен жүріңіз, Алтын ережелерді ашыңыз және блиц-тапсырмаларды орындаңыз."
+              : lang === "uz"
+                ? "Fanni tanlab, bo‘limlar bo‘yicha 3D-yo‘nalishдан o‘ting va Oltin qoidalarni o‘rganing."
+                : "Выберите предмет ЕНТ, открывайте конспекты «Шың-кітап» (Алтын ережелер и ловушки НЦТ) и проходите узлы маршрута шаг за шагом."}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {UNT_SUBJECTS.map((subj) => (
+              <Button
+                key={subj.id}
+                type="button"
+                size="sm"
+                variant={examSubjectId === subj.id ? "default" : "outline"}
+                onClick={() => onSubjectChange(subj.id)}
+              >
+                <SubjectIcon subjectId={subj.id} size={14} />
+                <span>{subj.shortTitle[lang]}</span>
+              </Button>
+            ))}
+          </div>
+        </header>
+
+        <DuolingoSkillPath
+          subjectId={examSubjectId}
+          lang={lang}
+          completedLessonIds={baseline.masteredTopics}
+          onSelectLesson={(selectedLesson, mode) => {
+            if (examSubjectId === "math") {
+              if (mode === "exam") {
+                onTabChange("exam");
+              } else if (mode === "error_lab") {
+                window.location.href = `/lab?lang=${lang}&topic=${selectedLesson.topicId}`;
+              } else if (mode === "practice") {
+                onOpenTopicPractice(selectedLesson.topicId as TopicId);
+              } else {
+                onOpenTopicLesson(selectedLesson.topicId as TopicId);
+              }
+            } else {
+              if (mode === "exam") {
+                onTabChange("exam");
+              } else {
+                window.location.href = `/subjects/${examSubjectId}?start=${mode}&lesson=${encodeURIComponent(
+                  selectedLesson.id
+                )}&lang=${lang}`;
+              }
+            }
+          }}
+        />
       </section>
 
       {/* МОЙ ПЛАН (Clean Empty State before Diagnostics, or Priority Today + Collapsible Details) */}

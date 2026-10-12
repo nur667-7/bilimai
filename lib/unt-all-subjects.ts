@@ -1,11 +1,13 @@
-import type { Language, TopicId } from "./curriculum";
+import type { Language, TopicId } from "./curriculum.ts";
 import type {
   UntContextQuestion,
   UntMatchingQuestion,
   UntMultipleQuestion,
   UntQuestion,
   UntSingleQuestion
-} from "./unt-exam";
+} from "./unt-exam.ts";
+import { ADDITIONAL_LESSON_QUESTIONS } from "./subject-course-completions.ts";
+import { SHYN_KITAP_EXTRA_LESSONS } from "./shyn-kitap-extra-lessons.ts";
 
 export type UntSubjectId =
   | "math"
@@ -1599,33 +1601,146 @@ function generateMath40Variant(v: number): UntQuestion[] {
   for (let i = 1; i <= 25; i++) {
     const builder = singleBuilders[(i - 1) % singleBuilders.length];
     const q = builder(i);
-    // Differentiate questions 11..25 with unique topic cycling and shifted parameters
+    // Differentiate questions 11..25 with varied authentic Shyn Kitap templates across topics
     if (i > 10) {
       const assignedTopic = TOPIC_CYCLE[(i + v) % TOPIC_CYCLE.length];
-      const m = i + v;
-      const cAns = m * 2 + 3;
-      questions.push({
-        ...q,
-        id: `math-v${v}-q${i}`,
-        order: i,
-        topic: assignedTopic,
-        prompt: {
-          ru: `Задание ЕНТ №${i} (Вариант #${v}): вычислите значение выражения 2·(${m} + 3) − 3 при параметре k = ${v}.`,
-          kk: `ҰБТ №${i} тапсырмасы (Нұсқа #${v}): k = ${v} болғанда 2·(${m} + 3) − 3 өрнегінің мәнін есептеңіз.`,
-          uz: `UBT №${i}-topshiriq (Variant #${v}): k = ${v} bo‘lganda 2·(${m} + 3) − 3 ifodaning qiymatini toping.`
-        },
-        options: {
-          ru: [`${cAns - 3}`, `${cAns}`, `${cAns + 2}`, `${cAns + 5}`],
-          kk: [`${cAns - 3}`, `${cAns}`, `${cAns + 2}`, `${cAns + 5}`],
-          uz: [`${cAns - 3}`, `${cAns}`, `${cAns + 2}`, `${cAns + 5}`]
-        },
-        correctIndex: 1,
-        explanation: {
-          ru: `Раскрываем скобки: 2·${m} + 6 − 3 = ${2 * m} + 3 = ${cAns}.`,
-          kk: `Жақшаны ашамыз: 2·${m} + 6 − 3 = ${2 * m} + 3 = ${cAns}.`,
-          uz: `Qavsni ochamiz: 2·${m} + 6 − 3 = ${2 * m} + 3 = ${cAns}.`
-        }
-      });
+      const m = (i - 10) + v;
+      const modeIdx = (i - 11) % 5;
+      if (modeIdx === 0) {
+        const cAns = 3 + m;
+        questions.push({
+          ...q,
+          id: `math-v${v}-q${i}`,
+          order: i,
+          topic: "radicals",
+          prompt: {
+            ru: `Задание ЕНТ №${i} (Вариант #${v} · Шың-кітап): вычислите log₂(8 · 2^${m}).`,
+            kk: `ҰБТ №${i} тапсырмасы (Нұсқа #${v} · Шың-кітап): log₂(8 · 2^${m}) мәнін есептеңіз.`,
+            uz: `UBT №${i}-topshiriq (Variant #${v} · Shyn-kitap): log₂(8 · 2^${m}) qiymatini toping.`
+          },
+          options: {
+            ru: [`${cAns - 2}`, `${cAns}`, `${cAns + 2}`, `${3 * m}`],
+            kk: [`${cAns - 2}`, `${cAns}`, `${cAns + 2}`, `${3 * m}`],
+            uz: [`${cAns - 2}`, `${cAns}`, `${cAns + 2}`, `${3 * m}`]
+          },
+          correctIndex: 1,
+          explanation: {
+            ru: `8 · 2^${m} = 2³ · 2^${m} = 2^(3 + ${m}), поэтому log₂(2^${cAns}) = ${cAns}.`,
+            kk: `8 · 2^${m} = 2^(3 + ${m}) ⇒ log₂(2^${cAns}) = ${cAns}.`,
+            uz: `8 · 2^${m} = 2^(3 + ${m}) ⇒ log₂(2^${cAns}) = ${cAns}.`
+          }
+        });
+      } else if (modeIdx === 1) {
+        const a1 = v + 2;
+        const d = (i % 4) + 2;
+        const a6 = a1 + 5 * d;
+        questions.push({
+          ...q,
+          id: `math-v${v}-q${i}`,
+          order: i,
+          topic: "progressions",
+          prompt: {
+            ru: `Задание ЕНТ №${i} (Вариант #${v} · Шың-кітап): в арифметической прогрессии a₁ = ${a1}, d = ${d}. Найдите шестой член a₆.`,
+            kk: `ҰБТ №${i} тапсырмасы (Нұсқа #${v} · Шың-кітап): арифметикалық прогрессияда a₁ = ${a1}, d = ${d}. Алтыншы мүшесін a₆ табыңыз.`,
+            uz: `UBT №${i}-topshiriq (Variant #${v} · Shyn-kitap): arifmetik progressiyada a₁ = ${a1}, d = ${d}. Oltinchi had a₆ ni toping.`
+          },
+          options: {
+            ru: [`${a1 + 6 * d}`, `${a6}`, `${a1 + 4 * d}`, `${a6 + d}`],
+            kk: [`${a1 + 6 * d}`, `${a6}`, `${a1 + 4 * d}`, `${a6 + d}`],
+            uz: [`${a1 + 6 * d}`, `${a6}`, `${a1 + 4 * d}`, `${a6 + d}`]
+          },
+          correctIndex: 1,
+          explanation: {
+            ru: `По формуле n-го члена a₆ = a₁ + 5d = ${a1} + 5·${d} = ${a6}.`,
+            kk: `a₆ = a₁ + 5d = ${a1} + 5·${d} = ${a6}.`,
+            uz: `a₆ = a₁ + 5d = ${a1} + 5·${d} = ${a6}.`
+          }
+        });
+      } else if (modeIdx === 2) {
+        const cAns = 12 + 2 * m;
+        questions.push({
+          ...q,
+          id: `math-v${v}-q${i}`,
+          order: i,
+          topic: "derivative",
+          prompt: {
+            ru: `Задание ЕНТ №${i} (Вариант #${v} · Шың-кітап): найдите угловой коэффициент касательной k = f'(2) к графику f(x) = x³ + ${m}x² − 5 в точке x₀ = 2.`,
+            kk: `ҰБТ №${i} тапсырмасы (Нұсқа #${v} · Шың-кітап): f(x) = x³ + ${m}x² − 5 графигіне x₀ = 2 нүктесінде жүргізілген жанаманың k = f'(2) бұрыштық коэффициентін табыңыз.`,
+            uz: `UBT №${i}-topshiriq (Variant #${v} · Shyn-kitap): f(x) = x³ + ${m}x² − 5 funksiyaning x₀ = 2 nuqtadagi urinma burchak koeffitsiyenti k = f'(2) ni toping.`
+          },
+          options: {
+            ru: [`${8 + 2 * m}`, `${cAns}`, `${cAns - 4}`, `${6 + 4 * m}`],
+            kk: [`${8 + 2 * m}`, `${cAns}`, `${cAns - 4}`, `${6 + 4 * m}`],
+            uz: [`${8 + 2 * m}`, `${cAns}`, `${cAns - 4}`, `${6 + 4 * m}`]
+          },
+          correctIndex: 1,
+          explanation: {
+            ru: `f'(x) = 3x² + ${2 * m}x. Подставляем x₀ = 2: f'(2) = 3·4 + ${2 * m}·2 = 12 + ${4 * m}`
+              .replace(`12 + ${4 * m}`, `${12 + 4 * m}`),
+            kk: `f'(x) = 3x² + ${2 * m}x ⇒ f'(2) = 12 + ${4 * m} = ${12 + 4 * m}.`,
+            uz: `f'(x) = 3x² + ${2 * m}x ⇒ f'(2) = 12 + ${4 * m} = ${12 + 4 * m}.`
+          }
+        });
+        questions[questions.length - 1] = {
+          ...(questions[questions.length - 1] as UntSingleQuestion),
+          options: {
+            ru: [`${12 + 2 * m}`, `${12 + 4 * m}`, `${8 + 4 * m}`, `${6 + 2 * m}`],
+            kk: [`${12 + 2 * m}`, `${12 + 4 * m}`, `${8 + 4 * m}`, `${6 + 2 * m}`],
+            uz: [`${12 + 2 * m}`, `${12 + 4 * m}`, `${8 + 4 * m}`, `${6 + 2 * m}`]
+          }
+        };
+      } else if (modeIdx === 3) {
+        const cAns = m + 3;
+        questions.push({
+          ...q,
+          id: `math-v${v}-q${i}`,
+          order: i,
+          topic: "trigonometry",
+          prompt: {
+            ru: `Задание ЕНТ №${i} (Вариант #${v} · Шың-кітап): упростите и вычислите 3·sin²α + 3·cos²α + ${m}.`,
+            kk: `ҰБТ №${i} тапсырмасы (Нұсқа #${v} · Шың-кітап): 3·sin²α + 3·cos²α + ${m} өрнегінің мәнін табыңыз.`,
+            uz: `UBT №${i}-topshiriq (Variant #${v} · Shyn-kitap): 3·sin²α + 3·cos²α + ${m} ifodaning qiymatini toping.`
+          },
+          options: {
+            ru: [`${m + 1}`, `${cAns}`, `${m + 6}`, `${3 * m}`],
+            kk: [`${m + 1}`, `${cAns}`, `${m + 6}`, `${3 * m}`],
+            uz: [`${m + 1}`, `${cAns}`, `${m + 6}`, `${3 * m}`]
+          },
+          correctIndex: 1,
+          explanation: {
+            ru: `По основному тригонометрическому тождеству 3(sin²α + cos²α) + ${m} = 3·1 + ${m} = ${cAns}.`,
+            kk: `3(sin²α + cos²α) + ${m} = 3 + ${m} = ${cAns}.`,
+            uz: `3(sin²α + cos²α) + ${m} = 3 + ${m} = ${cAns}.`
+          }
+        });
+      } else {
+        const aBase = m;
+        const bBase = m + 6;
+        const hTrap = 4;
+        const areaTrap = ((aBase + bBase) / 2) * hTrap;
+        questions.push({
+          ...q,
+          id: `math-v${v}-q${i}`,
+          order: i,
+          topic: assignedTopic,
+          prompt: {
+            ru: `Задание ЕНТ №${i} (Вариант #${v} · Шың-кітап): основания трапеции равны a = ${aBase} см и b = ${bBase} см, а высота h = ${hTrap} см. Найдите площадь трапеции S (см²).`,
+            kk: `ҰБТ №${i} тапсырмасы (Нұсқа #${v} · Шың-кітап): трапеция табандары a = ${aBase} см, b = ${bBase} см, биіктігі h = ${hTrap} см. Трапеция ауданын S (см²) табыңыз.`,
+            uz: `UBT №${i}-topshiriq (Variant #${v} · Shyn-kitap): trapetsiya asoslari a = ${aBase} sm, b = ${bBase} sm, balandligi h = ${hTrap} sm. Trapetsiya yuzi S (sm²) ni toping.`
+          },
+          options: {
+            ru: [`${areaTrap * 2}`, `${areaTrap}`, `${areaTrap - 6}`, `${aBase * bBase}`],
+            kk: [`${areaTrap * 2}`, `${areaTrap}`, `${areaTrap - 6}`, `${aBase * bBase}`],
+            uz: [`${areaTrap * 2}`, `${areaTrap}`, `${areaTrap - 6}`, `${aBase * bBase}`]
+          },
+          correctIndex: 1,
+          explanation: {
+            ru: `S = ((a + b) / 2) · h = ((${aBase} + ${bBase}) / 2) · ${hTrap} = ${areaTrap} см².`,
+            kk: `S = ((${aBase} + ${bBase}) / 2) · ${hTrap} = ${areaTrap} см².`,
+            uz: `S = ((${aBase} + ${bBase}) / 2) · ${hTrap} = ${areaTrap} sm².`
+          }
+        });
+      }
     } else {
       questions.push(q);
     }
@@ -1633,7 +1748,7 @@ function generateMath40Variant(v: number): UntQuestion[] {
 
   // Q26..Q30: 5 Context Questions (1 pt each)
   const baseSide = 6 + (v % 4) * 2; // 6, 8, 10, 12
-  const height = 4 + (v % 3);
+  const height = 3 * ((v % 3) + 2); // 6, 9, 12 — multiple of 3 so pyrVol is always an exact integer
   const baseArea = baseSide * baseSide;
   const pyrVol = (baseArea * height) / 3;
   const perimeter = 4 * baseSide;
@@ -1747,7 +1862,7 @@ function generateMath40Variant(v: number): UntQuestion[] {
   // Q31..Q35: 5 Matching Questions (2 pts each = 10 pts)
   for (let idx = 0; idx < 5; idx++) {
     const order = 31 + idx;
-    const p = v + idx + 1;
+    const p = v + idx + 3; // p >= 4 so 8+p, 2p, 3p+1, p² are strictly distinct
     const matchQuestion: UntMatchingQuestion = {
       id: `math-v${v}-q${order}`,
       order,
@@ -1767,9 +1882,9 @@ function generateMath40Variant(v: number): UntQuestion[] {
         uz: [`A) 2³ + ${p} ifodaning qiymati`, `B) f(x) = ${p}x² funksiyaning x₀ = 1 nuqtadagi hosilasi`]
       },
       rightOptions: {
-        ru: [`1) ${8 + p}`, `2) ${2 * p}`, `3) ${6 + p}`, `4) ${p * p}`],
-        kk: [`1) ${8 + p}`, `2) ${2 * p}`, `3) ${6 + p}`, `4) ${p * p}`],
-        uz: [`1) ${8 + p}`, `2) ${2 * p}`, `3) ${6 + p}`, `4) ${p * p}`]
+        ru: [`1) ${8 + p}`, `2) ${2 * p}`, `3) ${3 * p + 1}`, `4) ${p * p}`],
+        kk: [`1) ${8 + p}`, `2) ${2 * p}`, `3) ${3 * p + 1}`, `4) ${p * p}`],
+        uz: [`1) ${8 + p}`, `2) ${2 * p}`, `3) ${3 * p + 1}`, `4) ${p * p}`]
       },
       correctPairs: [0, 1],
       rule: {
@@ -1778,9 +1893,9 @@ function generateMath40Variant(v: number): UntQuestion[] {
         uz: "2³ = 8 daraja xossasi va (ax²)' = 2ax hosila formulasi."
       },
       explanation: {
-        ru: `Для А: 2³ + ${p} = 8 + ${p} (пункт 1). Для Б: f'(x) = 2·${p}x ⇒ f'(1) = ${2 * p} (пункт 2).`,
-        kk: `А үшін: 8 + ${p} (1-нұсқа). Б үшін: f'(1) = ${2 * p} (2-нұсқа).`,
-        uz: `A uchun: 8 + ${p} (1-variant). B uchun: f'(1) = ${2 * p} (2-variant).`
+        ru: `Для А: 2³ + ${p} = 8 + ${p} = ${8 + p} (пункт 1). Для Б: f'(x) = 2·${p}x ⇒ f'(1) = ${2 * p} (пункт 2).`,
+        kk: `А үшін: 8 + ${p} = ${8 + p} (1-нұсқа). Б үшін: f'(1) = ${2 * p} (2-нұсқа).`,
+        uz: `A uchun: 8 + ${p} = ${8 + p} (1-variant). B uchun: f'(1) = ${2 * p} (2-variant).`
       },
       trap: {
         ru: "За 1 верную пару начисляется 1 балл, за обе верные пары — 2 балла по шкале НЦТ РК.",
@@ -3130,15 +3245,185 @@ function generateSubjectSpecific40Variant(
   const bank = SUBJECT_BANKS[subjectId];
   const questions: UntQuestion[] = [];
 
+  // Build expanded Single-Choice pool from SUBJECT_BANKS + Shyn Kitap lessons + ADDITIONAL_LESSON_QUESTIONS + referenceCheatsheet
+  const expandedSinglePool = [...bank.singlePool];
+  const extraLessons = SHYN_KITAP_EXTRA_LESSONS[subjectId] ?? [];
+  const addQuestionsFlat = Object.values(ADDITIONAL_LESSON_QUESTIONS)
+    .flat()
+    .filter((q) => q.subjectId === subjectId);
+
+  for (const l of extraLessons) {
+    for (const q of l.questions) {
+      if (
+        q.type === "single_choice" &&
+        q.options &&
+        q.options.ru.length >= 4 &&
+        typeof q.correctIndex === "number"
+      ) {
+        expandedSinglePool.push({
+          prompt: q.prompt,
+          options: {
+            ru: q.options.ru.slice(0, 4) as [string, string, string, string],
+            kk: q.options.kk.slice(0, 4) as [string, string, string, string],
+            uz: q.options.uz.slice(0, 4) as [string, string, string, string]
+          },
+          correctIndex: Math.min(3, Math.max(0, q.correctIndex)) as 0 | 1 | 2 | 3,
+          rule: l.simpleExplanation,
+          explanation: q.explanation
+        });
+      }
+    }
+  }
+
+  for (const q of addQuestionsFlat) {
+    if (
+      q.type === "single_choice" &&
+      q.options &&
+      q.options.ru.length >= 4 &&
+      typeof q.correctIndex === "number"
+    ) {
+      expandedSinglePool.push({
+        prompt: q.prompt,
+        options: {
+          ru: q.options.ru.slice(0, 4) as [string, string, string, string],
+          kk: q.options.kk.slice(0, 4) as [string, string, string, string],
+          uz: q.options.uz.slice(0, 4) as [string, string, string, string]
+        },
+        correctIndex: Math.min(3, Math.max(0, q.correctIndex)) as 0 | 1 | 2 | 3,
+        rule: q.explanation,
+        explanation: q.explanation
+      });
+    }
+  }
+
+  // Also synthesize 4 distinct reference-sheet questions from spec.referenceCheatsheet
+  if (spec.referenceCheatsheet.length >= 4) {
+    spec.referenceCheatsheet.slice(0, 4).forEach((refItem, rIdx) => {
+      const allFacts = spec.referenceCheatsheet.slice(0, 4).map((item) => item.formulaOrFact) as [
+        string,
+        string,
+        string,
+        string
+      ];
+      expandedSinglePool.push({
+        prompt: {
+          ru: `Шың-кітап · ${refItem.tag}: укажите точную формулу / ключевой факт по теме «${refItem.note.ru}»:`,
+          kk: `Шың-кітап · ${refItem.tag}: «${refItem.note.kk}» бойынша дәл формуланы / деректі көрсетіңіз:`,
+          uz: `Shyn-kitap · ${refItem.tag}: «${refItem.note.uz}» bo‘yicha aniq formulani / faktni ko‘rsating:`
+        },
+        options: {
+          ru: allFacts,
+          kk: allFacts,
+          uz: allFacts
+        },
+        correctIndex: Math.min(3, rIdx) as 0 | 1 | 2 | 3,
+        rule: refItem.note,
+        explanation: {
+          ru: `${refItem.tag}: ${refItem.formulaOrFact} — ${refItem.note.ru}`,
+          kk: `${refItem.tag}: ${refItem.formulaOrFact} — ${refItem.note.kk}`,
+          uz: `${refItem.tag}: ${refItem.formulaOrFact} — ${refItem.note.uz}`
+        }
+      });
+    });
+  }
+
+  // Build expanded Matching pool
+  const expandedMatchingPool = [...bank.matchingPairs];
+  for (const l of extraLessons) {
+    for (const q of l.questions) {
+      if (
+        q.type === "matching" &&
+        q.matchingLeft &&
+        q.matchingRight &&
+        q.matchingLeft.ru.length >= 2 &&
+        q.matchingRight.ru.length >= 2
+      ) {
+        const rRu = q.matchingRight.ru;
+        const rKk = q.matchingRight.kk;
+        const rUz = q.matchingRight.uz;
+        const cPair = q.matchingPairs ?? [0, 1];
+        expandedMatchingPool.push({
+          leftA: {
+            ru: `А) ${q.matchingLeft.ru[0]}`,
+            kk: `А) ${q.matchingLeft.kk[0]}`,
+            uz: `A) ${q.matchingLeft.uz[0]}`
+          },
+          leftB: {
+            ru: `Б) ${q.matchingLeft.ru[1]}`,
+            kk: `Б) ${q.matchingLeft.kk[1]}`,
+            uz: `B) ${q.matchingLeft.uz[1]}`
+          },
+          rights: {
+            ru: [
+              `1) ${rRu[0]}`,
+              `2) ${rRu[1]}`,
+              `3) ${rRu[2] ?? `${rRu[0]} (дистрактор)`}`,
+              `4) ${rRu[3] ?? `Не относится к теме «${l.title.ru}»`}`
+            ],
+            kk: [
+              `1) ${rKk[0]}`,
+              `2) ${rKk[1]}`,
+              `3) ${rKk[2] ?? `${rKk[0]} (дистрактор)`}`,
+              `4) ${rKk[3] ?? `«${l.title.kk}» тақырыбына жатпайды`}`
+            ],
+            uz: [
+              `1) ${rUz[0]}`,
+              `2) ${rUz[1]}`,
+              `3) ${rUz[2] ?? `${rUz[0]} (distraktor)`}`,
+              `4) ${rUz[3] ?? `«${l.title.uz}» mavzusiga tegishli emas`}`
+            ]
+          },
+          correct: [
+            Math.min(3, Math.max(0, cPair[0] ?? 0)),
+            Math.min(3, Math.max(0, cPair[1] ?? 1))
+          ],
+          explanation: q.explanation
+        });
+      }
+    }
+  }
+
+  // Build expanded Multi-select pool
+  const expandedMultiPool = [...bank.multiPool];
+  for (const l of extraLessons) {
+    for (const q of l.questions) {
+      if (
+        q.type === "multiple_choice" &&
+        q.options &&
+        q.options.ru.length >= 4 &&
+        q.correctIndices
+      ) {
+        const padRu = [...q.options.ru];
+        const padKk = [...q.options.kk];
+        const padUz = [...q.options.uz];
+        while (padRu.length < 6) {
+          padRu.push(`Неверное суждение #${padRu.length + 1} (ловушка ЕНТ)`);
+          padKk.push(`Қате тұжырым #${padKk.length + 1} (ҰБТ тұзағы)`);
+          padUz.push(`Noto‘g‘ri fikr #${padUz.length + 1} (UBT tuzog‘i)`);
+        }
+        expandedMultiPool.push({
+          prompt: q.prompt,
+          options: {
+            ru: padRu.slice(0, 6) as [string, string, string, string, string, string],
+            kk: padKk.slice(0, 6) as [string, string, string, string, string, string],
+            uz: padUz.slice(0, 6) as [string, string, string, string, string, string]
+          },
+          correctIndices: q.correctIndices.filter((idx) => idx < 6).slice(0, 3),
+          explanation: q.explanation
+        });
+      }
+    }
+  }
+
   // Q1..Q25: 25 Single-choice questions (1 pt each)
   for (let order = 1; order <= 25; order++) {
-    const baseItem = bank.singlePool[(order + v - 2) % bank.singlePool.length];
+    const baseItem = expandedSinglePool[(order + v - 2) % expandedSinglePool.length];
     const secRu = spec.sections.ru[(order + v) % spec.sections.ru.length];
     const secKk = spec.sections.kk[(order + v) % spec.sections.kk.length];
     const secUz = spec.sections.uz[(order + v) % spec.sections.uz.length];
 
     const prefix =
-      order <= bank.singlePool.length
+      order <= expandedSinglePool.length
         ? { ru: "", kk: "", uz: "" }
         : {
             ru: `[Раздел: ${secRu} · Вариант #${v}] `,
@@ -3179,7 +3464,7 @@ function generateSubjectSpecific40Variant(
   // Q26..Q30: 5 Context questions (1 pt each)
   for (let idx = 0; idx < 5; idx++) {
     const order = 26 + idx;
-    const baseItem = bank.singlePool[idx % bank.singlePool.length];
+    const baseItem = expandedSinglePool[(idx + v) % expandedSinglePool.length];
     questions.push({
       id: `${subjectId}-v${v}-q${order}`,
       order,
@@ -3216,7 +3501,7 @@ function generateSubjectSpecific40Variant(
   // Q31..Q35: 5 Matching questions (2 pts each = 10 pts)
   for (let idx = 0; idx < 5; idx++) {
     const order = 31 + idx;
-    const mItem = bank.matchingPairs[idx % bank.matchingPairs.length];
+    const mItem = expandedMatchingPool[(idx + v - 1) % expandedMatchingPool.length];
     questions.push({
       id: `${subjectId}-v${v}-q${order}`,
       order,
@@ -3259,7 +3544,7 @@ function generateSubjectSpecific40Variant(
   // Q36..Q40: 5 Multiple-choice questions (2 pts each = 10 pts)
   for (let idx = 0; idx < 5; idx++) {
     const order = 36 + idx;
-    const mulItem = bank.multiPool[idx % bank.multiPool.length];
+    const mulItem = expandedMultiPool[(idx + v - 1) % expandedMultiPool.length];
     questions.push({
       id: `${subjectId}-v${v}-q${order}`,
       order,

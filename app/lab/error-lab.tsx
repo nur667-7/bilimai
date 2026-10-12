@@ -666,14 +666,21 @@ export default function ErrorLab({
           ].map((subj) => (
             <a
               key={subj.id}
-              href={subj.id === "math" ? `/lab?lang=${lang}` : `/subjects/${subj.id}`}
+              href={
+                subj.id === "math"
+                  ? `/lab?lang=${lang}`
+                  : `/subjects/${subj.id}?start=error_lab&lang=${lang}`
+              }
               style={{
                 padding: "5px 10px",
                 borderRadius: 999,
                 fontSize: 12.5,
                 fontWeight: 600,
                 textDecoration: "none",
-                background: subj.id === "math" ? "var(--accent, #3856f5)" : "var(--bg, #f7f5ef)",
+                background:
+                  subj.id === "math"
+                    ? "var(--accent-strong, #0d6e5b)"
+                    : "var(--bg, #f7f5ef)",
                 color: subj.id === "math" ? "#fff" : "inherit",
                 border: "1px solid var(--border, #dcd8ce)"
               }}

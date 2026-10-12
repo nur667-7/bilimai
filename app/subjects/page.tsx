@@ -24,6 +24,11 @@ const LEGACY_LANG_STORAGE_KEY = "bilimai-lang";
 const CATALOG_I18N: Record<
   Locale,
   {
+    navToday: string;
+    navSubjects: string;
+    navUnt: string;
+    navProgress: string;
+    navProfile: string;
     onboardingLink: string;
     teacherLink: string;
     workbookLink: string;
@@ -35,9 +40,11 @@ const CATALOG_I18N: Record<
     levelBasic: string;
     levelIntermediate: string;
     levelAdvanced: string;
-    categories: Record<UniversalSubjectCurriculum["category"] | "all", string>;
+    categories: Record<UniversalSubjectCurriculum["category"] | "all" | "profile", string>;
     starterBadge: string;
     expandedBadge: string;
+    mandatoryUntBadge: string;
+    profileUntBadge: string;
     completedLabel: string;
     ofWord: string;
     accuracyLabel: string;
@@ -46,106 +53,134 @@ const CATALOG_I18N: Record<
     diagnosticBtn: string;
     firstLessonBtn: string;
     noMatches: string;
+    resetFiltersBtn: string;
   }
 > = {
   ru: {
+    navToday: "Сегодня",
+    navSubjects: "Предметы (12)",
+    navUnt: "Пробное ЕНТ",
+    navProgress: "Мой прогресс",
+    navProfile: "Профиль",
     onboardingLink: "Онбординг",
     teacherLink: "Учителю",
     workbookLink: "Тренажёр",
     kicker: "КАТАЛОГ ПРЕДМЕТОВ BILIMAI",
     title: "Выберите предмет для изучения",
     subtitle:
-      "В каждом предмете доступны пошаговые интерактивные уроки, проверка понимания, Лаборатория ошибок, карта пререквизитов, диагностика и ИИ-репетитор.",
-    searchPlaceholder: "Поиск предмета или темы (например: Физика, Python, ДНК, Ханство)...",
+      "3 обязательных и 9 профильных предметов ЕНТ: пошаговые уроки, интерактивные практикумы, Лаборатория ошибок, карта пререквизитов, диагностика и ИИ-репетитор.",
+    searchPlaceholder: "Поиск предмета или темы (например: История Казахстана, Физика, Python, ДНК)...",
     levelFilterAll: "Все уровни",
     levelBasic: "Базовый (с нуля)",
     levelIntermediate: "Средний",
     levelAdvanced: "Продвинутый / Профиль",
     categories: {
       all: "Все направления (12)",
+      mandatory: "Обязательные ЕНТ (3)",
+      profile: "Профильные ЕНТ (9)",
       stem: "Точные науки и IT",
       natural_science: "Естественные науки",
       humanities: "История, Право и Общество",
       languages: "Языки и чтение",
-      mandatory: "Базовая грамотность",
       custom: "Дополнительные курсы"
     },
     starterBadge: "Стартовый курс",
     expandedBadge: "Расширенный курс",
-    completedLabel: "Пройдено:",
+    mandatoryUntBadge: "Обязательный ЕНТ",
+    profileUntBadge: "Профильный ЕНТ",
+    completedLabel: "Материалы:",
     ofWord: "из",
-    accuracyLabel: "Точность:",
+    accuracyLabel: "Навыки:",
     notAssessed: "Ещё не оценено",
     openSubjectBtn: "Открыть предмет →",
     diagnosticBtn: "Диагностика",
     firstLessonBtn: "1-й урок",
-    noMatches: "По вашему запросу предметы не найдены. Попробуйте сбросить фильтр."
+    noMatches: "По вашему запросу предметы не найдены. Попробуйте изменить запрос или сбросить фильтр.",
+    resetFiltersBtn: "Сбросить фильтры"
   },
   kk: {
+    navToday: "Бүгін",
+    navSubjects: "Пәндер (12)",
+    navUnt: "Байқау ҰБТ",
+    navProgress: "Менің прогресім",
+    navProfile: "Профиль",
     onboardingLink: "Онбординг",
     teacherLink: "Мұғалімге",
     workbookLink: "Тренажёр",
     kicker: "BILIMAI ПӘНДЕР КАТАЛОГЫ",
     title: "Оқу үшін пәнді таңдаңыз",
     subtitle:
-      "Әр пәнде қадамдық интерактивті сабақтар, түсінгенді тексеру, Қателер зертханасы, білім картасы, диагностика және ЖИ-репетитор бар.",
-    searchPlaceholder: "Пәнді немесе тақырыпты іздеу (мысалы: Физика, Python, ДНҚ)...",
+      "ҰБТ-ның 3 міндетті және 9 бейіндік пәні: қадамдық интерактивті сабақтар, Қателер зертханасы, білім картасы, диагностика және ЖИ-репетитор.",
+    searchPlaceholder: "Пәнді немесе тақырыпты іздеу (мысалы: Қазақстан тарихы, Физика, Python)...",
     levelFilterAll: "Барлық деңгейлер",
     levelBasic: "Базалық (нөлден)",
     levelIntermediate: "Орташа",
     levelAdvanced: "Күрделі / Профиль",
     categories: {
       all: "Барлық бағыттар (12)",
+      mandatory: "Міндетті ҰБТ (3)",
+      profile: "Бейіндік ҰБТ (9)",
       stem: "Нақты ғылымдар және IT",
       natural_science: "Жаратылыстану ғылымдары",
       humanities: "Тарих, Құқық және Қоғам",
       languages: "Тілдер және оқу",
-      mandatory: "Базалық сауаттылық",
       custom: "Қосымша курстар"
     },
     starterBadge: "Бастапқы курс",
     expandedBadge: "Кеңейтілген курс",
-    completedLabel: "Өтілді:",
+    mandatoryUntBadge: "Міндетті ҰБТ",
+    profileUntBadge: "Бейіндік ҰБТ",
+    completedLabel: "Материал:",
     ofWord: "/",
-    accuracyLabel: "Дәлдік:",
+    accuracyLabel: "Дағдылар:",
     notAssessed: "Әлі бағаланбаған",
     openSubjectBtn: "Пәнді ашу →",
     diagnosticBtn: "Диагностика",
     firstLessonBtn: "1-сабақ",
-    noMatches: "Сұраныс бойынша пәндер табылмады."
+    noMatches: "Сұраныс бойынша пәндер табылмады.",
+    resetFiltersBtn: "Сүзгіні тазарту"
   },
   uz: {
+    navToday: "Bugun",
+    navSubjects: "Fanlar (12)",
+    navUnt: "Sinov imtihoni",
+    navProgress: "Mening progressim",
+    navProfile: "Profil",
     onboardingLink: "Onbording",
     teacherLink: "O‘qituvchiga",
     workbookLink: "Trenajyor",
     kicker: "BILIMAI FANLAR KATALOGI",
     title: "O‘rganish uchun fanni tanlang",
     subtitle:
-      "Har bir fanda qadam-baqadam interaktiv darslar, amaliy mashqlar, Xatolar laboratoriyasi, bilimlar xaritasi, diagnostika va SI-repetitor mavjud.",
-    searchPlaceholder: "Fan yoki mavzuni qidirish (masalan: Fizika, Python, DNK)...",
+      "3 ta majburiy va 9 ta ixtisoslik fani: qadam-baqadam interaktiv darslar, Xatolar laboratoriyasi, bilimlar xaritasi, diagnostika va SI-repetitor.",
+    searchPlaceholder: "Fan yoki mavzuni qidirish (masalan: Qozog‘iston tarixi, Fizika, Python)...",
     levelFilterAll: "Barcha darajalar",
     levelBasic: "Bazaviy (noldan)",
     levelIntermediate: "O‘rta",
     levelAdvanced: "Yuqori / Profil",
     categories: {
       all: "Barcha yo‘nalishlar (12)",
+      mandatory: "Majburiy fanlar (3)",
+      profile: "Ixtisoslik fanlari (9)",
       stem: "Aniq fanlar va IT",
       natural_science: "Tabiiy fanlar",
       humanities: "Tarix, Huquq va Jamiyat",
       languages: "Tillar va o‘qish",
-      mandatory: "Bazaviy savodxonlik",
       custom: "Qo‘shimcha kurslar"
     },
     starterBadge: "Boshlang‘ich kurs",
     expandedBadge: "Kengaytirilgan kurs",
-    completedLabel: "O‘tildi:",
+    mandatoryUntBadge: "Majburiy fan",
+    profileUntBadge: "Ixtisoslik fani",
+    completedLabel: "Material:",
     ofWord: "/",
-    accuracyLabel: "Aniqlik:",
+    accuracyLabel: "Ko‘nikma:",
     notAssessed: "Hali baholanmagan",
     openSubjectBtn: "Fanni ochish →",
     diagnosticBtn: "Diagnostika",
     firstLessonBtn: "1-dars",
-    noMatches: "So‘rovingiz bo‘yicha fanlar topilmadi."
+    noMatches: "So‘rovingiz bo‘yicha fanlar topilmadi.",
+    resetFiltersBtn: "Filtrlarni tozalash"
   }
 };
 
@@ -155,7 +190,7 @@ export default function SubjectsCatalogPage() {
   const { dark, toggleTheme } = useAniqTheme();
   const [locale, setLocale] = useState<Locale>("ru");
   const [categoryFilter, setCategoryFilter] = useState<
-    UniversalSubjectCurriculum["category"] | "all"
+    UniversalSubjectCurriculum["category"] | "all" | "profile"
   >("all");
   const [levelFilter, setLevelFilter] = useState<"all" | "basic" | "intermediate" | "advanced">(
     "all"
@@ -216,7 +251,17 @@ export default function SubjectsCatalogPage() {
   const filteredCurricula = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return curricula.filter((subj) => {
-      if (categoryFilter !== "all" && subj.category !== categoryFilter) {
+      const isMand =
+        subj.id === "history_kz" ||
+        subj.id === "math_lit" ||
+        subj.id === "math_literacy" ||
+        subj.id === "reading_lit" ||
+        subj.id === "reading_literacy";
+      if (categoryFilter === "mandatory") {
+        if (!isMand) return false;
+      } else if (categoryFilter === "profile") {
+        if (isMand) return false;
+      } else if (categoryFilter !== "all" && subj.category !== categoryFilter) {
         return false;
       }
       if (levelFilter !== "all") {
@@ -237,8 +282,8 @@ export default function SubjectsCatalogPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "var(--bilimai-bg, #F6F7FB)",
-        color: "var(--bilimai-text, #0F172A)"
+        background: "var(--bilimai-bg, #FAFAF8)",
+        color: "var(--bilimai-text, #202522)"
       }}
     >
       <header
@@ -246,9 +291,9 @@ export default function SubjectsCatalogPage() {
           position: "sticky",
           top: 0,
           zIndex: 20,
-          background: "var(--bilimai-header-bg, rgba(246, 247, 251, 0.94))",
+          background: "var(--bilimai-header-bg, rgba(250, 250, 248, 0.94))",
           backdropFilter: "blur(10px)",
-          borderBottom: "1px solid var(--bilimai-border, #D8E0EE)",
+          borderBottom: "1px solid var(--bilimai-border, #DCE2DD)",
           padding: "12px 16px"
         }}
       >
@@ -263,14 +308,14 @@ export default function SubjectsCatalogPage() {
             gap: 12
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <Link
               href={`/welcome?lang=${locale}`}
               style={{
                 fontWeight: 800,
                 fontSize: 19,
                 textDecoration: "none",
-                color: "var(--bilimai-text, #0F172A)",
+                color: "var(--bilimai-text, #202522)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8
@@ -281,7 +326,7 @@ export default function SubjectsCatalogPage() {
                   width: 30,
                   height: 30,
                   borderRadius: 9,
-                  background: "var(--bilimai-brand, #254EDB)",
+                  background: "var(--bilimai-brand, #156D5D)",
                   color: "var(--bilimai-on-brand, #fff)",
                   display: "inline-flex",
                   alignItems: "center",
@@ -295,41 +340,92 @@ export default function SubjectsCatalogPage() {
               <span>BilimAI</span>
             </Link>
 
-            <Link
-              href={`/welcome?lang=${locale}`}
-              style={{
-                fontSize: 13.5,
-                color: "var(--bilimai-text-muted, #475569)",
-                textDecoration: "none",
-                fontWeight: 600
-              }}
+            <nav
+              aria-label="Глобальная навигация"
+              style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}
             >
-              {ui.onboardingLink}
-            </Link>
-
-            <Link
-              href="/teacher"
-              style={{
-                fontSize: 13.5,
-                color: "var(--bilimai-text-muted, #475569)",
-                textDecoration: "none",
-                fontWeight: 600
-              }}
-            >
-              {ui.teacherLink}
-            </Link>
-
-            <Link
-              href="/"
-              style={{
-                fontSize: 13.5,
-                color: "var(--bilimai-text-muted, #475569)",
-                textDecoration: "none",
-                fontWeight: 600
-              }}
-            >
-              {ui.workbookLink}
-            </Link>
+              <Link
+                href={`/?tab=today&lang=${locale}`}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-text-muted, #525D56)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.navToday}
+              </Link>
+              <Link
+                href={`/subjects?lang=${locale}`}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-brand-text, #0F5346)",
+                  background: "var(--bilimai-selected-bg, #E6F2EF)",
+                  textDecoration: "none",
+                  fontWeight: 700,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.navSubjects}
+              </Link>
+              <Link
+                href={`/?tab=exam&lang=${locale}`}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-text-muted, #525D56)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.navUnt}
+              </Link>
+              <Link
+                href={`/?tab=roadmap&lang=${locale}`}
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-text-muted, #525D56)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.navProgress}
+              </Link>
+              <Link
+                href="/teacher"
+                style={{
+                  fontSize: 13.5,
+                  color: "var(--bilimai-text-muted, #525D56)",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                  padding: "7px 10px",
+                  minHeight: 38,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: 8
+                }}
+              >
+                {ui.teacherLink}
+              </Link>
+            </nav>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -339,7 +435,7 @@ export default function SubjectsCatalogPage() {
               style={{
                 display: "inline-flex",
                 borderRadius: 10,
-                border: "1px solid var(--bilimai-border, #D8E0EE)",
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
                 overflow: "hidden",
                 background: "var(--bilimai-surface, #fff)"
               }}
@@ -353,12 +449,13 @@ export default function SubjectsCatalogPage() {
                   onClick={() => handleLocaleChange(lang)}
                   style={{
                     padding: "6px 10px",
+                    minHeight: 38,
                     border: "none",
-                    background: locale === lang ? "var(--bilimai-brand, #254EDB)" : "transparent",
+                    background: locale === lang ? "var(--bilimai-brand, #156D5D)" : "transparent",
                     color:
                       locale === lang
                         ? "var(--bilimai-on-brand, #fff)"
-                        : "var(--bilimai-text, #0F172A)",
+                        : "var(--bilimai-text, #202522)",
                     fontSize: 12,
                     fontWeight: 700,
                     cursor: "pointer"
@@ -375,6 +472,25 @@ export default function SubjectsCatalogPage() {
               lightActionLabel={themeLightAction}
               darkActionLabel={themeDarkAction}
             />
+
+            <Link
+              href={`/login?lang=${locale}`}
+              style={{
+                padding: "8px 12px",
+                minHeight: 38,
+                display: "inline-flex",
+                alignItems: "center",
+                borderRadius: 10,
+                border: "1px solid var(--bilimai-border, #DCE2DD)",
+                background: "var(--bilimai-surface, #fff)",
+                textDecoration: "none",
+                color: "var(--bilimai-text, #202522)",
+                fontSize: 13,
+                fontWeight: 600
+              }}
+            >
+              {ui.navProfile}
+            </Link>
           </div>
         </div>
       </header>
@@ -396,7 +512,7 @@ export default function SubjectsCatalogPage() {
             style={{
               margin: 0,
               fontSize: 15.5,
-              color: "var(--bilimai-text-muted, #475569)",
+              color: "var(--bilimai-text-muted, #525D56)",
               maxWidth: 780,
               lineHeight: 1.5
             }}
@@ -423,10 +539,11 @@ export default function SubjectsCatalogPage() {
             style={{
               flex: "1 1 280px",
               padding: "10px 14px",
+              minHeight: 42,
               borderRadius: 12,
-              border: "1px solid var(--bilimai-border, #D8E0EE)",
+              border: "1px solid var(--bilimai-border, #DCE2DD)",
               background: "var(--bilimai-surface, #fff)",
-              color: "var(--bilimai-text, #0F172A)",
+              color: "var(--bilimai-text, #202522)",
               fontSize: 14.5
             }}
           />
@@ -440,10 +557,11 @@ export default function SubjectsCatalogPage() {
             }
             style={{
               padding: "10px 14px",
+              minHeight: 42,
               borderRadius: 12,
-              border: "1px solid var(--bilimai-border, #D8E0EE)",
+              border: "1px solid var(--bilimai-border, #DCE2DD)",
               background: "var(--bilimai-surface, #fff)",
-              color: "var(--bilimai-text, #0F172A)",
+              color: "var(--bilimai-text, #202522)",
               fontSize: 14,
               fontWeight: 600
             }}
@@ -457,7 +575,7 @@ export default function SubjectsCatalogPage() {
 
         {/* Category Filter Tabs */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {(["all", "stem", "natural_science", "humanities", "languages", "mandatory"] as const).map(
+          {(["all", "mandatory", "profile", "stem", "natural_science", "humanities", "languages"] as const).map(
             (cat) => {
               const active = categoryFilter === cat;
               return (
@@ -469,16 +587,17 @@ export default function SubjectsCatalogPage() {
                   onClick={() => setCategoryFilter(cat)}
                   style={{
                     padding: "8px 14px",
+                    minHeight: 38,
                     borderRadius: 999,
                     border: active
-                      ? "1px solid var(--bilimai-brand, #254EDB)"
-                      : "1px solid var(--bilimai-border, #D8E0EE)",
+                      ? "1px solid var(--bilimai-brand, #156D5D)"
+                      : "1px solid var(--bilimai-border, #DCE2DD)",
                     background: active
-                      ? "var(--bilimai-brand, #254EDB)"
+                      ? "var(--bilimai-brand, #156D5D)"
                       : "var(--bilimai-surface, #fff)",
                     color: active
                       ? "var(--bilimai-on-brand, #fff)"
-                      : "var(--bilimai-text, #0F172A)",
+                      : "var(--bilimai-text, #202522)",
                     fontSize: 13.5,
                     fontWeight: 600,
                     cursor: "pointer"
@@ -498,12 +617,39 @@ export default function SubjectsCatalogPage() {
               padding: 24,
               borderRadius: 16,
               background: "var(--bilimai-surface, #fff)",
-              border: "1px solid var(--bilimai-border, #D8E0EE)",
+              border: "1px solid var(--bilimai-border, #DCE2DD)",
               fontSize: 15,
-              color: "var(--bilimai-text-muted, #475569)"
+              color: "var(--bilimai-text-muted, #525D56)",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12
             }}
           >
-            {ui.noMatches}
+            <span>{ui.noMatches}</span>
+            <button
+              type="button"
+              data-testid="catalog-reset-filters-btn"
+              onClick={() => {
+                setSearchQuery("");
+                setCategoryFilter("all");
+                setLevelFilter("all");
+              }}
+              style={{
+                padding: "9px 14px",
+                minHeight: 38,
+                borderRadius: 10,
+                border: "1px solid var(--bilimai-selected-border, #156D5D)",
+                background: "var(--bilimai-selected-bg, #E6F2EF)",
+                color: "var(--bilimai-brand-text, #0F5346)",
+                fontWeight: 700,
+                fontSize: 13.5,
+                cursor: "pointer"
+              }}
+            >
+              {ui.resetFiltersBtn}
+            </button>
           </div>
         ) : (
           <div
@@ -526,6 +672,12 @@ export default function SubjectsCatalogPage() {
               );
               const firstLessonId = subj.lessons[0]?.id ?? "";
               const isExpandedCourse = subj.readinessStatus === "full_course";
+              const isMandatoryUnt =
+                subj.id === "history_kz" ||
+                subj.id === "math_lit" ||
+                subj.id === "math_literacy" ||
+                subj.id === "reading_lit" ||
+                subj.id === "reading_literacy";
 
               return (
                 <article
@@ -533,7 +685,7 @@ export default function SubjectsCatalogPage() {
                   data-testid={`subject-card-${subj.id}`}
                   style={{
                     background: "var(--bilimai-surface, #ffffff)",
-                    border: "1px solid var(--bilimai-border, #D8E0EE)",
+                    border: "1px solid var(--bilimai-border, #DCE2DD)",
                     borderRadius: 18,
                     padding: "18px 20px",
                     display: "flex",
@@ -552,18 +704,34 @@ export default function SubjectsCatalogPage() {
                         flexWrap: "wrap"
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                         <span
                           style={{
                             padding: "4px 10px",
                             borderRadius: 999,
-                            background: "var(--bilimai-selected-bg, #E0E7FF)",
-                            color: "var(--bilimai-selected-text, #1E3A8A)",
+                            background: "var(--bilimai-selected-bg, #E6F2EF)",
+                            color: "var(--bilimai-selected-text, #0F5346)",
                             fontSize: 11.5,
                             fontWeight: 800
                           }}
                         >
                           {subj.badge}
+                        </span>
+                        <span
+                          style={{
+                            padding: "3px 8px",
+                            borderRadius: 999,
+                            background: isMandatoryUnt
+                              ? "var(--bilimai-selected-bg, #E6F2EF)"
+                              : "var(--bilimai-surface-raised, #F0F2EF)",
+                            color: isMandatoryUnt
+                              ? "var(--bilimai-brand-text, #0F5346)"
+                              : "var(--bilimai-text-muted, #525D56)",
+                            fontSize: 11,
+                            fontWeight: 700
+                          }}
+                        >
+                          {isMandatoryUnt ? ui.mandatoryUntBadge : ui.profileUntBadge}
                         </span>
                         <span
                           data-testid={`subject-readiness-${subj.id}`}
@@ -572,10 +740,10 @@ export default function SubjectsCatalogPage() {
                             borderRadius: 999,
                             background: isExpandedCourse
                               ? "var(--bilimai-success-bg, #ECFDF5)"
-                              : "var(--bilimai-surface-raised, #EEF2F9)",
+                              : "var(--bilimai-surface-raised, #F0F2EF)",
                             color: isExpandedCourse
                               ? "var(--bilimai-success-text, #065F46)"
-                              : "var(--bilimai-text-muted, #475569)",
+                              : "var(--bilimai-text-muted, #525D56)",
                             fontSize: 11,
                             fontWeight: 700
                           }}
@@ -583,7 +751,7 @@ export default function SubjectsCatalogPage() {
                           {isExpandedCourse ? ui.expandedBadge : ui.starterBadge}
                         </span>
                       </div>
-                      <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #475569)" }}>
+                      <span style={{ fontSize: 12, color: "var(--bilimai-text-muted, #525D56)" }}>
                         {formatModulesCountLabel(subj.modules.length, locale)} ·{" "}
                         {formatLessonsCountLabel(subj.lessons.length, locale)} ·{" "}
                         {formatQuestionsCountLabel(totalQuestions, locale)}
@@ -598,7 +766,7 @@ export default function SubjectsCatalogPage() {
                         margin: 0,
                         fontSize: 14,
                         lineHeight: 1.48,
-                        color: "var(--bilimai-text-muted, #475569)"
+                        color: "var(--bilimai-text-muted, #525D56)"
                       }}
                     >
                       {subj.shortDescription[locale]}
@@ -609,9 +777,12 @@ export default function SubjectsCatalogPage() {
                     <div
                       style={{
                         fontSize: 12.5,
-                        color: "var(--bilimai-text-muted, #475569)",
+                        color: "var(--bilimai-text-muted, #525D56)",
                         display: "flex",
-                        justifyContent: "space-between"
+                        justifyContent: "space-between",
+                        padding: "8px 10px",
+                        borderRadius: 10,
+                        background: "var(--bilimai-surface-raised, #F0F2EF)"
                       }}
                     >
                       <span>
@@ -635,8 +806,9 @@ export default function SubjectsCatalogPage() {
                           alignItems: "center",
                           justifyContent: "center",
                           padding: "10px 14px",
+                          minHeight: 40,
                           borderRadius: 12,
-                          background: "var(--bilimai-brand, #254EDB)",
+                          background: "var(--bilimai-brand, #156D5D)",
                           color: "var(--bilimai-on-brand, #ffffff)",
                           textDecoration: "none",
                           fontWeight: 700,
@@ -652,10 +824,11 @@ export default function SubjectsCatalogPage() {
                           alignItems: "center",
                           justifyContent: "center",
                           padding: "10px 12px",
+                          minHeight: 40,
                           borderRadius: 12,
-                          border: "1px solid var(--bilimai-border, #D8E0EE)",
+                          border: "1px solid var(--bilimai-border, #DCE2DD)",
                           background: "var(--bilimai-surface, #fff)",
-                          color: "var(--bilimai-text, #0F172A)",
+                          color: "var(--bilimai-text, #202522)",
                           textDecoration: "none",
                           fontWeight: 600,
                           fontSize: 13
@@ -671,10 +844,11 @@ export default function SubjectsCatalogPage() {
                             alignItems: "center",
                             justifyContent: "center",
                             padding: "10px 12px",
+                            minHeight: 40,
                             borderRadius: 12,
-                            border: "1px solid var(--bilimai-border, #D8E0EE)",
+                            border: "1px solid var(--bilimai-border, #DCE2DD)",
                             background: "var(--bilimai-surface, #fff)",
-                            color: "var(--bilimai-text, #0F172A)",
+                            color: "var(--bilimai-text, #202522)",
                             textDecoration: "none",
                             fontWeight: 600,
                             fontSize: 13
