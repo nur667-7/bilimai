@@ -5,7 +5,7 @@ export const periodOf = value => new Date(new Date(value).getTime() + 5 * 360000
 export const dayOf = value => new Date(new Date(value).getTime() + 5 * 3600000).toISOString().slice(0, 10);
 export class Problem extends Error { constructor(message, status = 409) { super(message); this.status = status; } }
 export function must(ok, message, status = 409) { if (!ok) throw new Problem(message, status); }
-export const kinds = ['account','worker','engagement','contract','site','slot','shift','photo','issue','issuePhoto','penalty','act','claim','payment','quote','notice','audit'];
+export const kinds = ['account','worker','engagement','contract','site','slot','shift','photo','issue','issuePhoto','penalty','act','claim','payment','quote','notice','audit','finding'];
 export function seedData(clock = Date.now()) {
   const data = Object.fromEntries(kinds.map(k => [k, []]));
   for (const [uid, name, role] of [['manager','Менеджер IC Line','manager'],['mvp-contractor','Субподрядчик MVP','contractor'],['mvp-operator','Оператор MVP','operator'],['mvp-client','Клиент MVP','client']])

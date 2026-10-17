@@ -7,6 +7,21 @@ import {validateGPS,validateSchedule,timers,quote,eligible} from '../ic-hub/doma
 import {bootstrap} from '../ic-hub/state.mjs';
 import {handleHub,runHubTimers} from '../ic-hub/server.mjs';
 import {accountDemoData,accountDemoSQL} from '../ic-hub/demo-accounts.mjs';
+import {legacyDemoData,legacyDemoSQL} from '../ic-hub/legacy-demo.mjs';
+
+test('legacy register keeps ownership, evidence gaps and finance separated',()=>{
+ const d=seedData();const legacy=legacyDemoData();for(const k of Object.keys(d))d[k].push(...legacy[k]);
+ const state=uid=>bootstrap(d,d.account.find(a=>a.id===uid),'2026-09');
+ for(const s of legacy.shift){const site=d.site.find(x=>x.id===s.site_id);assert.ok(site);assert.ok(d.account.some(a=>a.id===s.operator_id));assert.ok(d.engagement.some(e=>e.worker_id===s.operator_id&&e.contractor_id===site.contractor_id));assert.ok(Date.parse(s.planned_end)>Date.parse(s.planned_start));assert.equal(s.earned,0);assert.notEqual(s.status,'approved');}
+ const vendor=state('LEGACY-P24');assert.ok(vendor.shifts.some(s=>s.id==='S-01127'));assert.ok(!vendor.shifts.some(s=>s.id==='S-00866'));assert.ok(!vendor.findings.some(f=>f.manager_only||f.id==='DED-01'));
+ const op=state('LEGACY-OP-049');assert.ok(op.findings.some(f=>f.id==='RISK-S-01127'));assert.ok(op.findings.every(f=>f.operator_id==='LEGACY-OP-049'));assert.equal(op.payroll[0].earned,0);
+ const customer=state('LEGACY-CLIENT-K-003');assert.equal(customer.findings.length,0);assert.equal(customer.penalties.length,0);assert.ok(customer.issues.some(i=>i.id==='Z-0902'));assert.ok(!customer.shifts.some(s=>s.operator_id||s.wage));
+ assert.equal(legacy.penalty.reduce((a,p)=>a+p.amount,0),15000);assert.equal(legacy.payment.length,0);assert.equal(legacy.act.length,0);assert.ok(state('manager').findings.some(f=>f.id==='REPORT-SEPTEMBER'));
+});
+test('legacy import is idempotent, preserves edits and contains no private identifiers',()=>{
+ const sql=new DatabaseSync(':memory:');sql.exec(readFileSync(new URL('../ic-hub/drizzle/0000_many_moon_knight.sql',import.meta.url),'utf8'));sql.exec("INSERT INTO ic_meta(id) VALUES('state')");sql.exec(legacyDemoSQL());const count=sql.prepare('SELECT count(*) n FROM ic_records').get().n;sql.prepare("UPDATE ic_records SET data=? WHERE kind='contract' AND id='K-004'").run('{"id":"K-004","terms":"Edited"}');sql.exec(legacyDemoSQL());assert.equal(sql.prepare('SELECT count(*) n FROM ic_records').get().n,count);assert.equal(sql.prepare("SELECT revision FROM ic_meta WHERE id='state'").get().revision,1);assert.equal(JSON.parse(sql.prepare("SELECT data FROM ic_records WHERE kind='contract' AND id='K-004'").get().data).terms,'Edited');
+ const source=JSON.parse(readFileSync(new URL('../ic-hub/fixtures/legacy-demo.json',import.meta.url),'utf8'));for(const rows of Object.values(source))for(const row of rows)for(const key of ['iin','bin_iin','phone','kaspi_phone','entry_pin','qr_code','nfc_uid'])assert.equal(row[key],undefined);
+});
 
 // Execute the actual prepared SQL and transaction batches against SQLite, not a
 // mocked state object. Production uses the same SQL via the Cloudflare D1 binding.

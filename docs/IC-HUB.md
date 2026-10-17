@@ -48,3 +48,13 @@ npm run build
 ## Неподтверждённые операторы в демонстрации
 
 Для назначения на объект договора MVP-DEMO-SHIFT разрешён явный флаг demo_only=true. Он сохраняется у смены и показывается отдельной подписью в интерфейсе. Допуск и ИИН сотрудника при этом не меняются: UNKNOWN остаётся UNKNOWN. Правила пересечений, отдыха, слотов, бюджета, QR и GPS сохраняются. На остальных договорах этот флаг отклоняется. Обычное назначение без флага по-прежнему требует подтверждённого допуска. Начисления таких смен демонстрационные.
+
+## Imported September register
+
+The explicit `legacy-demo-v1` import adds 9 contracts, 14 contractor work packages for 11 physical facilities, 8 operator profiles, 22 source shifts, 5 complaints, 3 historical SLA deductions, 4 CPQ references and 18 scoped findings. Source snapshot is sanitized: no IINs, phone numbers, old PINs, old QR secrets or stock-photo evidence. Existing MVP accounts and Nurbek assignments are preserved. Contract budgets are allocated once across work packages.
+
+`Контроль и риски` is scoped to manager, relevant contractor or the individual operator. Internal findings are never sent to clients. Contract risks also appear in the contract list, finance references in billing. Select September 2026 for historical records. Existing clients see only their contracts, objects, work status and complaints.
+
+Source COMPLETED means completed, not manager approved: imported shifts await verification, earn zero pending review, and cannot be approved without a verified reconstruction. No payment or accepted act is fabricated from the report. The source contains 3 rejected OP-061 shifts, whereas the report claims 23; the discrepancy remains explicit. The reported 568,535 KZT already includes 15,000 KZT SLA and must not be added twice. September tax profile validity is not extended to today.
+
+To refresh the sanitized snapshot, explicitly run `node scripts/import-ic-hub-legacy.mjs <source-db>`. Generate `legacyDemoSQL()` into an ignored work file and import into IC_DB after backup. Stable IDs use INSERT ON CONFLICT DO NOTHING, preserving user edits on repeated imports. The education database is separate.
