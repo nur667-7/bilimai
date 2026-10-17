@@ -6,6 +6,7 @@ import {ensureSeed,readStore,mutate,seedData} from '../ic-hub/store.mjs';
 import {validateGPS,validateSchedule,timers,quote} from '../ic-hub/domain.mjs';
 import {bootstrap} from '../ic-hub/state.mjs';
 import {handleHub,runHubTimers} from '../ic-hub/server.mjs';
+import {accountDemoData,accountDemoSQL} from '../ic-hub/demo-accounts.mjs';
 
 // Execute the actual prepared SQL and transaction batches against SQLite, not a
 // mocked state object. Production uses the same SQL via the Cloudflare D1 binding.
@@ -17,6 +18,32 @@ const fixture=()=>({IC_DB:database(),IC_IDENTITY_SECRET:'unit-test-key-only'});
 async function client(env,uid){let cookie='',csrf='';return {async request(path,body,method=body?'POST':'GET'){
  const headers={'Content-Type':'application/json','Origin':'https://example.test',Cookie:cookie,'X-CSRF-Token':csrf};const r=await handleHub(new Request('https://example.test/api/ic-hub'+path,{method,headers,...(body?{body:JSON.stringify(body)}:{})}),env);if(r.headers.get('set-cookie'))cookie=r.headers.get('set-cookie').split(';')[0];const text=await r.text();let value;try{value=JSON.parse(text);}catch{value=text;}if(value.csrf)csrf=value.csrf;return {status:r.status,value,headers:r.headers};},async login(){const r=await this.request('/ops/login',{user_id:uid});assert.equal(r.status,200);return this;}};}
 const png='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==';
+
+test('IC Hub account demo is linked, financially consistent and visible to all roles',()=>{
+ const clock=Date.parse('2026-10-17T07:00:00Z'),base=seedData(clock),extra=accountDemoData(clock);
+ for(const kind of Object.keys(base))base[kind].push(...extra[kind]);
+ const state=uid=>bootstrap(base,base.account.find(a=>a.id===uid),'2026-10');
+ assert.equal(state('mvp-operator').payroll[0].earned,10000);
+ assert.equal(state('mvp-operator').payroll[0].paid,2500);
+ assert.equal(state('mvp-operator').payroll[0].balance,7500);
+ assert.equal(state('mvp-contractor').summary.vendor_balance,13000);
+ assert.equal(state('mvp-client').summary.acts_to_accept,1);
+ assert.equal(state('mvp-client').issues.length,2);
+ assert.equal(state('manager').quotes.length,1);
+ assert.equal(state('manager').acts[0].stale,false);
+ for(const s of base.shift)validateSchedule(base,s.operator_id,base.site.find(site=>site.id===s.site_id),Date.parse(s.planned_start),Date.parse(s.planned_end),s.id);
+});
+test('IC Hub account demo SQL is idempotent and preserves edited records',()=>{
+ const sql=new DatabaseSync(':memory:');sql.exec(readFileSync(new URL('../ic-hub/drizzle/0000_many_moon_knight.sql',import.meta.url),'utf8'));
+ sql.exec("INSERT INTO ic_meta(id) VALUES('state')");
+ const seed=accountDemoSQL(Date.parse('2026-10-17T07:00:00Z'));sql.exec(seed);
+ const count=sql.prepare('SELECT COUNT(*) n FROM ic_records').get().n;
+ sql.prepare("UPDATE ic_records SET data=? WHERE kind='site' AND id='OBJ-EXAMPLE-OFFICE'").run('{"id":"OBJ-EXAMPLE-OFFICE","name":"Edited by user"}');
+ sql.exec(accountDemoSQL(Date.parse('2026-10-18T07:00:00Z')));
+ assert.equal(sql.prepare('SELECT COUNT(*) n FROM ic_records').get().n,count);
+ assert.equal(JSON.parse(sql.prepare("SELECT data FROM ic_records WHERE kind='site' AND id='OBJ-EXAMPLE-OFFICE'").get().data).name,'Edited by user');
+ assert.equal(sql.prepare("SELECT revision FROM ic_meta WHERE id='state'").get().revision,1);
+});
 
 test('IC Hub seed is persistent, concurrent-safe and does not reset changed data',async()=>{const db=database();await Promise.all([ensureSeed(db),ensureSeed(db)]);let {data}=await readStore(db);assert.equal(data.account.length,4);assert.equal(data.shift.length,1);await mutate(db,d=>{d.site[0].address='Persisted address';});await ensureSeed(db);data=(await readStore(db)).data;assert.equal(data.site[0].address,'Persisted address');});
 test('IC Hub concurrent edits retry without overwriting one another',async()=>{const db=database();await ensureSeed(db);const original=(await readStore(db)).data.site[0].monthly_budget;await Promise.all([mutate(db,async d=>{await Promise.resolve();d.site[0].monthly_budget++;}),mutate(db,async d=>{await Promise.resolve();d.site[0].monthly_budget++;})]);assert.equal((await readStore(db)).data.site[0].monthly_budget,original+2);});
