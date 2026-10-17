@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import {ensureSeed,readStore,mutate,seedData} from '../ic-hub/store.mjs';
-import {validateGPS,validateSchedule,timers,quote} from '../ic-hub/domain.mjs';
+import {validateGPS,validateSchedule,timers,quote,eligible} from '../ic-hub/domain.mjs';
 import {bootstrap} from '../ic-hub/state.mjs';
 import {handleHub,runHubTimers} from '../ic-hub/server.mjs';
 import {accountDemoData,accountDemoSQL} from '../ic-hub/demo-accounts.mjs';
@@ -43,6 +43,19 @@ test('IC Hub account demo SQL is idempotent and preserves edited records',()=>{
  assert.equal(sql.prepare('SELECT COUNT(*) n FROM ic_records').get().n,count);
  assert.equal(JSON.parse(sql.prepare("SELECT data FROM ic_records WHERE kind='site' AND id='OBJ-EXAMPLE-OFFICE'").get().data).name,'Edited by user');
  assert.equal(sql.prepare("SELECT revision FROM ic_meta WHERE id='state'").get().revision,1);
+});
+test('IC Hub permits an explicit demo assignment without falsifying a worker tax admission',async()=>{
+ const env=fixture(),manager=await client(env,'manager');await manager.login();
+ const created=await manager.request('/ops/accounts',{name:'Demo unverified worker',login:'demo-unverified-worker',role:'operator',contractor_id:'mvp-contractor',iin:'223456789012'});assert.equal(created.status,200);
+ const start=new Date(Date.now()+86400000).toISOString(),end=new Date(Date.now()+93600000).toISOString();
+ const slot=await manager.request('/ops/slots',{site_id:'OBJ-DEMO',zone:'Основная зона',planned_start:start,planned_end:end,wage:2500});assert.equal(slot.status,200);
+ const payload={slot_id:slot.value.id,site_id:'OBJ-DEMO',zone:'Основная зона',operator_id:created.value.id,planned_start:start,planned_end:end,wage:2500};
+ assert.equal((await manager.request('/ops/shifts',payload)).status,409);
+ const assigned=await manager.request('/ops/shifts',{...payload,demo_only:true});assert.equal(assigned.status,200);
+ const d=(await readStore(env.IC_DB)).data,w=d.worker.find(w=>w.user_id===created.value.id),s=d.shift.find(s=>s.id===assigned.value.id);
+ assert.equal(w.tax_status,'UNKNOWN');assert.equal(w.tax_valid_until,null);assert.equal(s.demo_only,true);
+ assert.doesNotThrow(()=>eligible(d,w,d.site[0],Date.now(),true));
+ d.contract[0].reference='REAL-CONTRACT';assert.throws(()=>eligible(d,w,d.site[0],Date.now(),true),/только на демо/);
 });
 
 test('IC Hub seed is persistent, concurrent-safe and does not reset changed data',async()=>{const db=database();await Promise.all([ensureSeed(db),ensureSeed(db)]);let {data}=await readStore(db);assert.equal(data.account.length,4);assert.equal(data.shift.length,1);await mutate(db,d=>{d.site[0].address='Persisted address';});await ensureSeed(db);data=(await readStore(db)).data;assert.equal(data.site[0].address,'Persisted address');});

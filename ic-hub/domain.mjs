@@ -13,8 +13,10 @@ export function visible(data,user){
 export function siteFor(data,user,uid){const s=visible(data,user).sites.find(s=>s.id===uid);must(s,'Объект недоступен',404);return s;}
 export function contractFor(data,user,uid){const c=visible(data,user).contracts.find(c=>c.id===uid);must(c,'Договор недоступен',404);return c;}
 export function shiftFor(data,user,uid){const s=find(data,'shift',uid);must(s,'Смена не найдена',404);siteFor(data,user,s.site_id);must(user.role!=='operator'||s.operator_id===user.id,'Смена не найдена',404);return s;}
-export function eligible(data,worker,site,when){
-  must(worker,'Сначала заполните рабочий профиль оператора с ИИН',422);const day=dayOf(when);
+export function eligible(data,worker,site,when,demoOnly=false){
+  must(worker,'Сначала заполните рабочий профиль оператора с ИИН',422);
+  if(demoOnly){must(find(data,'contract',site.contract_id)?.reference==='MVP-DEMO-SHIFT','Деморежим доступен только на демо-объекте',403);return;}
+  const day=dayOf(when);
   must(worker.tax_status==='ACTIVE'&&worker.tax_valid_until>=day,'Нет подтверждённого налогового допуска на дату смены');
   must(!site.require_training||(worker.training_date&&worker.training_date<=day),'Для объекта требуется обучение до начала смены');
 }
