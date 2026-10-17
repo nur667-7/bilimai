@@ -1,6 +1,10 @@
 declare namespace Cloudflare {
   interface Env {
     DB?: D1Database;
+    ASSETS?: Fetcher;
+    IC_DB?: D1Database;
+    ASSETS?: Fetcher;
+    IC_IDENTITY_SECRET?: string;
     BUCKET?: R2Bucket;
     APP_ORIGIN?: string;
     PILOT_ALLOWED_USER_IDS?: string;

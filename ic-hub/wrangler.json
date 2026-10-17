@@ -1,0 +1,12 @@
+{
+  "name": "bilimai",
+  "account_id": "47a49185ce37d4ab4bed323627e65687",
+  "d1_databases": [
+    {
+      "binding": "IC_DB",
+      "database_name": "ic-hub-db",
+      "database_id": "ea1df330-62e2-4e52-91a9-3afe11a0373d",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}

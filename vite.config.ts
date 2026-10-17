@@ -19,11 +19,15 @@ const localBindingConfig = {
     { pattern: "bilimai.dpdns.org", custom_domain: true },
     { pattern: "www.bilimai.dpdns.org", custom_domain: true },
   ],
+  triggers: { crons: ["* * * * *"] },
   assets: {
+    binding: "ASSETS",
     html_handling: "none" as const,
+    run_worker_first: ["/ic-hub", "/ic-hub/*", "/api/ic-hub/*"],
   },
   d1_databases: d1
     ? [
+        { binding: "IC_DB", database_name: "ic-hub-db", database_id: "ea1df330-62e2-4e52-91a9-3afe11a0373d", migrations_dir: "ic-hub/drizzle" },
         {
           binding: d1,
           database_name: "bilimai-db",

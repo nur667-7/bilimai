@@ -51,3 +51,8 @@ next-env.d.ts
 /.playwright-cli/
 /.serena/
 /artifacts/
+
+# IC Hub public assets are reproducible build output.
+/public/ic-hub/
+
+**/.wrangler/

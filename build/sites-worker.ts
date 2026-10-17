@@ -1,3 +1,4 @@
+import { handleHub, runHubTimers } from '../ic-hub/server.mjs';
 import handler from "vinext/server/fetch-handler";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
@@ -13,12 +14,18 @@ const SECURITY_HEADERS: Record<string, string> = {
 };
 
 export default {
+  async scheduled(_event: ScheduledController, env: Cloudflare.Env, ctx: ExecutionContext) {
+    ctx.waitUntil(runHubTimers(env.IC_DB));
+  },
   async fetch(
     request: Request,
     env: Cloudflare.Env,
     ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>
   ) {
     const url = new URL(request.url);
+    if (url.pathname === "/ic-hub" || url.pathname.startsWith("/ic-hub/") || url.pathname.startsWith("/api/ic-hub/")) {
+      return handleHub(request, env);
+    }
     const proto = request.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
     const isLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1";
 

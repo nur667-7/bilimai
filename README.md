@@ -104,3 +104,7 @@ npm run typecheck   # Проверка типов TypeScript (tsc --noEmit) — 
 npm test            # 36/36 автотестов (CASE A–G, 12 предметов, 13 форматов, 1 152 сценария /lab, API)
 npm run build       # Production-сборка (vinext + Cloudflare Workers)
 ```
+
+## IC Hub · операционный MVP
+
+Отдельное приложение IC Line размещается в [/ic-hub/](https://bilimai.dpdns.org/ic-hub/). Четыре кабинета, QR/GPS-смены, фото, SLA и расчёты используют отдельную облачную D1-базу с однократными демоданными. Хранение и публикация: [docs/IC-HUB.md](docs/IC-HUB.md).
