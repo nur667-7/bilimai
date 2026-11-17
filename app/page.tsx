@@ -628,6 +628,25 @@ export default function HomePage() {
                       </span>
                     </a>
                     <a
+                      href={BRAND.kaspiAdUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex min-h-[44px] items-center justify-between rounded-xl bg-zinc-50 px-4 py-2.5 font-semibold text-zinc-950 hover:bg-[#EFF5FF]"
+                    >
+                      <span className="inline-flex items-center gap-2.5">
+                        <span
+                          className="inline-flex h-4 w-4 items-center justify-center rounded-sm bg-[#F14635] text-[10px] font-bold text-white"
+                          aria-hidden="true"
+                        >
+                          K
+                        </span>
+                        <span>Kaspi Объявления · Презентации на заказ</span>
+                      </span>
+                      <span className="text-xs text-zinc-500">
+                        №124183239 →
+                      </span>
+                    </a>
+                    <a
                       href={BRAND.threadsUrl}
                       target="_blank"
                       rel="noopener noreferrer"

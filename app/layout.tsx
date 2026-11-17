@@ -141,6 +141,7 @@ const rootSchema = {
       },
       availableLanguage: ["Russian", "Kazakh", "English"],
       sameAs: [
+        BRAND.kaspiAdUrl,
         BRAND.threadsUrl,
         BRAND.instagramUrl,
         BRAND.whatsappDirect,

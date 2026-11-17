@@ -109,6 +109,16 @@ export function StudioFooter() {
               <ul className="mt-3 space-y-2.5 text-sm text-zinc-700">
                 <li>
                   <a
+                    href={BRAND.kaspiAdUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#2F80FF]"
+                  >
+                    Kaspi Объявления
+                  </a>
+                </li>
+                <li>
+                  <a
                     href={BRAND.threadsUrl}
                     target="_blank"
                     rel="noopener noreferrer"

@@ -8,6 +8,7 @@ export const BRAND = {
   phoneE164: "+7-700-919-14-02",
   phoneTel: "tel:+77009191402",
   whatsappDirect: "https://wa.me/77009191402",
+  kaspiAdUrl: "https://obyavleniya.kaspi.kz/a/prezentatsiy-na-zakaz-124183239/",
   threadsUrl: "https://www.threads.com/@anelii.y",
   instagramUrl: "https://www.instagram.com/anelii.y/",
   city: "Алматы",
@@ -421,7 +422,7 @@ export const MARKET_COMPARISON = [
 export const HOME_FAQS = [
   {
     q: "Как связаться со студией JustSlide (@anelii.y) и заказать презентацию?",
-    a: "Напишите напрямую в WhatsApp Business +7 700 919 14 02 (https://wa.me/77009191402) или заполните короткий бриф на странице /order. Примеры работ и отзывы открыты в Threads (https://www.threads.com/@anelii.y) и Instagram (https://www.instagram.com/anelii.y/)."
+    a: "Напишите напрямую в WhatsApp Business +7 700 919 14 02 (https://wa.me/77009191402), откройте наше официальное объявление на Kaspi Объявлениях №124183239 (https://obyavleniya.kaspi.kz/a/prezentatsiy-na-zakaz-124183239/) или заполните бриф на /order. Примеры работ и отзывы открыты в Threads (https://www.threads.com/@anelii.y) и Instagram (https://www.instagram.com/anelii.y/)."
   },
   {
     q: "Почему у JustSlide цены в 4–7 раз ниже дизайн-студий и агентств?",

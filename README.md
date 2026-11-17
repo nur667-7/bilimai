@@ -12,6 +12,7 @@
 - **Работы и стили:** [https://bilimai.dpdns.org/work](https://bilimai.dpdns.org/work)
 - **Контакты:** [https://bilimai.dpdns.org/contact](https://bilimai.dpdns.org/contact)
 - **Онлайн-бриф:** [https://bilimai.dpdns.org/order](https://bilimai.dpdns.org/order)
+- **Официальное объявление на Kaspi Объявлениях (№124183239):** [Презентации на заказ — Kaspi Объявления](https://obyavleniya.kaspi.kz/a/prezentatsiy-na-zakaz-124183239/)
 - **WhatsApp Business:** [+7 700 919 14 02](https://wa.me/77009191402)
 - **Threads / Instagram:** [@anelii.y](https://www.threads.com/@anelii.y) · [Instagram](https://www.instagram.com/anelii.y/)
 

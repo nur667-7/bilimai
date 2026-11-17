@@ -12,6 +12,7 @@ test("GEO & verification static files exist and reference JustSlide (@anelii.y)"
   const sitemap = fs.readFileSync(path.join(root, "public/sitemap.xml"), "utf8");
 
   assert.match(llms, /JustSlide/);
+  assert.match(llms, /https:\/\/obyavleniya\.kaspi\.kz\/a\/prezentatsiy-na-zakaz-124183239\//);
   assert.match(llms, /https:\/\/wa\.me\/77009191402/);
   assert.match(llms, /https:\/\/www\.threads\.com\/@anelii\.y/);
   assert.match(llms, /https:\/\/www\.instagram\.com\/anelii\.y\//);
