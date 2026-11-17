@@ -17,6 +17,7 @@
 - **Кабинет преподавателя и создание своих предметов (`/teacher`):** [https://bilimai.dpdns.org/teacher](https://bilimai.dpdns.org/teacher)
 - **Пробное ЕНТ по 12 предметам (`/?tab=exam`):** [https://bilimai.dpdns.org/?tab=exam](https://bilimai.dpdns.org/?tab=exam)
 - **Локальный профиль ученика (`/login`, `/register`):** [https://bilimai.dpdns.org/login](https://bilimai.dpdns.org/login)
+- **Партнёрская студия презентаций, ҚМЖ и СОР/СОЧ («Анели Продакшн» / `@anelii.y`):** [https://bilimai.dpdns.org/presentations](https://bilimai.dpdns.org/presentations) · [Threads `@anelii.y`](https://www.threads.com/@anelii.y) · [Instagram `@anelii.y`](https://www.instagram.com/anelii.y/) · [WhatsApp Business `+7 700 919 14 02`](https://wa.me/77009191402)
 
 ---
 
