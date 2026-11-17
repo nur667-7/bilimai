@@ -50,9 +50,12 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" }
+    ],
     shortcut: "/favicon.svg",
-    apple: "/favicon.svg"
+    apple: "/apple-touch-icon.png"
   },
   openGraph: {
     title:
@@ -66,7 +69,7 @@ export const metadata: Metadata = {
     alternateLocale: ["kk_KZ"],
     images: [
       {
-        url: "/og-cover.svg",
+        url: "/og-cover.png",
         width: 1200,
         height: 630,
         alt: "JustSlide (@anelii.y) — Студия презентаций в Алматы и Казахстане"
@@ -78,7 +81,7 @@ export const metadata: Metadata = {
     title: "JustSlide (@anelii.y) — Просто сильные презентации в Казахстане",
     description:
       "От 80 ₸/слайд за 15 мин для учёбы и от 9 900 ₸ для бизнеса (КП, Pitch Deck). WhatsApp +7 700 919 14 02.",
-    images: ["/og-cover.svg"]
+    images: ["/og-cover.png"]
   }
 };
 
@@ -88,7 +91,7 @@ const rootSchema = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": ["ProfessionalService", "Organization"],
+      "@type": ["ProfessionalService", "LocalBusiness", "Organization"],
       "@id": `${BRAND.siteUrl}/#organization`,
       name: `${BRAND.name} (${BRAND.legacyAlias} / ${BRAND.handle})`,
       alternateName: [
@@ -99,14 +102,39 @@ const rootSchema = {
         "anelii.y"
       ],
       url: `${BRAND.siteUrl}/`,
-      logo: `${BRAND.siteUrl}/logo-justslide.svg`,
+      logo: `${BRAND.siteUrl}/icon-512.png`,
+      image: `${BRAND.siteUrl}/og-cover.png`,
       telephone: BRAND.phoneE164,
       priceRange: "80–34900 KZT",
+      currenciesAccepted: "KZT",
+      paymentAccepted: "Kaspi, Kaspi Pay, Bank Transfer",
       address: {
         "@type": "PostalAddress",
         addressLocality: "Алматы",
+        addressRegion: "Алматы",
         addressCountry: "KZ"
       },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: 43.238949,
+        longitude: 76.889709
+      },
+      openingHoursSpecification: [
+        {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ],
+          opens: "09:00",
+          closes: "23:00"
+        }
+      ],
       areaServed: {
         "@type": "Country",
         name: "Kazakhstan"

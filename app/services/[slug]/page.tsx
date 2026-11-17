@@ -47,7 +47,7 @@ export async function generateMetadata({
       type: "article",
       locale: "ru_KZ",
       alternateLocale: ["kk_KZ"],
-      images: [{ url: "/og-cover.svg", width: 1200, height: 630, alt: page.h1 }]
+      images: [{ url: "/og-cover.png", width: 1200, height: 630, alt: page.h1 }]
     }
   };
 }

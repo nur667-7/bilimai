@@ -9,7 +9,16 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+};
+
+const LEGACY_REDIRECTS: Record<string, string> = {
+  "/welcome": "/",
+  "/teacher": "/services/kmzh-ashyq-sabaq",
+  "/lab": "/services/studentam",
+  "/subjects": "/services/studentam",
+  "/login": "/order",
+  "/register": "/order"
 };
 
 export default {
@@ -24,6 +33,13 @@ export default {
 
     if (!isLocal && proto === "http") {
       return Response.redirect(`https://${url.host}${url.pathname}${url.search}`, 308);
+    }
+
+    const legacyTarget =
+      LEGACY_REDIRECTS[url.pathname] ??
+      (url.pathname.startsWith("/subjects/") ? "/services/studentam" : undefined);
+    if (legacyTarget) {
+      return Response.redirect(`${url.origin}${legacyTarget}`, 301);
     }
 
     let binding = ctx.props?.CONNECTORS;

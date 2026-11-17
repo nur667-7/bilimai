@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AtSign, MessageCircle } from "lucide-react";
 import { InstagramIcon } from "@/components/brand-mark";
-import { PortfolioCard } from "@/components/portfolio-card";
+import { PortfolioGallery } from "@/components/portfolio-gallery";
 import { StudioFooter } from "@/components/studio-footer";
 import { StudioHeader } from "@/components/studio-header";
 import { BRAND, PORTFOLIO_ITEMS, buildWhatsAppUrl } from "@/lib/justslide-data";
@@ -59,10 +59,8 @@ export default function WorkPage() {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {PORTFOLIO_ITEMS.map((item) => (
-            <PortfolioCard key={item.id} item={item} />
-          ))}
+        <div className="mt-10">
+          <PortfolioGallery items={PORTFOLIO_ITEMS} />
         </div>
 
         <div className="mt-14 rounded-3xl bg-[#F7F8FA] p-8 text-center sm:p-10">

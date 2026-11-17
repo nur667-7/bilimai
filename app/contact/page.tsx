@@ -166,6 +166,45 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
+
+        {/* Verified Platforms Strip */}
+        <section className="mt-8 rounded-3xl bg-[#F7F8FA] p-6 sm:p-8">
+          <div className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+            Официальное присутствие {BRAND.name} ({BRAND.handle})
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2.5 text-sm font-semibold text-zinc-800">
+            <span className="rounded-full bg-white px-4 py-2 ring-1 ring-zinc-200/80">
+              2ГИС · Казахстан
+            </span>
+            <span className="rounded-full bg-white px-4 py-2 ring-1 ring-zinc-200/80">
+              Kaspi Объявления
+            </span>
+            <a
+              href={BRAND.threadsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-white px-4 py-2 ring-1 ring-zinc-200/80 hover:ring-[#2F80FF]"
+            >
+              Threads {BRAND.handle}
+            </a>
+            <a
+              href={BRAND.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-white px-4 py-2 ring-1 ring-zinc-200/80 hover:ring-[#2F80FF]"
+            >
+              Instagram {BRAND.handle}
+            </a>
+            <a
+              href={BRAND.whatsappDirect}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[#25D366] px-4 py-2 text-white hover:bg-[#1EBE5B]"
+            >
+              WhatsApp {BRAND.phoneDisplay}
+            </a>
+          </div>
+        </section>
       </main>
 
       <StudioFooter />
