@@ -1,71 +1,55 @@
 import type { Metadata } from "next";
+import { StudioFooter } from "@/components/studio-footer";
+import { StudioHeader } from "@/components/studio-header";
+import { BRAND } from "@/lib/justslide-data";
 
 export const metadata: Metadata = {
-  title: "Политика приватности и обработка данных",
-  description:
-    "Как BilimAI обрабатывает данные в анонимном режиме, при создании локального профиля (/login, /register) и при отправке учебных вопросов в ИИ-тьютор.",
+  title: "Политика конфиденциальности",
+  description: `Условия конфиденциальности и обработки материалов клиентов студии презентаций ${BRAND.name} (${BRAND.handle}).`,
   alternates: {
-    canonical: "https://bilimai.dpdns.org/privacy"
+    canonical: `${BRAND.siteUrl}/privacy`
   }
 };
 
-export default function Privacy() {
+export default function PrivacyPage() {
   return (
-    <main className="document textbook-shell">
-      <a href="/">← BilimAI · к занятиям и практике</a>
-      <div className="document-card">
-        <span className="eyebrow">Приватность и безопасность школьников</span>
-        <h1>Данные и приватность в BilimAI</h1>
-        <p>
-          Обновлено 9 октября 2026 года. Документ описывает три режима работы с данными на платформе BilimAI: (1) анонимный режим без регистрации, (2) локальный профиль ученика/учителя и (3) отправку учебных вопросов или черновиков в ИИ-тьютор.
-        </p>
-
-        <h2>1. Анонимный режим без регистрации (по умолчанию)</h2>
-        <p>
-          Все учебные разделы BilimAI — уроки по 16 темам, практика, проверка решения, Тренировка ошибок (<code>/lab</code>), Карта тем и Пробное ЕНТ — <strong>полностью доступны без создания аккаунта</strong>. В этом режиме результаты решённых задач сохраняются исключительно в локальном хранилище браузера (<code>localStorage</code>, ключи <code>bilimai-lab-v1</code> и <code>bilimai-unt-exam-v1</code>) в виде обезличенных кодов тем и дат.
-        </p>
-
-        <h2>2. Необязательный профиль ученика или учителя (/login и /register)</h2>
-        <p>
-          Если пользователь по собственному желанию создаёт профиль на страницах <a href="/register">/register</a> или <a href="/login">/login</a>, запрашиваются следующие данные:
-        </p>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>
-            <strong>Что запрашивается:</strong> роль (ученик или учитель), имя или псевдоним, email или школьный ID, а также (по желанию) класс, целевой вуз и целевой балл ЕНТ для настройки учебного плана.
-          </li>
-          <li>
-            <strong>Где хранятся данные профиля:</strong> объект профиля сохраняется <strong>только локально на вашем устройстве</strong> в <code>localStorage</code> браузера (ключ <code>aniq-user-v1</code>). Введённый на форме пароль используется только для локальной имитации сессии в браузере, <strong>не сохраняется в открытом виде и не передаётся на серверы BilimAI или третьим лицам</strong>.
-          </li>
-          <li>
-            <strong>Как удалить профиль и учебную историю:</strong> нажатие кнопки «Выйти» в верхней панели сайта мгновенно удаляет запись профиля из <code>localStorage</code>. В разделе «Тренировка ошибок» (<code>/lab</code>) и «Мой план» также доступна кнопка полной очистки локальной истории и экспорта данных в JSON-файл.
-          </li>
-        </ul>
-
-        <h2>3. Отправка вопроса или черновика в ИИ-тьютор (Claude API)</h2>
-        <p>
-          При отправке вопроса в разделе «ИИ-тьютор» (<code>POST /api/explain</code>), проверке шага в «Тренировке ошибок» (<code>POST /api/lab-diagnose</code>) или составлении понедельного плана (<code>POST /api/roadmap</code>):
-        </p>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>
-            <strong>Какие данные передаются:</strong> передаются только код учебной темы, выбранный язык (<code>ru</code>, <code>kk</code>, <code>uz</code>), условие математической задачи и текст вашего учебного вопроса или проверяемых шагов решения. Имя, email или ID из локального профиля на сервер ИИ-тьютора <strong>не отправляются</strong>.
-          </li>
-          <li>
-            <strong>Хранение на сервере:</strong> BilimAI не записывает текст вопросов и черновиков в постоянную базу данных. В демонстрационном режиме (или при исчерпании дневного лимита) разбор формируется локальным алгоритмом по правилу урока без внешнего сетевого запроса.
-          </li>
-        </ul>
-
-        <h2>4. Защита от перегрузок и учёт квот (Cloudflare D1)</h2>
-        <p>
-          Для защиты от автоматического спама таблица лимитов в Cloudflare D1 сохраняет только случайный идентификатор запроса, односторонний криптографический хеш (<code>SHA-256</code> со случайной солью) от сетевого заголовка и временную метку минуты/дня.{" "}
-          <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noreferrer">
-            Политика конфиденциальности Anthropic
-          </a>{" "}
-          ·{" "}
-          <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noreferrer">
-            Политика конфиденциальности Cloudflare
-          </a>
-        </p>
-      </div>
-    </main>
+    <>
+      <StudioHeader />
+      <main className="mx-auto max-w-3xl px-4 pt-14 pb-10 sm:px-6 sm:pt-20">
+        <p className="text-sm font-semibold text-[#2F80FF]">Документы</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+          Политика конфиденциальности {BRAND.name}
+        </h1>
+        <div className="mt-6 space-y-4 text-sm leading-relaxed text-zinc-600">
+          <p>
+            Сайт студии <strong>{BRAND.name} ({BRAND.handle})</strong> не
+            собирает и не хранит персональные данные в скрытых базах данных:
+            форма брифа на странице <code>/order</code> формирует сообщение на
+            вашем устройстве и передаётся в WhatsApp только после вашего явного
+            нажатия.
+          </p>
+          <p>
+            Все исходные тексты, финансовые показатели, учебные работы и
+            коммерческие предложения клиентов используются исключительно для
+            выполнения вашего заказа и не передаются третьим лицам. Для
+            корпоративных заказов по запросу подписывается соглашение о
+            неразглашении (NDA).
+          </p>
+          <p>
+            По вопросам удаления файлов заказа напишите в WhatsApp Business:{" "}
+            <a
+              href={BRAND.whatsappDirect}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#2F80FF] underline"
+            >
+              {BRAND.phoneDisplay}
+            </a>
+            .
+          </p>
+        </div>
+      </main>
+      <StudioFooter />
+    </>
   );
 }

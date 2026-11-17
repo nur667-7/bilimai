@@ -1,11 +1,83 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "../vendor/shadcn-tailwind-4.13.0.css";
 
-/* Modular BilimAI Stylesheets (split by functional domain) */
-@import "./styles/base-and-shell.css";
-@import "./styles/lesson-and-lab.css";
-@import "./styles/exam-and-xray.css";
-@import "./styles/knowledge-graph-and-plan.css";
-@import "./styles/platform-theme-and-responsive.css";
-@import "./styles/duolingo-path-and-motion.css";
+:root {
+  --js-bg: #ffffff;
+  --js-surface: #f7f8fa;
+  --js-surface-hover: #eef2f7;
+  --js-ink: #09090b;
+  --js-muted: #52525b;
+  --js-subtle: #71717a;
+  --js-border: #e4e4e7;
+  --js-brand: #2f80ff;
+  --js-brand-hover: #126dfb;
+  --js-brand-dark: #0f5ad4;
+  --js-whatsapp: #25d366;
+  --js-whatsapp-hover: #1ebe5b;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--js-bg);
+  color: var(--js-ink);
+}
+
+body {
+  margin: 0;
+  background-color: var(--js-bg);
+  color: var(--js-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.font-serif-display {
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+.justslide-hero-aura {
+  background:
+    radial-gradient(
+      62% 72% at 86% 24%,
+      rgba(147, 197, 253, 0.42) 0%,
+      rgba(191, 219, 254, 0.24) 38%,
+      rgba(255, 255, 255, 0) 74%
+    ),
+    radial-gradient(
+      45% 55% at 62% 80%,
+      rgba(191, 219, 254, 0.32) 0%,
+      rgba(255, 255, 255, 0) 70%
+    ),
+    #ffffff;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--js-brand);
+  outline-offset: 2px;
+}
+
+details > summary {
+  list-style: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

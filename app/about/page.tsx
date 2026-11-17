@@ -1,161 +1,130 @@
 import type { Metadata } from "next";
-import { SCIENTIFIC_METHODS } from "@/lib/scientific-pedagogy";
-import { AneliPromoBanner } from "@/components/aneli-promo-banner";
+import { CheckCircle2, MessageCircle } from "lucide-react";
+import { StudioFooter } from "@/components/studio-footer";
+import { StudioHeader } from "@/components/studio-header";
+import { BRAND, buildWhatsAppUrl } from "@/lib/justslide-data";
 
 export const metadata: Metadata = {
-  title: "О проекте, методике и архитектуре",
+  title: "О студии JustSlide (@anelii.y) — Наша философия и стандарты",
   description:
-    "Для кого создан BilimAI, как устроены 12 предметов ЕНТ по стандарту НЦТ РК, исследовательские основания методик и нейро-символьная архитектура на базе Claude API.",
+    "Студия презентаций JustSlide (@anelii.y, Анели Продакшн) в Алматы и Казахстане: почему мы делаем журнальные слайды от 80 ₸ для учёбы и от 9 900 ₸ для бизнеса быстрее агентств.",
   alternates: {
-    canonical: "https://bilimai.dpdns.org/about"
+    canonical: `${BRAND.siteUrl}/about`
   }
 };
 
-export default function About() {
+export default function AboutPage() {
+  const waHref = buildWhatsAppUrl(
+    "Здравствуйте! Хочу обсудить презентацию с командой JustSlide (@anelii.y)"
+  );
+
   return (
-    <main className="document textbook-shell">
-      <a href="/">← BilimAI · к занятиям и практике</a>
+    <>
+      <StudioHeader activePath="/about" />
 
-      <div className="document-card">
-        <span className="eyebrow">О проекте и методике · BilimAI</span>
-        <h1>BilimAI — учебная платформа пошагового разбора задач и подготовки к ЕНТ (ҰБТ)</h1>
+      <main className="mx-auto max-w-4xl px-4 pt-14 pb-10 sm:px-6 sm:pt-20 lg:px-8">
+        <p className="text-sm font-semibold text-[#2F80FF]">Студия</p>
+        <h1 className="mt-2 text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl">
+          {BRAND.name} ({BRAND.handle}) — презентации без лишнего пафоса
+        </h1>
 
-        <div className="grid gap-3 sm:grid-cols-3 my-5 p-4 rounded-xl border border-stone-200 bg-stone-50/70">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-stone-500">Для кого продукт</div>
-            <p className="text-sm mt-1 mb-0">
-              Для школьников 9–11 классов, абитуриентов ЕНТ (ҰБТ) и учителей Казахстана и Центральной Азии (на русском, казахском и узбекском языках).
-            </p>
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-stone-500">Что делает платформа</div>
-            <p className="text-sm mt-1 mb-0">
-              Учит находить первый неверный шаг в решении, разбирает все 16 разделов математики ЕНТ и даёт тренировку по 12 предметам НЦТ РК без готовых ГДЗ-ответов.
-            </p>
-          </div>
-          <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-stone-500">Кто отвечает за проект</div>
-            <p className="text-sm mt-1 mb-0">
-              Разработчик и основатель: <strong>Нурбек Сайдуалиев</strong> (Алматы, Казахстан ·{" "}
-              <a href="mailto:nurbek@bilimai.dpdns.org">nurbek@bilimai.dpdns.org</a>).
-            </p>
-          </div>
+        <p className="font-serif-display mt-6 text-2xl leading-snug text-zinc-900">
+          Слайды не должны стоить 120 000 ₸ и делаться две недели, чтобы
+          выглядеть достойно.
+        </p>
+
+        <div className="mt-8 space-y-5 text-base leading-relaxed text-zinc-600">
+          <p>
+            <strong>{BRAND.name}</strong> (публичный фасад{" "}
+            <strong>{BRAND.handle}</strong> / {BRAND.legacyAlias}) выросла из
+            простой боли в Казахстане: студентам и учителям предлагают либо
+            устаревшие шаблоны «как из Word 2007», либо ценники от 5 000 ₸ с
+            ожиданием 2 дня, а малому бизнесу и стартапам агентства выставляют
+            счета от 70 000 до 150 000 ₸.
+          </p>
+          <p>
+            Мы построили собственный модульный конвейер журнальной вёрстки 16:9
+            с жёстким контролем типографики, контраста и грамотного казахского и
+            русского языка. Это позволяет нам держать честные цены:{" "}
+            <strong>80 ₸/слайд</strong> для учёбы (от 15 минут) и{" "}
+            <strong>от 9 900 ₸</strong> для бизнеса (от 4 часов).
+          </p>
         </div>
 
-        <h2>1. Соответствие официальному формату ЕНТ НЦТ РК и тренировочные наборы</h2>
-        <p>
-          По официальному регламенту Национального центра тестирования РК ({" "}
-          <a href="https://testcenter.kz/?page_id=15074&lang=ru" target="_blank" rel="noreferrer">
-            Формат ЕНТ на testcenter.kz
-          </a>
-          ) структура экзамена различается для обязательных и профильных предметов:
-        </p>
-        <ul className="list-disc pl-5 space-y-1.5">
-          <li>
-            <strong>Математическая грамотность (обязательный):</strong> 10 заданий с выбором одного ответа из 4 (максимум 10 баллов, пороговый балл — 3).
-          </li>
-          <li>
-            <strong>Грамотность чтения (обязательный):</strong> 10 контекстных заданий с выбором одного ответа из 4 (максимум 10 баллов, пороговый балл — 3).
-          </li>
-          <li>
-            <strong>История Казахстана (обязательный):</strong> 20 заданий (10 тестовых + 2 контекстных блока по 5 вопросов, максимум 20 баллов, пороговый балл — 5).
-          </li>
-          <li>
-            <strong>Профильные предметы (9 предметов: Математика, Физика, Информатика, Химия, Биология, География, Всемирная история, Основы права, Английский язык):</strong>{" "}
-            40 заданий = 50 баллов (№1–25 с одним ответом по 1 баллу, №26–30 контекстные по 1 баллу, №31–35 на соответствие по 2 балла, №36–40 с множественным выбором 1–3 из 6 по 2 балла; пороговый балл — 5).
-          </li>
-        </ul>
-        <p>
-          В разделе <strong>«Пробное ЕНТ»</strong> по умолчанию включён <strong>официальный режим НЦТ РК</strong> (10, 20 или 40 заданий в зависимости от предмета), а отдельно можно переключиться на <strong>расширенный тренировочный набор (40 задач)</strong> для углублённой отработки всех разделов предмета.
-        </p>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-3xl bg-[#F7F8FA] p-7">
+            <h2 className="text-lg font-bold text-zinc-950">
+              Наши принципы вёрстки
+            </h2>
+            <ul className="mt-4 space-y-2.5 text-sm text-zinc-700">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2F80FF]" aria-hidden="true" />
+                <span>Чистая сетка 16:9 без перекрытий текста и визуального шума</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2F80FF]" aria-hidden="true" />
+                <span>Точный казахский и русский языки (стандарты МОН РК и ГОСТ)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2F80FF]" aria-hidden="true" />
+                <span>2 раунда бесплатных правок в каждом тарифе</span>
+              </li>
+            </ul>
+          </div>
 
-        <h2>2. Исследовательское основание педагогических механик</h2>
-        <p>
-          Ниже приведены научные публикации, на идеи которых опирается архитектура BilimAI. Показатели из этих статей характеризуют результаты академических исследований в изученных учебных условиях и <strong>не являются утверждением об измеренном эффекте самого сайта</strong>:
-        </p>
-        <div className="space-y-3 my-4">
-          {SCIENTIFIC_METHODS.map((m) => (
-            <div key={m.id} className="p-3.5 rounded-lg border border-stone-200 bg-white/80">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <strong className="text-sm">{m.title.ru}</strong>
-                <span className="text-xs font-mono text-stone-600">{m.effectMetric}</span>
-              </div>
-              <p className="text-xs text-stone-700 mt-1 mb-1">{m.evidenceSummary.ru}</p>
-              <p className="text-xs text-stone-600 mb-1">{m.platformMechanism.ru}</p>
-              <a
-                href={m.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-medium underline"
-              >
-                Источник: {m.sourceCitation}
-              </a>
-            </div>
-          ))}
-        </div>
-
-        <h2>3. Методика расчёта ориентиров по грантам ВУЗов РК</h2>
-        <p>
-          В разделе ориентировочной оценки баллов используются публичные минимальные и комфортные пороговые баллы по профильной математике (из 50) на основе статистики грантового конкурса 2024–2025 учебных годов по группам образовательных программ (ГОП: <code>B057 Информационные технологии</code>, <code>B059 Информационная безопасность</code>, <code>B055 Математика и статистика</code>, <code>B062 Электротехника и автоматизация</code>) и спецификации{" "}
-          <a href="https://testcenter.kz/?page_id=15074&lang=ru" target="_blank" rel="noreferrer">
-            НЦТ РК (testcenter.kz)
-          </a>
-          . Расчёт носит справочно-ориентировочный характер: фактическое присуждение государственного образовательного гранта МНВО РК зависит от суммарного балла ЕНТ (из 140), выбранной комбинации профильных предметов и квот текущего года.
-        </p>
-
-        <h2>4. Зачем в BilimAI используется Claude API (Нейро-символьная архитектура)</h2>
-        <p>
-          Детерминированное ядро проверяет численные и дробные ответы без галлюцинаций, а генеративная модель <strong>Anthropic Claude Haiku 4.5 (<code>claude-haiku-4-5-20251001</code>)</strong> отвечает за три открытые педагогические задачи:
-        </p>
-        <ol className="list-decimal pl-5 space-y-2">
-          <li>
-            <strong>Пояснение вопроса ученика (<code>POST /api/explain</code>):</strong> отвечает на вопрос в свободной форме на русском, казахском или узбекском языке с опорой на правило текущего урока и задаёт один встречный вопрос для самопроверки.
-          </li>
-          <li>
-            <strong>Диагностика шага в Тренировке ошибок (<code>POST /api/lab-diagnose</code>):</strong> поясняет, какое тождество нарушено в выбранной строке решения, не раскрывая готовый численный ответ задачи на перенос.
-          </li>
-          <li>
-            <strong>Составление учебного маршрута (<code>POST /api/roadmap</code>):</strong> помогает распределить темы для повторения по неделям с учётом цели ученика и графа пререквизитов.
-          </li>
-        </ol>
-
-        <div className="my-6">
-          <AneliPromoBanner lang="ru" context="general" />
-        </div>
-
-        <h2>5. Контакты и открытый код</h2>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>
-            <strong>Разработчик:</strong> Нурбек Сайдуалиев (Алматы, Казахстан ·{" "}
-            <a href="mailto:nurbek@bilimai.dpdns.org">nurbek@bilimai.dpdns.org</a>)
-          </li>
-          <li>
-            <strong>Платформа:</strong> <a href="https://bilimai.dpdns.org">https://bilimai.dpdns.org</a> ·{" "}
-            <a href="/privacy">Политика приватности</a>
-          </li>
-          <li>
-            <strong>Репозиторий:</strong>{" "}
-            <a href="https://github.com/nur667-7/bilimai" target="_blank" rel="noreferrer">
-              github.com/nur667-7/bilimai
+          <div className="rounded-3xl bg-[#EFF5FF] p-7">
+            <h2 className="text-lg font-bold text-zinc-950">
+              Официальные контакты
+            </h2>
+            <ul className="mt-4 space-y-2.5 text-sm text-zinc-700">
+              <li>
+                <strong>WhatsApp Business:</strong>{" "}
+                <a
+                  href={BRAND.whatsappDirect}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#2F80FF] underline"
+                >
+                  {BRAND.phoneDisplay}
+                </a>
+              </li>
+              <li>
+                <strong>Threads:</strong>{" "}
+                <a
+                  href={BRAND.threadsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#2F80FF] underline"
+                >
+                  {BRAND.handle}
+                </a>
+              </li>
+              <li>
+                <strong>Instagram:</strong>{" "}
+                <a
+                  href={BRAND.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-[#2F80FF] underline"
+                >
+                  {BRAND.handle}
+                </a>
+              </li>
+            </ul>
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-[#2F80FF] px-5 py-2 text-sm font-semibold text-white hover:bg-[#126DFB]"
+            >
+              <MessageCircle className="h-4 w-4" aria-hidden="true" />
+              <span>Написать в студию</span>
             </a>
-          </li>
-          <li>
-            <strong>Партнёрская студия презентаций и ҚМЖ («Анели Продакшн» / @anelii.y):</strong>{" "}
-            <a href="/presentations">Услуги и прайс</a> ·{" "}
-            <a href="https://www.threads.com/@anelii.y" target="_blank" rel="noopener noreferrer">
-              Threads @anelii.y
-            </a>{" "}
-            ·{" "}
-            <a href="https://www.instagram.com/anelii.y/" target="_blank" rel="noopener noreferrer">
-              Instagram @anelii.y
-            </a>{" "}
-            ·{" "}
-            <a href="https://wa.me/77009191402" target="_blank" rel="noopener noreferrer">
-              WhatsApp +7 700 919 14 02
-            </a>
-          </li>
-        </ul>
-      </div>
-    </main>
+          </div>
+        </div>
+      </main>
+
+      <StudioFooter />
+    </>
   );
 }

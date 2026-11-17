@@ -26,38 +26,6 @@ export default {
       return Response.redirect(`https://${url.host}${url.pathname}${url.search}`, 308);
     }
 
-    if (url.pathname === "/robots.txt") {
-      return new Response(
-        `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://bilimai.dpdns.org/sitemap.xml\n`,
-        {
-          status: 200,
-          headers: {
-            "Content-Type": "text/plain; charset=utf-8",
-            "Cache-Control": "public, max-age=3600",
-            ...SECURITY_HEADERS
-          }
-        }
-      );
-    }
-
-    if (url.pathname === "/sitemap.xml") {
-      const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://bilimai.dpdns.org/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://bilimai.dpdns.org/lab</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://bilimai.dpdns.org/about</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://bilimai.dpdns.org/privacy</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-</urlset>`;
-      return new Response(xml, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/xml; charset=utf-8",
-          "Cache-Control": "public, max-age=3600",
-          ...SECURITY_HEADERS
-        }
-      });
-    }
-
     let binding = ctx.props?.CONNECTORS;
     if (import.meta.env.DEV && !binding && env.CONNECTORS) {
       const preview = env.CONNECTORS;

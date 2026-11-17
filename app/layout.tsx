@@ -1,32 +1,39 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { BRAND, BUSINESS_TIERS, STUDY_TIERS } from "@/lib/justslide-data";
 
 export const viewport: Viewport = {
-  themeColor: "#9a5209",
+  themeColor: "#2F80FF",
   width: "device-width",
   initialScale: 1
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://bilimai.dpdns.org"),
+  metadataBase: new URL(BRAND.siteUrl),
   title: {
-    default: "BilimAI — Универсальная образовательная ИИ-платформа по 12 предметам · Уроки, Практика, Карта знаний и ЕНТ",
-    template: "%s · BilimAI"
+    default:
+      "JustSlide — студия презентаций в Алматы и Казахстане · от 80 ₸/слайд для учёбы и от 9 900 ₸ для бизнеса",
+    template: "%s · JustSlide"
   },
-  applicationName: "BilimAI",
+  applicationName: BRAND.name,
   description:
-    "Универсальная образовательная ИИ-платформа BilimAI на русском, казахском и узбекском языках: пошаговые интерактивные уроки, 8 форматов практики, Лаборатория разбора ошибок, Карта знаний пререквизитов, ИИ-репетитор и тренажёр ЕНТ (ҰБТ) по 12 предметам.",
+    "Студия презентаций JustSlide (@anelii.y, Анели Продакшн) в Алматы и по всему Казахстану: учебные презентации от 80 ₸/слайд за 15 минут, ҚМЖ 500 ₸, бизнес-редизайн от 9 900 ₸, КП под ключ 19 900 ₸ и Pitch Deck 34 900 ₸. Заказ в WhatsApp +7 700 919 14 02.",
   keywords: [
-    "BilimAI",
-    "bilimai.dpdns.org",
-    "образовательная ИИ платформа",
-    "ИИ репетитор физика математика химия биология",
-    "интерактивные уроки по предметам",
-    "карта знаний",
-    "лаборатория ошибок",
-    "подготовка к ЕНТ 12 предметов",
-    "ҰБТ дайындық",
-    "Sinov UBT"
+    "JustSlide",
+    "студия презентаций Алматы",
+    "студия презентаций Казахстан",
+    "презентация на заказ Казахстан",
+    "заказать презентацию Алматы Астана",
+    "презентация для бизнеса КП Pitch Deck",
+    "презентация жасату бағасы",
+    "ҚМЖ жасату 500 тг",
+    "ашық сабақ презентация",
+    "анимациялық презентация жасату",
+    "слайды за 15 минут",
+    "Анели Продакшн",
+    "@anelii.y",
+    "anelii.y threads",
+    "anelii.y instagram"
   ],
   verification: {
     google: "d2d0fcaf5b36a61d"
@@ -48,98 +55,114 @@ export const metadata: Metadata = {
     apple: "/favicon.svg"
   },
   openGraph: {
-    title: "BilimAI — Универсальная образовательная ИИ-платформа по 12 предметам",
+    title:
+      "JustSlide — студия презентаций в Казахстане · от 80 ₸/слайд и от 9 900 ₸ для бизнеса",
     description:
-      "Интерактивные уроки, мультипредметная практика, разбор ошибок по шагам, Карта знаний, ИИ-репетитор и тренажёр ЕНТ на RU / ҚАЗ / OʻZB.",
-    url: "https://bilimai.dpdns.org/",
-    siteName: "BilimAI",
+      "Журнальный дизайн презентаций без агентских наценок: учёба и ҚМЖ от 15 минут, бизнес КП и Pitch Deck от 4 часов. Threads и Instagram @anelii.y · WhatsApp +7 700 919 14 02.",
+    url: `${BRAND.siteUrl}/`,
+    siteName: BRAND.name,
     type: "website",
     locale: "ru_KZ",
-    alternateLocale: ["kk_KZ", "uz_UZ"],
+    alternateLocale: ["kk_KZ"],
     images: [
       {
         url: "/og-cover.svg",
         width: 1200,
         height: 630,
-        alt: "BilimAI — Универсальная образовательная ИИ-платформа по 12 предметам"
+        alt: "JustSlide (@anelii.y) — Студия презентаций в Алматы и Казахстане"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "BilimAI — Универсальная образовательная ИИ-платформа по 12 предметам",
+    title: "JustSlide (@anelii.y) — Просто сильные презентации в Казахстане",
     description:
-      "Пошаговые уроки, 8 форматов заданий, Лаборатория ошибок, Карта знаний, ИИ-репетитор и подготовка к ЕНТ на RU / ҚАЗ / OʻZB.",
+      "От 80 ₸/слайд за 15 мин для учёбы и от 9 900 ₸ для бизнеса (КП, Pitch Deck). WhatsApp +7 700 919 14 02.",
     images: ["/og-cover.svg"]
   }
 };
 
-const structuredData = {
+const allOffers = [...STUDY_TIERS, ...BUSINESS_TIERS];
+
+const rootSchema = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "WebApplication",
-      "@id": "https://bilimai.dpdns.org/#app",
-      name: "BilimAI",
-      url: "https://bilimai.dpdns.org/",
-      applicationCategory: "EducationalApplication",
-      operatingSystem: "Any",
-      inLanguage: ["ru", "kk", "uz"],
-      isAccessibleForFree: true,
-      audience: {
-        "@type": "EducationalAudience",
-        educationalRole: "student",
-        audienceType: "Школьники 5–11 классов, самостоятельные учащиеся, абитуриенты и преподаватели"
-      },
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "KZT"
-      },
-      description:
-        "Универсальная образовательная ИИ-платформа BilimAI по 12 предметам: интерактивные уроки, практика 8 форматов, Лаборатория ошибок, Карта знаний пререквизитов, ИИ-репетитор и тренажёр ЕНТ."
-    },
-    {
-      "@type": "Course",
-      "@id": "https://bilimai.dpdns.org/#course",
-      name: "Интерактивные курсы BilimAI по 12 предметам (Школа, Самообразование и ЕНТ)",
-      description:
-        "Курсы по 12 предметам: Математика, Физика, Информатика, Химия, Биология, География, История Казахстана, Всемирная история, Основы права, Английский язык, Математическая грамотность и Грамотность чтения.",
-      provider: {
-        "@type": "Organization",
-        name: "BilimAI",
-        url: "https://bilimai.dpdns.org/"
-      },
-      inLanguage: ["ru", "kk", "uz"],
-      isAccessibleForFree: true
-    },
-    {
       "@type": ["ProfessionalService", "Organization"],
-      "@id": "https://bilimai.dpdns.org/presentations#organization",
-      name: "Анели Продакшн (@anelii.y)",
-      alternateName: ["Анели Продакшн", "Aneli Production", "@anelii.y", "anelii.y"],
-      url: "https://bilimai.dpdns.org/presentations",
-      telephone: "+7-700-919-14-02",
+      "@id": `${BRAND.siteUrl}/#organization`,
+      name: `${BRAND.name} (${BRAND.legacyAlias} / ${BRAND.handle})`,
+      alternateName: [
+        BRAND.name,
+        BRAND.legacyAlias,
+        "Aneli Production",
+        BRAND.handle,
+        "anelii.y"
+      ],
+      url: `${BRAND.siteUrl}/`,
+      logo: `${BRAND.siteUrl}/logo-justslide.svg`,
+      telephone: BRAND.phoneE164,
+      priceRange: "80–34900 KZT",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Алматы",
+        addressCountry: "KZ"
+      },
       areaServed: {
         "@type": "Country",
         name: "Kazakhstan"
       },
-      availableLanguage: ["Russian", "Kazakh"],
+      availableLanguage: ["Russian", "Kazakh", "English"],
       sameAs: [
-        "https://www.threads.com/@anelii.y",
-        "https://www.instagram.com/anelii.y/",
-        "https://wa.me/77009191402"
+        BRAND.threadsUrl,
+        BRAND.instagramUrl,
+        BRAND.whatsappDirect,
+        "https://github.com/nur667-7/aneli-production-kz"
       ],
-      contactPoint: {
-        "@type": "ContactPoint",
-        contactType: "customer service",
-        telephone: "+7-700-919-14-02",
-        url: "https://wa.me/77009191402",
-        availableLanguage: ["Russian", "Kazakh"],
-        areaServed: "KZ"
-      },
-      description:
-        "Студия создания презентаций (от 80 ₸/слайд за 15 минут), ҚМЖ (500 ₸), СОР/СОЧ и учебных материалов в Казахстане. Официальные аккаунты @anelii.y в Threads и Instagram, заказ в WhatsApp Business +7 700 919 14 02."
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          contactType: "customer service",
+          telephone: BRAND.phoneE164,
+          url: BRAND.whatsappDirect,
+          availableLanguage: ["Russian", "Kazakh"],
+          areaServed: "KZ"
+        },
+        {
+          "@type": "ContactPoint",
+          contactType: "sales",
+          telephone: BRAND.phoneE164,
+          url: BRAND.whatsappDirect,
+          availableLanguage: ["Russian", "Kazakh", "English"],
+          areaServed: "KZ"
+        }
+      ],
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "Услуги студии презентаций JustSlide (@anelii.y)",
+        itemListElement: allOffers.map((tier) => ({
+          "@type": "Offer",
+          priceCurrency: "KZT",
+          price: tier.numericPrice,
+          availability: "https://schema.org/InStock",
+          url: `${BRAND.siteUrl}/order`,
+          itemOffered: {
+            "@type": "Service",
+            name: tier.name,
+            description: tier.description,
+            areaServed: "KZ"
+          }
+        }))
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${BRAND.siteUrl}/#website`,
+      url: `${BRAND.siteUrl}/`,
+      name: `${BRAND.name} — Студия презентаций в Казахстане`,
+      inLanguage: ["ru-KZ", "kk-KZ"],
+      publisher: {
+        "@id": `${BRAND.siteUrl}/#organization`
+      }
     }
   ]
 };
@@ -149,17 +172,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const themeInitScript = `(function(){try{var s=localStorage.getItem("aniq-theme")||localStorage.getItem("bilim-theme");var d=s==="dark"?true:s==="light"?false:(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",Boolean(d));document.documentElement.dataset.theme=d?"dark":"light";}catch(e){}})();`;
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html lang="ru">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(rootSchema) }}
         />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="min-h-screen bg-white text-zinc-950 antialiased">
+        {children}
+      </body>
     </html>
   );
 }

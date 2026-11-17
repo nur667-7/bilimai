@@ -1,17 +1,16 @@
 {
-  "name": "BilimAI — Единая ИИ-экосистема ЕНТ (ҰБТ)",
-  "short_name": "BilimAI",
-  "description": "Все 12 предметов ЕНТ (10 вариантов × 40 вопросов), Рентген черновика (Draft X-Ray), Радар гранта ВУЗов РК и сократический ИИ-тьютор на базе Claude API.",
+  "name": "JustSlide — Студия презентаций в Казахстане (@anelii.y)",
+  "short_name": "JustSlide",
+  "description": "Презентации журнального уровня от 80 ₸/слайд для учёбы за 15 минут и от 9 900 ₸ для бизнеса. ҚМЖ, БЖБ/ТЖБ, КП и Pitch Deck.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf5ec",
-  "theme_color": "#d98a2b",
+  "background_color": "#FFFFFF",
+  "theme_color": "#2F80FF",
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/svg+xml"
     }
   ]
 }

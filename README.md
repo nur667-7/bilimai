@@ -1,107 +1,23 @@
-# BilimAI 2.0 — Универсальная трёхъязычная ИИ-платформа обучения по любому предмету
+# JustSlide (`J` · `@anelii.y`) — Студия презентаций в Алматы и Казахстане
 
-[![Production](https://img.shields.io/badge/Production-bilimai.dpdns.org-355CFF)](https://bilimai.dpdns.org)
-[![Welcome](https://img.shields.io/badge/Welcome-%2Fwelcome-755FF8)](https://bilimai.dpdns.org/welcome)
-[![Subjects](https://img.shields.io/badge/Subjects-12_Subjects_%2B_Dynamic_Registry-355CFF)](https://bilimai.dpdns.org/subjects)
-[![Draft X-Ray](https://img.shields.io/badge/Draft_X--Ray-4_Honest_Verification_States-14B8A6)](https://bilimai.dpdns.org/?tab=xray)
-[![Error Lab](https://img.shields.io/badge/Error_Lab-Universal_12_Subjects-15803D)](https://bilimai.dpdns.org/lab)
-[![Tests](https://img.shields.io/badge/Tests-36%2F36_Passing-15803D)](#6-проверка-и-запуск-тестов)
+[![Production](https://img.shields.io/badge/Production-bilimai.dpdns.org-2F80FF)](https://bilimai.dpdns.org)
+[![WhatsApp](https://img.shields.io/badge/WhatsApp-+7_700_919_14_02-25D366)](https://wa.me/77009191402)
+[![Threads](https://img.shields.io/badge/Threads-@anelii.y-09090B)](https://www.threads.com/@anelii.y)
+[![Instagram](https://img.shields.io/badge/Instagram-@anelii.y-E1306C)](https://www.instagram.com/anelii.y/)
 
-**BilimAI 2.0** — универсальная трёхъязычная (`RU` / `ҚАЗ` / `OʻZB`) ИИ-платформа для самостоятельного изучения любых учебных предметов, диагностики причин ошибок и подготовки к контрольным работам и ЕНТ (ҰБТ). Платформа объединяет **единый движок уроков и 13 форматов заданий по всем 12 предметам**, **пошаговый разбор причин ошибок (Universal Error Lab)**, **честную верификацию шагов черновика (4 состояния проверки)**, **граф знаний пререквизитов**, **кабинет преподавателя (`/teacher`)** и **симулятор пробного ЕНТ**.
+**JustSlide (`@anelii.y`, Анели Продакшн)** — студия дизайна презентаций для студентов, учителей и бизнеса в Казахстане (Қаз / Рус / Eng):
 
-- **Главная рабочая зона (`Сегодня`):** [https://bilimai.dpdns.org](https://bilimai.dpdns.org)
-- **Обзор платформы и живое демо по 5 предметам (`/welcome`):** [https://bilimai.dpdns.org/welcome](https://bilimai.dpdns.org/welcome)
-- **Каталог всех предметов (`/subjects`):** [https://bilimai.dpdns.org/subjects](https://bilimai.dpdns.org/subjects)
-- **Учебная среда предмета (`/subjects/[subject]`, например Физика):** [https://bilimai.dpdns.org/subjects/physics](https://bilimai.dpdns.org/subjects/physics)
-- **Универсальный разбор ошибок по всем 12 предметам (`/lab`):** [https://bilimai.dpdns.org/lab](https://bilimai.dpdns.org/lab)
-- **Кабинет преподавателя и создание своих предметов (`/teacher`):** [https://bilimai.dpdns.org/teacher](https://bilimai.dpdns.org/teacher)
-- **Пробное ЕНТ по 12 предметам (`/?tab=exam`):** [https://bilimai.dpdns.org/?tab=exam](https://bilimai.dpdns.org/?tab=exam)
-- **Локальный профиль ученика (`/login`, `/register`):** [https://bilimai.dpdns.org/login](https://bilimai.dpdns.org/login)
-- **Партнёрская студия презентаций, ҚМЖ и СОР/СОЧ («Анели Продакшн» / `@anelii.y`):** [https://bilimai.dpdns.org/presentations](https://bilimai.dpdns.org/presentations) · [Threads `@anelii.y`](https://www.threads.com/@anelii.y) · [Instagram `@anelii.y`](https://www.instagram.com/anelii.y/) · [WhatsApp Business `+7 700 919 14 02`](https://wa.me/77009191402)
+- **Сайт и калькулятор стоимости:** [https://bilimai.dpdns.org/](https://bilimai.dpdns.org/)
+- **Услуги и тарифы:** [https://bilimai.dpdns.org/services](https://bilimai.dpdns.org/services)
+- **Работы и стили:** [https://bilimai.dpdns.org/work](https://bilimai.dpdns.org/work)
+- **Контакты:** [https://bilimai.dpdns.org/contact](https://bilimai.dpdns.org/contact)
+- **Онлайн-бриф:** [https://bilimai.dpdns.org/order](https://bilimai.dpdns.org/order)
+- **WhatsApp Business:** [+7 700 919 14 02](https://wa.me/77009191402)
+- **Threads / Instagram:** [@anelii.y](https://www.threads.com/@anelii.y) · [Instagram](https://www.instagram.com/anelii.y/)
 
----
+## Тарифы
+- **Учёба и педагоги (от 15 минут):** Стандарт 16:9 — `80 ₸ / слайд` (`1 200 ₸` за 15 сл.), Анимация Morph — `150 ₸ / слайд`, ҚМЖ — `500 ₸`, Комбо «Ашық сабақ» — `1 700 ₸`, БЖБ/ТЖБ и рефераты по ГОСТ — `100 ₸ / стр.`
+- **Бизнес и стартапы (от 4 часов):** Бизнес-Редизайн (10 сл.) — `9 900 ₸`, КП «Под ключ» (15 сл.) — `19 900 ₸`, Pitch Deck / Тендер (20 сл.) — `34 900 ₸`.
 
-## 1. Ключевые архитектурные улучшения BilimAI 2.0
-
-### 1.1 Универсальная модель образовательного контента (`lib/universal-curriculum.ts`)
-Иерархия `Subject → Curriculum → Module → Topic → Lesson → ContentBlock → Question → Assessment → Feedback → Progress` работает одинаково для любого предмета:
-- **12 встроенных предметов с полноценными уроками, разобранными примерами, практикой, разбором ошибок и картой знаний:**
-  1. `math` — **Профильная математика** (`16` уроков, `1 152` сценария тренажёра ошибок, проверка черновика)
-  2. `physics` — **Физика** (кинематика и СИ, законы Ньютона и силы, закон Ома и электрические цепи)
-  3. `informatics` — **Информатика** (системы счисления, алгебра логики и законы де Моргана, алгоритмы Python и SQL)
-  4. `chemistry` — **Химия** (количество вещества и молярная масса, ОВР и электронный баланс, расчёты по уравнениям и выход продукта)
-  5. `biology` — **Биология** (клеточная биология и энергетический обмен, законы Менделя и сцепленное наследование, физиология человека)
-  6. `history_kz` — **История Казахстана** (Тюркский каганат и Казахское ханство, движение «Алаш», Независимый Казахстан)
-  7. `world_history` — **Всемирная история** (Древний мир и средневековье, индустриальная эпоха и революции, международные отношения XX века)
-  8. `geography` — **География** (литосфера и климат, природно-ресурсный потенциал и экономические районы РК, геоэкономика и демография)
-  9. `english` — **Английский язык** (Conditionals 0/1/2/3, согласование времён в Reported Speech, Passive Voice & Modal Verbs)
-  10. `reading_lit` — **Грамотность чтения** (тезис и авторская позиция, факт против мнения, сопоставление нескольких текстов)
-  11. `math_lit` — **Математическая грамотность** (проценты и диаграммы, последовательности и закономерности, прикладная вероятность)
-  12. `law` — **Основы права** (Конституция РК, гражданское и трудовое право, административная и уголовная ответственность)
-- **Динамическая регистрация новых предметов (`registerSubjectCurriculum`):** в разделе `/teacher` преподаватель может добавить новый курс (например, «Экономика и финансовая грамотность»), который сразу появляется в каталоге `/subjects` и открывается в `/subjects/[subject]` без изменения кода UI.
-
-### 1.2 Честная верификация: 4 явных состояния (`lib/xray-trace.ts`, `lib/question-engine.ts`)
-Платформа никогда не выдаёт непроверенный шаг за «ВЕРНЫЙ ШАГ» и не имитирует фальшивую ИИ-оценку:
-1. **`verified_correct` (`Проверено: верно`)** — ответ или шаг решения строго доказан детерминированным правилом, сохранением корня линейного уравнения или эталонным ключом.
-2. **`incorrect` (`Найдена ошибка`)** — детерминированно обнаружена ошибка (например, нарушение равносильности `2x + 3 = 11 → 2x = 5`, неразвёрнутый знак неравенства при делении на отрицательное число или при логарифме с основанием $0 < a < 1$, потеря модуля или неверный выбор).
-3. **`unverified` (`Не удалось проверить автоматически`)** — произвольное преобразование или открытый развёрнутый ответ (`long_text`), где автоматический парсер честно сообщает, что шаг не подтверждён, и показывает критерии самопроверки вместо ложного статуса «Верно».
-4. **`unsupported` (`Формат не поддерживается`)** — пустой ввод или текст без проверяемой структуры.
-
-### 1.3 Универсальный движок заданий: 13 форматов (`lib/question-engine.ts`)
-Поддерживаются все предметные форматы вопросов:
-`single_choice`, `multiple_choice` (с частичным оцениванием 1 из 2 баллов), `numeric`, `short_text`, `long_text` (с рубрикатором и честным статусом `unverified`), `matching` (`A/B → 1..4`), `sequence` (хронология и порядок шагов), `fill_blank`, `true_false`, `formula`, `equation`, `code_fix` (исправление строки кода Python/SQL) и `context_table`.
-
-### 1.4 Изолированный прогресс по предметам и честный локальный профиль (`lib/universal-progress.ts`)
-- **Строгая изоляция по `subjectId`:** прохождение уроков, практики, диагностики и разбора ошибок по Физике никогда не смешивается с прогрессом по Истории Казахстана, Английскому или Математике.
-- **Честный статус хранения (`local_guest`):** страницы `/login` и `/register` явно информируют пользователя о локальном сохранении профиля в браузере устройства (`localStorage`) без фальшивых полей пароля, с функцией экспорта и импорта резервной копии JSON.
-
----
-
-## 2. Модульная структура кода
-
-```text
-├── app/
-│   ├── study.tsx                              # Главная рабочая зона (/ — Сегодня, Математика, Пробное ЕНТ, Профиль)
-│   ├── welcome/welcome-client.tsx             # /welcome: Универсальный Hero, демо по 5 предметам, 5-шаговый онбординг, каталог 12 предметов
-│   ├── subjects/
-│   │   ├── page.tsx                           # /subjects: Каталог всех учебных предметов + поиск и фильтры
-│   │   └── [subject]/
-│   │       ├── page.tsx                       # Серверная точка входа /subjects/:subject
-│   │       └── subject-overview-client.tsx    # Универсальная учебная среда предмета (Обзор, Уроки, Практика, Ошибки, Карта знаний, ИИ-тьютор, Диагностика)
-│   ├── lab/error-lab.tsx                      # /lab: Универсальный тренажёр ошибок по всем 12 предметам + 1 152 сценария математики
-│   ├── teacher/page.tsx                       # /teacher: Кабинет преподавателя и конструктор новых предметов
-│   ├── login/ & register/                     # Локальный профиль устройства (без фальшивых паролей) + экспорт JSON
-│   ├── not-found.tsx                          # Понятная страница 404 с быстрым переходом в каталог предметов
-│   └── api/explain|lab-diagnose|roadmap       # Серверные маршруты к Claude API с Zod-валидацией и квотами D1
-├── components/
-│   ├── study/
-│   │   ├── universal-question-renderer.tsx    # Интерактивный рендерер всех 13 форматов заданий
-│   │   ├── study-header.tsx                   # Шапка, навигация по предметам и мобильное меню
-│   │   ├── today-plan-view.tsx                # Раздел «Сегодня» и выбор предметов
-│   │   ├── lesson-practice-view.tsx           # Уроки и практика по 16 темам математики
-│   │   └── profile-view.tsx                   # Профиль и справочник вузов РК
-├── lib/
-│   ├── universal-curriculum.ts                # Универсальная модель, 12 предметов, 49 уроков, Error Lab и граф знаний
-│   ├── question-engine.ts                     # Движок проверки 13 типов вопросов и защита индекса последнего вопроса
-│   ├── universal-progress.ts                  # Изолированный прогресс по предметам, онбординг и миграция из v1
-│   ├── xray-trace.ts                          # Построчный анализатор черновика с 4 честными состояниями верификации
-│   ├── lessons.ts & error-lab.ts              # 16 разделов математики и генератор 1 152 сценариев
-│   ├── unt-exam.ts & unt-all-subjects.ts      # Банк заданий ЕНТ по 12 предметам и оценивание 0 / 1 / 2 балла
-│   └── claude.ts & pilot-api.ts               # Интеграция с Claude API и защита квот D1
-└── tests/
-    ├── universal-platform.test.mjs            # Тесты CASE A–G, 13 форматов вопросов, 12 предметов, изоляции прогресса и X-Ray
-    ├── core.test.mjs                          # Тесты математического ядра, ЕНТ и Claude API
-    ├── lab.test.mjs                           # Тесты 1 152 сценариев /lab и интервалов повторения
-    └── architecture.test.mjs                  # Тесты безопасности API, схем, редьюсера и маршрутизации
-```
-
----
-
-## 3. Проверка и запуск тестов
-
-```bash
-npm install
-npm run typecheck   # Проверка типов TypeScript (tsc --noEmit) — 0 ошибок
-npm test            # 36/36 автотестов (CASE A–G, 12 предметов, 13 форматов, 1 152 сценария /lab, API)
-npm run build       # Production-сборка (vinext + Cloudflare Workers)
-```
+## Добавление реальных шаблонов в портфолио
+Положите изображения готовых слайдов в `public/portfolio/` и добавьте поле `imageUrl: "/portfolio/имя-файла.jpg"` в массив `PORTFOLIO_ITEMS` в `lib/justslide-data.ts`.

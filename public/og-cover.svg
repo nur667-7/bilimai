@@ -1,44 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
-  <rect width="1200" height="630" fill="#F7F5F0"/>
-  <rect x="44" y="44" width="1112" height="542" rx="18" fill="#FFFFFF" stroke="#E2DDD3" stroke-width="2"/>
-  <rect x="44" y="44" width="10" height="542" rx="4" fill="#1B3B6F"/>
-
-  <!-- Brand Header -->
-  <g transform="translate(96, 88)">
-    <rect width="56" height="56" rx="12" fill="#1B3B6F"/>
-    <path d="M15 17H31L22.4 28L31 39H15" stroke="#F7F5F0" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M35 28H43M39 23.6L43.6 28L39 32.4" stroke="#93C5FD" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="74" y="37" fill="#0F172A" font-family="Georgia, serif" font-size="34" font-weight="700">BilimAI</text>
-    <rect x="220" y="12" width="168" height="32" rx="6" fill="#EDF2F9" stroke="#C9D8EC"/>
-    <text x="236" y="33" fill="#1B3B6F" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1">ЕНТ · ҰБТ · RU/KK/UZ</text>
-  </g>
-
-  <!-- Main Headline -->
-  <text x="96" y="218" fill="#0F172A" font-family="Georgia, serif" font-size="48" font-weight="700">
-    Математика ЕНТ (ҰБТ): 16 разделов
-  </text>
-  <text x="96" y="276" fill="#1B3B6F" font-family="Georgia, serif" font-size="42" font-weight="600">
-    Пошаговый разбор, поиск ошибки и ИИ-тьютор
-  </text>
-
-  <!-- Centerpiece Math Formula Preview -->
-  <rect x="96" y="314" width="1008" height="118" rx="12" fill="#FAF8F4" stroke="#E2DDD3"/>
-  <text x="126" y="352" fill="#57534E" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.2">
-    § ГЛАВНОЕ ПРАВИЛО · ТРЕНИРОВКА ОШИБОК (1 152 СЦЕНАРИЯ) · ПРОБНОЕ ЕНТ
-  </text>
-  <text x="126" y="404" fill="#0F172A" font-family="Georgia, serif" font-size="36">
-    01 →  2(x − 3) = 10   ⇒   2x − 6 = 10   ⇒   x = 8
-  </text>
-
-  <!-- Footer Pills -->
-  <g transform="translate(96, 474)">
-    <rect width="270" height="54" rx="8" fill="#1B3B6F"/>
-    <text x="26" y="34" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="20" font-weight="700">bilimai.dpdns.org</text>
-
-    <rect x="292" y="0" width="320" height="54" rx="8" fill="#EDF2F9" stroke="#C9D8EC"/>
-    <text x="316" y="34" fill="#1B3B6F" font-family="Arial, sans-serif" font-size="18" font-weight="600">Пробное ЕНТ (4 формата)</text>
-
-    <rect x="634" y="0" width="370" height="54" rx="8" fill="#F0FDF4" stroke="#86EFAC"/>
-    <text x="658" y="34" fill="#166534" font-family="Arial, sans-serif" font-size="18" font-weight="600">Сократический ИИ (Claude API)</text>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <radialGradient id="aura" cx="78%" cy="22%" r="65%">
+      <stop offset="0%" stop-color="#CBE3FF"/>
+      <stop offset="50%" stop-color="#EBF4FF"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#aura)"/>
+  <rect x="84" y="76" width="56" height="56" rx="14" fill="#2F80FF"/>
+  <rect x="113" y="88" width="11" height="24" rx="5.5" fill="#FFFFFF"/>
+  <path d="M99 108C99 115.18 104.82 121 112 121C118.627 121 124 115.627 124 109V105.5H113V109C113 109.552 112.552 110 112 110C111.448 110 111 109.552 111 109V108H99Z" fill="#FFFFFF"/>
+  <rect x="98" y="88" width="10.5" height="7" rx="2.5" fill="#BBD8FF"/>
+  <text x="156" y="114" fill="#09090B" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="30" font-weight="700" letter-spacing="-0.8">JustSlide</text>
+  <text x="84" y="218" fill="#2F80FF" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="600">Студия презентаций · Алматы и весь Казахстан</text>
+  <text x="84" y="294" fill="#09090B" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="60" font-weight="700" letter-spacing="-2">Просто сильные</text>
+  <text x="84" y="366" fill="#09090B" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="60" font-weight="700" letter-spacing="-2">презентации.</text>
+  <text x="84" y="432" fill="#09090B" font-family="Georgia, Times New Roman, serif" font-size="38" font-style="italic">От 80 ₸/слайд для учёбы и от 9 900 ₸ для бизнеса</text>
+  <rect x="84" y="486" width="380" height="62" rx="31" fill="#2F80FF"/>
+  <text x="122" y="525" fill="#FFFFFF" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="600">WhatsApp +7 700 919 14 02</text>
+  <text x="500" y="525" fill="#52525B" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="22" font-weight="500">Threads &amp; Instagram: @anelii.y</text>
 </svg>
