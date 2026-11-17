@@ -27,6 +27,12 @@
     <xhtml:link rel="alternate" hreflang="uz" href="https://bilimai.dpdns.org/lab?lang=uz"/>
   </url>
   <url>
+    <loc>https://bilimai.dpdns.org/presentations</loc>
+    <lastmod>2026-11-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
     <loc>https://bilimai.dpdns.org/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>

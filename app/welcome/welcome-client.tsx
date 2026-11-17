@@ -2356,6 +2356,14 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
             {t.footerTeacher}
           </Link>
           <span aria-hidden="true">·</span>
+          <Link href="/presentations" style={{ color: "var(--bilimai-text-muted)" }}>
+            {lang === "kk"
+              ? "Презентациялар @anelii.y"
+              : lang === "uz"
+                ? "Taqdimotlar @anelii.y"
+                : "Презентации @anelii.y"}
+          </Link>
+          <span aria-hidden="true">·</span>
           <a
             href="https://github.com/nur667-7/bilimai"
             target="_blank"

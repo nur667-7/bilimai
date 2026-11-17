@@ -20,6 +20,7 @@ const FOOTER_COPY = {
     navLab: "Тренировка ошибок",
     navWelcome: "Обзор",
     navHelp: "Помощь и о проекте",
+    navPresentations: "Презентации @anelii.y",
     navPrivacy: "Конфиденциальность",
     contactLabel: "Обратная связь:",
     location: "Алматы, Казахстан"
@@ -34,6 +35,7 @@ const FOOTER_COPY = {
     navLab: "Қатемен жұмыс",
     navWelcome: "Шолу",
     navHelp: "Көмек және жоба туралы",
+    navPresentations: "Презентациялар @anelii.y",
     navPrivacy: "Құпиялылық",
     contactLabel: "Байланыс:",
     location: "Алматы, Қазақстан"
@@ -48,6 +50,7 @@ const FOOTER_COPY = {
     navLab: "Xatolar ustida ishlash",
     navWelcome: "Sharh",
     navHelp: "Yordam va loyiha haqida",
+    navPresentations: "Taqdimotlar @anelii.y",
     navPrivacy: "Maxfiylik",
     contactLabel: "Aloqa:",
     location: "Olmaota, Qozog‘iston"
@@ -78,6 +81,8 @@ export function SiteFooter({
             <a href={`/about?lang=${lang}`}>{c.navHelp}</a>
             <span aria-hidden="true">·</span>
             <a href={`/welcome?lang=${lang}`}>{c.navWelcome}</a>
+            <span aria-hidden="true">·</span>
+            <a href="/presentations">{c.navPresentations}</a>
             <span aria-hidden="true">·</span>
             <a href={`/privacy?lang=${lang}`}>{c.navPrivacy}</a>
           </span>
@@ -126,6 +131,7 @@ export function SiteFooter({
           )}
           <a href={`/lab?lang=${lang}&topic=${topic}`}>{c.navLab}</a>
           <a href={`/welcome?lang=${lang}`}>{c.navWelcome}</a>
+          <a href="/presentations">{c.navPresentations}</a>
           <a href={`/about?lang=${lang}`}>{c.navHelp}</a>
           <a href={`/privacy?lang=${lang}`}>{c.navPrivacy}</a>
         </nav>

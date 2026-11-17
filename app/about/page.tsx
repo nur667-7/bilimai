@@ -134,6 +134,21 @@ export default function About() {
               github.com/nur667-7/bilimai
             </a>
           </li>
+          <li>
+            <strong>Партнёрская студия презентаций и ҚМЖ («Анели Продакшн» / @anelii.y):</strong>{" "}
+            <a href="/presentations">Услуги и прайс</a> ·{" "}
+            <a href="https://www.threads.com/@anelii.y" target="_blank" rel="noopener noreferrer">
+              Threads @anelii.y
+            </a>{" "}
+            ·{" "}
+            <a href="https://www.instagram.com/anelii.y/" target="_blank" rel="noopener noreferrer">
+              Instagram @anelii.y
+            </a>{" "}
+            ·{" "}
+            <a href="https://wa.me/77009191402" target="_blank" rel="noopener noreferrer">
+              WhatsApp +7 700 919 14 02
+            </a>
+          </li>
         </ul>
       </div>
     </main>

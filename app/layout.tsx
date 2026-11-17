@@ -112,6 +112,34 @@ const structuredData = {
       },
       inLanguage: ["ru", "kk", "uz"],
       isAccessibleForFree: true
+    },
+    {
+      "@type": ["ProfessionalService", "Organization"],
+      "@id": "https://bilimai.dpdns.org/presentations#organization",
+      name: "Анели Продакшн (@anelii.y)",
+      alternateName: ["Анели Продакшн", "Aneli Production", "@anelii.y", "anelii.y"],
+      url: "https://bilimai.dpdns.org/presentations",
+      telephone: "+7-700-919-14-02",
+      areaServed: {
+        "@type": "Country",
+        name: "Kazakhstan"
+      },
+      availableLanguage: ["Russian", "Kazakh"],
+      sameAs: [
+        "https://www.threads.com/@anelii.y",
+        "https://www.instagram.com/anelii.y/",
+        "https://wa.me/77009191402"
+      ],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer service",
+        telephone: "+7-700-919-14-02",
+        url: "https://wa.me/77009191402",
+        availableLanguage: ["Russian", "Kazakh"],
+        areaServed: "KZ"
+      },
+      description:
+        "Студия создания презентаций (от 80 ₸/слайд за 15 минут), ҚМЖ (500 ₸), СОР/СОЧ и учебных материалов в Казахстане. Официальные аккаунты @anelii.y в Threads и Instagram, заказ в WhatsApp Business +7 700 919 14 02."
     }
   ]
 };
