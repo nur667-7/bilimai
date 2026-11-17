@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/curriculum";
+import { AneliPromoBanner } from "@/components/aneli-promo-banner";
 import {
   getAllSubjectCurricula,
   formatLessonsCountLabel,
@@ -864,6 +865,10 @@ export default function SubjectsCatalogPage() {
             })}
           </div>
         )}
+
+        <div style={{ marginTop: 32 }}>
+          <AneliPromoBanner lang={locale} context="student" />
+        </div>
       </main>
     </div>
   );

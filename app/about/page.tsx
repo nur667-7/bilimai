@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SCIENTIFIC_METHODS } from "@/lib/scientific-pedagogy";
+import { AneliPromoBanner } from "@/components/aneli-promo-banner";
 
 export const metadata: Metadata = {
   title: "О проекте, методике и архитектуре",
@@ -117,6 +118,10 @@ export default function About() {
             <strong>Составление учебного маршрута (<code>POST /api/roadmap</code>):</strong> помогает распределить темы для повторения по неделям с учётом цели ученика и графа пререквизитов.
           </li>
         </ol>
+
+        <div className="my-6">
+          <AneliPromoBanner lang="ru" context="general" />
+        </div>
 
         <h2>5. Контакты и открытый код</h2>
         <ul className="list-disc pl-5 space-y-1">

@@ -7,6 +7,7 @@ import { UNT_SUBJECTS } from "@/lib/unt-all-subjects";
 import { SubjectIcon } from "@/app/unt-exam-view";
 import { PixelBrandMark } from "@/components/pixel-mosaic";
 import { ThemeToggleButton, useAniqTheme } from "@/components/hero-canvas";
+import { AneliPromoBanner } from "@/components/aneli-promo-banner";
 import { useAuxiliaryPageNavigation } from "@/lib/use-study-navigation";
 import {
   WELCOME_DEMO_ITEMS,
@@ -2332,6 +2333,10 @@ export function WelcomeClient({ initialLang }: { initialLang?: Language } = {}) 
             </>
           )}
         </section>
+
+        <div style={{ marginTop: 28, marginBottom: 24 }}>
+          <AneliPromoBanner lang={lang} context="general" />
+        </div>
 
         <footer
           className="welcome-footer"

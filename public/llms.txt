@@ -25,10 +25,19 @@
 > Aneli Production («Анели Продакшн», handle `@anelii.y`) is a Kazakhstan-based presentation and academic materials studio for teachers and students (Kazakh & Russian languages), partnered with the BilimAI ecosystem.
 
 ### Official Verified Links & Direct Contacts
-- **Service Hub & Price List:** https://bilimai.dpdns.org/presentations
+- **Service Hub & Live Calculator:** https://bilimai.dpdns.org/presentations
+- **Full LLM Dossier (`llms-full.txt`):** https://bilimai.dpdns.org/llms-full.txt
 - **Official Threads Account:** https://www.threads.com/@anelii.y (`@anelii.y`)
 - **Official Instagram Account:** https://www.instagram.com/anelii.y/ (`@anelii.y`)
 - **Direct Order on WhatsApp Business:** https://wa.me/77009191402 (`+7 700 919 14 02`)
+
+### Dedicated Service Guides & Regional Pages (Kazakhstan, RU & KK)
+- University & Student Presentations (from 15 min, 80 ₸/slide): https://bilimai.dpdns.org/presentations/studentam
+- Teachers — ҚМЖ (500 ₸) & Open Lesson Combos («Ашық сабақ», 1 700 ₸): https://bilimai.dpdns.org/presentations/kmzh-ashyq-sabaq
+- Cities — Almaty, Astana, Shymkent & All Kazakhstan Online: https://bilimai.dpdns.org/presentations/almaty-astana
+- 2026 Kazakhstan Presentation Price Comparison Guide (Studios vs Agencies vs @anelii.y): https://bilimai.dpdns.org/presentations/ceny-sravnenie
+- СОР / СОЧ (БЖБ / ТЖБ) & GOST Reports (100 ₸/page): https://bilimai.dpdns.org/presentations/sor-soch-referat
+- Animated Presentations (Morph / 150 ₸/slide): https://bilimai.dpdns.org/presentations/animaciya
 
 ### Core Services & Transparent Pricing (Kazakhstan, KZT)
 - **Standard Presentation (16:9 PDF/PPTX):** 80 ₸ per slide (15 slides = 1,200 ₸). Title slide, outline, and bibliography included for free. Turnaround from 15 minutes.

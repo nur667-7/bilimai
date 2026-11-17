@@ -15,6 +15,7 @@ import {
   type UniversalPlatformProgressState
 } from "@/lib/universal-progress";
 import type { Language } from "@/lib/curriculum";
+import { AneliPromoBanner } from "@/components/aneli-promo-banner";
 
 interface DemoClassGroup {
   id: string;
@@ -1005,6 +1006,10 @@ export default function TeacherWorkspacePage() {
               )}
             </section>
           </div>
+        </div>
+
+        <div style={{ marginTop: 28 }}>
+          <AneliPromoBanner lang={lang} context="teacher" />
         </div>
       </main>
     </div>

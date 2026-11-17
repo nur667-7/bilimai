@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
   ArrowLeft,
+  ArrowRight,
   AtSign,
   CheckCircle2,
   Clock,
@@ -10,11 +11,24 @@ import {
   ShieldCheck,
   Sparkles
 } from "lucide-react";
+import { AneliCalculator } from "@/components/aneli-calculator";
+import {
+  ANELI_CLUSTER_PAGES,
+  ANELI_HUB_URL,
+  ANELI_INSTAGRAM_URL,
+  ANELI_SERVICES,
+  ANELI_THREADS_URL,
+  ANELI_WHATSAPP_DIRECT,
+  ANELI_WHATSAPP_E164,
+  ANELI_WHATSAPP_PHONE,
+  MARKET_COMPARISON_ROWS,
+  buildWhatsAppOrderUrl
+} from "@/lib/aneli-studio";
 
 function InstagramGlyph() {
   return (
     <svg
-      className="h-4 w-4"
+      className="h-4 w-4 shrink-0"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -30,18 +44,15 @@ function InstagramGlyph() {
   );
 }
 
-const WHATSAPP_URL =
-  "https://wa.me/77009191402?text=%D0%97%D0%B4%D1%80%D0%B0%D0%B2%D1%81%D1%82%D0%B2%D1%83%D0%B9%D1%82%D0%B5!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%20%D0%BF%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8E";
-const WHATSAPP_DIRECT = "https://wa.me/77009191402";
-const THREADS_URL = "https://www.threads.com/@anelii.y";
-const INSTAGRAM_URL = "https://www.instagram.com/anelii.y/";
-const CANONICAL_URL = "https://bilimai.dpdns.org/presentations";
+const WHATSAPP_HERO_URL = buildWhatsAppOrderUrl(
+  "Здравствуйте! Хочу заказать презентацию у Анели Продакшн (@anelii.y)"
+);
 
 export const metadata: Metadata = {
   title:
     "Анели Продакшн (@anelii.y) — Презентации на заказ, ҚМЖ, СОР/СОЧ в Казахстане",
   description:
-    "Заказать презентацию в Казахстане от 80 ₸ за слайд за 15 минут: обычные и анимированные слайды (150 ₸), ҚМЖ (500 ₸), СОР/СОЧ и рефераты на казахском и русском. Студия Анели Продакшн — Threads и Instagram @anelii.y, WhatsApp +7 700 919 14 02.",
+    "Заказать презентацию в Казахстане от 80 ₸ за слайд за 15 минут: статика (1 200 ₸ за 15 слайдов), анимация (150 ₸/слайд), ҚМЖ (500 ₸), СОР/СОЧ и рефераты на казахском и русском. Студия Анели Продакшн — Threads и Instagram @anelii.y, WhatsApp +7 700 919 14 02.",
   keywords: [
     "Анели Продакшн",
     "@anelii.y",
@@ -62,14 +73,14 @@ export const metadata: Metadata = {
     "реферат на заказ Казахстан"
   ],
   alternates: {
-    canonical: CANONICAL_URL
+    canonical: ANELI_HUB_URL
   },
   openGraph: {
     title:
       "Анели Продакшн (@anelii.y) — Презентации на заказ, ҚМЖ и СОР/СОЧ в Казахстане",
     description:
       "Презентации от 80 ₸/слайд за 15 минут на казахском и русском языках. Официальные каналы @anelii.y в Threads, Instagram и прямой заказ в WhatsApp +7 700 919 14 02.",
-    url: CANONICAL_URL,
+    url: ANELI_HUB_URL,
     siteName: "BilimAI · Анели Продакшн (@anelii.y)",
     type: "website",
     locale: "ru_KZ",
@@ -85,80 +96,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Анели Продакшн (@anelii.y) — Презентации от 80 ₸/слайд",
+    title: "Анели Продакшн (@anelii.y) — Презентации от 80 ₸/слайд за 15 минут",
     description:
       "Обычные и анимированные презентации, ҚМЖ, СОР/СОЧ и рефераты на RU и ҚАЗ. Threads & Instagram: @anelii.y · WhatsApp: +7 700 919 14 02.",
     images: ["/og-cover.svg"]
   }
 };
-
-type ServiceRow = {
-  nameRu: string;
-  nameKk: string;
-  unitPrice: string;
-  exampleTotal: string;
-  note: string;
-  priceNumeric: string;
-};
-
-const SERVICES: ServiceRow[] = [
-  {
-    nameRu: "Обычная презентация (статика 16:9, PDF / PPTX)",
-    nameKk: "Қарапайым презентация (статика)",
-    unitPrice: "80 ₸ / слайд",
-    exampleTotal: "1 200 ₸ (15 слайдов)",
-    note: "Титульный лист, план и список литературы — бесплатно",
-    priceNumeric: "80"
-  },
-  {
-    nameRu: "Анимированная презентация (с плавными переходами)",
-    nameKk: "Анимациялық презентация",
-    unitPrice: "150 ₸ / слайд",
-    exampleTotal: "2 250 ₸ (15 слайдов)",
-    note: "Для открытых уроков, конкурсов и защиты проектов",
-    priceNumeric: "150"
-  },
-  {
-    nameRu: "ҚМЖ (Қысқа мерзімді сабақ жоспары, МОН РК)",
-    nameKk: "ҚМЖ (Қысқа мерзімді жоспар)",
-    unitPrice: "500 ₸ / урок",
-    exampleTotal: "500 ₸",
-    note: "По актуальным требованиям МОН РК (каз / рус)",
-    priceNumeric: "500"
-  },
-  {
-    nameRu: "СОР / СОЧ / Рефераты и статьи (Word, ГОСТ)",
-    nameKk: "БЖБ / ТЖБ / Реферат (Word)",
-    unitPrice: "100 ₸ / стр.",
-    exampleTotal: "300 – 1 000 ₸",
-    note: "Оформление по ГОСТ, таблицы и структурированный текст",
-    priceNumeric: "100"
-  },
-  {
-    nameRu: "Комбо «Ашық сабақ Базовый» (15 слайдов + ҚМЖ)",
-    nameKk: "Комбо «Ашық сабақ Базовый»",
-    unitPrice: "Комплект",
-    exampleTotal: "1 700 ₸",
-    note: "Полный комплект материалов к открытому уроку",
-    priceNumeric: "1700"
-  },
-  {
-    nameRu: "Комбо «Ашық сабақ Анимация» (15 аним. слайдов + ҚМЖ)",
-    nameKk: "Комбо «Ашық сабақ Анимация»",
-    unitPrice: "Комплект",
-    exampleTotal: "2 750 ₸",
-    note: "Анимированная презентация + готовый ҚМЖ",
-    priceNumeric: "2750"
-  },
-  {
-    nameRu: "ИИ-видео и конкурсная видео-визитка",
-    nameKk: "ЖИ-видео және байқау бейнеролигі",
-    unitPrice: "от 3 500 ₸ / мин",
-    exampleTotal: "3 500 – 12 000 ₸",
-    note: "Озвучка и монтаж для школьных и городских конкурсов",
-    priceNumeric: "3500"
-  }
-];
 
 const FAQ_ITEMS = [
   {
@@ -192,7 +135,7 @@ const presentationsSchema = {
   "@graph": [
     {
       "@type": ["ProfessionalService", "Organization"],
-      "@id": `${CANONICAL_URL}#organization`,
+      "@id": `${ANELI_HUB_URL}#organization`,
       name: "Анели Продакшн (@anelii.y)",
       alternateName: [
         "Анели Продакшн",
@@ -200,31 +143,31 @@ const presentationsSchema = {
         "@anelii.y",
         "anelii.y"
       ],
-      url: CANONICAL_URL,
+      url: ANELI_HUB_URL,
       description:
-        "Студия создания презентаций (80–150 ₸/слайд), ҚМЖ (500 ₸), СОР/СОЧ, рефератов и ИИ-видео для учителей и студентов Казахстана на казахском и русском языках. Официальные профили @anelii.y в Threads и Instagram, прямой заказ через WhatsApp Business +7 700 919 14 02.",
-      telephone: "+7-700-919-14-02",
+        "Студия создания презентаций (80–150 ₸/слайд, от 15 минут), ҚМЖ (500 ₸), СОР/СОЧ, рефератов и ИИ-видео для учителей и студентов Казахстана на казахском и русском языках. Официальные профили @anelii.y в Threads и Instagram, прямой заказ через WhatsApp Business +7 700 919 14 02.",
+      telephone: ANELI_WHATSAPP_E164,
       priceRange: "80–12000 KZT",
       areaServed: {
         "@type": "Country",
         name: "Kazakhstan"
       },
       availableLanguage: ["Russian", "Kazakh"],
-      sameAs: [THREADS_URL, INSTAGRAM_URL, WHATSAPP_DIRECT],
+      sameAs: [ANELI_THREADS_URL, ANELI_INSTAGRAM_URL, ANELI_WHATSAPP_DIRECT],
       contactPoint: [
         {
           "@type": "ContactPoint",
           contactType: "customer service",
-          telephone: "+7-700-919-14-02",
-          url: WHATSAPP_DIRECT,
+          telephone: ANELI_WHATSAPP_E164,
+          url: ANELI_WHATSAPP_DIRECT,
           availableLanguage: ["Russian", "Kazakh"],
           areaServed: "KZ"
         },
         {
           "@type": "ContactPoint",
           contactType: "sales",
-          telephone: "+7-700-919-14-02",
-          url: WHATSAPP_DIRECT,
+          telephone: ANELI_WHATSAPP_E164,
+          url: ANELI_WHATSAPP_DIRECT,
           availableLanguage: ["Russian", "Kazakh"],
           areaServed: "KZ"
         }
@@ -232,12 +175,12 @@ const presentationsSchema = {
       hasOfferCatalog: {
         "@type": "OfferCatalog",
         name: "Услуги студии Анели Продакшн (@anelii.y)",
-        itemListElement: SERVICES.map((service) => ({
+        itemListElement: ANELI_SERVICES.map((service) => ({
           "@type": "Offer",
           priceCurrency: "KZT",
           price: service.priceNumeric,
           availability: "https://schema.org/InStock",
-          url: WHATSAPP_DIRECT,
+          url: ANELI_WHATSAPP_DIRECT,
           itemOffered: {
             "@type": "Service",
             name: service.nameRu,
@@ -251,20 +194,20 @@ const presentationsSchema = {
     },
     {
       "@type": "WebPage",
-      "@id": `${CANONICAL_URL}#webpage`,
-      url: CANONICAL_URL,
+      "@id": `${ANELI_HUB_URL}#webpage`,
+      url: ANELI_HUB_URL,
       name: "Анели Продакшн (@anelii.y) — Презентации на заказ, ҚМЖ, СОР/СОЧ в Казахстане",
       inLanguage: ["ru-KZ", "kk-KZ"],
       isPartOf: {
         "@id": "https://bilimai.dpdns.org/#app"
       },
       about: {
-        "@id": `${CANONICAL_URL}#organization`
+        "@id": `${ANELI_HUB_URL}#organization`
       }
     },
     {
       "@type": "FAQPage",
-      "@id": `${CANONICAL_URL}#faq`,
+      "@id": `${ANELI_HUB_URL}#faq`,
       mainEntity: FAQ_ITEMS.map((item) => ({
         "@type": "Question",
         name: item.q,
@@ -272,6 +215,17 @@ const presentationsSchema = {
           "@type": "Answer",
           text: item.a
         }
+      }))
+    },
+    {
+      "@type": "ItemList",
+      "@id": `${ANELI_HUB_URL}#guides`,
+      name: "Направления и гайды студии Анели Продакшн (@anelii.y)",
+      itemListElement: ANELI_CLUSTER_PAGES.map((page, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: page.h1,
+        url: `${ANELI_HUB_URL}/${page.slug}`
       }))
     },
     {
@@ -287,7 +241,7 @@ const presentationsSchema = {
           "@type": "ListItem",
           position: 2,
           name: "Анели Продакшн (@anelii.y) — Презентации и ҚМЖ",
-          item: CANONICAL_URL
+          item: ANELI_HUB_URL
         }
       ]
     }
@@ -320,7 +274,7 @@ export default function PresentationsPage() {
             className="inline-flex min-h-[44px] items-center gap-2 text-sm font-medium transition-colors hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
             style={{ color: "var(--bilimai-text-muted, #475569)" }}
           >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>BilimAI · Главная</span>
           </a>
 
@@ -329,11 +283,25 @@ export default function PresentationsPage() {
             className="flex flex-wrap items-center gap-4 text-sm font-medium"
           >
             <a
+              href="#calculator"
+              className="inline-flex min-h-[44px] items-center hover:underline"
+              style={{ color: "var(--bilimai-text-muted, #475569)" }}
+            >
+              Калькулятор
+            </a>
+            <a
               href="#prices"
               className="inline-flex min-h-[44px] items-center hover:underline"
               style={{ color: "var(--bilimai-text-muted, #475569)" }}
             >
               Прайс
+            </a>
+            <a
+              href="#comparison"
+              className="inline-flex min-h-[44px] items-center hover:underline"
+              style={{ color: "var(--bilimai-text-muted, #475569)" }}
+            >
+              Сравнение
             </a>
             <a
               href="#kz"
@@ -347,7 +315,7 @@ export default function PresentationsPage() {
               className="inline-flex min-h-[44px] items-center hover:underline"
               style={{ color: "var(--bilimai-text-muted, #475569)" }}
             >
-              Вопросы
+              FAQ
             </a>
           </nav>
         </div>
@@ -380,7 +348,7 @@ export default function PresentationsPage() {
                 color: "var(--bilimai-text-muted, #475569)"
               }}
             >
-              <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+              <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               Готовность от 15 минут · Каз / Рус
             </span>
           </div>
@@ -394,22 +362,24 @@ export default function PresentationsPage() {
             Казахстана
           </h1>
 
+          {/* Answer-First Capsule for users and AI Search Engines */}
           <p
-            className="mt-3 max-w-[65ch] text-base leading-relaxed"
+            className="mt-3 max-w-[68ch] text-base leading-relaxed"
             style={{ color: "var(--bilimai-text-muted, #475569)" }}
           >
             Студия <strong>«Анели Продакшн» (@anelii.y)</strong> готовит
             современные статичные и анимированные презентации от{" "}
-            <strong className="tabular-nums">80 ₸ / слайд</strong>, планы уроков
-            ҚМЖ по стандарту МОН РК, СОР/СОЧ, рефераты и конкурсные ИИ-видео на
-            казахском и русском языках. Титульный лист, план и список литературы
-            — бесплатно.
+            <strong className="tabular-nums">80 ₸ / слайд</strong> (15 слайдов ={" "}
+            <strong className="tabular-nums">1 200 ₸</strong>, готовность от 15
+            минут), планы уроков ҚМЖ по стандарту МОН РК (500 ₸), СОР/СОЧ,
+            рефераты и конкурсные ИИ-видео на казахском и русском языках.
+            Титульный лист, план и список литературы — бесплатно.
           </p>
 
-          {/* Primary + Secondary CTA hierarchy (1-to-3 rule) */}
+          {/* Primary + Secondary CTA hierarchy */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <a
-              href={WHATSAPP_URL}
+              href={WHATSAPP_HERO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-transform active:scale-[0.99]"
@@ -419,11 +389,11 @@ export default function PresentationsPage() {
               }}
             >
               <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>Заказать в WhatsApp · +7 700 919 14 02</span>
+              <span>Заказать в WhatsApp · {ANELI_WHATSAPP_PHONE}</span>
             </a>
 
             <a
-              href={THREADS_URL}
+              href={ANELI_THREADS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
@@ -433,13 +403,16 @@ export default function PresentationsPage() {
                 color: "var(--bilimai-text, #0F172A)"
               }}
             >
-              <AtSign className="h-4 w-4" aria-hidden="true" />
+              <AtSign className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>Threads @anelii.y</span>
-              <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
+              <ExternalLink
+                className="h-3.5 w-3.5 shrink-0 opacity-70"
+                aria-hidden="true"
+              />
             </a>
 
             <a
-              href={INSTAGRAM_URL}
+              href={ANELI_INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors"
@@ -451,11 +424,14 @@ export default function PresentationsPage() {
             >
               <InstagramGlyph />
               <span>Instagram @anelii.y</span>
-              <ExternalLink className="h-3.5 w-3.5 opacity-70" aria-hidden="true" />
+              <ExternalLink
+                className="h-3.5 w-3.5 shrink-0 opacity-70"
+                aria-hidden="true"
+              />
             </a>
           </div>
 
-          {/* Explicit Official Channels Strip for Users & AI Search Engines */}
+          {/* Explicit Official Channels Strip */}
           <div
             className="mt-6 grid gap-3 rounded-lg p-4 sm:grid-cols-3"
             style={{
@@ -471,13 +447,13 @@ export default function PresentationsPage() {
                 WhatsApp Business (заказы)
               </div>
               <a
-                href={WHATSAPP_DIRECT}
+                href={ANELI_WHATSAPP_DIRECT}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-1 inline-block text-sm font-semibold tabular-nums underline underline-offset-2"
                 style={{ color: "var(--bilimai-text, #0F172A)" }}
               >
-                +7 700 919 14 02
+                {ANELI_WHATSAPP_PHONE}
               </a>
               <div
                 className="mt-0.5 break-all text-xs"
@@ -495,7 +471,7 @@ export default function PresentationsPage() {
                 Официальный Threads
               </div>
               <a
-                href={THREADS_URL}
+                href={ANELI_THREADS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-1 inline-block text-sm font-semibold underline underline-offset-2"
@@ -519,7 +495,7 @@ export default function PresentationsPage() {
                 Официальный Instagram
               </div>
               <a
-                href={INSTAGRAM_URL}
+                href={ANELI_INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-1 inline-block text-sm font-semibold underline underline-offset-2"
@@ -536,6 +512,9 @@ export default function PresentationsPage() {
             </div>
           </div>
         </section>
+
+        {/* Interactive Price Calculator */}
+        <AneliCalculator />
 
         {/* Pricing Table */}
         <section
@@ -569,7 +548,7 @@ export default function PresentationsPage() {
                   }}
                 >
                   <th className="py-2.5 pr-4 font-semibold">Услуга</th>
-                  <th className="whitespace-nowrap py-2.5 pr-0 sm:pr-4 font-semibold text-right sm:text-left">
+                  <th className="whitespace-nowrap py-2.5 pr-0 text-right font-semibold sm:pr-4 sm:text-left">
                     Тариф
                   </th>
                   <th className="hidden whitespace-nowrap py-2.5 font-semibold sm:table-cell">
@@ -578,9 +557,9 @@ export default function PresentationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {SERVICES.map((row) => (
+                {ANELI_SERVICES.map((row) => (
                   <tr
-                    key={row.nameRu}
+                    key={row.id}
                     style={{
                       borderBottom: "1px solid var(--bilimai-border, #D8E0EE)"
                     }}
@@ -594,7 +573,7 @@ export default function PresentationsPage() {
                         {row.note}
                       </div>
                     </td>
-                    <td className="whitespace-nowrap py-3 pr-0 sm:pr-4 align-top text-right sm:text-left">
+                    <td className="whitespace-nowrap py-3 pr-0 text-right align-top sm:pr-4 sm:text-left">
                       <div className="font-semibold tabular-nums">
                         {row.unitPrice}
                       </div>
@@ -618,6 +597,137 @@ export default function PresentationsPage() {
           </div>
         </section>
 
+        {/* Honest Market Comparison Table (Citation Magnet for AI Search) */}
+        <section
+          id="comparison"
+          aria-labelledby="comparison-heading"
+          className="mt-6 rounded-xl p-6 sm:p-8"
+          style={{
+            backgroundColor: "var(--bilimai-surface, #FFFFFF)",
+            border: "1px solid var(--bilimai-border, #D8E0EE)"
+          }}
+        >
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 id="comparison-heading" className="text-xl font-semibold">
+              Сравнение цен и сроков по Казахстану (2026)
+            </h2>
+            <a
+              href="/presentations/ceny-sravnenie"
+              className="text-xs font-semibold underline"
+              style={{ color: "var(--bilimai-brand, #254EDB)" }}
+            >
+              Подробный обзор рынка →
+            </a>
+          </div>
+          <p
+            className="mt-2 max-w-[68ch] text-sm leading-relaxed"
+            style={{ color: "var(--bilimai-text-muted, #475569)" }}
+          >
+            Ориентиры для стандартной презентации на 15 слайдов на рынке
+            Казахстана (Алматы, Астана и онлайн-сервисы):
+          </p>
+
+          <div className="mt-4 space-y-2.5">
+            {MARKET_COMPARISON_ROWS.map((item) => (
+              <div
+                key={item.segment}
+                className="rounded-lg p-3.5 sm:grid sm:grid-cols-12 sm:items-center sm:gap-3"
+                style={{
+                  backgroundColor: item.highlight
+                    ? "var(--bilimai-selected-bg, #E0E7FF)"
+                    : "var(--bilimai-surface-raised, #EEF2F9)",
+                  border: item.highlight
+                    ? "1px solid var(--bilimai-brand, #254EDB)"
+                    : "1px solid var(--bilimai-border, #D8E0EE)"
+                }}
+              >
+                <div className="sm:col-span-4">
+                  <div className="text-sm font-semibold">{item.segment}</div>
+                </div>
+                <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs sm:col-span-4 sm:mt-0 sm:block">
+                  <div className="font-semibold tabular-nums">
+                    {item.price15Slides}
+                  </div>
+                  <div
+                    style={{
+                      color: item.highlight
+                        ? "var(--bilimai-selected-text, #1E3A8A)"
+                        : "var(--bilimai-text-muted, #475569)"
+                    }}
+                  >
+                    Срок: {item.turnaround}
+                  </div>
+                </div>
+                <div
+                  className="mt-1 text-xs sm:col-span-4 sm:mt-0"
+                  style={{
+                    color: item.highlight
+                      ? "var(--bilimai-selected-text, #1E3A8A)"
+                      : "var(--bilimai-text-muted, #475569)"
+                  }}
+                >
+                  {item.kazakhQuality}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Dedicated Intent Pages (Topic Cluster Mesh) */}
+        <section
+          aria-labelledby="cluster-heading"
+          className="mt-6 rounded-xl p-6 sm:p-8"
+          style={{
+            backgroundColor: "var(--bilimai-surface, #FFFFFF)",
+            border: "1px solid var(--bilimai-border, #D8E0EE)"
+          }}
+        >
+          <h2 id="cluster-heading" className="text-xl font-semibold">
+            Направления и подробные гайды по задачам
+          </h2>
+          <p
+            className="mt-1.5 text-sm"
+            style={{ color: "var(--bilimai-text-muted, #475569)" }}
+          >
+            Выберите вашу задачу, чтобы посмотреть точные условия, чек-лист
+            оформления и примеры:
+          </p>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {ANELI_CLUSTER_PAGES.map((page) => (
+              <a
+                key={page.slug}
+                href={`/presentations/${page.slug}`}
+                className="flex min-h-[44px] flex-col justify-between rounded-lg p-4 transition-colors hover:opacity-95"
+                style={{
+                  backgroundColor: "var(--bilimai-surface-raised, #EEF2F9)",
+                  border: "1px solid var(--bilimai-border, #D8E0EE)",
+                  color: "var(--bilimai-text, #0F172A)"
+                }}
+              >
+                <div>
+                  <div className="text-sm font-semibold">
+                    {page.shortNavLabel}
+                  </div>
+                  <p
+                    className="mt-1 text-xs leading-relaxed"
+                    style={{ color: "var(--bilimai-text-muted, #475569)" }}
+                  >
+                    {page.badge}
+                  </p>
+                </div>
+                <span
+                  className="mt-2.5 inline-flex items-center gap-1 text-xs font-semibold"
+                  style={{ color: "var(--bilimai-brand, #254EDB)" }}
+                >
+                  <span>Открыть подробнее</span>
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+
         {/* How it works + Guarantees */}
         <section
           aria-labelledby="process-heading"
@@ -634,23 +744,23 @@ export default function PresentationsPage() {
               id="process-heading"
               className="flex items-center gap-2 text-lg font-semibold"
             >
-              <FileText className="h-5 w-5" aria-hidden="true" />
+              <FileText className="h-5 w-5 shrink-0" aria-hidden="true" />
               <span>Как заказать за 1 минуту</span>
             </h2>
             <ol
-              className="mt-3 space-y-2.5 pl-5 text-sm list-decimal"
+              className="mt-3 list-decimal space-y-2.5 pl-5 text-sm"
               style={{ color: "var(--bilimai-text-muted, #475569)" }}
             >
               <li>
                 Напишите в{" "}
                 <a
-                  href={WHATSAPP_URL}
+                  href={WHATSAPP_HERO_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-medium underline"
                   style={{ color: "var(--bilimai-text, #0F172A)" }}
                 >
-                  WhatsApp +7 700 919 14 02
+                  WhatsApp {ANELI_WHATSAPP_PHONE}
                 </a>{" "}
                 тему, язык (каз/рус), количество слайдов и дедлайн.
               </li>
@@ -677,7 +787,7 @@ export default function PresentationsPage() {
             }}
           >
             <h2 className="flex items-center gap-2 text-lg font-semibold">
-              <ShieldCheck className="h-5 w-5" aria-hidden="true" />
+              <ShieldCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
               <span>Стандарты качества</span>
             </h2>
             <ul
@@ -716,7 +826,7 @@ export default function PresentationsPage() {
                   Примеры работ, «до/после» и живые отзывы клиентов открыто
                   публикуются в{" "}
                   <a
-                    href={THREADS_URL}
+                    href={ANELI_THREADS_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-medium underline"
@@ -726,7 +836,7 @@ export default function PresentationsPage() {
                   </a>{" "}
                   и{" "}
                   <a
-                    href={INSTAGRAM_URL}
+                    href={ANELI_INSTAGRAM_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-medium underline"
@@ -741,7 +851,7 @@ export default function PresentationsPage() {
           </div>
         </section>
 
-        {/* Kazakh Bilingual Section (SSR-visible for KK Search & AI Crawlers) */}
+        {/* Kazakh Bilingual Section */}
         <section
           id="kz"
           lang="kk"
@@ -761,18 +871,19 @@ export default function PresentationsPage() {
             style={{ color: "var(--bilimai-text-muted, #475569)" }}
           >
             Мұғалімдерге, оқушыларға және студенттерге арналған сапалы
-            презентациялар мен оқу материалдарын <strong>15 минуттан бастап</strong>{" "}
-            дайындаймыз. Қарапайым презентация —{" "}
-            <strong className="tabular-nums">80 ₸ / слайд</strong> (титулка,
-            жоспар және әдебиеттер тізімі — тегін), анимациялық презентация —{" "}
+            презентациялар мен оқу материалдарын{" "}
+            <strong>15 минуттан бастап</strong> дайындаймыз. Қарапайым
+            презентация — <strong className="tabular-nums">80 ₸ / слайд</strong>{" "}
+            (титулка, жоспар және әдебиеттер тізімі — тегін), анимациялық
+            презентация —{" "}
             <strong className="tabular-nums">150 ₸ / слайд</strong>, ашық
-            сабаққа арналған ҚМЖ — <strong className="tabular-nums">500 ₸</strong>,
-            реферат және БЖБ/ТЖБ —{" "}
+            сабаққа арналған ҚМЖ — <strong className="tabular-nums">500 ₸</strong>
+            , реферат және БЖБ/ТЖБ —{" "}
             <strong className="tabular-nums">100 ₸ / бет</strong>.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
             <a
-              href={WHATSAPP_DIRECT}
+              href={ANELI_WHATSAPP_DIRECT}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] items-center gap-2 rounded-lg px-4 py-2 font-semibold"
@@ -782,10 +893,17 @@ export default function PresentationsPage() {
               }}
             >
               <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>WhatsApp-қа жазу · +7 700 919 14 02</span>
+              <span>WhatsApp-қа жазу · {ANELI_WHATSAPP_PHONE}</span>
             </a>
             <a
-              href={THREADS_URL}
+              href="/presentations/kmzh-ashyq-sabaq"
+              className="inline-flex min-h-[44px] items-center gap-1.5 px-2 font-semibold underline"
+              style={{ color: "var(--bilimai-brand, #254EDB)" }}
+            >
+              <span>ҚМЖ және ашық сабақ →</span>
+            </a>
+            <a
+              href={ANELI_THREADS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] items-center gap-1.5 px-2 font-medium underline"
@@ -794,7 +912,7 @@ export default function PresentationsPage() {
               <span>Threads: @anelii.y</span>
             </a>
             <a
-              href={INSTAGRAM_URL}
+              href={ANELI_INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] items-center gap-1.5 px-2 font-medium underline"
@@ -855,15 +973,15 @@ export default function PresentationsPage() {
           <span>Анели Продакшн (@anelii.y) · Казахстан</span>
           <div className="flex flex-wrap items-center gap-4">
             <a
-              href={WHATSAPP_DIRECT}
+              href={ANELI_WHATSAPP_DIRECT}
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:opacity-80"
             >
-              WhatsApp +7 700 919 14 02
+              WhatsApp {ANELI_WHATSAPP_PHONE}
             </a>
             <a
-              href={THREADS_URL}
+              href={ANELI_THREADS_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:opacity-80"
@@ -871,7 +989,7 @@ export default function PresentationsPage() {
               Threads @anelii.y
             </a>
             <a
-              href={INSTAGRAM_URL}
+              href={ANELI_INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="underline hover:opacity-80"

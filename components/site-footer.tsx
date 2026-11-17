@@ -142,6 +142,30 @@ export function SiteFooter({
             <a href="mailto:nurbek@bilimai.dpdns.org">nurbek@bilimai.dpdns.org</a> · {c.location}
           </span>
           <span>
+            <a
+              href="https://www.threads.com/@anelii.y"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Threads @anelii.y
+            </a>{" "}
+            ·{" "}
+            <a
+              href="https://www.instagram.com/anelii.y/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Instagram @anelii.y
+            </a>{" "}
+            ·{" "}
+            <a
+              href="https://wa.me/77009191402"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              WhatsApp +7 700 919 14 02
+            </a>{" "}
+            ·{" "}
             <a href="https://github.com/nur667-7/bilimai" target="_blank" rel="noreferrer">
               GitHub
             </a>
